@@ -1,0 +1,430 @@
+:root {
+  --sea-dark: #0b3a4a;
+  --ink: #123;
+  --panel-radius: 22px;
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background: #0b3a4a;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ============ HOMEPAGE SCENE ============ */
+
+.scene-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px 0 12px;
+}
+
+.hero {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 8px;
+  padding: 0 16px;
+}
+
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  margin: 0 0 6px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+
+.hero h1 span {
+  background: linear-gradient(90deg, #ffe08a, #ffd166);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* a slow light sheen sweeping across the title, like a title card */
+.hero h1 {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+.hero h1::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-20deg);
+  animation: heroSheen 6s ease-in-out infinite;
+  animation-delay: 1.2s;
+  pointer-events: none;
+}
+@keyframes heroSheen {
+  0% { left: -60%; }
+  18% { left: 130%; }
+  100% { left: 130%; }
+}
+
+.hero p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+}
+
+.map-scroll {
+  width: 100%;
+  max-width: 1400px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+#scene {
+  width: 100%;
+  min-width: 900px;
+  height: auto;
+  display: block;
+  user-select: none;
+}
+
+.scroll-hint {
+  display: none;
+  color: #dff4ff;
+  font-size: 0.8rem;
+  opacity: 0.75;
+  margin: 6px 0 0;
+}
+
+@media (max-width: 720px) {
+  .scroll-hint { display: block; }
+}
+
+/* clouds & sun drift */
+.sun {
+  animation: pulse 6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+.sun-rays {
+  animation: rotateRays 100s linear infinite;
+}
+@keyframes rotateRays {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.storm-clouds ellipse {
+  animation: driftCloud 70s linear infinite;
+}
+.storm-clouds ellipse:nth-child(1) { animation-duration: 85s; }
+.storm-clouds ellipse:nth-child(2) { animation-duration: 95s; animation-delay: -20s; }
+.storm-clouds ellipse:nth-child(3) { animation-duration: 110s; animation-delay: -50s; }
+.storm-clouds ellipse:nth-child(4) { animation-duration: 90s; animation-delay: -35s; }
+
+.clouds ellipse {
+  animation: driftCloud 40s linear infinite;
+}
+.clouds ellipse:nth-child(2) { animation-duration: 55s; animation-delay: -8s; }
+.clouds ellipse:nth-child(3) { animation-duration: 48s; animation-delay: -4s; }
+.clouds ellipse:nth-child(4) { animation-duration: 60s; animation-delay: -20s; }
+.clouds ellipse:nth-child(5) { animation-duration: 50s; animation-delay: -30s; }
+
+@keyframes driftCloud {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(60px); }
+  100% { transform: translateX(0); }
+}
+
+/* birds crossing the sky: outer <g> flies the path, inner wing flaps —
+   kept on separate elements so the two transforms don't fight over
+   the same property */
+.bird { opacity: 0.8; }
+.bird .wing {
+  display: block;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flap 0.48s ease-in-out infinite;
+}
+.bird1 { animation: flyAcross1 26s linear infinite; }
+.bird2 { animation: flyAcross2 32s linear infinite 4s; }
+.bird3 { animation: flyAcross3 22s linear infinite 12s; }
+
+@keyframes flap {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.35); }
+}
+@keyframes flyAcross1 {
+  from { transform: translate(-60px, 190px); }
+  to   { transform: translate(1660px, 130px); }
+}
+@keyframes flyAcross2 {
+  from { transform: translate(-60px, 260px); }
+  to   { transform: translate(1660px, 320px); }
+}
+@keyframes flyAcross3 {
+  from { transform: translate(-60px, 100px); }
+  to   { transform: translate(1660px, 170px); }
+}
+
+/* sparkles of light glinting on the water */
+.sparkle {
+  fill: #ffffff;
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+.sparkles .sparkle:nth-child(odd) { animation-duration: 2.6s; }
+.sparkles .sparkle:nth-child(3n) { animation-delay: -1.1s; }
+.sparkles .sparkle:nth-child(4n) { animation-delay: -2s; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.1; transform: scale(0.7); }
+  50% { opacity: 0.85; transform: scale(1.2); }
+}
+
+/* waves */
+.wave {
+  animation: waveMove 9s linear infinite;
+}
+.wave2 { animation-duration: 13s; animation-direction: reverse; }
+.wave3 { animation-duration: 17s; }
+
+@keyframes waveMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-160px); }
+}
+
+/* boats sailing slowly across the sea */
+.boat {
+  animation: sailAcross linear infinite;
+}
+.boat1 { animation-duration: 48s; animation-delay: -6s; }
+.boat1 use { transform: translate(0, 600px) scale(0.9); }
+.boat2 { animation-duration: 62s; animation-delay: -30s; }
+.boat2 use { transform: translate(0, 760px) scale(1.15); }
+
+@keyframes sailAcross {
+  0%   { transform: translateX(-80px) translateY(0); }
+  50%  { transform: translateX(820px) translateY(-6px); }
+  100% { transform: translateX(1720px) translateY(0); }
+}
+
+/* islands */
+.island {
+  cursor: pointer;
+  outline: none;
+}
+
+.island .ripple {
+  fill: #ffffff;
+  opacity: 0.25;
+  animation: ripple 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ripple {
+  0%, 100% { opacity: 0.18; transform: scale(1); }
+  50% { opacity: 0.32; transform: scale(1.06); }
+}
+
+.island .bob {
+  animation: bob 4.5s ease-in-out infinite;
+}
+.bob-delay1 { animation-delay: -1.2s; }
+.bob-delay2 { animation-delay: -2.4s; }
+.bob-delay3 { animation-delay: -3.4s; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.island .label-bg {
+  fill: rgba(10, 40, 55, 0.55);
+  stroke: rgba(255,255,255,0.5);
+  stroke-width: 1.5;
+  transition: fill 0.25s ease;
+}
+
+.island text {
+  fill: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: inherit;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,0.15);
+  stroke-width: 0.5;
+}
+
+.island:hover .bob,
+.island:focus-visible .bob {
+  animation-play-state: paused;
+  transform: translateY(-14px) scale(1.08);
+  transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+
+.island:hover .label-bg,
+.island:focus-visible .label-bg {
+  fill: rgba(255, 209, 102, 0.9);
+}
+.island:hover text,
+.island:focus-visible text {
+  fill: #16324a;
+}
+
+.island:focus-visible .bob {
+  filter: drop-shadow(0 0 10px #fff);
+}
+
+/* subtle entrance animation */
+.island {
+  opacity: 0;
+  animation: islandIn 0.7s ease forwards;
+}
+.island:nth-of-type(1) { animation-delay: 0.05s; }
+.island:nth-of-type(2) { animation-delay: 0.2s; }
+.island:nth-of-type(3) { animation-delay: 0.35s; }
+.island:nth-of-type(4) { animation-delay: 0.5s; }
+.island:nth-of-type(5) { animation-delay: 0.65s; }
+
+@keyframes islandIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.85); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* data dots floating up (database icon) */
+.data-dot {
+  animation: dotUp 2.4s ease-in infinite;
+}
+.data-dot.d2 { animation-delay: 0.6s; }
+.data-dot.d3 { animation-delay: 1.2s; }
+@keyframes dotUp {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-36px); opacity: 0; }
+}
+
+/* island progress badge (reads localStorage progress from the topic page) */
+.progress-badge {
+  fill: #fff9e6;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,0.35);
+  stroke-width: 2.5;
+}
+
+/* SVG <a> islands: neutralize default link styling, keep pointer/focus affordances */
+a.island {
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+}
+
+/* ============ WEATHER: RAIN + LIGHTNING ============ */
+
+.rain-drop {
+  stroke: rgba(214, 234, 255, 0.55);
+  stroke-width: 2;
+  stroke-linecap: round;
+  animation-name: rainFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes rainFall {
+  from { transform: translateY(-80px); }
+  to   { transform: translateY(980px); }
+}
+
+.rain-ripple {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.4;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: rippleExpand;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+@keyframes rippleExpand {
+  0%   { transform: scale(0.3); opacity: 0.55; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+.lightning {
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.lightning-a { animation: flashA 17s ease-in-out infinite; }
+.lightning-b { animation: flashB 23s ease-in-out infinite 6s; }
+
+@keyframes flashA {
+  0%, 93%, 100% { opacity: 0; }
+  93.5% { opacity: 0.5; }
+  94.2% { opacity: 0.05; }
+  95% { opacity: 0.35; }
+  96% { opacity: 0; }
+}
+@keyframes flashB {
+  0%, 96%, 100% { opacity: 0; }
+  96.4% { opacity: 0.4; }
+  97% { opacity: 0.02; }
+  97.6% { opacity: 0.28; }
+  98.3% { opacity: 0; }
+}
+
+/* weather toggle button */
+.weather-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 60;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #eaf6ff;
+  background: rgba(6, 34, 48, 0.55);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.weather-toggle:hover, .weather-toggle:focus-visible {
+  background: rgba(6, 34, 48, 0.8);
+  transform: translateY(-1px);
+}
+.weather-toggle[aria-pressed="false"] {
+  color: rgba(234,246,255,0.6);
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* when weather is switched off, hide rain/lightning entirely */
+body.weather-off .rain-drops,
+body.weather-off .rain-ripples,
+body.weather-off .lightning {
+  display: none;
+}
+
+/* respect reduced-motion preference: kill decorative animation */
+@media (prefers-reduced-motion: reduce) {
+  .bob, .ripple, .clouds ellipse, .storm-clouds ellipse, .wave, .boat,
+  .bird, .bird .wing, .sparkle, .sun-rays, .hero h1::after,
+  .rain-drop, .rain-ripple, .lightning, .island {
+    animation: none !important;
+  }
+  .island { opacity: 1; }
+}

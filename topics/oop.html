@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OOP — Interview Islands</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/cards.css">
+<link rel="stylesheet" href="../css/mascot.css">
+<link rel="stylesheet" href="oop.css">
+</head>
+<body>
+
+<div class="page">
+  <a class="back-link" href="../index.html">← Back to the map</a>
+
+  <header class="page-header">
+    <span class="icon">🧩</span>
+    <h1>OOP</h1>
+    <p>The Blueprint Workshop — classes, objects and the design principles that hold a system together.</p>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <span id="progress-text">0%</span> mastered
+    </div>
+  </header>
+
+  <div class="search-box">
+    <input type="search" id="search" placeholder="Search this island…" aria-label="Search OOP content">
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/render.js"></script>
+<script src="../js/mascot.js"></script>
+<script>
+  Revision.renderPage("oop", {
+    contentEl: document.getElementById("content"),
+    searchEl: document.getElementById("search"),
+    progressFillEl: document.getElementById("progress-fill"),
+    progressTextEl: document.getElementById("progress-text")
+  });
+
+  Mascot.init("oop");
+</script>
+</body>
+</html>

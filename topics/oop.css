@@ -1,0 +1,57 @@
+/* ================= OOP — "Blueprint Workshop" ================= */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+:root {
+  --accent: #34d399;
+  --accent-light: #a7f3d0;
+  --text: #dff9ef;
+  --text-strong: #ffffff;
+  --page-bg: #0b1f1a;
+  --card-bg: rgba(6, 78, 59, 0.28);
+  --card-border: rgba(52, 211, 153, 0.35);
+}
+
+body {
+  background-color: #0b1f1a;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
+  background-attachment: fixed;
+}
+
+.page-header .icon { filter: drop-shadow(0 0 12px rgba(52,211,153,0.5)); }
+
+/* a technical drafting-table monospace for the blueprint vibe —
+   kept to headings/titles only, body text stays readable */
+.page-header h1 {
+  font-family: 'Share Tech Mono', "Cascadia Code", monospace;
+  letter-spacing: 1px;
+}
+
+.section-title {
+  font-family: 'Share Tech Mono', "Cascadia Code", Consolas, monospace;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+.section-title .chevron { font-family: inherit; }
+
+/* notes as UML-style class boxes with corner brackets */
+.note-block {
+  border: 1px dashed var(--card-border);
+  border-radius: 4px;
+}
+.note-block::before, .note-block::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent);
+  opacity: 0.8;
+  pointer-events: none;
+}
+.note-block::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.note-block::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.note-block h4 { font-family: 'Share Tech Mono', "Cascadia Code", monospace; }

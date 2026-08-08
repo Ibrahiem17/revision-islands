@@ -1,0 +1,221 @@
+/**
+ * The bottom-right guide character (js/mascot.js). Theme-aware: it
+ * reads --accent / --accent-light / --card-bg / --text / --card-border
+ * from whichever topic page it's on, so it automatically matches that
+ * page's colors without any topic-specific CSS.
+ */
+
+.mascot-wrap {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ---------- the character ---------- */
+
+.mascot-char {
+  all: unset;
+  cursor: pointer;
+  width: 60px;
+  height: 62px;
+  display: block;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
+  animation: mascotBob 3.2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+.mascot-char:hover, .mascot-char:focus-visible {
+  transform: scale(1.08);
+}
+.mascot-svg { width: 100%; height: 100%; overflow: visible; }
+
+.mascot-shadow { fill: rgba(0,0,0,0.28); }
+
+.mascot-glow {
+  fill: var(--accent, #6cf);
+  opacity: 0.22;
+  filter: blur(6px);
+  animation: mascotGlowPulse 2.6s ease-in-out infinite;
+}
+
+.mascot-body {
+  fill: var(--card-bg, #10202a);
+  stroke: var(--accent, #6cf);
+  stroke-width: 2;
+}
+.mascot-eye {
+  fill: var(--text-strong, #fff);
+  transition: transform 0.2s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.mascot-antenna { stroke: var(--accent, #6cf); stroke-width: 2; }
+.mascot-antenna-tip {
+  fill: var(--accent-light, #9fd8ff);
+  filter: drop-shadow(0 0 4px var(--accent, #6cf));
+  animation: mascotBlink 4s ease-in-out infinite;
+  transition: filter 0.2s ease;
+}
+
+@keyframes mascotBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes mascotGlowPulse {
+  0%, 100% { opacity: 0.16; }
+  50%      { opacity: 0.4; }
+}
+@keyframes mascotBlink {
+  0%, 100% { opacity: 1; }
+  93%      { opacity: 1; }
+  96%      { opacity: 0.15; }
+  98%      { opacity: 1; }
+}
+
+/* ---------- moods: swap which mouth/eyebrows are visible ---------- */
+
+.mascot-mouth {
+  display: none;
+  stroke: var(--text-strong, #fff);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.eyebrow {
+  display: none;
+  stroke: var(--accent-light, #9fd8ff);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+/* happy: resting mood when this topic has takeaways to show */
+.mood-happy .mouth-happy { display: block; }
+
+/* excited: hovering the character, or the bubble is open */
+.mood-excited .mouth-excited { display: block; }
+.mood-excited .mascot-eye { transform: scale(1.15); }
+.mood-excited .mascot-antenna-tip { filter: drop-shadow(0 0 9px var(--accent, #6cf)); }
+
+/* sad: resting mood when this topic has no takeaways yet */
+.mood-sad .mouth-sad { display: block; }
+.mood-sad .eyebrow { display: block; }
+.mood-sad .mascot-eye { transform: scaleY(0.75); }
+
+/* ---------- the speech bubble ---------- */
+
+.mascot-bubble {
+  position: relative;
+  max-width: 300px;
+  width: max-content;
+  background: var(--card-bg, #10202a);
+  border: 1px solid var(--accent, #6cf);
+  border-radius: 14px 14px 4px 14px;
+  padding: 14px 34px 12px 16px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.45);
+  color: var(--text, #e8f0f5);
+  opacity: 0;
+  transform-origin: bottom right;
+  transform: translateY(10px) scale(0.94);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.mascot-bubble.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mascot-bubble-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-light, #9fd8ff);
+  margin-bottom: 8px;
+}
+
+.mascot-bubble-body {
+  max-height: 50vh;
+  overflow-y: auto;
+  width: 260px;
+}
+
+/* each topic is its own labeled, collapsible group — click the
+   label to fold its takeaway open, so 20+ topics stay scannable */
+.mascot-group {
+  border-top: 1px dashed var(--card-border, rgba(255,255,255,0.16));
+}
+.mascot-group:first-child { border-top: none; }
+
+.mascot-group-title {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  cursor: pointer;
+  padding: 8px 2px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--accent-light, #9fd8ff);
+}
+.mascot-group-title:hover { opacity: 0.85; }
+.mascot-chevron {
+  flex-shrink: 0;
+  font-size: 0.7em;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+.mascot-group.open .mascot-chevron { transform: rotate(90deg); }
+
+.mascot-takeaway {
+  display: none;
+  padding: 0 2px 10px 4px;
+}
+.mascot-group.open .mascot-takeaway { display: block; }
+.mascot-takeaway p {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 0 0 6px;
+  opacity: 0.92;
+}
+.mascot-takeaway p:last-child { margin-bottom: 0; }
+
+.mascot-empty {
+  font-size: 0.83rem;
+  line-height: 1.6;
+  opacity: 0.7;
+  margin: 0;
+}
+.glow-word {
+  color: var(--accent-light, #9fd8ff);
+  font-weight: 700;
+  text-shadow: 0 0 6px var(--accent, #6cf);
+}
+
+.mascot-close {
+  all: unset;
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  opacity: 0.55;
+  padding: 3px;
+}
+.mascot-close:hover { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-char, .mascot-glow, .mascot-antenna-tip { animation: none; }
+}
+
+@media (max-width: 480px) {
+  .mascot-wrap { right: 12px; bottom: 12px; }
+  .mascot-bubble { max-width: 76vw; }
+  .mascot-char { width: 52px; height: 54px; }
+}

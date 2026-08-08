@@ -1,0 +1,77 @@
+/* ================= SYSTEM DESIGN — "Architect's Tower" ================= */
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&display=swap');
+
+:root {
+  --accent: #fbbf24;
+  --accent-light: #fde68a;
+  --text: #fdf3df;
+  --text-strong: #ffffff;
+  --page-bg: linear-gradient(180deg, #2a1c0d 0%, #1a1207 60%, #120c05 100%);
+  --card-bg: rgba(146, 64, 14, 0.2);
+  --card-border: rgba(251, 191, 36, 0.3);
+}
+
+body { background-attachment: fixed; }
+.page-header .icon { filter: drop-shadow(0 0 12px rgba(251,191,36,0.5)); }
+
+/* a tall, industrial display face for the architect/tower vibe —
+   kept to headings/titles only, body text stays readable */
+.page-header h1 {
+  font-family: 'Big Shoulders Display', sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.section-title {
+  font-family: 'Big Shoulders Display', sans-serif;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+/* sections become numbered floors of a tower, connected by a shaft */
+#content { counter-reset: floor; }
+.section {
+  counter-increment: floor;
+  position: relative;
+  padding-left: 58px;
+}
+.section::before {
+  content: "F" counter(floor);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #2a1c0d;
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+}
+.section:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 46px;
+  bottom: -28px;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, var(--accent) 0 6px, transparent 6px 12px);
+}
+
+.section-title { padding-top: 8px; }
+
+.note-block { border-radius: 10px 10px 4px 4px; }
+.note-block::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 10px 10px 0 0;
+  opacity: 0.6;
+  pointer-events: none;
+}

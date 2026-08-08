@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA — Interview Islands</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/cards.css">
+<link rel="stylesheet" href="../css/mascot.css">
+<link rel="stylesheet" href="dsa.css">
+</head>
+<body>
+
+<div class="canopy" aria-hidden="true"></div>
+
+<div class="page">
+  <a class="back-link" href="../index.html">← Back to the map</a>
+
+  <header class="page-header">
+    <span class="icon">🌳</span>
+    <h1>DSA</h1>
+    <p>The Enchanted Forest of Trees — data structures, algorithms and the complexity that grows on every branch.</p>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <span id="progress-text">0%</span> mastered
+    </div>
+  </header>
+
+  <div class="search-box">
+    <input type="search" id="search" placeholder="Search this island…" aria-label="Search DSA content">
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/render.js"></script>
+<script src="../js/mascot.js"></script>
+<script>
+  Revision.renderPage("dsa", {
+    contentEl: document.getElementById("content"),
+    searchEl: document.getElementById("search"),
+    progressFillEl: document.getElementById("progress-fill"),
+    progressTextEl: document.getElementById("progress-text")
+  });
+
+  Mascot.init("dsa");
+</script>
+</body>
+</html>

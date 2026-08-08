@@ -1,0 +1,321 @@
+/* ================= DATABASE — "Deep Sea Archive" ================= */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
+
+:root {
+  --accent: #22d3ee;
+  --accent-light: #a5f3fc;
+  --text: #dff7fb;
+  --text-strong: #ffffff;
+  --page-bg: linear-gradient(180deg, #0a2e38 0%, #041b22 60%, #03141a 100%);
+  --card-bg: rgba(10, 60, 72, 0.55);
+  --card-border: rgba(34, 211, 238, 0.28);
+}
+
+body { background-attachment: fixed; }
+
+/* ---------- ambient background: bubbles + sonar rings ---------- */
+
+.bubbles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+.bubbles span {
+  position: absolute;
+  bottom: -40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(165,243,252,0.05));
+  border: 1px solid rgba(255,255,255,0.15);
+  animation-name: rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes rise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.7; }
+  100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+}
+
+/* (sonar-ping rings removed — they grew large enough to sweep across
+   the reading column and were too distracting behind text) */
+
+.page { position: relative; z-index: 1; }
+
+.page-header .icon { filter: drop-shadow(0 0 14px rgba(34,211,238,0.5)); }
+
+/* a glowing sci-fi console face for the deep-sea-tech vibe —
+   kept to headings/titles only, body text stays readable */
+.page-header h1 {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* ---------- 3D hero: layered "database disks" rocking in real 3D space ---------- */
+
+.db-hero {
+  position: relative;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0 34px;
+  perspective: 900px;
+  color: var(--accent);
+}
+
+.db-hero-glow {
+  position: absolute;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34,211,238,0.35), transparent 70%);
+  filter: blur(4px);
+  animation: heroGlowPulse 4s ease-in-out infinite;
+}
+@keyframes heroGlowPulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.12); }
+}
+
+.db-hero-rings {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  opacity: 0.5;
+}
+.ring { transform-origin: 100px 100px; }
+.ring-a { animation: ringSpin 40s linear infinite; }
+.ring-b { animation: ringSpin 30s linear infinite reverse; }
+@keyframes ringSpin { to { transform: rotate(360deg); } }
+
+.db-hero-3d {
+  position: relative;
+  width: 140px;
+  height: 120px;
+  transform-style: preserve-3d;
+  animation: heroSpin 7s ease-in-out infinite;
+}
+@keyframes heroSpin {
+  0%, 100% { transform: rotateY(-20deg) rotateX(9deg); }
+  50%      { transform: rotateY(20deg) rotateX(3deg); }
+}
+
+.db-disk {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 46px;
+  margin: -23px 0 0 -60px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: linear-gradient(180deg, rgba(34,211,238,0.4), rgba(8,60,72,0.65));
+  box-shadow: 0 0 20px rgba(34,211,238,0.55), inset 0 0 14px rgba(34,211,238,0.25);
+}
+.db-disk-1 { transform: translateZ(30px); }
+.db-disk-2 { transform: translateZ(0px); opacity: 0.92; }
+.db-disk-3 { transform: translateZ(-30px); opacity: 0.8; }
+
+.db-hero-particles span {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  box-shadow: 0 0 7px 2px rgba(103, 232, 249, 0.85);
+  animation: heroParticleUp 3.2s ease-in infinite;
+}
+.db-hero-particles span:nth-child(1) { left: 30%; animation-delay: 0s; }
+.db-hero-particles span:nth-child(2) { left: 42%; animation-delay: 0.5s; }
+.db-hero-particles span:nth-child(3) { left: 54%; animation-delay: 1s; }
+.db-hero-particles span:nth-child(4) { left: 66%; animation-delay: 1.6s; }
+.db-hero-particles span:nth-child(5) { left: 36%; animation-delay: 2.1s; }
+.db-hero-particles span:nth-child(6) { left: 60%; animation-delay: 2.6s; }
+@keyframes heroParticleUp {
+  0%   { transform: translateY(0) scale(1); opacity: 0; }
+  15%  { opacity: 1; }
+  90%  { opacity: 0.2; }
+  100% { transform: translateY(-70px) scale(0.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-hero-3d, .db-hero-glow, .ring-a, .ring-b, .db-hero-particles span {
+    animation: none !important;
+  }
+}
+
+/* ---------- section header: drawer handle + a real per-topic icon ---------- */
+
+.section-title {
+  background: linear-gradient(180deg, #0f5560, #0a3a44);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 44px 12px 16px;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.4px;
+  font-size: 0.98rem;
+}
+.section-title::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 9px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.35);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.15);
+}
+.section.collapsed .section-title::after { background: rgba(255,255,255,0.15); }
+
+/* the per-topic icon injected by database-fx.js, right after the chevron */
+.section-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--accent);
+  animation: iconGlowPulse 3s ease-in-out infinite;
+}
+.section-icon svg { width: 100%; height: 100%; }
+@keyframes iconGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(34,211,238,0.35)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(34,211,238,0.85)); }
+}
+
+/* section headers scroll to a comfortable spot when jumped to
+   from the topic map, instead of landing flush against the top */
+.section { scroll-margin-top: 18px; }
+
+/* ---------- the topic map: a colorful, clickable table of contents
+   (see topics/database-fx.js) — lets you jump straight to a topic
+   instead of scrolling past everything, without hiding any content ---------- */
+
+.topic-map {
+  margin: 4px 0 32px;
+  padding: 16px 18px;
+  background: rgba(7, 46, 56, 0.45);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+}
+.topic-map-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent-light);
+  margin-bottom: 12px;
+}
+.topic-map-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.topic-chip {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 220px;
+  cursor: pointer;
+  padding: 7px 14px 7px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  font-size: 0.78rem;
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.topic-chip:hover, .topic-chip:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  background: rgba(34,211,238,0.14);
+  box-shadow: 0 6px 14px -6px rgba(34,211,238,0.6);
+}
+.topic-chip-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.topic-chip-icon svg { width: 100%; height: 100%; }
+.topic-chip-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 560px) {
+  .topic-map { padding: 12px 14px; }
+  .topic-chip { max-width: 160px; }
+}
+
+/* ---------- notes: glowing icons, hover tilt, entrance motion ---------- */
+
+.note-block .type-icon {
+  filter: drop-shadow(0 0 5px rgba(34,211,238,0.75));
+}
+
+.note-block {
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+}
+.note-block:hover {
+  box-shadow: -3px 0 16px -4px rgba(34,211,238,0.45);
+}
+
+/* scroll-triggered entrance (see topics/database-fx.js) */
+.note-block.fx-ready {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.note-block.fx-ready.fx-in {
+  animation: noteRiseIn 0.6s ease forwards;
+}
+@keyframes noteRiseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-block.fx-ready { opacity: 1; transform: none; animation: none; }
+  .note-block { transform: none !important; }
+}
+
+/* interview-question blocks get an extra bioluminescent pulse */
+.qa-block {
+  animation: qaBioGlow 5s ease-in-out infinite;
+}
+@keyframes qaBioGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(34,211,238,0.12); }
+  50%      { box-shadow: 0 0 20px rgba(34,211,238,0.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qa-block { animation: none; }
+}
+
+/* progress bar: glowing shimmer sweep instead of a flat fill */
+.progress-fill {
+  background: linear-gradient(90deg, #0891b2, var(--accent) 60%, var(--accent-light));
+  box-shadow: 0 0 10px rgba(34,211,238,0.7);
+  position: relative;
+  overflow: hidden;
+}
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.65), transparent);
+  transform: translateX(-100%);
+  animation: progressShimmer 2.6s ease-in-out infinite;
+}
+@keyframes progressShimmer {
+  to { transform: translateX(220%); }
+}

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Islands — Revision Map</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+
+<div class="scene-wrap">
+  <header class="hero">
+    <h1>🗺️ Interview <span>Islands</span></h1>
+    <p>Your personal revision archipelago. Click an island to sail to its own page.</p>
+  </header>
+
+  <div class="map-scroll">
+    <svg id="scene" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of revision islands">
+      <defs>
+        <!-- Sky & Sea -->
+        <linearGradient id="gradSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#bfe9ff"/>
+          <stop offset="100%" stop-color="#eaf8ff"/>
+        </linearGradient>
+        <linearGradient id="gradSea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4fc3e0"/>
+          <stop offset="100%" stop-color="#1c8fb8"/>
+        </linearGradient>
+
+        <!-- shared island shading -->
+        <radialGradient id="gradSand" cx="50%" cy="35%" r="70%">
+          <stop offset="0%" stop-color="#ffe9b8"/>
+          <stop offset="100%" stop-color="#e8c07d"/>
+        </radialGradient>
+
+        <!-- topic top gradients (colors driven by CSS via stop classes) -->
+        <radialGradient id="gradDatabase" cx="45%" cy="30%" r="75%">
+          <stop class="stop-a" offset="0%"/>
+          <stop class="stop-b" offset="100%"/>
+        </radialGradient>
+        <radialGradient id="gradDsa" cx="45%" cy="30%" r="75%">
+          <stop class="stop-a" offset="0%"/>
+          <stop class="stop-b" offset="100%"/>
+        </radialGradient>
+        <radialGradient id="gradOop" cx="45%" cy="30%" r="75%">
+          <stop class="stop-a" offset="0%"/>
+          <stop class="stop-b" offset="100%"/>
+        </radialGradient>
+        <radialGradient id="gradSysdesign" cx="45%" cy="30%" r="75%">
+          <stop class="stop-a" offset="0%"/>
+          <stop class="stop-b" offset="100%"/>
+        </radialGradient>
+        <radialGradient id="gradDevops" cx="45%" cy="30%" r="75%">
+          <stop class="stop-a" offset="0%"/>
+          <stop class="stop-b" offset="100%"/>
+        </radialGradient>
+
+        <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#00263a" flood-opacity="0.25"/>
+        </filter>
+        <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="10" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="cloudBlur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="5"/>
+        </filter>
+
+        <!-- reusable island blob -->
+        <path id="islandMound" d="M -115,18 C -150,-8 -108,-62 -42,-58 C 8,-92 92,-70 112,-18 C 152,8 132,60 68,66 C 18,92 -62,86 -92,54 C -134,50 -146,34 -115,18 Z"/>
+        <path id="islandTop" d="M -85,10 C -112,-8 -80,-46 -30,-42 C 6,-66 66,-50 82,-12 C 110,8 96,42 50,48 C 12,66 -46,60 -68,38 C -98,34 -106,22 -85,10 Z"/>
+
+        <!-- reusable boat -->
+        <g id="boatShape">
+          <path d="M -20,8 Q 0,22 20,8 L 15,15 Q 0,24 -15,15 Z" fill="#5c3a21"/>
+          <path d="M -20,8 Q 0,22 20,8 L 15,15 Q 0,24 -15,15 Z" fill="#000" opacity="0.15"/>
+          <line x1="0" y1="8" x2="0" y2="-24" stroke="#3d2814" stroke-width="2"/>
+          <path d="M 1,-22 L 15,7 L 1,7 Z" fill="#f4f1e8" opacity="0.92"/>
+        </g>
+
+        <!-- reusable bird -->
+        <path id="birdShape" d="M -11,0 Q -5,-9 0,0 Q 5,-9 11,0" stroke="#3a4a54" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      </defs>
+
+      <!-- ============ SKY ============ -->
+      <rect x="0" y="0" width="1600" height="900" fill="url(#gradSky)"/>
+
+      <g class="sun-rays" style="transform-origin:1420px 130px">
+        <g opacity="0.35">
+          <path d="M1420,130 L1420,10 L1432,10 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1540,60 L1528,80 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1600,130 L1580,142 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1540,220 L1518,210 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1420,260 L1408,240 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1300,210 L1318,190 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1260,130 L1280,118 Z" fill="#fff3c4"/>
+          <path d="M1420,130 L1300,50 L1318,70 Z" fill="#fff3c4"/>
+        </g>
+      </g>
+      <circle class="sun" cx="1420" cy="130" r="70" fill="#fff6d8" opacity="0.9"/>
+
+      <!-- distant storm clouds passing through (the "weather" layer) -->
+      <g class="storm-clouds" filter="url(#cloudBlur)">
+        <ellipse cx="120" cy="70" rx="140" ry="42" fill="#7c8a9a" opacity="0.5"/>
+        <ellipse cx="230" cy="55" rx="100" ry="34" fill="#8b97a6" opacity="0.45"/>
+        <ellipse cx="980" cy="60" rx="160" ry="46" fill="#7c8a9a" opacity="0.4"/>
+        <ellipse cx="1470" cy="230" rx="120" ry="38" fill="#8b97a6" opacity="0.4"/>
+      </g>
+
+      <g class="clouds">
+        <ellipse cx="220" cy="120" rx="90" ry="30" fill="#ffffff" opacity="0.8"/>
+        <ellipse cx="290" cy="105" rx="60" ry="26" fill="#ffffff" opacity="0.8"/>
+        <ellipse cx="760" cy="90" rx="80" ry="26" fill="#ffffff" opacity="0.75"/>
+        <ellipse cx="820" cy="105" rx="55" ry="20" fill="#ffffff" opacity="0.75"/>
+        <ellipse cx="1180" cy="150" rx="70" ry="24" fill="#ffffff" opacity="0.7"/>
+      </g>
+
+      <g class="birds">
+        <g class="bird bird1"><use href="#birdShape" class="wing"/></g>
+        <g class="bird bird2"><use href="#birdShape" class="wing"/></g>
+        <g class="bird bird3"><use href="#birdShape" class="wing"/></g>
+      </g>
+
+      <!-- ============ SEA ============ -->
+      <rect x="0" y="480" width="1600" height="420" fill="url(#gradSea)"/>
+
+      <g class="sparkles">
+        <circle class="sparkle" cx="140" cy="560" r="3"/>
+        <circle class="sparkle" cx="420" cy="620" r="2.4"/>
+        <circle class="sparkle" cx="700" cy="580" r="3.2"/>
+        <circle class="sparkle" cx="1000" cy="650" r="2.6"/>
+        <circle class="sparkle" cx="1240" cy="600" r="3"/>
+        <circle class="sparkle" cx="1480" cy="670" r="2.4"/>
+        <circle class="sparkle" cx="320" cy="740" r="2.8"/>
+        <circle class="sparkle" cx="1100" cy="770" r="2.4"/>
+        <circle class="sparkle" cx="60" cy="700" r="2.6"/>
+        <circle class="sparkle" cx="1550" cy="540" r="3"/>
+      </g>
+
+      <!-- waves (layered for depth + a seamless scrolling loop) -->
+      <g class="waves">
+        <path class="wave" d="M0,500 Q40,485 80,500 T160,500 T240,500 T320,500 T400,500 T480,500 T560,500 T640,500 T720,500 T800,500 T880,500 T960,500 T1040,500 T1120,500 T1200,500 T1280,500 T1360,500 T1440,500 T1520,500 T1600,500 T1680,500 V900 H0 Z" fill="#ffffff" opacity="0.18"/>
+        <path class="wave wave2" d="M0,520 Q40,505 80,520 T160,520 T240,520 T320,520 T400,520 T480,520 T560,520 T640,520 T720,520 T800,520 T880,520 T960,520 T1040,520 T1120,520 T1200,520 T1280,520 T1360,520 T1440,520 T1520,520 T1600,520 T1680,520 V900 H0 Z" fill="#ffffff" opacity="0.12"/>
+        <path class="wave wave3" d="M0,545 Q50,525 100,545 T200,545 T300,545 T400,545 T500,545 T600,545 T700,545 T800,545 T900,545 T1000,545 T1100,545 T1200,545 T1300,545 T1400,545 T1500,545 T1600,545 T1700,545 V900 H0 Z" fill="#ffffff" opacity="0.08"/>
+      </g>
+
+      <g class="boats">
+        <g class="boat boat1"><use href="#boatShape" x="0" y="0"/></g>
+        <g class="boat boat2"><use href="#boatShape" x="0" y="0"/></g>
+      </g>
+
+      <!-- ============ ISLANDS (each is a real link to its own page) ============ -->
+
+      <!-- DATABASE -->
+      <a class="island" href="topics/database.html" aria-label="Open the Database page">
+        <ellipse class="ripple" cx="260" cy="560" rx="150" ry="26"/>
+        <g class="bob" style="transform-origin:260px 520px">
+          <use href="#islandMound" x="260" y="520" fill="url(#gradSand)" filter="url(#softShadow)"/>
+          <use href="#islandTop" x="260" y="512" fill="url(#gradDatabase)"/>
+          <g class="icon-db" transform="translate(260,495)">
+            <ellipse cx="0" cy="-28" rx="34" ry="12" fill="#fff" opacity="0.95"/>
+            <path d="M -34,-28 V 10 C -34,17 -19,23 0,23 C 19,23 34,17 34,10 V -28" fill="#fff" opacity="0.85"/>
+            <ellipse cx="0" cy="-6" rx="34" ry="12" fill="none" stroke="#00707a" stroke-width="2.5" opacity="0.5"/>
+            <ellipse cx="0" cy="10" rx="34" ry="12" fill="none" stroke="#00707a" stroke-width="2.5" opacity="0.5"/>
+            <ellipse cx="0" cy="-28" rx="34" ry="12" fill="none" stroke="#00707a" stroke-width="2.5"/>
+            <circle class="data-dot" cx="-14" cy="0" r="3" fill="#22d3ee"/>
+            <circle class="data-dot d2" cx="10" cy="6" r="3" fill="#22d3ee"/>
+            <circle class="data-dot d3" cx="2" cy="-10" r="3" fill="#22d3ee"/>
+          </g>
+        </g>
+        <g class="label">
+          <rect class="label-bg" x="185" y="618" width="150" height="40" rx="18"/>
+          <text x="260" y="644" text-anchor="middle">Database</text>
+        </g>
+        <text class="progress-badge" data-topic="database" x="260" y="672" text-anchor="middle">0% mastered</text>
+      </a>
+
+      <!-- DSA -->
+      <a class="island" href="topics/dsa.html" aria-label="Open the DSA page">
+        <ellipse class="ripple" cx="600" cy="330" rx="150" ry="26"/>
+        <g class="bob bob-delay1" style="transform-origin:600px 290px">
+          <use href="#islandMound" x="600" y="290" fill="url(#gradSand)" filter="url(#softShadow)"/>
+          <use href="#islandTop" x="600" y="282" fill="url(#gradDsa)"/>
+          <g class="icon-dsa" transform="translate(600,255)">
+            <line x1="0" y1="-18" x2="-22" y2="14" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <line x1="0" y1="-18" x2="22" y2="14" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <line x1="-22" y1="14" x2="-34" y2="34" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <line x1="-22" y1="14" x2="-10" y2="34" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <line x1="22" y1="14" x2="10" y2="34" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <line x1="22" y1="14" x2="34" y2="34" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="0" cy="-18" r="11" fill="#fff"/>
+            <circle cx="-22" cy="14" r="9" fill="#fff"/>
+            <circle cx="22" cy="14" r="9" fill="#fff"/>
+            <circle cx="-34" cy="34" r="7" fill="#fff"/>
+            <circle cx="-10" cy="34" r="7" fill="#fff"/>
+            <circle cx="10" cy="34" r="7" fill="#fff"/>
+            <circle cx="34" cy="34" r="7" fill="#fff"/>
+          </g>
+        </g>
+        <g class="label">
+          <rect class="label-bg" x="525" y="388" width="150" height="40" rx="18"/>
+          <text x="600" y="414" text-anchor="middle">DSA</text>
+        </g>
+        <text class="progress-badge" data-topic="dsa" x="600" y="442" text-anchor="middle">0% mastered</text>
+      </a>
+
+      <!-- OOP -->
+      <a class="island" href="topics/oop.html" aria-label="Open the OOP page">
+        <ellipse class="ripple" cx="980" cy="600" rx="150" ry="26"/>
+        <g class="bob bob-delay2" style="transform-origin:980px 560px">
+          <use href="#islandMound" x="980" y="560" fill="url(#gradSand)" filter="url(#softShadow)"/>
+          <use href="#islandTop" x="980" y="552" fill="url(#gradOop)"/>
+          <g class="icon-oop" transform="translate(980,525)">
+            <rect x="-40" y="-6" width="24" height="24" rx="5" fill="#fff" transform="rotate(-8 -28 6)"/>
+            <rect x="-12" y="-24" width="24" height="24" rx="5" fill="#fff"/>
+            <rect x="16" y="-6" width="24" height="24" rx="5" fill="#fff" transform="rotate(8 28 6)"/>
+            <line x1="-18" y1="6" x2="-6" y2="-6" stroke="#fff" stroke-width="3"/>
+            <line x1="18" y1="6" x2="6" y2="-6" stroke="#fff" stroke-width="3"/>
+          </g>
+        </g>
+        <g class="label">
+          <rect class="label-bg" x="905" y="658" width="150" height="40" rx="18"/>
+          <text x="980" y="684" text-anchor="middle">OOP</text>
+        </g>
+        <text class="progress-badge" data-topic="oop" x="980" y="712" text-anchor="middle">0% mastered</text>
+      </a>
+
+      <!-- SYSTEM DESIGN -->
+      <a class="island" href="topics/system-design.html" aria-label="Open the System Design page">
+        <ellipse class="ripple" cx="1330" cy="360" rx="150" ry="26"/>
+        <g class="bob bob-delay3" style="transform-origin:1330px 320px">
+          <use href="#islandMound" x="1330" y="320" fill="url(#gradSand)" filter="url(#softShadow)"/>
+          <use href="#islandTop" x="1330" y="312" fill="url(#gradSysdesign)"/>
+          <g class="icon-sys" transform="translate(1330,285)">
+            <rect x="-38" y="6" width="18" height="24" rx="2" fill="#fff"/>
+            <rect x="-9" y="-8" width="18" height="38" rx="2" fill="#fff"/>
+            <rect x="20" y="14" width="18" height="16" rx="2" fill="#fff"/>
+            <line x1="-29" y1="6" x2="0" y2="-8" stroke="#fff" stroke-width="3"/>
+            <line x1="0" y1="-8" x2="29" y2="14" stroke="#fff" stroke-width="3"/>
+            <circle cx="-29" cy="0" r="4" fill="#fff"/>
+            <circle cx="0" cy="-14" r="4" fill="#fff"/>
+            <circle cx="29" cy="8" r="4" fill="#fff"/>
+          </g>
+        </g>
+        <g class="label">
+          <rect class="label-bg" x="1240" y="418" width="180" height="40" rx="18"/>
+          <text x="1330" y="444" text-anchor="middle">System Design</text>
+        </g>
+        <text class="progress-badge" data-topic="systemDesign" x="1330" y="472" text-anchor="middle">0% mastered</text>
+      </a>
+
+      <!-- DEVOPS -->
+      <a class="island" href="topics/devops.html" aria-label="Open the DevOps page">
+        <ellipse class="ripple" cx="840" cy="800" rx="170" ry="28"/>
+        <g class="bob bob-delay1" style="transform-origin:840px 758px">
+          <use href="#islandMound" x="840" y="758" fill="url(#gradSand)" filter="url(#softShadow)" transform="scale(1.15)" style="transform-origin:840px 758px"/>
+          <use href="#islandTop" x="840" y="750" fill="url(#gradDevops)" transform="scale(1.15)" style="transform-origin:840px 750px"/>
+          <g class="icon-devops" transform="translate(840,715)">
+            <path d="M -30,0 A 16,16 0 1 1 -30,0.1" fill="none" stroke="#22d3ee" stroke-width="6" stroke-linecap="round"/>
+            <path d="M 30,0 A 16,16 0 1 1 30,-0.1" fill="none" stroke="#22d3ee" stroke-width="6" stroke-linecap="round"/>
+          </g>
+        </g>
+        <g class="label">
+          <rect class="label-bg" x="757" y="820" width="166" height="40" rx="18"/>
+          <text x="840" y="846" text-anchor="middle">DevOps</text>
+        </g>
+        <text class="progress-badge" data-topic="devops" x="840" y="874" text-anchor="middle">0% mastered</text>
+      </a>
+
+      <!-- rain ripples landing on the sea (populated by js/scene-fx.js) -->
+      <g class="rain-ripples" id="rain-ripples"></g>
+
+      <!-- falling rain, in front of the whole scene (populated by js/scene-fx.js) -->
+      <g class="rain-drops" id="rain-drops"></g>
+
+      <!-- storm lightning flashes -->
+      <rect class="lightning lightning-a" x="0" y="0" width="1600" height="900" fill="#eaf6ff"/>
+      <rect class="lightning lightning-b" x="0" y="0" width="1600" height="900" fill="#eaf6ff"/>
+    </svg>
+  </div>
+  <p class="scroll-hint">← scroll to explore the map →</p>
+</div>
+
+<button id="weather-toggle" class="weather-toggle" type="button" aria-pressed="true" title="Toggle rain">🌧️ Weather: On</button>
+
+<script src="js/data.js"></script>
+<script src="js/render.js"></script>
+<script src="js/home.js"></script>
+<script src="js/scene-fx.js"></script>
+</body>
+</html>

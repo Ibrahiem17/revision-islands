@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database — Interview Islands</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/cards.css">
+<link rel="stylesheet" href="../css/mascot.css">
+<link rel="stylesheet" href="database.css">
+</head>
+<body>
+
+<div class="bubbles" id="bubbles" aria-hidden="true"></div>
+
+<div class="page">
+  <a class="back-link" href="../index.html">← Back to the map</a>
+
+  <header class="page-header">
+    <span class="icon">🗄️</span>
+    <h1>Database</h1>
+    <p>The Deep Sea Archive — SQL fundamentals, one dive at a time.</p>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <span id="progress-text">0%</span> mastered
+    </div>
+  </header>
+
+  <!-- decorative 3D database core: pure CSS 3D, no libraries -->
+  <div class="db-hero" aria-hidden="true">
+    <div class="db-hero-glow"></div>
+    <div class="db-hero-3d">
+      <div class="db-disk db-disk-1"></div>
+      <div class="db-disk db-disk-2"></div>
+      <div class="db-disk db-disk-3"></div>
+      <div class="db-hero-particles">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <svg class="db-hero-rings" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle class="ring ring-a" cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 10"/>
+      <circle class="ring ring-b" cx="100" cy="100" r="76" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 7"/>
+    </svg>
+  </div>
+
+  <div class="search-box">
+    <input type="search" id="search" placeholder="Search this island…" aria-label="Search Database content">
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script src="../js/data.js"></script>
+<script src="../js/render.js"></script>
+<script src="../js/mascot.js"></script>
+<script src="database-fx.js"></script>
+<script>
+  Revision.renderPage("database", {
+    contentEl: document.getElementById("content"),
+    searchEl: document.getElementById("search"),
+    progressFillEl: document.getElementById("progress-fill"),
+    progressTextEl: document.getElementById("progress-text")
+  });
+
+  // a few slow-rising bubbles for the "deep sea" feel
+  const bubbleWrap = document.getElementById("bubbles");
+  for (let i = 0; i < 14; i++) {
+    const b = document.createElement("span");
+    const size = 6 + Math.random() * 22;
+    b.style.left = Math.random() * 100 + "%";
+    b.style.width = size + "px";
+    b.style.height = size + "px";
+    b.style.animationDuration = (10 + Math.random() * 12) + "s";
+    b.style.animationDelay = (Math.random() * 12) + "s";
+    bubbleWrap.appendChild(b);
+  }
+
+  // interactive tilt + reveal animations on the rendered notes (database-fx.js)
+  DatabaseFX.init();
+
+  // the bottom-right guide character, showing this topic's key takeaways
+  Mascot.init("database");
+</script>
+</body>
+</html>
