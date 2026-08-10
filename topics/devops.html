@@ -250,6 +250,7 @@
   <div class="tab" onclick="showTab('promgraf',this)">📡 Prometheus + Grafana</div>
   <div class="tab" onclick="showTab('allcmds',this)">⌨️ All Commands</div>
   <div class="tab" onclick="showTab('ghactions',this)">🐙 GitHub Actions</div>
+  <div class="tab" onclick="showTab('ghactionsdevops',this)">🐙 GitHub Actions for DevOps</div>
   <div class="tab" onclick="showTab('jenkins',this)">🔧 Jenkins</div>
   <div class="tab" onclick="showTab('practical',this)">🧪 Practical Use</div>
   <div class="tab" onclick="showTab('howused',this)">🎬 How It's Used</div>
@@ -11652,6 +11653,463 @@ docker run -d -p 80:3000 my-company/my-node-api:v1</textarea>
   </div>
 
 </div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- GITHUB ACTIONS FOR DEVOPS TAB — beginner-first, zero-assumption
+     foundation, then the same interactive simulator + scenarios +
+     quiz pattern as the other "for DevOps" tabs. Reuses global
+     .ld-term / .ld-pill / .ld-cat / .ld-info / .scenario-card /
+     .quiz-game / .analogy CSS — nothing new to define.
+     ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-ghactionsdevops">
+
+  <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.22);border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#38bdf8;">🐙 GitHub Actions for DevOps — built for someone who has never touched it.</strong> If the words "workflow," "job," "runner," or "on: push" mean nothing to you yet, you're exactly who this tab is for. No assumptions, no skipped steps.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 0 — TRUE ZERO. Not "why it exists" in DevOps-speak —
+       an actual everyday analogy first.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🐣 Start Here — What Is GitHub Actions, Really?</div>
+
+  <div class="analogy">
+    <div><div class="analogy-label">🏫 Think of it like a homework auto-checker</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📄</span><div class="analogy-text"><strong>You turn in homework</strong><br>(you push code to GitHub)</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🤖</span><div class="analogy-text"><strong>A robot checks it instantly</strong><br>(runs the checklist you wrote)</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">✅</span><div class="analogy-text"><strong>You get a pass/fail before anyone looks</strong><br>(green ✅ or red ❌ on GitHub)</div></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin:16px 0 20px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    In plain words: <strong style="color:#e2e8f0;">GitHub Actions is a robot that lives inside GitHub and watches your repository.</strong> You write down a checklist once — "run the tests," "make sure it still builds" — save it as a file, and from then on, every time you push code, the robot automatically runs through that exact checklist on a brand-new, clean computer. It never forgets a step, never gets tired, and never skips something because it's in a rush. That's the entire idea. Everything else on this page is just details on top of that one concept.
+  </div>
+
+  <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#f43f5e;">Why does this even need to exist?</strong> Without it, "did I break anything?" only gets answered when a human remembers to check — by running tests by hand, or worse, after a real user hits the bug in production. GitHub Actions moves that check to happen automatically, on every single change, before a human ever needs to notice.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 0.5 — the 5 words, kept genuinely simple
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🔤 The 5 Words You Actually Need to Know First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 14px;">Not a dense reference table yet — just five plain-English ideas, in the order they matter.</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">1. Workflow</span></div><div class="cmd-desc">The checklist itself. A single file that says what to check and when.</div></div>
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">2. Trigger</span></div><div class="cmd-desc">The moment that starts the checklist — usually "someone pushed code."</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">3. Runner</span></div><div class="cmd-desc">The brand-new, empty computer GitHub gives you just for this one check.</div></div>
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">4. Job</span></div><div class="cmd-desc">One whole section of the checklist, run entirely on one runner.</div></div>
+    <div class="cmd-card" style="border-left-color:#eab308;"><div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">5. Step</span></div><div class="cmd-desc">One single line of that checklist — done in order, one at a time.</div></div>
+  </div>
+
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#64748b;"># the smallest possible workflow — read it top to bottom, out loud:</span><br>
+    <span style="color:#38bdf8;">name</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"Check my code"</span><span style="color:#475569;"> &nbsp;&nbsp;# just a label, for humans</span><br>
+    <span style="color:#38bdf8;">on</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">push</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# the TRIGGER — "run this whenever code is pushed"</span><br>
+    <span style="color:#38bdf8;">jobs</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;check-it</span><span style="color:#e2e8f0;">:</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# the JOB — you can name it anything</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;runs-on</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">ubuntu-latest</span><span style="color:#475569;"> &nbsp;&nbsp;# the RUNNER — a free, brand-new Linux machine</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;steps</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- </span><span style="color:#38bdf8;">run</span><span style="color:#e2e8f0;">: echo </span><span style="color:#22c55e;">"Hello!"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# a STEP — one single task</span>
+  </div>
+
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:14px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#22c55e;">That's really it.</strong> Save that as <code style="color:#fbbf24;">.github/workflows/check.yml</code> inside any GitHub repo, push it, and click the <strong style="color:#e2e8f0;">Actions</strong> tab on GitHub — you'll watch that exact file run, live, in your browser. Every other feature you'll ever use in GitHub Actions is just adding more steps, more jobs, or fancier triggers on top of this same four-part shape.
+  </div>
+
+  <div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.22);border-radius:4px;padding:14px;margin-bottom:28px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#a78bfa;">📖 Want the deeper version first?</strong> The <strong style="color:#a78bfa;">🐙 GitHub Actions</strong> tab goes further into this same foundation — exactly <em>when</em> in a project's life to add each piece, a full vocabulary reference table, a 6-step line-by-line build of a real workflow file, and what the GitHub UI itself actually looks like. Read that whenever you want more depth. <strong style="color:#e2e8f0;">Everything below here is the hands-on practice layer</strong> — click around, break nothing, and see real examples of the features that come next.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERACTIVE FEATURE EXPLORER
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🖥️ Try It — Click Any GitHub Actions Feature to See Its YAML</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same click-to-explore pattern as the other "for DevOps" tabs — except here, "running" it means seeing the actual YAML plus what the Actions log looks like when it fires.</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">.github/workflows/ci.yml</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">#</span> <span id="ghaCmd">click any feature below</span></div>
+      <div class="pu-output" id="ghaOutput"><span class="dim">↳ the YAML and a simulated Actions run log show up here</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="ghaInfo">
+    <div><strong>🧩 YAML:</strong> <code id="ghaSyntax">click a feature below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="ghaDoes">Pick any feature below to get started — triggers, jobs, secrets, caching, matrix builds, and deploy steps are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="ghaWhere">—</span></div>
+  </div>
+
+  <div class="ld-cat">🚀 Triggers — "When Does This Run?"</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('onPush',this)">on: push</button>
+    <button class="ld-pill" onclick="runGhaCmd('onPushBranches',this)">on: push (branches)</button>
+    <button class="ld-pill" onclick="runGhaCmd('onPR',this)">on: pull_request</button>
+    <button class="ld-pill" onclick="runGhaCmd('onManual',this)">on: workflow_dispatch</button>
+    <button class="ld-pill" onclick="runGhaCmd('onSchedule',this)">on: schedule</button>
+  </div>
+
+  <div class="ld-cat">🏗️ Jobs &amp; Steps</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('multipleJobs',this)">two parallel jobs</button>
+    <button class="ld-pill" onclick="runGhaCmd('jobNeeds',this)">needs: (job order)</button>
+    <button class="ld-pill" onclick="runGhaCmd('ifCondition',this)">if: (conditional step)</button>
+    <button class="ld-pill" onclick="runGhaCmd('continueOnError',this)">continue-on-error</button>
+  </div>
+
+  <div class="ld-cat">📥 Actions &amp; Setup</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('checkout',this)">actions/checkout</button>
+    <button class="ld-pill" onclick="runGhaCmd('setupNode',this)">actions/setup-node</button>
+    <button class="ld-pill" onclick="runGhaCmd('runCommand',this)">run: (shell command)</button>
+    <button class="ld-pill" onclick="runGhaCmd('marketplaceAction',this)">marketplace action</button>
+  </div>
+
+  <div class="ld-cat">🔐 Secrets &amp; Env Vars</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('secretsUsage',this)">secrets.API_KEY</button>
+    <button class="ld-pill" onclick="runGhaCmd('envVars',this)">env: block</button>
+    <button class="ld-pill" onclick="runGhaCmd('githubToken',this)">secrets.GITHUB_TOKEN</button>
+  </div>
+
+  <div class="ld-cat">📦 Artifacts &amp; Caching</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('uploadArtifact',this)">upload-artifact</button>
+    <button class="ld-pill" onclick="runGhaCmd('downloadArtifact',this)">download-artifact</button>
+    <button class="ld-pill" onclick="runGhaCmd('cacheDeps',this)">actions/cache</button>
+  </div>
+
+  <div class="ld-cat">🧮 Matrix Builds</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('matrixBasic',this)">matrix (versions)</button>
+    <button class="ld-pill" onclick="runGhaCmd('matrixOS',this)">matrix (OS × version)</button>
+  </div>
+
+  <div class="ld-cat">🐳 Docker &amp; Deploy</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('dockerBuildPush',this)">build + push Docker image</button>
+    <button class="ld-pill" onclick="runGhaCmd('deploySSH',this)">deploy over SSH</button>
+    <button class="ld-pill" onclick="runGhaCmd('deployKubernetes',this)">kubectl apply step</button>
+  </div>
+
+  <div class="ld-cat">🛡️ Environments &amp; Safety</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('environmentProtection',this)">environment: (approval)</button>
+    <button class="ld-pill" onclick="runGhaCmd('concurrencyGroup',this)">concurrency:</button>
+    <button class="ld-pill" onclick="runGhaCmd('permissions',this)">permissions:</button>
+    <button class="ld-pill" onclick="runGhaCmd('reusableWorkflow',this)">reusable workflow</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       REAL SCENARIOS
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn GitHub Actions by Solving the Problem First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually write, then click ▶ Run to reveal the YAML and why.</div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> You just wrote your first test suite and want it to run automatically every time anyone pushes code.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">on: push<br>jobs:<br>  test:<br>    runs-on: ubuntu-latest<br>    steps:<br>      - uses: actions/checkout@v4<br>      - run: npm test</div>
+      <div class="pu-output"><span class="ok">✓ Tests passed (12 passed, 0 failed) — 8s</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> checkout first (the runner starts empty), then run the actual test command — this is genuinely the single most common workflow that exists, and the right first one to add to any project.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> Your test suite now takes 3 minutes because it reinstalls every npm package from scratch on every single run.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">- uses: actions/cache@v4<br>  with:<br>    path: ~/.npm<br>    key: npm-${{ hashFiles('package-lock.json') }}</div>
+      <div class="pu-output"><span class="ok">Cache restored from key: npm-8f2a1c...</span><br>npm install completed in 4s <span class="dim">(was 45s)</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> caching keys off the lockfile's hash — if dependencies haven't changed, the cache hits and install becomes nearly instant; change the lockfile, and a fresh cache is built automatically.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> You need to verify your app works on both Node 18 and Node 20 before merging, without copy-pasting the whole job twice.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">strategy:<br>  matrix:<br>    node-version: [18, 20]<br>steps:<br>  - uses: actions/setup-node@v4<br>    with:<br>      node-version: ${{ matrix.node-version }}</div>
+      <div class="pu-output"><span class="ok">✓ test (node-version: 18) — passed</span><br><span class="ok">✓ test (node-version: 20) — passed</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> matrix runs the exact same job once per combination automatically — one job definition, two real runs, zero duplicated YAML.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> Your deploy step needs a database password, and you know it can never go directly in the YAML file.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">- run: ./deploy.sh<br>  env:<br>    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}</div>
+      <div class="pu-output">Deploying...<br><span class="ok">Connected to database ***</span> <span class="dim">(value automatically masked in every log)</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> the real value lives only in Settings → Secrets, encrypted — the YAML just references its name, and GitHub automatically hides it if a step ever accidentally prints it.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> A deploy job must never run unless the test job passed first — no exceptions.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">jobs:<br>  test:<br>    runs-on: ubuntu-latest<br>    steps: [...]<br>  deploy:<br>    needs: test<br>    runs-on: ubuntu-latest<br>    steps: [...]</div>
+      <div class="pu-output"><span class="ok">✓ test — passed</span><br><span class="ok">✓ deploy — started only after test succeeded</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> jobs run in parallel by default — <code>needs:</code> is the one line that forces an order, and if the job it needs fails, deploy is skipped entirely, automatically.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> You want to build a Docker image and push it to a registry every time code lands on main.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">on:<br>  push:<br>    branches: [main]<br>steps:<br>  - uses: docker/build-push-action@v5<br>    with:<br>      push: true<br>      tags: myapp:${{ github.sha }}</div>
+      <div class="pu-output"><span class="ok">Successfully pushed myapp:a3f9d2c</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> tagging the image with the commit SHA means every build is uniquely traceable back to the exact code that produced it — no ambiguous "latest" guessing later.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> Deploying to production should require a real human to click approve first — no fully automatic deploys to prod.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">jobs:<br>  deploy:<br>    environment: production<br>    runs-on: ubuntu-latest<br>    steps: [...]</div>
+      <div class="pu-output"><span class="warn">Waiting for approval on environment "production"...</span><br><span class="ok">Approved by ibrahiem17 — deploy proceeding</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> an <code>environment</code> with required reviewers configured in Settings pauses the job until someone with permission clicks approve — a real safety switch for real production.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> Someone pushes three commits in quick succession, and you don't want three overlapping deploys racing each other.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">concurrency:<br>  group: deploy-production<br>  cancel-in-progress: true</div>
+      <div class="pu-output"><span class="warn">Canceling previous run in group "deploy-production"</span><br><span class="ok">Starting latest run</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> concurrency groups make sure only the newest run in that group survives — the two stale, in-between deploys get canceled automatically instead of racing to production.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       THE REAL GITHUB UI — recreated pixel-close (not a live
+       screenshot, so it never goes stale or breaks offline), with
+       numbered callouts on exactly where to click for the most
+       basic, everyday tasks.
+       ══════════════════════════════════════════════════════════ -->
+  <style>
+    .gh-mock { background:#0d1117; border:1px solid #30363d; border-radius:10px; overflow:hidden; margin-bottom:8px; font-family:"Segoe UI", system-ui, -apple-system, sans-serif; }
+    .gh-browserbar { display:flex; align-items:center; gap:8px; padding:8px 12px; background:#161b22; border-bottom:1px solid #30363d; }
+    .gh-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .gh-url { flex:1; background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:4px 10px; font-size:10px; color:#8b949e; font-family:'JetBrains Mono',monospace; overflow-x:auto; white-space:nowrap; }
+    .gh-repo-nav { display:flex; gap:4px; padding:0 10px; background:#0d1117; border-bottom:1px solid #21262d; overflow-x:auto; }
+    .gh-repo-tab { padding:9px 10px; font-size:11px; color:#8b949e; white-space:nowrap; border-bottom:2px solid transparent; }
+    .gh-repo-tab.active { color:#e6edf3; border-bottom-color:#f78166; font-weight:600; position:relative; }
+    .gh-content { padding:14px; }
+    .gh-run-row { display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px solid #21262d; }
+    .gh-run-row:last-child { border-bottom:none; }
+    .gh-status { width:16px; height:16px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:800; }
+    .gh-status.ok { background:#238636; }
+    .gh-status.fail { background:#da3633; }
+    .gh-status.pending { background:#9e6a03; }
+    .gh-run-title { font-size:11.5px; color:#e6edf3; font-weight:600; }
+    .gh-run-meta { font-size:10px; color:#8b949e; margin-top:2px; }
+    .gh-run-time { margin-left:auto; font-size:10px; color:#8b949e; white-space:nowrap; padding-left:8px; }
+    .gh-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600; border:1px solid; }
+    .gh-btn-primary { background:#238636; border-color:rgba(240,246,252,0.15); color:#fff; }
+    .gh-btn-default { background:#21262d; border-color:#30363d; color:#c9d1d9; }
+    .gh-num { display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px; border-radius:50%; background:#f78166; color:#0d1117; font-weight:800; font-size:10.5px; flex-shrink:0; }
+    .gh-caption { font-size:11px; color:#94a3b8; line-height:1.75; margin:10px 0 22px; display:flex; gap:8px; align-items:flex-start; }
+    .gh-split { display:flex; }
+    .gh-sidebar { width:130px; flex-shrink:0; border-right:1px solid #21262d; padding:10px 0; }
+    .gh-sidebar-item { padding:7px 12px; font-size:10.5px; color:#8b949e; display:flex; align-items:center; gap:6px; }
+    .gh-sidebar-item.active { background:#161b22; color:#e6edf3; border-left:2px solid #f78166; padding-left:10px; }
+    .gh-job-step { display:flex; align-items:center; gap:7px; padding:5px 10px; font-size:10.5px; color:#8b949e; }
+    .gh-job-step.open { color:#e6edf3; }
+    .gh-log-box { background:#010409; border-radius:6px; margin:2px 10px 8px 28px; padding:8px 10px; }
+    .gh-log-line { font-family:'JetBrains Mono',monospace; font-size:10px; color:#8b949e; padding:1px 0; white-space:pre; }
+    .gh-form-row { margin-bottom:10px; }
+    .gh-form-label { font-size:10px; color:#8b949e; margin-bottom:4px; display:block; }
+    .gh-form-input { width:100%; background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:6px 10px; font-size:10.5px; color:#c9d1d9; font-family:'JetBrains Mono',monospace; box-sizing:border-box; }
+    .gh-popover { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:12px; width:220px; margin-left:auto; box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  </style>
+
+  <div class="section-title" style="margin-top:28px;">🖼️ What It Actually Looks Like — The Real GitHub Interface</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Everything above was YAML and theory. This is the actual screen you'll be looking at — recreated pixel-for-pixel so it works offline and never goes stale, but laid out exactly like the real thing. Five basic tasks, in the order you'll actually do them.</div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">1</span>&nbsp; Finding the Actions Tab</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp</span>
+    </div>
+    <div class="gh-repo-nav">
+      <span class="gh-repo-tab">&lt;&gt; Code</span>
+      <span class="gh-repo-tab">◎ Issues</span>
+      <span class="gh-repo-tab">⇄ Pull requests</span>
+      <span class="gh-repo-tab active" style="background:rgba(247,129,102,0.08);border-radius:4px 4px 0 0;">▶ Actions</span>
+      <span class="gh-repo-tab">▤ Projects</span>
+      <span class="gh-repo-tab">📖 Wiki</span>
+      <span class="gh-repo-tab">⚙ Settings</span>
+    </div>
+    <div class="gh-content" style="text-align:center;color:#484f58;font-size:11px;padding:22px 14px;">↑ every repository has this tab — nothing to install, nothing to configure to see it</div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">1</span><span>Open any repo on GitHub and look at the top row of tabs — <strong style="color:#e2e8f0;">Actions</strong> is always right there, next to Pull requests. This is the control room for every workflow that repo has ever run, past and present.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">2</span>&nbsp; Reading the List of Runs</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/actions</span>
+    </div>
+    <div class="gh-repo-nav"><span class="gh-repo-tab active">▶ Actions</span></div>
+    <div class="gh-content">
+      <div class="gh-run-row">
+        <span class="gh-status pending">●</span>
+        <div><div class="gh-run-title">Update dependencies</div><div class="gh-run-meta">CI #48 · Push · main · <em>running now</em></div></div>
+        <span class="gh-run-time">—</span>
+      </div>
+      <div class="gh-run-row">
+        <span class="gh-status ok">✓</span>
+        <div><div class="gh-run-title">Fix login validation bug</div><div class="gh-run-meta">CI #47 · Push · main · 3 minutes ago</div></div>
+        <span class="gh-run-time">1m 42s</span>
+      </div>
+      <div class="gh-run-row">
+        <span class="gh-status fail">✕</span>
+        <div><div class="gh-run-title">Add payment retry logic</div><div class="gh-run-meta">CI #46 · Pull request #12 · 22 minutes ago</div></div>
+        <span class="gh-run-time">38s</span>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">2</span><span><span style="color:#3fb950;">●</span> green check = passed, <span style="color:#f85149;">●</span> red X = failed, <span style="color:#d29922;">●</span> yellow dot = still running right now. This list alone answers "is my last change actually okay?" without opening anything else.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">3</span>&nbsp; Opening a Run to Read Its Log</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/actions/runs/47</span>
+    </div>
+    <div class="gh-split">
+      <div class="gh-sidebar">
+        <div style="font-size:9.5px;color:#484f58;padding:0 12px 6px;text-transform:uppercase;letter-spacing:.05em;">Jobs</div>
+        <div class="gh-sidebar-item active">✓ test</div>
+      </div>
+      <div style="flex:1;padding:8px 0;">
+        <div class="gh-job-step">✓ Set up job</div>
+        <div class="gh-job-step">✓ Run actions/checkout@v4</div>
+        <div class="gh-job-step">✓ Run actions/setup-node@v4</div>
+        <div class="gh-job-step open">▾ Run npm test</div>
+        <div class="gh-log-box">
+          <div class="gh-log-line">&gt; myapp@1.0.0 test</div>
+          <div class="gh-log-line">&gt; jest</div>
+          <div class="gh-log-line" style="color:#3fb950;">PASS src/auth.test.js</div>
+          <div class="gh-log-line" style="color:#3fb950;">Tests: 12 passed, 12 total</div>
+        </div>
+        <div class="gh-job-step">✓ Post actions/checkout@v4</div>
+        <div class="gh-job-step">✓ Complete job</div>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">3</span><span>Click any run, then click any step to expand it — every single step has its own log. When something goes red, this is where you actually go to read <em>why</em>, not just <em>that</em> it failed.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">4</span>&nbsp; Adding Your First Secret</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/settings/secrets/actions</span>
+    </div>
+    <div class="gh-split">
+      <div class="gh-sidebar">
+        <div class="gh-sidebar-item">General</div>
+        <div class="gh-sidebar-item">Collaborators</div>
+        <div class="gh-sidebar-item active">🔒 Secrets and variables</div>
+      </div>
+      <div style="flex:1;padding:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:11.5px;color:#e6edf3;font-weight:700;">Repository secrets</span>
+          <span class="gh-btn gh-btn-primary">+ New repository secret</span>
+        </div>
+        <div style="border:1px solid #30363d;border-radius:8px;padding:12px;background:#161b22;">
+          <div class="gh-form-row"><label class="gh-form-label">Name *</label><input class="gh-form-input" value="DOCKER_TOKEN" readonly></div>
+          <div class="gh-form-row"><label class="gh-form-label">Secret *</label><input class="gh-form-input" value="••••••••••••••••••••" readonly></div>
+          <span class="gh-btn gh-btn-primary">Add secret</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">4</span><span>Settings → <strong style="color:#e2e8f0;">Secrets and variables → Actions</strong> → New repository secret. The <strong style="color:#e2e8f0;">Name</strong> you type here is exactly what <code style="color:#fbbf24;">secrets.DOCKER_TOKEN</code> refers to in your YAML. Once saved, you can overwrite it — you can never view it again.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">5</span>&nbsp; Manually Triggering a Workflow</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/actions/workflows/ci.yml</span>
+    </div>
+    <div class="gh-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:11.5px;color:#e6edf3;font-weight:700;">CI</span>
+        <span class="gh-btn gh-btn-default">Run workflow ▾</span>
+      </div>
+      <div class="gh-popover">
+        <div style="font-size:10px;color:#8b949e;margin-bottom:8px;">Use workflow from</div>
+        <div class="gh-form-input" style="margin-bottom:10px;">Branch: main ▾</div>
+        <span class="gh-btn gh-btn-primary" style="width:100%;justify-content:center;box-sizing:border-box;">Run workflow</span>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">5</span><span>This button only shows up if the workflow has <code style="color:#fbbf24;">on: workflow_dispatch</code>. Pick a branch, click <strong style="color:#e2e8f0;">Run workflow</strong>, and it appears at the top of the runs list within a second or two — no push needed at all.</span></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       QUIZ
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎮 Test Yourself — GitHub Actions for DevOps Quiz</div>
+  <div class="quiz-game" id="quiz-ghactionsdevops">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">🐙</div>
+      <div class="quiz-start-title">GitHub Actions for DevOps Quiz</div>
+      <div class="quiz-start-desc">50 questions — starting from true basics (what's a workflow, what's a runner) and building up to triggers, secrets, matrix builds, caching, and real troubleshooting scenarios. Shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-ghactionsdevops', GHADEVOPS_QUIZ_JOKES, GHADEVOPS_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
+      </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+    </div>
+
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-ghactionsdevops')">↻ Play Again</button>
+    </div>
+  </div>
+
+</div>
+
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- JENKINS DEEP DIVE TAB -->
 <!-- ══════════════════════════════════════════════════════════ -->
@@ -16423,6 +16881,52 @@ git push origin main</div></div>
     if (btn) btn.classList.add('active');
   }
 
+  /* ============ GITHUB ACTIONS FOR DEVOPS — feature explorer ============ */
+  function ghaBlock(yaml, log) {
+    return `<div style="white-space:pre;margin-bottom:10px;">${yaml}</div><div style="border-top:1px dashed #263042;padding-top:8px;margin-top:2px;color:#475569;font-size:9.5px;letter-spacing:.04em;">▸ SIMULATED ACTIONS RUN LOG</div>${log}`;
+  }
+  const GHA_CMDS = {
+    onPush: { syntax:`on: push`, cmd:`on: push`, output: ghaBlock(`on: push`, `<span class="ok">✓ Triggered — someone pushed to a branch</span>`), does:`Runs the workflow every time any commit is pushed to any branch.`, where:`The simplest, broadest trigger — good for a first workflow while you're still learning.` },
+    onPushBranches: { syntax:`on:\n  push:\n    branches: [main]`, cmd:`on: push (branches: main)`, output: ghaBlock(`on:\n  push:\n    branches: [main]`, `<span class="dim">push to feature-x → ignored</span>\n<span class="ok">push to main → ✓ triggered</span>`), does:`Only triggers for pushes to the branches listed — everything else is ignored.`, where:`Deploy workflows almost always narrow to "main" only, so a random feature branch push can't accidentally trigger a deploy.` },
+    onPR: { syntax:`on: pull_request`, cmd:`on: pull_request`, output: ghaBlock(`on: pull_request`, `<span class="ok">✓ Triggered — PR #42 opened against main</span>`), does:`Runs whenever a pull request is opened, or gets a new commit pushed to it.`, where:`Checking a change before it merges — this is what shows the green ✓ or red ✗ right on the PR page.` },
+    onManual: { syntax:`on: workflow_dispatch`, cmd:`on: workflow_dispatch`, output: ghaBlock(`on: workflow_dispatch`, `<span class="dim">Adds a "Run workflow" button on the Actions tab</span>\n<span class="ok">✓ Triggered manually by ibrahiem17</span>`), does:`Adds a manual button in the GitHub UI to trigger this workflow on demand.`, where:`One-off tasks that shouldn't run automatically — a manual production deploy, a one-time data migration.` },
+    onSchedule: { syntax:`on:\n  schedule:\n    - cron: '0 2 * * *'`, cmd:`on: schedule (cron)`, output: ghaBlock(`on:\n  schedule:\n    - cron: '0 2 * * *'`, `<span class="dim">Waiting for 2:00 AM UTC...</span>\n<span class="ok">✓ Triggered on schedule</span>`), does:`Runs on a timer, using standard cron syntax — no push or PR needed at all.`, where:`Nightly cleanup jobs, scheduled reports, or periodic health checks that don't depend on any code change.` },
+    multipleJobs: { syntax:`jobs:\n  lint: {...}\n  test: {...}`, cmd:`two jobs, no needs:`, output: ghaBlock(`jobs:\n  lint:\n    runs-on: ubuntu-latest\n  test:\n    runs-on: ubuntu-latest`, `<span class="ok">✓ lint — started</span>\n<span class="ok">✓ test — started</span>\n<span class="dim">(both running at the same time, on separate runners)</span>`), does:`Every job in a workflow runs in parallel by default, each on its own fresh runner.`, where:`Independent checks (lint, unit tests, type-check) that don't depend on each other finish faster running side by side.` },
+    jobNeeds: { syntax:`deploy:\n  needs: test`, cmd:`needs: test`, output: ghaBlock(`jobs:\n  test:\n    runs-on: ubuntu-latest\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest`, `<span class="ok">✓ test — passed</span>\n<span class="ok">✓ deploy — started (waited for test)</span>`), does:`Forces a job to wait until another named job finishes successfully before it starts.`, where:`Making sure deploy never even attempts to run if the test job failed.` },
+    ifCondition: { syntax:`if: github.ref == 'refs/heads/main'`, cmd:`if: (conditional step)`, output: ghaBlock(`- name: Deploy\n  if: github.ref == 'refs/heads/main'\n  run: ./deploy.sh`, `<span class="dim">branch = feature-x → step skipped</span>\n<span class="ok">branch = main → ✓ step ran</span>`), does:`Runs a step (or whole job) only if the condition evaluates true — otherwise it's skipped, not failed.`, where:`Only running a deploy step on main, while still running tests on every branch in the same workflow.` },
+    continueOnError: { syntax:`continue-on-error: true`, cmd:`continue-on-error: true`, output: ghaBlock(`- name: Optional lint\n  run: npm run lint\n  continue-on-error: true`, `<span class="warn">⚠ Optional lint — failed, but marked continue-on-error</span>\n<span class="ok">✓ Job continues to next step</span>`), does:`Lets a step fail without failing the whole job or blocking later steps.`, where:`A linter or a nice-to-have check you want visibility into, without it blocking a merge or deploy.` },
+    checkout: { syntax:`- uses: actions/checkout@v4`, cmd:`actions/checkout@v4`, output: ghaBlock(`steps:\n  - uses: actions/checkout@v4`, `<span class="ok">✓ Checking out repo at a3f9d2c...</span>\n<span class="ok">✓ Code is now available on the runner</span>`), does:`Downloads your repository's code onto the runner — without it, the runner is completely empty.`, where:`Almost every job's very first step — nothing else can reference your files until this runs.` },
+    setupNode: { syntax:`- uses: actions/setup-node@v4\n  with:\n    node-version: 20`, cmd:`actions/setup-node@v4`, output: ghaBlock(`- uses: actions/setup-node@v4\n  with:\n    node-version: 20`, `<span class="ok">✓ Node 20.11.0 installed and added to PATH</span>`), does:`Installs a specific version of Node.js on the runner and adds it to PATH.`, where:`Any JavaScript/TypeScript project's build or test step needs a Node version available first.` },
+    runCommand: { syntax:`- run: npm run build`, cmd:`run: (shell command)`, output: ghaBlock(`- name: Build\n  run: npm run build`, `> myapp@1.0.0 build\n<span class="ok">✓ Build completed in 12s</span>`), does:`Runs a raw shell command directly on the runner — the most basic step type there is.`, where:`Anything a pre-built action doesn't already cover — install, build, test, or any custom script.` },
+    marketplaceAction: { syntax:`- uses: slackapi/slack-github-action@v1`, cmd:`marketplace action`, output: ghaBlock(`- uses: slackapi/slack-github-action@v1\n  with:\n    channel-id: deploys\n    slack-message: "Deploy finished ✅"`, `<span class="ok">✓ Message posted to #deploys</span>`), does:`Drops in a pre-built step someone else already wrote and published, instead of writing it yourself.`, where:`Slack notifications, deploy integrations, security scans — check the Marketplace before writing something from scratch.` },
+    secretsUsage: { syntax:`${'$'}{{ secrets.API_KEY }}`, cmd:`secrets.API_KEY`, output: ghaBlock(`- run: curl -H "Authorization: Bearer \${{ secrets.API_KEY }}" https://api.example.com`, `<span class="ok">✓ Authorization: Bearer ***</span> <span class="dim">(masked automatically in the log)</span>`), does:`References an encrypted value stored in Settings → Secrets — the real value never appears in the YAML.`, where:`API keys, database passwords, deploy credentials — anything that must never be visible in the repo.` },
+    envVars: { syntax:`env:\n  NODE_ENV: production`, cmd:`env: block`, output: ghaBlock(`- run: npm run build\n  env:\n    NODE_ENV: production`, `<span class="ok">✓ NODE_ENV=production npm run build</span>`), does:`Sets an environment variable available to a step, a whole job, or the entire workflow.`, where:`Passing plain (non-secret) config into a build or test step, like which environment it's building for.` },
+    githubToken: { syntax:`${'$'}{{ secrets.GITHUB_TOKEN }}`, cmd:`secrets.GITHUB_TOKEN`, output: ghaBlock(`- run: gh pr comment 42 --body "Build passed"\n  env:\n    GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}`, `<span class="ok">✓ Comment posted to PR #42</span>`), does:`A special secret GitHub creates automatically for every run, scoped to that repo — no setup needed.`, where:`Letting a workflow comment on a PR, create a release, or call the GitHub API on your behalf.` },
+    uploadArtifact: { syntax:`- uses: actions/upload-artifact@v4\n  with:\n    path: dist/`, cmd:`upload-artifact`, output: ghaBlock(`- uses: actions/upload-artifact@v4\n  with:\n    name: build-output\n    path: dist/`, `<span class="ok">✓ Uploaded "build-output" (4.2MB)</span>`), does:`Saves files from the runner so they're downloadable from the run page after the job ends.`, where:`Keeping a build's compiled output or a test report, since the runner itself is destroyed the moment the job finishes.` },
+    downloadArtifact: { syntax:`- uses: actions/download-artifact@v4\n  with:\n    name: build-output`, cmd:`download-artifact`, output: ghaBlock(`- uses: actions/download-artifact@v4\n  with:\n    name: build-output`, `<span class="ok">✓ Downloaded "build-output" into this job</span>`), does:`Pulls an artifact uploaded earlier in the workflow into a different job's runner.`, where:`A "build" job produces the app, and a separate "deploy" job downloads exactly that output to ship it.` },
+    cacheDeps: { syntax:`- uses: actions/cache@v4\n  with:\n    path: ~/.npm\n    key: npm-${'$'}{{ hashFiles('package-lock.json') }}`, cmd:`actions/cache`, output: ghaBlock(`- uses: actions/cache@v4\n  with:\n    path: ~/.npm\n    key: npm-\${{ hashFiles('package-lock.json') }}`, `<span class="ok">Cache hit — restored in 2s</span> <span class="dim">(lockfile unchanged since last run)</span>`), does:`Saves and restores files between runs, keyed off something like a lockfile's hash.`, where:`Skipping a full dependency reinstall on every single run when nothing has actually changed.` },
+    matrixBasic: { syntax:`strategy:\n  matrix:\n    node-version: [18, 20]`, cmd:`matrix (versions)`, output: ghaBlock(`strategy:\n  matrix:\n    node-version: [18, 20]\nsteps:\n  - uses: actions/setup-node@v4\n    with:\n      node-version: \${{ matrix.node-version }}`, `<span class="ok">✓ test (18) — passed</span>\n<span class="ok">✓ test (20) — passed</span>`), does:`Runs the same job once per value in the list, automatically, in parallel.`, where:`Confirming your app actually works across every Node/Python/Ruby version you claim to support.` },
+    matrixOS: { syntax:`matrix:\n  os: [ubuntu-latest, windows-latest]\n  node: [18, 20]`, cmd:`matrix (OS × version)`, output: ghaBlock(`strategy:\n  matrix:\n    os: [ubuntu-latest, windows-latest]\n    node: [18, 20]`, `<span class="ok">✓ (ubuntu-latest, 18)</span>\n<span class="ok">✓ (ubuntu-latest, 20)</span>\n<span class="ok">✓ (windows-latest, 18)</span>\n<span class="ok">✓ (windows-latest, 20)</span>`), does:`Combines two matrix dimensions — every OS gets tested against every version listed, all combinations.`, where:`Cross-platform libraries that genuinely need to prove they work on more than just Linux.` },
+    dockerBuildPush: { syntax:`- uses: docker/build-push-action@v5\n  with:\n    push: true`, cmd:`docker build + push`, output: ghaBlock(`- uses: docker/build-push-action@v5\n  with:\n    push: true\n    tags: myapp:\${{ github.sha }}`, `<span class="ok">✓ Built and pushed myapp:a3f9d2c</span>`), does:`Builds a Docker image from your Dockerfile and pushes it to a registry, in one action.`, where:`The build step of a real CI/CD pipeline — turning your code into a deployable image automatically.` },
+    deploySSH: { syntax:`- uses: appleboy/ssh-action@v1\n  with:\n    script: ./deploy.sh`, cmd:`deploy over SSH`, output: ghaBlock(`- uses: appleboy/ssh-action@v1\n  with:\n    host: \${{ secrets.HOST }}\n    script: ./deploy.sh`, `<span class="ok">✓ Connected — deploy.sh executed on remote server</span>`), does:`Connects to a remote server over SSH and runs a deploy script there.`, where:`Deploying to a plain EC2/VM-based server that isn't running Kubernetes or a managed platform.` },
+    deployKubernetes: { syntax:`- run: kubectl apply -f deployment.yaml`, cmd:`kubectl apply step`, output: ghaBlock(`- run: kubectl set image deployment/web web=myapp:\${{ github.sha }}`, `<span class="ok">deployment.apps/web image updated</span>`), does:`Runs a normal kubectl command as a workflow step to update a live cluster.`, where:`The actual "deploy" step of a pipeline targeting Kubernetes — see the Kubernetes for DevOps tab for the command itself.` },
+    environmentProtection: { syntax:`environment: production`, cmd:`environment: (approval)`, output: ghaBlock(`jobs:\n  deploy:\n    environment: production\n    runs-on: ubuntu-latest`, `<span class="warn">⏸ Waiting for approval on "production"...</span>\n<span class="ok">✓ Approved — deploy proceeding</span>`), does:`Ties a job to a named environment that can require specific reviewers to approve before it runs.`, where:`The safety switch for real production deploys — configured once in Settings → Environments.` },
+    concurrencyGroup: { syntax:`concurrency:\n  group: deploy-prod\n  cancel-in-progress: true`, cmd:`concurrency:`, output: ghaBlock(`concurrency:\n  group: deploy-prod\n  cancel-in-progress: true`, `<span class="warn">Canceling older run in group "deploy-prod"</span>\n<span class="ok">✓ Newest run proceeding</span>`), does:`Prevents overlapping runs in the same group — either queues them, or cancels the older one.`, where:`Stopping several rapid pushes from triggering multiple deploys that race each other to production.` },
+    permissions: { syntax:`permissions:\n  contents: read`, cmd:`permissions:`, output: ghaBlock(`permissions:\n  contents: read`, `<span class="ok">✓ GITHUB_TOKEN scoped to read-only for this run</span>`), does:`Restricts what the automatic GITHUB_TOKEN is allowed to do for that run — least privilege by default.`, where:`A workflow that only reads code shouldn't also be able to write to the repo — this locks that down explicitly.` },
+    reusableWorkflow: { syntax:`jobs:\n  call-shared:\n    uses: ./.github/workflows/shared.yml`, cmd:`reusable workflow`, output: ghaBlock(`jobs:\n  call-shared:\n    uses: ./.github/workflows/shared.yml\n    with:\n      env-name: staging`, `<span class="ok">✓ shared.yml — invoked with env-name=staging</span>`), does:`Lets one workflow file call another, passing inputs — write the logic once, reuse it everywhere.`, where:`A team with 10 repos that all deploy the same way — one shared workflow instead of 10 copy-pasted ones.` }
+  };
+  function runGhaCmd(key, btn) {
+    const d = GHA_CMDS[key];
+    if (!d) return;
+    document.getElementById('ghaCmd').textContent = d.cmd;
+    document.getElementById('ghaOutput').innerHTML = d.output;
+    document.getElementById('ghaSyntax').innerHTML = d.syntax;
+    document.getElementById('ghaDoes').innerHTML = d.does;
+    document.getElementById('ghaWhere').innerHTML = d.where;
+    document.querySelectorAll('#tab-ghactionsdevops .ld-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
   /* ============================================================
      GIT FOR DEVOPS — a real, minimal git engine + animated SVG
      commit-graph renderer + a typed command "compiler". Everything
@@ -17665,6 +18169,68 @@ git push origin main</div></div>
     { q:`Scenario: traffic is expected to spike significantly during a sale, and pods should scale automatically. What do you set up?`, options:[`kubectl autoscale deployment <name> --min=<n> --max=<n> --cpu-percent=<n>`,`kubectl scale deployment once, right before the sale begins, and leave it fixed`,`kubectl create namespace dedicated specifically to handling traffic spikes`,`kubectl rollout status, since that automatically triggers scaling when needed`], correct:0, why:`A fixed scale is a guess; an HPA actually reacts to real load as it happens.` },
     { q:`Scenario: "kubectl get pods" shows a deployment at 2/3 ready, and it's been stuck that way for a while. What's a good next step?`, options:[`kubectl describe pod on the pod that isn't ready, to see why it's failing`,`kubectl delete namespace, since a stuck rollout means the namespace is corrupted`,`kubectl create secret, since missing secrets always cause exactly this symptom`,`Nothing can be done — a stuck rollout can only be fixed by restarting the cluster`], correct:0, why:`Go straight to the specific pod that isn't ready — its own events usually explain the whole stall.` },
     { q:`Scenario: you want to see exactly which past revision of a deployment to roll back to, not just "the previous one." What do you check first?`, options:[`kubectl rollout history deployment/<name> — lists every revision and its change cause`,`kubectl get events, since events list every past deployment revision too`,`kubectl top pods, since resource usage differs meaningfully by revision`,`kubectl auth can-i, since permissions determine which revision is shown`], correct:0, why:`History gives you the actual list of revisions with context — exactly what's needed to pick the right one.` }
+  ];
+
+  /* ============ GITHUB ACTIONS FOR DEVOPS QUIZ ============ */
+  const GHADEVOPS_QUIZ_JOKES = [
+    `A runner's entire life: born, does one job, dies. No pension, no complaints.`,
+    `"It works on my machine" has never once been an acceptable answer to a failed workflow run.`,
+    `GITHUB_TOKEN: the only credential that's ever handed to you without a single password prompt.`,
+    `Somewhere, a concurrency group just canceled a deploy so a newer, better deploy could win.`,
+    `A green checkmark on a PR is worth more serotonin than it has any right to be.`
+  ];
+
+  const GHADEVOPS_QUIZ_QUESTIONS = [
+    { q:`What is GitHub Actions, in the simplest terms?`, options:[`A robot built into GitHub that automatically runs a checklist you wrote every time code changes`,`A separate paid service you have to install and manage outside of GitHub entirely`,`A chat feature for talking with other developers working on the same repo`,`A tool that only works after your code has already been deployed to production`], correct:0, why:`That's the entire concept — everything else is just details layered on top of "automatic checklist."` },
+    { q:`What problem does GitHub Actions actually solve?`, options:[`It removes the need for a human to remember to check code manually before it's trusted`,`It writes application code for you automatically, without a developer involved`,`It replaces the need to use Git for tracking changes to your code`,`It's only useful for fixing bugs that have already reached real users`], correct:0, why:`Human memory is unreliable — the whole point is making the check happen automatically, every time.` },
+    { q:`What is a "workflow" in GitHub Actions?`, options:[`A single YAML file describing an automated checklist and when it should run`,`The general term for any code you push to a GitHub repository`,`A paid GitHub feature that must be purchased before it can be used`,`A folder containing your entire project's source code`], correct:0, why:`One file, one workflow — a repo can have several, each independent of the others.` },
+    { q:`Where does a workflow file actually live in a repository?`, options:[`Inside the .github/workflows/ folder, as a .yml file`,`Anywhere at all — GitHub Actions searches the whole repo for workflow files`,`Only inside a special private area outside of the Git repository itself`,`It must be uploaded separately through a different website, not the repo`], correct:0, why:`That exact folder is the only place GitHub looks for workflow files.` },
+    { q:`What is a "trigger" (the "on:" line)?`, options:[`The specific event that causes a workflow to actually start running`,`The final step that runs at the very end of every workflow`,`A setting that controls how many jobs a workflow is allowed to have`,`The name shown for a workflow in the GitHub Actions tab`], correct:0, why:`No matching event under on:, and the workflow simply never runs at all.` },
+    { q:`What is a "job" in a workflow?`, options:[`A group of steps that all run together on one single runner`,`A single individual command, the smallest unit a workflow can have`,`The specific person responsible for maintaining that workflow file`,`A separate GitHub repository dedicated entirely to automation`], correct:0, why:`One job = one machine, with however many steps you give it.` },
+    { q:`What is a "step"?`, options:[`One individual task inside a job, run in order along with the others`,`Another word meaning exactly the same thing as a whole workflow`,`A separate virtual machine created just for that one single task`,`The percentage of a job that has completed so far`], correct:0, why:`Steps are the smallest unit — the actual individual lines of the checklist.` },
+    { q:`What is a "runner"?`, options:[`A temporary, fresh virtual machine GitHub creates just to run one job`,`Your own personal computer, which GitHub actions runs on directly`,`A person on the team responsible for approving every deployment`,`A permanent server that stays running between every single job`], correct:0, why:`It exists only for the duration of one job — nothing about it is permanent.` },
+    { q:`What happens to a runner after a job finishes?`, options:[`It's destroyed — the next run always starts on a completely fresh machine`,`It stays running indefinitely, ready for the very next job to reuse`,`It gets saved as a snapshot for faster startup on the next run`,`It's manually shut down by a developer after checking the results`], correct:0, why:`That destruction is intentional — it guarantees every run starts from an identical, clean state.` },
+    { q:`Do steps within one job run in order, or all at once?`, options:[`In order, top to bottom — and if one fails, the rest of that job stops`,`All at the exact same time, regardless of the order they're written in`,`In a random order chosen fresh by GitHub on every single run`,`In order, but a failed step never affects any of the steps after it`], correct:0, why:`Sequential and dependent — a failure genuinely halts everything after it in that job.` },
+    { q:`Do multiple jobs in one workflow run in order, or at the same time?`, options:[`At the same time by default, unless one is explicitly told to wait for another`,`Always strictly in the order they're written in the YAML file`,`Only one job is allowed to exist per workflow file at all`,`In alphabetical order based on each job's given name`], correct:0, why:`Parallel by default — needs: is the one thing that changes that.` },
+    { q:`What does "on: push" actually trigger the workflow on?`, options:[`Any time a commit is pushed to the repository`,`Only when a pull request is specifically opened, never a plain push`,`Only once per day, regardless of how many commits are pushed`,`Only when a repository is very first created on GitHub`], correct:0, why:`It's the broadest, simplest trigger — any push, any branch, unless narrowed further.` },
+    { q:`What does "on: pull_request" trigger on?`, options:[`When a pull request is opened, or gets a new commit pushed to it`,`Only the very first time a repository's default branch is created`,`Every single time any file anywhere on GitHub is modified`,`Only after a pull request has already been fully merged`], correct:0, why:`This is what powers the green ✓ / red ✗ shown right on the PR page itself.` },
+    { q:`What does "workflow_dispatch" add?`, options:[`A manual 'Run workflow' button you can click in the GitHub UI`,`A second, entirely separate GitHub Actions tab just for this file`,`An automatic daily run at midnight, with no way to disable it`,`A requirement that every push must be manually approved first`],correct:0, why:`It's specifically an on-demand trigger, not an automatic one.` },
+    { q:`What does a "schedule" trigger with a cron expression do?`, options:[`Runs the workflow automatically on a timer, with no code push required`,`Deletes old, unused workflow runs automatically after a set time`,`Schedules a human to manually review the workflow's YAML file`,`Only works if the repository already has at least one scheduled event`], correct:0, why:`Purely time-based — completely independent of any push or PR activity.` },
+    { q:`Why is "actions/checkout" usually the very first step in a job?`, options:[`A fresh runner starts completely empty — checkout is what fetches your code onto it`,`It's required before GitHub allows a workflow file to even be saved`,`It permanently installs Git onto every developer's personal machine`,`It automatically writes the rest of the workflow's steps for you`], correct:0, why:`Nothing else in that job has your files to work with until this step runs.` },
+    { q:`What is a GitHub Marketplace action?`, options:[`A pre-built, reusable step someone else already wrote and published`,`A paid subscription required before any workflow can be created at all`,`The official name for GitHub's own built-in checkout step only`,`A separate marketplace for buying entirely new GitHub repositories`], correct:0, why:`Marketplace actions save you from writing common integrations from scratch.` },
+    { q:`Why should a database password never be written directly into a workflow's YAML?`, options:[`The YAML file is committed to Git history, visible forever to anyone with repo access`,`YAML files are technically incapable of containing any text in quotes`,`GitHub Actions automatically deletes any workflow containing a password`,`It's actually completely fine, as long as the repository itself is private`], correct:0, why:`Even deleting the line in a later commit doesn't remove it from history.` },
+    { q:`Where should a database password go instead?`, options:[`Stored in Settings → Secrets and variables → Actions, referenced by name`,`Emailed directly to every teammate before each individual deploy`,`Written as a code comment instead of a real line, so it's 'hidden'`,`Stored in a second, entirely separate GitHub repository just for secrets`], correct:0, why:`Secrets there are encrypted and never appear in the workflow file itself.` },
+    { q:`What happens if a workflow step accidentally prints a secret's value to the log?`, options:[`GitHub automatically masks it as *** in the visible log output`,`The entire workflow run is permanently and irreversibly deleted`,`Nothing at all — the real value is shown in plain text to anyone who looks`,`The repository is automatically made private from that point onward`], correct:0, why:`Masking is automatic once a value is registered as a secret — a real safety net.` },
+    { q:`What is GITHUB_TOKEN?`, options:[`A special secret GitHub creates automatically for every run, with no setup needed`,`A secret every developer has to manually create before their first workflow`,`A token that must be purchased separately from GitHub before it can be used`,`The personal login password for the GitHub account that owns the repo`], correct:0, why:`It's issued fresh, scoped to that repo, for every single run — zero setup required.` },
+    { q:`What does "needs: test" on a deploy job actually do?`, options:[`Makes deploy wait until the test job finishes successfully before starting`,`Deletes the test job entirely once the deploy job has been added`,`Makes the deploy job run before the test job, instead of after it`,`Has no real effect — jobs always run in the order they're written`], correct:0, why:`It's the specific mechanism that turns default-parallel jobs into an ordered dependency.` },
+    { q:`What does "if: github.ref == 'refs/heads/main'" do on a step?`, options:[`Only runs that step when the workflow is running on the main branch`,`Permanently deletes any branch that isn't named main`,`Runs that step on every branch except main, specifically excluding it`,`Requires a human to manually type 'main' before the step can run`], correct:0, why:`It's a conditional check evaluated fresh on every single run.` },
+    { q:`What does "continue-on-error: true" do to a failing step?`, options:[`Lets the job continue to the next step instead of stopping on that failure`,`Automatically retries that exact step up to three more times`,`Immediately stops the entire workflow the moment that step fails`,`Silently deletes the step from the workflow file going forward`], correct:0, why:`It downgrades that one step's failure from job-ending to merely noted.` },
+    { q:`What is a caching step (like actions/cache) actually for?`, options:[`Skipping a full dependency reinstall when nothing relevant has actually changed`,`Permanently storing a copy of your source code as a backup`,`Making the runner itself start up measurably faster in general`,`Required before actions/checkout is allowed to run in a job`], correct:0, why:`It targets one specific slow step — reinstalling unchanged dependencies — not the runner overall.` },
+    { q:`How does actions/cache usually decide whether to reuse a cache?`, options:[`A key, often based on a hash of a lockfile — same key means same cache`,`It always reuses whatever cache is the very newest, regardless of contents`,`By checking the current date, refreshing automatically every single day`,`By asking the developer to manually confirm before every single run`], correct:0, why:`Change the lockfile, the hash changes, the key changes, and a fresh cache builds automatically.` },
+    { q:`What does a "matrix" build let you do?`, options:[`Run the same job automatically across multiple versions or configurations at once`,`Run completely different, unrelated jobs all inside one single matrix`,`Limit a workflow to running only a fixed number of times per day`,`Require every job in a workflow to use the exact same OS and version`], correct:0, why:`One job definition, many real runs — one per listed combination.` },
+    { q:`If a matrix has node-version: [18, 20], how many times does the job actually run?`, options:[`Twice — once for each value, automatically, without duplicating any YAML`,`Once, using only whichever version happens to be listed first`,`Eighteen times, based on misreading 18 as a literal repeat count`,`Zero times, since a matrix requires at least three listed values`], correct:0, why:`Each list entry becomes its own real, independent run of that job.` },
+    { q:`What does actions/upload-artifact let you do?`, options:[`Save files from the runner so they're downloadable after the job finishes`,`Permanently deploy a build directly to production, with no other steps`,`Upload a workflow file itself to a separate, different repository`,`Automatically email a build's output to every listed contributor`], correct:0, why:`It's specifically about surviving the runner's destruction, not deployment itself.` },
+    { q:`Why is uploading an artifact necessary at all, instead of just leaving files on the runner?`, options:[`The runner itself is destroyed the moment its job ends, taking everything on it`,`Runners technically have zero available disk space for any files`,`Artifacts are required before a workflow file is allowed to be saved`,`Files on a runner are visible to every other repository automatically`], correct:0, why:`Without uploading, anything written to that runner simply vanishes with it.` },
+    { q:`What does "environment: production" on a job enable?`, options:[`The job can require specific reviewers to approve it before it's allowed to run`,`It automatically renames the job to 'production' in the run log`,`It doubles the amount of time the runner is allowed to stay alive`,`It's purely cosmetic and has no real effect on how the job runs`], correct:0, why:`Configured in Settings, this is a real gate, not just a label.` },
+    { q:`Why would a team specifically want required approval on a production deploy job?`, options:[`It adds a real human checkpoint before code reaches real users, on purpose`,`It's required by GitHub before any job is allowed to use secrets at all`,`It makes the deploy step run measurably faster than it would otherwise`,`It's the only way to give a job access to the main branch's code`], correct:0, why:`A deliberate slowdown, in exchange for a human catching something automation might miss.` },
+    { q:`What does a "concurrency" group with cancel-in-progress do?`, options:[`Cancels an older, still-running run in that group in favor of the newest one`,`Runs every push in that group simultaneously, all at the exact same time`,`Prevents that workflow from ever being triggered more than once, ever`,`Requires manual approval before any two runs are allowed to overlap`], correct:0, why:`Only the freshest run in the group is allowed to actually finish.` },
+    { q:`Why would rapid, back-to-back pushes without a concurrency group be a problem for a deploy workflow?`, options:[`Multiple deploys could run at once and race each other to production`,`GitHub technically only allows one push to a repository per day`,`Each push would silently overwrite the repository's entire commit history`,`Workflow files themselves would become corrupted by simultaneous triggers`], correct:0, why:`Whichever deploy happens to finish last "wins," unpredictably, without a concurrency group.` },
+    { q:`What does the "permissions:" block at the top of a workflow control?`, options:[`What the automatic GITHUB_TOKEN is allowed to do during that run`,`Which specific developers are allowed to view the workflow's results`,`How many jobs total are permitted to exist inside that one workflow`,`Whether the workflow is allowed to use any secrets at all, ever`], correct:0, why:`It's a least-privilege setting scoped specifically to that auto-issued token.` },
+    { q:`What's the benefit of a "reusable workflow" (using: ./path/to/shared.yml)?`, options:[`Write the automation logic once and call it from many different workflows`,`It's required before more than one job is allowed in a workflow`,`It automatically duplicates a workflow across every repository you own`,`It merges two completely unrelated workflows into a single YAML file`], correct:0, why:`One source of truth for shared logic, called from wherever it's needed.` },
+    { q:`What's the difference between a plain "run:" step and a "uses:" step?`, options:[`run: executes a raw shell command; uses: drops in a pre-built, packaged action`,`They're functionally identical — just two different keywords for the same thing`,`run: can only be used once per job, while uses: can repeat freely`,`uses: only works for Docker-related steps, run: works for everything else`], correct:0, why:`Write it yourself with run:, or reuse someone else's packaged step with uses:.` },
+    { q:`What does github.sha refer to inside a workflow?`, options:[`The exact commit hash that triggered this specific run`,`The name of whichever branch triggered the workflow, not a commit`,`A random identifier that changes every time a workflow file is opened`,`The username of whoever most recently edited the workflow's YAML`], correct:0, why:`It's a direct, unambiguous pointer to the exact code that's being built or tested.` },
+    { q:`Why tag a Docker image with \${{ github.sha }} instead of just "latest"?`, options:[`Every build becomes uniquely traceable back to the exact code that produced it`,`It's required by Docker itself — "latest" is not a valid tag name`,`It makes the resulting image noticeably smaller in file size`,`It's purely a style preference with no real practical benefit`], correct:0, why:`"latest" is ambiguous over time; a commit SHA never is.` },
+    { q:`What is the actual first thing a beginner should automate with GitHub Actions?`, options:[`Running the existing test suite automatically on every push`,`A full, automatic production deploy pipeline, right from day one`,`A workflow that rewrites and reformats all of the project's code`,`Nothing — GitHub Actions should only be added after the project ships`], correct:0, why:`Tests-on-push catches the most bugs for the least setup and risk.` },
+    { q:`Scenario: your test suite takes 3 minutes because it reinstalls dependencies from scratch every run. What's the fix?`, options:[`Add actions/cache keyed on the lockfile, so unchanged installs are skipped`,`Switch from actions/checkout to a completely different checkout action`,`Add more jobs to the workflow so the install runs in parallel instead`,`Remove the test step entirely so nothing needs to install at all`], correct:0, why:`This targets the actual slow part directly, without touching anything else.` },
+    { q:`Scenario: you need to confirm your app works on both Node 18 and Node 20 without duplicating the job. What's the move?`, options:[`Use a matrix strategy with node-version: [18, 20]`,`Manually create two full, separate copies of the same job in the YAML`,`Use continue-on-error so one version's failure doesn't block the other`,`Add a schedule trigger so each version is tested on a different day`], correct:0, why:`Matrix is the built-in feature for exactly this "same job, multiple configs" need.` },
+    { q:`Scenario: a deploy step needs a database password. Where does the real value live?`, options:[`In Settings → Secrets, referenced in the YAML as \${{ secrets.DB_PASSWORD }}`,`Typed directly into the run: command, since it's only visible to the team`,`In a comment above the step, so it's technically not an active line`,`In the workflow's name: field, since that's just a label anyway`], correct:0, why:`The value stays encrypted and out of the file entirely — only the reference lives in YAML.` },
+    { q:`Scenario: a deploy job must never run unless the test job passed. What one line enforces this?`, options:[`needs: test, added to the deploy job`,`if: always(), added to the deploy job specifically`,`continue-on-error: false, added to the test job instead`,`Nothing needs to be added — this happens automatically by default`], correct:0, why:`Without needs:, deploy would start in parallel with test, not after it.` },
+    { q:`Scenario: you want to build and push a Docker image only when code lands on main, never on other branches. What do you configure?`, options:[`on: push: branches: [main], scoping the trigger to that one branch`,`on: push, with no further configuration needed at all`,`if: docker == true, checked inside every single step`,`environment: main, set on the job instead of the trigger`], correct:0, why:`Scoping the trigger's branches list is exactly what narrows it to main only.` },
+    { q:`Scenario: production deploys should require a real person to click approve first. What do you configure?`, options:[`environment: production, with required reviewers set in Settings`,`continue-on-error: true, so a human can intervene if it fails`,`A schedule trigger, so a human is always available when it runs`,`permissions: contents: write, which adds an approval requirement`], correct:0, why:`Required reviewers on an environment is the actual, dedicated approval mechanism.` },
+    { q:`Scenario: three rapid pushes trigger three overlapping deploy runs. What stops them from racing?`, options:[`A concurrency group with cancel-in-progress: true`,`Reducing the number of jobs in the workflow down to just one`,`Switching the trigger from push to pull_request instead`,`Adding continue-on-error: true to the deploy job`], correct:0, why:`This is precisely the tool built to prevent overlapping runs of the same workflow.` },
+    { q:`Scenario: you want a workflow log entry to prove exactly which commit produced a given Docker image later. What do you use?`, options:[`Tag the image with \${{ github.sha }} at build time`,`Rename the Docker image manually after every single deploy`,`Add a code comment inside the Dockerfile listing the commit by hand`,`Nothing is needed — Docker images already track this by default`], correct:0, why:`Baking the commit SHA into the tag is what makes that traceability automatic and reliable.` },
+    { q:`Scenario: you're new to GitHub Actions and unsure where to even start on a real project. What's the right first workflow?`, options:[`Tests running automatically on every push — nothing more, at first`,`A full multi-environment deploy pipeline, to cover everything at once`,`A workflow that automatically merges every pull request instantly`,`Nothing — wait until the project has a dedicated DevOps hire`], correct:0, why:`Start small and genuinely useful — deploy automation comes later, once this is trusted.` },
+    { q:`Scenario: a workflow step needs to comment on a pull request using the GitHub API. What credential does it use?`, options:[`The automatic \${{ secrets.GITHUB_TOKEN }} — no manual setup required`,`A developer's personal GitHub password, entered directly into the YAML`,`A brand-new GitHub account created specifically for this one workflow`,`It's not possible — workflows cannot interact with pull requests at all`], correct:0, why:`GITHUB_TOKEN already has exactly the access needed for this kind of repo interaction.` }
   ];
 
   let QUIZ_STATE = null;      // { rootId, questions, index, score, total }
