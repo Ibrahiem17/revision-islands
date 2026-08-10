@@ -15,12 +15,21 @@
   align-items: flex-end;
   gap: 10px;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  /* This box is sized to fit the speech bubble even while it's closed
+     (opacity:0, not display:none, so its open/close transition stays
+     smooth) — that leaves a large invisible hit-area above the
+     character that used to swallow clicks meant for whatever page
+     content happens to scroll underneath it. Only the actual visible
+     bits (the character button, and the bubble once it's open) should
+     ever intercept a click. */
+  pointer-events: none;
 }
 
 /* ---------- the character ---------- */
 
 .mascot-char {
   all: unset;
+  pointer-events: auto;
   cursor: pointer;
   width: 60px;
   height: 62px;

@@ -7,55 +7,988 @@
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/cards.css">
 <link rel="stylesheet" href="../css/mascot.css">
-<link rel="stylesheet" href="database.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#071216; color:#dff7fb;
+    font-family:'JetBrains Mono',monospace;
+    padding:28px 20px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(34,211,238,0.07) 0%, transparent 70%),
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+    background-size:100% 100%,40px 40px,40px 40px;
+    min-height:100vh;
+  }
+  a { color:inherit; }
+
+  .header { text-align:center; margin-bottom:32px; }
+  .badge { display:inline-block; background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.3); color:#22d3ee; font-size:10px; letter-spacing:3px; text-transform:uppercase; padding:4px 14px; border-radius:2px; margin-bottom:12px; }
+  h1 { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:#f8fafc; letter-spacing:-0.5px; }
+  h1 span { color:#22d3ee; }
+  .subtitle { font-size:11px; color:#64748b; margin-top:6px; }
+  .version-tag { display:inline-block; margin-top:8px; font-size:9px; color:#334155; border:1px solid #16323a; border-radius:2px; padding:2px 8px; letter-spacing:1px; }
+
+  .tabs { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
+  .tab { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:3px; border:1px solid #123138; cursor:pointer; background:rgba(255,255,255,0.02); color:#5b7f87; transition:all 0.15s; font-family:'JetBrains Mono',monospace; }
+  .tab:hover { color:#9fd8e0; border-color:#1d4a54; }
+  .tab.active { background:rgba(34,211,238,0.1); border-color:rgba(34,211,238,0.4); color:#22d3ee; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+
+  .section-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:#cbe9ee; margin:24px 0 12px; display:flex; align-items:center; gap:8px; }
+  .section-title:first-child { margin-top:0; }
+  .section-title::after { content:''; flex:1; height:1px; background:#123138; }
+
+  .analogy { background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(34,211,238,0.08)); border:1px solid rgba(16,185,129,0.25); border-left:3px solid #10b981; border-radius:4px; padding:14px 18px; margin-bottom:24px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  .analogy-label { font-size:9px; letter-spacing:2px; color:#10b981; text-transform:uppercase; margin-bottom:6px; }
+  .analogy-item { display:flex; align-items:center; gap:10px; }
+  .analogy-icon { font-size:22px; }
+  .analogy-text { font-size:12px; color:#94a3b8; }
+  .analogy-text strong { color:#e2e8f0; font-weight:600; }
+  .analogy-divider { color:#334155; font-size:18px; }
+
+  .intro-box { background:rgba(34,211,238,0.04); border:1px solid rgba(34,211,238,0.15); border-left:3px solid #22d3ee; border-radius:4px; padding:16px; margin-bottom:24px; font-size:12px; color:#94a3b8; line-height:1.85; }
+  .intro-box strong { color:#e2e8f0; }
+  .intro-box .accent { color:#22d3ee; }
+
+  .pipeline { display:flex; flex-direction:column; gap:0; margin-bottom:24px; }
+  .stage { display:grid; grid-template-columns:40px 1fr; gap:0 16px; }
+  .stage-connector { display:flex; flex-direction:column; align-items:center; }
+  .stage-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; border:2px solid var(--clr); position:relative; z-index:1; background:#071216; }
+  .stage-line { width:2px; flex:1; min-height:14px; background:linear-gradient(180deg,var(--line-top),var(--line-bot)); }
+  .stage-body { padding-bottom:16px; }
+  .stage-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; margin-top:4px; flex-wrap:wrap; }
+  .stage-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--clr); }
+  .stage-tool { font-size:9px; padding:2px 7px; border-radius:2px; border:1px solid; color:var(--clr); letter-spacing:1px; text-transform:uppercase; }
+  .stage-desc { font-size:11.5px; color:#94a3b8; line-height:1.7; margin-bottom:6px; }
+  .stage-cmd { display:inline-block; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:3px; padding:2px 8px; font-size:11px; color:#fbbf24; margin:2px 3px 2px 0; }
+  .s1{--clr:#f97316;--line-top:#f97316;--line-bot:#eab308}
+  .s2{--clr:#eab308;--line-top:#eab308;--line-bot:#22c55e}
+  .s3{--clr:#22c55e;--line-top:#22c55e;--line-bot:#22d3ee}
+  .s4{--clr:#22d3ee;--line-top:#22d3ee;--line-bot:#818cf8}
+  .s5{--clr:#818cf8;--line-top:#818cf8;--line-bot:#f43f5e}
+  .s6{--clr:#f43f5e;--line-top:#f43f5e;--line-bot:#f43f5e}
+
+  .loop-box { background:rgba(34,211,238,0.05); border:1px solid rgba(34,211,238,0.2); border-radius:4px; padding:14px 16px; margin-bottom:24px; display:flex; align-items:center; gap:14px; }
+  .loop-icon { font-size:26px; }
+  .loop-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:#22d3ee; margin-bottom:4px; }
+  .loop-desc { font-size:11px; color:#94a3b8; line-height:1.6; }
+  .loop-arrow { color:#22d3ee; font-weight:700; }
+
+  .concept { border:1px solid #123138; border-radius:4px; padding:16px; margin-bottom:14px; background:rgba(255,255,255,0.02); border-left:3px solid var(--cc); }
+  .concept-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .concept-icon { font-size:22px; }
+  .concept-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--cc); }
+  .concept-subtitle { font-size:10px; color:#475569; letter-spacing:1px; margin-left:auto; text-transform:uppercase; }
+  .concept-body { font-size:11.5px; color:#94a3b8; line-height:1.75; }
+  .concept-body strong { color:#e2e8f0; }
+  .pill-row { margin-top:10px; display:flex; flex-wrap:wrap; gap:5px; }
+  .pill { display:inline-block; font-size:10px; padding:2px 8px; border-radius:3px; border:1px solid; color:var(--cc); }
+
+  .qa-list { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+  .qa-item { border:1px solid #123138; border-radius:4px; overflow:hidden; transition:border-color 0.2s; }
+  .qa-item:hover { border-color:#1d4a54; }
+  .qa-q { display:flex; align-items:flex-start; gap:10px; padding:11px 14px; cursor:pointer; user-select:none; background:rgba(255,255,255,0.02); transition:background 0.15s; }
+  .qa-q:hover { background:rgba(255,255,255,0.04); }
+  .qa-q-badge { flex-shrink:0; font-size:9px; font-weight:700; letter-spacing:1px; color:#fbbf24; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); border-radius:2px; padding:2px 6px; margin-top:1px; }
+  .qa-q-text { flex:1; font-size:11.5px; color:#cbd5e1; line-height:1.5; }
+  .qa-chevron { flex-shrink:0; font-size:10px; color:#475569; margin-top:2px; transition:transform 0.2s; }
+  .qa-item.open .qa-chevron { transform:rotate(180deg); }
+  .qa-a { display:none; padding:0 14px 13px; border-top:1px solid #123138; }
+  .qa-item.open .qa-a { display:block; }
+  .qa-a-badge { display:inline-block; font-size:9px; font-weight:700; letter-spacing:1px; color:#34d399; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.2); border-radius:2px; padding:2px 6px; margin-top:12px; margin-bottom:8px; }
+  .qa-a-text { font-size:11.5px; color:#94a3b8; line-height:1.75; }
+  .qa-a-text strong { color:#e2e8f0; }
+  .qa-pill { display:inline-block; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.2); color:#22d3ee; font-size:10px; border-radius:3px; padding:1px 7px; margin:3px 2px 0 0; }
+  code { color:#fbbf24; font-family:'JetBrains Mono',monospace; }
+
+  .cmd-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; margin-bottom:24px; }
+  .cmd-card { background:rgba(255,255,255,0.02); border:1px solid #123138; border-radius:4px; padding:12px; border-left:3px solid #22c55e; transition:border-color 0.2s; }
+  .cmd-card:hover { border-color:#1d4a54; }
+  .cmd-head { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+  .cmd-label { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:#22c55e; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); border-radius:3px; padding:2px 8px; }
+  .cmd-tag { font-size:9px; color:#5b7f87; letter-spacing:1px; text-transform:uppercase; border:1px solid #123138; border-radius:2px; padding:1px 6px; margin-left:auto; }
+  .cmd-desc { font-size:11px; color:#94a3b8; line-height:1.7; margin-bottom:6px; }
+  .cmd-ex { font-size:10.5px; background:rgba(0,0,0,0.3); border:1px solid #123138; border-radius:3px; padding:6px 10px; margin-top:6px; color:#fbbf24; line-height:1.7; white-space:pre-wrap; }
+  .cmd-out { color:#5b7f87; }
+
+  .concept-table { width:100%; border-collapse:collapse; margin-bottom:16px; font-size:11px; }
+  .concept-table th { padding:8px 12px; text-align:left; background:rgba(34,211,238,0.06); border-bottom:2px solid rgba(34,211,238,0.2); color:#22d3ee; font-weight:700; font-size:10px; letter-spacing:1px; text-transform:uppercase; }
+  .concept-table td { padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:top; }
+  .concept-table td:first-child { font-family:'JetBrains Mono',monospace; color:#fbbf24; white-space:nowrap; }
+  .concept-table tr:hover td { background:rgba(255,255,255,0.015); }
+  .table-wrap { background:rgba(255,255,255,0.02); border:1px solid #123138; border-radius:4px; overflow:hidden; overflow-x:auto; margin-bottom:20px; }
+  .table-wrap .concept-table { margin-bottom:0; }
+
+  .pu-code { background:#040c0e; border:1px solid #123138; border-radius:4px; padding:10px 14px; font-size:11px; color:#e2e8f0; font-family:'JetBrains Mono',monospace; line-height:1.8; white-space:pre; overflow-x:auto; margin-bottom:12px; }
+  .pu-code .k { color:#ff7b72; }
+  .pu-code .s { color:#a5d6ff; }
+  .pu-code .c { color:#3d4f6b; font-style:italic; }
+  .pu-code .v { color:#ffa657; }
+  .pu-code .fn { color:#d2a8ff; }
+  .pu-code .num { color:#79c0ff; }
+  .pu-output { background:#020608; border:1px solid #0d1f22; border-radius:4px; padding:10px 14px; font-size:11px; font-family:'JetBrains Mono',monospace; line-height:1.8; white-space:pre; overflow-x:auto; margin-bottom:12px; }
+  .pu-output .ok { color:#3fb950; }
+  .pu-output .hi { color:#38bdf8; }
+  .pu-output .warn { color:#e3b341; }
+  .pu-output .dim { color:#3d5a60; }
+  .pu-output .err { color:#f85149; }
+  .note-box { background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.2); border-left:3px solid #f97316; border-radius:4px; padding:10px 14px; font-size:11px; color:#94a3b8; line-height:1.7; margin-bottom:12px; }
+  .note-box strong { color:#fb923c; }
+  .good-bad { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  @media (max-width:640px) { .good-bad { grid-template-columns:1fr; } }
+  .good-box, .bad-box { border-radius:4px; padding:14px; font-size:11px; color:#94a3b8; line-height:1.8; }
+  .bad-box { background:rgba(244,63,94,0.05); border:1px solid rgba(244,63,94,0.2); border-left:3px solid #f43f5e; }
+  .good-box { background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.2); border-left:3px solid #22c55e; }
+  .good-box .box-label { font-family:'Syne',sans-serif; font-weight:700; color:#22c55e; margin-bottom:8px; }
+  .bad-box .box-label { font-family:'Syne',sans-serif; font-weight:700; color:#f43f5e; margin-bottom:8px; }
+
+  /* SQL Fundamentals tab: reuse the site-wide notes-flow engine, scoped in here */
+  #sql-content .section { scroll-margin-top:18px; }
+  .sf-searchbar { margin-bottom:18px; }
+  .sf-searchbar input { width:100%; max-width:420px; padding:10px 16px; border-radius:8px; border:1px solid #123138; background:rgba(255,255,255,0.03); color:inherit; font-size:12px; outline:none; font-family:'JetBrains Mono',monospace; }
+  .sf-searchbar input::placeholder { color:#5b7f87; }
+  .sf-searchbar input:focus { border-color:#22d3ee; }
+  .sf-progress { display:flex; align-items:center; gap:10px; margin-bottom:20px; font-size:11px; color:#94a3b8; }
+  .sf-progress-track { flex:1; max-width:260px; height:8px; border-radius:6px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .sf-progress-fill { height:100%; width:0%; background:#22d3ee; border-radius:6px; transition:width 0.4s ease; }
+
+  /* ── QUIZ GAME — same reusable engine pattern as the DevOps cheat sheet ── */
+  .quiz-game { position:relative; background:#040c0e; border:1px solid #123138; border-radius:10px; padding:28px 24px; margin:8px 0 24px; min-height:280px; display:flex; align-items:center; justify-content:center; }
+  .quiz-screen { display:none; flex-direction:column; align-items:center; text-align:center; width:100%; }
+  .quiz-icon, .quiz-joke-icon, .quiz-end-icon { font-size:40px; margin-bottom:10px; }
+  .quiz-start-title, .quiz-end-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#f8fafc; margin-bottom:8px; }
+  .quiz-start-desc { font-size:11.5px; color:#94a3b8; line-height:1.8; max-width:440px; margin:0 auto 20px; }
+  .quiz-play-btn { font-family:'Syne',sans-serif; font-size:13px; font-weight:800; letter-spacing:0.5px; color:#04191c; background:linear-gradient(135deg,#22d3ee,#67e8f9); border:none; border-radius:8px; padding:12px 32px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; box-shadow:0 4px 14px rgba(34,211,238,0.3); }
+  .quiz-play-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(34,211,238,0.45); }
+  .quiz-close-btn { position:absolute; top:12px; right:12px; font-size:10px; letter-spacing:0.5px; color:#f85149; background:rgba(248,81,73,0.08); border:1px solid rgba(248,81,73,0.3); border-radius:4px; padding:4px 10px; cursor:pointer; display:none; }
+  .quiz-close-btn:hover { background:rgba(248,81,73,0.18); }
+  .quiz-joke-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#5b7f87; margin-bottom:10px; }
+  .quiz-joke-text { font-size:14px; color:#e2e8f0; line-height:1.7; max-width:460px; font-style:italic; margin:0 auto; }
+  .quiz-top-bar { width:100%; max-width:520px; display:flex; align-items:center; justify-content:space-between; margin:0 auto 18px; gap:10px; flex-wrap:wrap; }
+  .quiz-progress { font-size:10.5px; color:#5b7f87; font-family:'JetBrains Mono',monospace; }
+  .quiz-score { font-size:10.5px; color:#3fb950; font-family:'JetBrains Mono',monospace; font-weight:700; }
+  .quiz-q-text { font-size:15px; color:#f8fafc; font-weight:700; line-height:1.6; margin:0 auto 20px; max-width:520px; }
+  .quiz-options { display:flex; flex-direction:column; gap:9px; width:100%; max-width:520px; margin:0 auto 14px; }
+  .quiz-option { text-align:left; font-size:12px; color:#cbd5e1; background:rgba(255,255,255,0.02); border:1px solid #123138; border-radius:6px; padding:11px 16px; cursor:pointer; transition:all 0.15s; font-family:inherit; }
+  .quiz-option:hover { border-color:#22d3ee; background:rgba(34,211,238,0.06); }
+  .quiz-option.quiz-correct { border-color:#3fb950; background:rgba(63,185,80,0.14); color:#7ee787; font-weight:700; }
+  .quiz-option.quiz-wrong { border-color:#f85149; background:rgba(248,81,73,0.14); color:#ff7b72; font-weight:700; }
+  .quiz-feedback { font-size:11.5px; color:#94a3b8; line-height:1.8; background:rgba(255,255,255,0.02); border:1px solid #123138; border-radius:6px; padding:12px 16px; width:100%; max-width:520px; margin:0 auto 16px; text-align:left; }
+  .quiz-fb-correct { color:#3fb950; font-weight:700; }
+  .quiz-fb-wrong { color:#f85149; font-weight:700; }
+  .quiz-next-btn { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:#04191c; background:#22d3ee; border:none; border-radius:6px; padding:10px 22px; cursor:pointer; }
+  .quiz-next-btn:hover { background:#67e8f9; }
+  .quiz-end-score { font-size:32px; font-weight:800; color:#22d3ee; font-family:'Syne',sans-serif; margin-bottom:4px; }
+  .quiz-end-pct { font-size:12px; color:#5b7f87; margin-bottom:22px; }
+
+  /* ── SQL PLAYGROUND — the database "compiler", same pattern as Shell Scripting's runner ── */
+  .sq-editor { background:#040c0e; border:1px solid #123138; border-radius:8px 8px 0 0; overflow:hidden; }
+  .sq-editor-bar { background:#0a1a1d; padding:8px 12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid #123138; }
+  .sq-dot { width:11px; height:11px; border-radius:50%; display:inline-block; }
+  .sq-filename { margin-left:6px; font-size:10.5px; color:#5b7f87; font-family:'JetBrains Mono',monospace; flex:1; }
+  .sq-run-btn { font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:700; letter-spacing:0.5px; color:#3fb950; background:rgba(63,185,80,0.1); border:1px solid rgba(63,185,80,0.35); border-radius:4px; padding:5px 12px; cursor:pointer; transition:all 0.15s; }
+  .sq-run-btn:hover { background:rgba(63,185,80,0.22); }
+  #sqCode { border-radius:0; margin-bottom:0; border-top:none; }
+  .sq-output-wrap { border:1px solid #123138; border-top:none; border-radius:0 0 8px 8px; padding:10px 14px; background:#020608; margin-bottom:2px; }
+  .sq-output-label { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#5b7f87; margin-bottom:6px; }
+  #sqOutput { border:none; padding:0; background:transparent; margin-bottom:0; }
+  .sq-info { background:rgba(34,211,238,0.05); border:1px solid rgba(34,211,238,0.18); border-left:3px solid #22d3ee; border-radius:4px; padding:12px 14px; margin:14px 0 24px; font-size:11.5px; color:#94a3b8; line-height:1.85; }
+  .sq-info strong { color:#22d3ee; }
+  .sq-info code { color:#fbbf24; }
+  .sq-breakdown { background:rgba(255,255,255,0.02); border:1px solid #123138; border-radius:8px; padding:14px 16px; margin-bottom:2px; }
+  .sq-breakdown-label { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#22d3ee; font-weight:700; margin-bottom:10px; }
+  .sq-breakdown-list { display:flex; flex-direction:column; gap:8px; }
+  .sq-breakdown-item { display:flex; gap:10px; align-items:flex-start; }
+  .sq-breakdown-term { flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:11px; color:#fbbf24; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.2); border-radius:4px; padding:3px 9px; white-space:nowrap; }
+  .sq-breakdown-desc { font-size:11.5px; color:#94a3b8; line-height:1.7; padding-top:2px; }
+  .sq-cat { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#5b7f87; margin:16px 0 8px; font-weight:700; }
+  .sq-cat:first-of-type { margin-top:2px; }
+  .sq-pills { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:6px; }
+  .sq-pill { font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 12px; border-radius:5px; border:1px solid #123138; background:rgba(255,255,255,0.02); color:#94a3b8; cursor:pointer; transition:all 0.15s; text-align:left; }
+  .sq-pill:hover { border-color:#22d3ee; color:#e2e8f0; background:rgba(34,211,238,0.06); }
+  .sq-pill.active { border-color:#22d3ee; background:rgba(34,211,238,0.16); color:#67e8f9; font-weight:700; }
+</style>
 </head>
 <body>
 
-<div class="bubbles" id="bubbles" aria-hidden="true"></div>
+<a href="../index.html" style="position:fixed;top:16px;left:16px;z-index:50;display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:999px;background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.35);color:#22d3ee;">← MAP</a>
 
-<div class="page">
-  <a class="back-link" href="../index.html">← Back to the map</a>
+<div class="header">
+  <div class="badge">Interview Prep · Live Cheatsheet</div>
+  <h1>Data<span>base</span> Cheat Sheet</h1>
+  <div class="subtitle">SQL Fundamentals · Schema Design · Indexing · Sharding · Partitioning · Sessions &amp; Cookies · Q&amp;A</div>
+  <div class="version-tag">v1.0 — Rebuilt DevOps-style · 9 Tabs · Deep-Dive Edition 🌊</div>
+</div>
 
-  <header class="page-header">
-    <span class="icon">🗄️</span>
-    <h1>Database</h1>
-    <p>The Deep Sea Archive — SQL fundamentals, one dive at a time.</p>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('sql',this)">📖 SQL Fundamentals</div>
+  <div class="tab" onclick="showTab('schema',this)">🏗️ Schema Design</div>
+  <div class="tab" onclick="showTab('normal',this)">🧬 Normalization &amp; Denormalization</div>
+  <div class="tab" onclick="showTab('indexing',this)">🔍 Indexing</div>
+  <div class="tab" onclick="showTab('sharding',this)">✂️ Sharding</div>
+  <div class="tab" onclick="showTab('partitioning',this)">🧩 Partitioning</div>
+  <div class="tab" onclick="showTab('sessions',this)">🍪 Sessions &amp; Cookies</div>
+  <div class="tab" onclick="showTab('problems',this)">🧯 Problem Solving</div>
+  <div class="tab" onclick="showTab('playground',this)">🖥️ SQL Playground</div>
+  <div class="tab" onclick="showTab('quiz',this)">🎮 Quiz</div>
+</div>
 
-    <div class="progress-row">
-      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <span id="progress-text">0%</span> mastered
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SQL FUNDAMENTALS — the existing notes-flow engine, now living in one tab -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel active" id="tab-sql">
+  <div class="intro-box">
+    Everything below is the full original SQL fundamentals library — <strong>every topic from SELECT to transactions, indexes to normalization, JOINs to sharding basics</strong> — unchanged in content, just living in its own tab now instead of being the whole page. Click any heading to expand it. The dedicated tabs above go much deeper on <span class="accent">schema design, indexing, sharding, partitioning, and sessions/cookies specifically</span> — this tab is the broad reference underneath all of them.
+  </div>
+  <div class="sf-searchbar">
+    <input type="search" id="search" placeholder="Search SQL fundamentals…" aria-label="Search Database content">
+  </div>
+  <div class="sf-progress">
+    <div class="sf-progress-track"><div class="sf-progress-fill" id="progress-fill"></div></div>
+    <span id="progress-text">0%</span> mastered
+  </div>
+  <div id="content" style="position:relative;"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCHEMA DESIGN -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-schema">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🏗️ Schema design in one sentence</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📐</span><div class="analogy-text"><strong>The blueprint before the building</strong><br>Decided mostly once, lived with for years</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧱</span><div class="analogy-text"><strong>Tables = rooms</strong><br>Columns = what belongs in each room</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔗</span><div class="analogy-text"><strong>Foreign keys = doorways</strong><br>How rooms connect to each other</div></div>
+  </div>
+
+  <div class="intro-box">
+    Schema design is genuinely the highest-leverage decision in a database's life. Get it wrong and <strong>every feature built on top inherits the pain</strong> — a bad schema shows up months later as slow queries, duplicated data, and features that are unreasonably hard to add. This tab is "start from a blank page" basic: no assumed knowledge, just the actual step-by-step process, in order.
+  </div>
+
+  <div class="section-title">🪜 The Actual Process — 6 Steps, In Order</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Find the entities</span><span class="stage-tool">the "nouns" of your app</span></div><div class="stage-desc">Read your app's requirements and circle every noun that needs to be remembered: <strong style="color:#e2e8f0;">User, Post, Comment, Order, Product</strong>. Each one usually becomes its own table. If a "thing" has its own identity and its own data, it's an entity.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">List the attributes</span><span class="stage-tool">what does each entity need?</span></div><div class="stage-desc">For each entity, list the facts you actually need to store about it. A User needs an email and a password hash. A Post needs a title, body, and a creation date. Don't add a column "just in case" — every unused column is a maintenance cost forever.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Work out the relationships</span><span class="stage-tool">1:1, 1:N, N:N</span></div><div class="stage-desc">For every pair of entities, ask "how many of A can relate to how many of B?" A User has many Posts (1:N). A Post can have many Tags, and a Tag can belong to many Posts (N:N) — this last shape always needs a third table. See the concept cards below.</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Pick a primary key</span><span class="stage-tool">for every single table</span></div><div class="stage-desc">Default to a surrogate key — an auto-incrementing integer or a UUID that means nothing on its own — instead of a "natural" key like email. Natural keys change (people change emails); surrogate keys never do.</div><span class="stage-cmd">id BIGSERIAL PRIMARY KEY</span></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Add foreign keys</span><span class="stage-tool">wire the relationships together</span></div><div class="stage-desc">For every 1:N relationship, put a foreign key column on the "many" side, pointing back at the "one" side's primary key. A <code>posts</code> table gets a <code>user_id</code> column referencing <code>users.id</code>.</div><span class="stage-cmd">user_id BIGINT REFERENCES users(id)</span></div></div>
+    <div class="stage s6"><div class="stage-connector"><div class="stage-dot">6</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Normalize, then selectively denormalize</span><span class="stage-tool">see the next tab</span></div><div class="stage-desc">Organize your tables so each fact lives in exactly one place (normalization). Only after that's working and you've measured a real performance problem do you deliberately break that rule in specific spots (denormalization) — never the other way around.</div></div></div>
+  </div>
+
+  <div class="section-title">🧩 Concept: Relationship Types</div>
+  <div class="concept" style="--cc:#22d3ee">
+    <div class="concept-head"><span class="concept-icon">1️⃣</span><span class="concept-title">One-to-One (1:1)</span><span class="concept-subtitle">Rare, but real</span></div>
+    <div class="concept-body">Each row in table A matches <strong>exactly one</strong> row in table B, and vice versa. Example: a <code>users</code> table and a <code>user_profiles</code> table — every user has exactly one profile. Usually you'd just merge these into one table unless one side is huge/rarely-read (e.g. splitting off a big "bio" text field so the hot <code>users</code> table stays small).</div>
+    <div class="pill-row"><span class="pill">users.id = user_profiles.user_id</span><span class="pill">FK is also UNIQUE</span></div>
+  </div>
+  <div class="concept" style="--cc:#22c55e">
+    <div class="concept-head"><span class="concept-icon">🔢</span><span class="concept-title">One-to-Many (1:N)</span><span class="concept-subtitle">The most common shape</span></div>
+    <div class="concept-body">One row in table A can match <strong>many</strong> rows in table B, but each row in B points back to only one row in A. One <code>user</code> writes many <code>posts</code>; each <code>post</code> has exactly one author. The foreign key always lives on the "many" side.</div>
+    <div class="pill-row"><span class="pill">posts.user_id → users.id</span><span class="pill">FK on the "many" table</span></div>
+  </div>
+  <div class="concept" style="--cc:#f97316">
+    <div class="concept-head"><span class="concept-icon">🕸️</span><span class="concept-title">Many-to-Many (N:N)</span><span class="concept-subtitle">Needs a junction table</span></div>
+    <div class="concept-body">Many rows in A can relate to many rows in B — a <code>post</code> can have many <code>tags</code>, and a <code>tag</code> can be on many <code>posts</code>. Neither table can hold a single foreign key for this, so you create a third table (a <strong>junction</strong> / <strong>join</strong> table) with just two foreign keys, one to each side.</div>
+    <div class="pill-row"><span class="pill">post_tags(post_id, tag_id)</span><span class="pill">composite PK on both columns</span></div>
+  </div>
+
+  <div class="section-title">🩺 Worked Example — Designing a Tiny Blog, Start to Finish</div>
+  <div class="note-box"><strong>The requirement:</strong> "Users can write posts. Other users can comment on posts. Posts can have multiple tags." That's the entire spec — watch how directly it turns into tables.</div>
+
+  <div class="pu-code"><span class="c">-- Step 1 & 2: entity "users", with the attributes it actually needs</span>
+<span class="k">CREATE TABLE</span> users (
+  id          <span class="v">BIGSERIAL PRIMARY KEY</span>,
+  email       <span class="v">VARCHAR(255)</span> <span class="k">UNIQUE NOT NULL</span>,
+  password_hash <span class="v">VARCHAR(255)</span> <span class="k">NOT NULL</span>,
+  created_at  <span class="v">TIMESTAMP</span> <span class="k">NOT NULL DEFAULT</span> now()
+);
+
+<span class="c">-- Step 3 & 5: "posts" — one user has many posts (1:N), so the FK lives here</span>
+<span class="k">CREATE TABLE</span> posts (
+  id          <span class="v">BIGSERIAL PRIMARY KEY</span>,
+  user_id     <span class="v">BIGINT NOT NULL REFERENCES</span> users(id),
+  title       <span class="v">VARCHAR(255)</span> <span class="k">NOT NULL</span>,
+  body        <span class="v">TEXT NOT NULL</span>,
+  created_at  <span class="v">TIMESTAMP</span> <span class="k">NOT NULL DEFAULT</span> now()
+);
+
+<span class="c">-- "comments" — one post has many comments, one user writes many comments</span>
+<span class="k">CREATE TABLE</span> comments (
+  id          <span class="v">BIGSERIAL PRIMARY KEY</span>,
+  post_id     <span class="v">BIGINT NOT NULL REFERENCES</span> posts(id),
+  user_id     <span class="v">BIGINT NOT NULL REFERENCES</span> users(id),
+  body        <span class="v">TEXT NOT NULL</span>,
+  created_at  <span class="v">TIMESTAMP</span> <span class="k">NOT NULL DEFAULT</span> now()
+);
+
+<span class="c">-- "tags" — just a name, nothing else needed</span>
+<span class="k">CREATE TABLE</span> tags (
+  id          <span class="v">BIGSERIAL PRIMARY KEY</span>,
+  name        <span class="v">VARCHAR(50)</span> <span class="k">UNIQUE NOT NULL</span>
+);
+
+<span class="c">-- posts <-> tags is many-to-many, so it gets its own junction table</span>
+<span class="k">CREATE TABLE</span> post_tags (
+  post_id     <span class="v">BIGINT NOT NULL REFERENCES</span> posts(id),
+  tag_id      <span class="v">BIGINT NOT NULL REFERENCES</span> tags(id),
+  <span class="k">PRIMARY KEY</span> (post_id, tag_id)
+);</div>
+  <div class="pu-output"><span class="ok">CREATE TABLE</span>
+<span class="ok">CREATE TABLE</span>
+<span class="ok">CREATE TABLE</span>
+<span class="ok">CREATE TABLE</span>
+<span class="ok">CREATE TABLE</span>
+<span class="dim">-- all 5 tables created, in order — this is exactly what a real terminal prints back, one line per statement</span></div>
+  <div class="note-box"><strong>Notice:</strong> nothing here was clever. Every decision traced directly back to one of the 6 steps above. That's what a good schema-design process feels like — boring, mechanical, and hard to get wrong. Want to run any of these one at a time and see them individually? Try the <strong style="color:#22d3ee;">🖥️ SQL Playground</strong> tab.</div>
+
+  <div class="section-title">🚫 Common Mistakes</div>
+  <div class="good-bad">
+    <div class="bad-box"><div class="box-label">😰 Beginner schema</div>
+      Storing tags as <code>tags: "sql, career, backend"</code> in one text column on the posts table. Storing a user's email as the primary key. No foreign keys at all — just matching IDs "by convention" with nothing enforcing it. One giant table with 40 columns because "joining is slow."
     </div>
-  </header>
+    <div class="good-box"><div class="box-label">✅ What actually holds up</div>
+      A real <code>tags</code> table + junction table, so you can query, count, and rename tags safely. A surrogate <code>id</code> primary key, with email as a separate <code>UNIQUE</code> column. Real <code>FOREIGN KEY</code> constraints, so the database itself refuses bad data. Multiple focused tables, joined when needed — modern databases join fast when indexes are in place (see the Indexing tab).
+    </div>
+  </div>
 
-  <!-- decorative 3D database core: pure CSS 3D, no libraries -->
-  <div class="db-hero" aria-hidden="true">
-    <div class="db-hero-glow"></div>
-    <div class="db-hero-3d">
-      <div class="db-disk db-disk-1"></div>
-      <div class="db-disk db-disk-2"></div>
-      <div class="db-disk db-disk-3"></div>
-      <div class="db-hero-particles">
-        <span></span><span></span><span></span><span></span><span></span><span></span>
+  <div class="section-title">🎯 Interview Q&amp;A</div>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">S1</span><span class="qa-q-text">Walk me through how you'd design a schema for a new feature, from scratch.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">I follow the same six steps every time: find the entities (the nouns in the requirement), list each entity's real attributes, work out how entities relate to each other (1:1, 1:N, N:N), give every table a surrogate primary key, wire up foreign keys for every relationship, then normalize the result. I don't add speculative columns or tables — only what the actual requirement needs right now.<br><br><span class="qa-pill">entities → attributes → relationships → keys → FKs → normalize</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">S2</span><span class="qa-q-text">Why use a surrogate key (auto-increment id) instead of a natural key like email?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Natural keys can change — a user might change their email, but their identity in the system shouldn't have to change with it. If email is the primary key, every table that references the user now has to update too. A surrogate id never changes, is smaller and faster to index, and keeps identity separate from data that's allowed to be edited.<br><br><span class="qa-pill">identity ≠ data that can change</span><span class="qa-pill">smaller, faster FK joins</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">S3</span><span class="qa-q-text">How do you actually model a many-to-many relationship?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Neither side can hold a single foreign key for a many-to-many relationship, so you create a third "junction" table containing just two foreign keys, one pointing to each side. The junction table's primary key is usually the combination of both foreign keys (a composite key), which also naturally prevents the same pair being linked twice.<br><br><span class="qa-pill">post_tags(post_id, tag_id)</span></div></div></div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🏗️</div>
+    <div>
+      <div class="loop-title">Entities → attributes → relationships → keys → foreign keys → normalize</div>
+      <div class="loop-desc">Every schema, no matter how big, is built from exactly these six mechanical steps repeated table by table. Once you can do this on paper for a tiny blog, you can do it for anything.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- NORMALIZATION & DENORMALIZATION -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-normal">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🧬 Normalize vs denormalize, in one line</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📁</span><div class="analogy-text"><strong>Normalize</strong><br>Every fact lives in exactly one place</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚡</span><div class="analogy-text"><strong>Denormalize</strong><br>Deliberately duplicate, for speed</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚖️</span><div class="analogy-text"><strong>It's a trade</strong><br>Write simplicity vs. read speed</div></div>
+  </div>
+
+  <div class="intro-box">
+    You already have the full 1NF/2NF/3NF breakdown with examples in the <strong>📖 SQL Fundamentals</strong> tab — this tab is the practical, decision-making layer on top: <span class="accent">a fast recap, then the real question every engineer eventually faces — when do you break the rules on purpose, and how do you do it safely?</span>
+  </div>
+
+  <div class="section-title">⚡ Quick Recap — The Normal Forms Cheat Table</div>
+  <div class="table-wrap">
+    <table class="concept-table">
+      <thead><tr><th>Form</th><th>Rule</th><th>Fixes</th></tr></thead>
+      <tbody>
+        <tr><td>1NF</td><td style="color:#94a3b8;">Every column holds one atomic value — no comma-separated lists in a cell.</td><td style="color:#94a3b8;">"Repeating groups" like <code>tags: "sql,career"</code> in one column.</td></tr>
+        <tr><td>2NF</td><td style="color:#94a3b8;">1NF, plus every non-key column depends on the <em>whole</em> primary key (only matters with composite keys).</td><td style="color:#94a3b8;">A column that really only depends on half of a composite key.</td></tr>
+        <tr><td>3NF</td><td style="color:#94a3b8;">2NF, plus no non-key column depends on <em>another non-key column</em> (no transitive dependency).</td><td style="color:#94a3b8;">Storing <code>city</code> AND <code>zip_code</code> where zip determines city — update one, the other goes stale.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🪜 When Should You Actually Denormalize?</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Start fully normalized</span><span class="stage-tool">always the default</span></div><div class="stage-desc">Build the schema correctly first. Normalized data is easier to reason about, and bugs from stale duplicated data are some of the hardest to track down.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Measure a real problem</span><span class="stage-tool">not a guess</span></div><div class="stage-desc">Denormalizing is a trade-off, not a free win. Only reach for it once you've actually measured a slow query — e.g. a product page that needs 4 JOINs and 200ms just to show an order count.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Denormalize the smallest possible piece</span><span class="stage-tool">surgical, not sweeping</span></div><div class="stage-desc">Duplicate one column, add one summary table, or precompute one counter — whatever removes the specific slow JOIN. Don't flatten the whole schema "just in case."</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Own the write-side cost</span><span class="stage-tool">someone has to keep it in sync</span></div><div class="stage-desc">Every duplicated value now has to be updated in two places whenever the original changes — in application code, a trigger, or a scheduled job. Decide explicitly who's responsible before you ship it.</div></div></div>
+  </div>
+
+  <div class="section-title">🛠️ Three Real Denormalization Techniques</div>
+  <div class="concept" style="--cc:#22d3ee">
+    <div class="concept-head"><span class="concept-icon">🔢</span><span class="concept-title">Denormalized Counter Columns</span><span class="concept-subtitle">avoid COUNT() on every read</span></div>
+    <div class="concept-body">Instead of running <code>SELECT COUNT(*) FROM comments WHERE post_id = 5</code> on every single page view, store a <code>comment_count</code> column directly on the <code>posts</code> row, and increment it whenever a comment is inserted (in the same transaction, or via a trigger).</div>
+    <div class="pu-code"><span class="c">-- when a comment is added, in the same transaction:</span>
+<span class="k">UPDATE</span> posts <span class="k">SET</span> comment_count = comment_count + <span class="num">1</span> <span class="k">WHERE</span> id = <span class="num">5</span>;</div>
+  </div>
+  <div class="concept" style="--cc:#22c55e">
+    <div class="concept-head"><span class="concept-icon">📋</span><span class="concept-title">Duplicated Columns</span><span class="concept-subtitle">avoid a JOIN for one common field</span></div>
+    <div class="concept-body">If every single query listing a post also needs the author's display name, store <code>author_name</code> directly on the <code>posts</code> row too — even though it technically belongs on <code>users</code>. Update it (or accept it going stale, if that's acceptable) when the user changes their name.</div>
+  </div>
+  <div class="concept" style="--cc:#a78bfa">
+    <div class="concept-head"><span class="concept-icon">📊</span><span class="concept-title">Summary / Materialized Tables</span><span class="concept-subtitle">precompute the expensive aggregate</span></div>
+    <div class="concept-body">For a dashboard showing "sales per day," don't re-aggregate millions of orders on every page load — maintain a <code>daily_sales_summary</code> table (or a real materialized view) that's updated on a schedule or via triggers, and query <em>that</em> instead.</div>
+    <div class="pu-code"><span class="k">CREATE MATERIALIZED VIEW</span> daily_sales <span class="k">AS</span>
+<span class="k">SELECT</span> order_date, <span class="k">SUM</span>(total) <span class="k">AS</span> revenue
+<span class="k">FROM</span> orders <span class="k">GROUP BY</span> order_date;
+<span class="c">-- refreshed on a schedule:</span>
+<span class="k">REFRESH MATERIALIZED VIEW</span> daily_sales;</div>
+  </div>
+
+  <div class="section-title">⚖️ The Trade-off Table</div>
+  <div class="table-wrap">
+    <table class="concept-table">
+      <thead><tr><th>Factor</th><th>Normalized</th><th>Denormalized</th></tr></thead>
+      <tbody>
+        <tr><td>Reads</td><td style="color:#94a3b8;">Slower — needs JOINs</td><td style="color:#22c55e;">Faster — data already in one place</td></tr>
+        <tr><td>Writes</td><td style="color:#22c55e;">Simple — update one row</td><td style="color:#94a3b8;">More complex — must update every copy</td></tr>
+        <tr><td>Storage</td><td style="color:#22c55e;">Smaller — no duplication</td><td style="color:#94a3b8;">Larger — same data stored more than once</td></tr>
+        <tr><td>Consistency risk</td><td style="color:#22c55e;">Low — one source of truth</td><td style="color:#f43f5e;">Real — copies can drift apart if a write is missed</td></tr>
+        <tr><td>Best for</td><td style="color:#94a3b8;">Transactional systems (OLTP): banking, orders</td><td style="color:#94a3b8;">Read-heavy systems (OLAP): dashboards, feeds, reports</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🧬</div>
+    <div>
+      <div class="loop-title">Normalize by default. Denormalize on purpose, in one measured spot at a time.</div>
+      <div class="loop-desc">The mistake isn't denormalizing — it's denormalizing everywhere, upfront, without measuring anything first.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- INDEXING — HOW YOU ACTUALLY DO IT -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-indexing">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🔍 An index in one sentence</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📖</span><div class="analogy-text"><strong>A book's index page</strong><br>Jump straight to it, instead of reading every page</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🌳</span><div class="analogy-text"><strong>Stored as a B-tree</strong><br>Sorted, so lookups skip most of the data</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚖️</span><div class="analogy-text"><strong>Faster reads, slower writes</strong><br>Every index is upkeep, not free</div></div>
+  </div>
+
+  <div class="intro-box">
+    Without an index, <code>SELECT * FROM users WHERE email = 'x@y.com'</code> means the database checks <strong>every single row</strong>, one at a time — a "full table scan." On a 10-row table that's instant. On a 50-million-row table, that's the difference between 2ms and 8 seconds. An index is a separate, sorted structure the database maintains <em>alongside</em> your table specifically so it doesn't have to do that.
+  </div>
+
+  <div class="section-title">🌳 What an Index Actually Looks Like — the B-Tree</div>
+  <div class="note-box"><strong>Verified against real indexing documentation (use-the-index-luke.com):</strong> almost every database index (PostgreSQL, MySQL/InnoDB, SQL Server, Oracle) is a <strong>B-tree</strong> — a balanced, sorted tree structure. Think of it like the sorted tabs in a phone book: you don't read every name, you jump to the "M" section, then narrow down from there.</div>
+  <div class="pu-code"><span class="c">                    [ M ]                     ← root node: one quick comparison</span>
+<span class="c">                   /      \</span>
+<span class="c">            [ D | H ]    [ R | W ]            ← branch nodes: narrow further</span>
+<span class="c">           /   |   \      /   |   \</span>
+<span class="c">        [A,B][E,F][I,K] [N,P][S,T][X,Y,Z]     ← leaf nodes: hold the actual sorted values</span>
+<span class="c">                                                  + a pointer to the real row</span></div>
+  <div class="note-box">Finding "S" takes 3 comparisons (M → R/W → S), not 26. On a table with a million rows, a B-tree lookup takes roughly <strong>~20 comparisons</strong> instead of up to a million — that's what "logarithmic" means in practice.</div>
+
+  <div class="section-title">🪜 Creating Indexes — the Actual Syntax, Step by Step</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">A basic single-column index</span><span class="stage-tool">the default move</span></div><div class="stage-desc">Index any column you filter on (<code>WHERE</code>) or sort by (<code>ORDER BY</code>) regularly.</div><span class="stage-cmd">CREATE INDEX idx_users_email ON users(email);</span></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">A unique index</span><span class="stage-tool">enforces + speeds up</span></div><div class="stage-desc">Guarantees no two rows share that value AND speeds up lookups on it — two benefits from one line.</div><span class="stage-cmd">CREATE UNIQUE INDEX idx_users_email_unique ON users(email);</span></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">A composite (multi-column) index</span><span class="stage-tool">column order matters!</span></div><div class="stage-desc">Covers queries filtering on both columns together, or just the <em>first</em> column alone — this is the "leftmost prefix" rule, see below.</div><span class="stage-cmd">CREATE INDEX idx_orders_user_date ON orders(user_id, created_at);</span></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">A partial index</span><span class="stage-tool">index only the rows you'll query</span></div><div class="stage-desc">If 95% of orders are "completed" and you only ever query the "pending" ones quickly, only index those — smaller, faster, cheaper to maintain.</div><span class="stage-cmd">CREATE INDEX idx_orders_pending ON orders(created_at) WHERE status = 'pending';</span></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">A covering index</span><span class="stage-tool">skip the table entirely</span></div><div class="stage-desc"><code>INCLUDE</code> extra columns your query needs to return, so the database can answer straight from the index — an "index-only scan" — without ever touching the table.</div><span class="stage-cmd">CREATE INDEX idx_orders_covering ON orders(user_id) INCLUDE (status, total);</span></div></div>
+  </div>
+
+  <div class="section-title">📐 The Leftmost Prefix Rule — Column Order Actually Matters</div>
+  <div class="note-box">An index on <code>(user_id, created_at)</code> speeds up queries filtering on <strong>user_id alone</strong>, or <strong>user_id AND created_at together</strong> — because the index is physically sorted by <code>user_id</code> first, then <code>created_at</code> within each user_id. It does <strong>NOT</strong> help a query that filters on <code>created_at</code> alone, because that column isn't the leftmost/first one in the sort order.</div>
+  <div class="good-bad">
+    <div class="good-box"><div class="box-label">✅ Uses the index</div><code>WHERE user_id = 5</code><br><code>WHERE user_id = 5 AND created_at > '2026-01-01'</code></div>
+    <div class="bad-box"><div class="box-label">❌ Skips the index entirely</div><code>WHERE created_at > '2026-01-01'</code> — created_at isn't leftmost, so this index is useless for this query.</div>
+  </div>
+
+  <div class="section-title">🔬 Reading EXPLAIN Output — What The Database Is Actually Doing</div>
+  <div class="note-box"><strong>Verified against the real PostgreSQL documentation:</strong> the exact output format below is how <code>EXPLAIN</code> genuinely prints — this isn't simplified for teaching, it's the real thing.</div>
+  <div class="pu-code"><span class="c">-- Without an index on email:</span>
+<span class="k">EXPLAIN</span> <span class="k">SELECT</span> * <span class="k">FROM</span> users <span class="k">WHERE</span> email = <span class="s">'x@y.com'</span>;</div>
+  <div class="pu-output"><span class="err">Seq Scan on users</span>  (cost=0.00..8945.00 rows=1 width=244)
+<span class="dim">  Filter: (email = 'x@y.com'::text)</span></div>
+  <div class="note-box">"Seq Scan" = sequential scan = it read every row and checked each one. Cost <code>8945.00</code> is high — that's the full table.</div>
+  <div class="pu-code"><span class="c">-- After: CREATE INDEX idx_users_email ON users(email);</span>
+<span class="k">EXPLAIN ANALYZE</span> <span class="k">SELECT</span> * <span class="k">FROM</span> users <span class="k">WHERE</span> email = <span class="s">'x@y.com'</span>;</div>
+  <div class="pu-output"><span class="ok">Index Scan using idx_users_email on users</span>  (cost=0.29..8.30 rows=1 width=244)
+                     <span class="hi">(actual time=0.030..0.031 rows=1 loops=1)</span>
+<span class="dim">  Index Cond: (email = 'x@y.com'::text)</span></div>
+  <div class="note-box"><strong>"Index Scan"</strong> — it used the B-tree, jumped almost straight to the row. Cost dropped from <code>8945.00</code> to <code>8.30</code>. <code>EXPLAIN ANALYZE</code> (vs. plain <code>EXPLAIN</code>) actually <em>runs</em> the query and shows <code>actual time</code> in real milliseconds — <code>0.031ms</code> here — alongside the planner's estimated cost.</div>
+
+  <div class="section-title">⚠️ When Indexes Actually Hurt</div>
+  <div class="concept" style="--cc:#f43f5e">
+    <div class="concept-head"><span class="concept-icon">🐌</span><span class="concept-title">Every Index Slows Down Writes</span><span class="concept-subtitle">there's no free lunch</span></div>
+    <div class="concept-body">Every <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> has to update <strong>every index</strong> on that table too, not just the table itself. A table with 8 indexes means every write does up to 9x the work. Index only the columns you actually query by — not every column "just in case."</div>
+    <div class="pill-row"><span class="pill">reads get faster</span><span class="pill">writes get slower</span><span class="pill">more disk space used</span></div>
+  </div>
+
+  <div class="section-title">🎯 Interview Q&amp;A</div>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">I1</span><span class="qa-q-text">A query is slow. Walk me through how you'd actually speed it up.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">First, run <code>EXPLAIN ANALYZE</code> on it — never guess. If it shows a <code>Seq Scan</code> on a large table with a selective <code>WHERE</code> clause, that's the signal: add an index on the column(s) in that WHERE clause. Re-run EXPLAIN ANALYZE to confirm it switched to an Index Scan and the cost/actual time dropped. If it's a composite condition, make sure the index column order matches the leftmost-prefix rule.<br><br><span class="qa-pill">EXPLAIN ANALYZE first, always</span><span class="qa-pill">measure before and after</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">I2</span><span class="qa-q-text">Why not just index every column to be safe?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Because every index has a write cost — it has to be updated on every INSERT/UPDATE/DELETE — plus disk space. Over-indexing can make an app with heavy writes (like an orders table) noticeably slower without any read benefit, since most of those indexes are never actually used by a query.<br><br><span class="qa-pill">index what you query, not everything</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">I3</span><span class="qa-q-text">What's a "covering index" and why would you use one?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">A covering index includes every column a specific query needs, either in the index key itself or via an <code>INCLUDE</code> clause — so the database can answer the query straight from the index without ever reading the actual table row. This is called an "index-only scan" and is the fastest possible read.<br><br><span class="qa-pill">index-only scan</span><span class="qa-pill">no table lookup needed</span></div></div></div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🔍</div>
+    <div>
+      <div class="loop-title">B-tree → CREATE INDEX → EXPLAIN ANALYZE → confirm it's actually used</div>
+      <div class="loop-desc">Never add an index on a hunch, and never leave one you can't prove is used. <code>EXPLAIN ANALYZE</code> before and after is the entire discipline.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SHARDING — HOW YOU ACTUALLY DO IT -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-sharding">
+
+  <div class="analogy">
+    <div><div class="analogy-label">✂️ Sharding in one sentence</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🗄️</span><div class="analogy-text"><strong>One filing cabinet got too full</strong><br>So you buy more cabinets</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📏</span><div class="analogy-text"><strong>Split records by a rule</strong><br>Each cabinet holds a defined slice</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧭</span><div class="analogy-text"><strong>You must know which cabinet</strong><br>Before you can find anything</div></div>
+  </div>
+
+  <div class="intro-box">
+    A single database server has hard physical limits — CPU, RAM, disk, and connection count. Once you outgrow one machine, you have two options: get a <em>bigger</em> machine (vertical scaling — eventually hits a ceiling and gets absurdly expensive), or <strong>split your data across multiple machines</strong> — that's sharding. This tab is specifically about <span class="accent">how it's actually done in practice</span>, not just the theory.
+  </div>
+
+  <div class="section-title">🪜 The Four Real Sharding Strategies</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Range-based sharding</span><span class="stage-tool">split by value range</span></div><div class="stage-desc">Users A–M go to shard 1, N–Z go to shard 2. Simple to reason about and great for range queries, but easy to get an uneven ("hot") shard if data isn't evenly distributed — e.g. way more users with names starting S-Z.</div><span class="stage-cmd">user_id 1–1,000,000 → shard_1</span></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Hash-based sharding</span><span class="stage-tool">the most common default</span></div><div class="stage-desc">Run the shard key through a hash function, then mod by the number of shards. Spreads data very evenly (no hot spots), but range queries ("give me all orders from March") now have to hit every shard, since consecutive values land on unrelated shards.</div><span class="stage-cmd">shard = hash(user_id) % 4</span></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Directory-based (lookup) sharding</span><span class="stage-tool">a map you control</span></div><div class="stage-desc">A separate lookup table/service says "user 8821 lives on shard 3." Most flexible — you can move individual users between shards without a formula change — but that lookup service is now a critical piece of infrastructure that must stay fast and available.</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Geo-based sharding</span><span class="stage-tool">shard by location</span></div><div class="stage-desc">EU users' data lives on EU servers, US users' data on US servers. Common for latency (serve users from a nearby region) and legal reasons (data residency laws like GDPR).</div></div></div>
+  </div>
+
+  <div class="section-title">🧭 How It's Actually Implemented — Real Tools, Not Just Theory</div>
+  <div class="table-wrap">
+    <table class="concept-table">
+      <thead><tr><th>Approach</th><th>How it works</th><th>Real examples</th></tr></thead>
+      <tbody>
+        <tr><td>Application-level</td><td style="color:#94a3b8;">Your own app code computes the shard and connects to the right database directly. Full control, but you build and maintain the routing logic yourself.</td><td style="color:#94a3b8;">Custom sharding logic in a service layer</td></tr>
+        <tr><td>Proxy-level</td><td style="color:#94a3b8;">A middleware layer sits between your app and many database instances, routing queries automatically. Your app mostly doesn't know sharding exists.</td><td style="color:#94a3b8;">Vitess (MySQL), Citus (PostgreSQL)</td></tr>
+        <tr><td>Built into the database</td><td style="color:#94a3b8;">The database engine itself handles sharding natively — you just define a shard/partition key.</td><td style="color:#94a3b8;">MongoDB sharded clusters, DynamoDB partition keys, Cassandra</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🩺 Worked Example — Sharding a Users Table by ID</div>
+  <div class="pu-code"><span class="c">// A tiny app-level shard router — this is genuinely close to how it's done</span>
+<span class="k">const</span> SHARD_COUNT = <span class="num">4</span>;
+<span class="k">const</span> SHARD_HOSTS = [<span class="s">'db-shard-0'</span>, <span class="s">'db-shard-1'</span>, <span class="s">'db-shard-2'</span>, <span class="s">'db-shard-3'</span>];
+
+<span class="k">function</span> <span class="fn">getShardFor</span>(userId) {
+  <span class="k">const</span> shardIndex = hash(userId) % SHARD_COUNT;
+  <span class="k">return</span> SHARD_HOSTS[shardIndex];
+}
+
+<span class="c">// looking up a user now means: find the shard first, THEN query it</span>
+<span class="k">const</span> shard = <span class="fn">getShardFor</span>(<span class="num">8821</span>);
+<span class="k">const</span> user = <span class="k">await</span> db.connect(shard).query(<span class="s">'SELECT * FROM users WHERE id = ?'</span>, [<span class="num">8821</span>]);</div>
+
+  <div class="section-title">⚠️ The Hard Parts — What Actually Makes Sharding Difficult</div>
+  <div class="concept" style="--cc:#f43f5e">
+    <div class="concept-head"><span class="concept-icon">🔀</span><span class="concept-title">Cross-Shard Joins Are Hard (or Impossible)</span><span class="concept-subtitle">the #1 real-world pain point</span></div>
+    <div class="concept-body">If <code>orders</code> is sharded by <code>user_id</code> but you need "top 10 products across all users," that data is scattered across every shard — no single SQL JOIN can do that anymore. You either query every shard and merge results in application code (a "scatter-gather" query), or maintain a separate denormalized reporting store just for this.</div>
+  </div>
+  <div class="concept" style="--cc:#f97316">
+    <div class="concept-head"><span class="concept-icon">🔥</span><span class="concept-title">Hot Shards from a Bad Shard Key</span><span class="concept-subtitle">choose the key carefully</span></div>
+    <div class="concept-body">Sharding by <code>signup_date</code> means today's shard gets 100% of new-signup traffic while old shards sit idle — a "hot" shard. A good shard key spreads both data AND traffic evenly; <code>user_id</code> (hashed) is usually safer than a time-based value.</div>
+  </div>
+  <div class="concept" style="--cc:#a78bfa">
+    <div class="concept-head"><span class="concept-icon">📦</span><span class="concept-title">Resharding — Adding Shards Later</span><span class="concept-subtitle">consistent hashing solves this</span></div>
+    <div class="concept-body">Plain <code>hash(id) % 4</code> breaks catastrophically the moment you go from 4 shards to 5 — almost every key now maps somewhere new, meaning almost all data has to move. <strong>Consistent hashing</strong> is the real-world fix: it's designed so adding one shard only reshuffles roughly <code>1/N</code> of the keys, not nearly all of them.</div>
+  </div>
+
+  <div class="section-title">🎯 Interview Q&amp;A</div>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">SH1</span><span class="qa-q-text">How would you choose a shard key for a multi-tenant SaaS product?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text"><code>tenant_id</code> (the customer/company ID) is usually the right choice — almost every query in a multi-tenant app is already scoped to one tenant, so that tenant's data lands entirely on one shard, meaning most queries never need to cross shards at all. I'd avoid a shard key like <code>created_at</code> since it concentrates all new traffic on one shard.<br><br><span class="qa-pill">shard key = your most common WHERE clause</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">SH2</span><span class="qa-q-text">What actually happens when one shard runs out of space, or gets too hot?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">You need to either split that shard into two, or rebalance data across existing shards — both mean moving a lot of live data without downtime, which is genuinely one of the hardest operational tasks in distributed systems. Consistent hashing minimizes how much data has to move; some systems (like Vitess) have built-in tooling specifically for live resharding.<br><br><span class="qa-pill">consistent hashing minimizes data movement</span></div></div></div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">✂️</div>
+    <div>
+      <div class="loop-title">Pick a shard key that matches your real query pattern, hash it, and use consistent hashing</div>
+      <div class="loop-desc">Sharding is a last resort, not a first move — reach for indexing (this tab's neighbor) and read replicas first. Only shard once a single, well-indexed machine genuinely can't keep up.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- PARTITIONING -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-partitioning">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🧩 Partitioning in one sentence</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🗂️</span><div class="analogy-text"><strong>One giant drawer</strong><br>Split into labeled sub-drawers</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🏠</span><div class="analogy-text"><strong>Still one filing cabinet</strong><br>Same server, same database</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🎯</span><div class="analogy-text"><strong>Queries touch fewer drawers</strong><br>"Partition pruning" does the work</div></div>
+  </div>
+
+  <div class="intro-box">
+    Partitioning and sharding are constantly confused, and the difference is genuinely simple once said out loud: <strong>partitioning splits one huge table into smaller pieces on the SAME server</strong>; sharding splits data across MULTIPLE servers. Partitioning is about making one giant table manageable — not about scaling beyond one machine.
+  </div>
+
+  <div class="section-title">⚖️ Partitioning vs Sharding — Side by Side</div>
+  <div class="table-wrap">
+    <table class="concept-table">
+      <thead><tr><th>Factor</th><th>Partitioning</th><th>Sharding</th></tr></thead>
+      <tbody>
+        <tr><td>Servers</td><td style="color:#94a3b8;">One server, still</td><td style="color:#94a3b8;">Multiple servers</td></tr>
+        <tr><td>Solves</td><td style="color:#94a3b8;">A single table that's become huge/unmanageable</td><td style="color:#94a3b8;">A whole database that's outgrown one machine's capacity</td></tr>
+        <tr><td>Complexity</td><td style="color:#22c55e;">Lower — the database engine handles most of it</td><td style="color:#f43f5e;">Higher — routing, cross-shard queries, resharding</td></tr>
+        <tr><td>Can combine?</td><td colspan="2" style="color:#94a3b8;">Yes — each individual shard can itself be partitioned internally. They're not mutually exclusive.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🪜 The Three Partition Types — Real Syntax</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Range Partitioning</span><span class="stage-tool">most common — by date</span></div><div class="stage-desc">Split by a range of values — almost always a date. A logs or orders table becomes one partition per month or year, so queries filtering by date only ever touch the relevant partition.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">List Partitioning</span><span class="stage-tool">by an explicit set of values</span></div><div class="stage-desc">Split by a fixed, known list of values — e.g. one partition per country code, or per subscription tier.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Hash Partitioning</span><span class="stage-tool">for even distribution</span></div><div class="stage-desc">Same idea as hash sharding, but within one server — used when there's no natural range/list to split on and you just want rows spread evenly across partitions.</div></div></div>
+  </div>
+
+  <div class="pu-code"><span class="c">-- Range partitioning a large "orders" table by date, real PostgreSQL syntax</span>
+<span class="k">CREATE TABLE</span> orders (
+  id          <span class="v">BIGSERIAL</span>,
+  user_id     <span class="v">BIGINT NOT NULL</span>,
+  total       <span class="v">NUMERIC(10,2)</span>,
+  created_at  <span class="v">TIMESTAMP NOT NULL</span>
+) <span class="k">PARTITION BY RANGE</span> (created_at);
+
+<span class="c">-- each partition is its own real table underneath</span>
+<span class="k">CREATE TABLE</span> orders_2025 <span class="k">PARTITION OF</span> orders
+  <span class="k">FOR VALUES FROM</span> (<span class="s">'2025-01-01'</span>) <span class="k">TO</span> (<span class="s">'2026-01-01'</span>);
+
+<span class="k">CREATE TABLE</span> orders_2026 <span class="k">PARTITION OF</span> orders
+  <span class="k">FOR VALUES FROM</span> (<span class="s">'2026-01-01'</span>) <span class="k">TO</span> (<span class="s">'2027-01-01'</span>);
+
+<span class="c">-- this query only ever touches the orders_2026 partition — "partition pruning"</span>
+<span class="k">SELECT</span> * <span class="k">FROM</span> orders <span class="k">WHERE</span> created_at &gt;= <span class="s">'2026-06-01'</span>;</div>
+  <div class="pu-output"><span class="ok">CREATE TABLE</span>
+<span class="ok">CREATE TABLE</span>
+<span class="ok">CREATE TABLE</span>
+<span class="dim">Query returned successfully, only scanned partition: orders_2026</span></div>
+
+  <div class="section-title">✅ Why Bother — Two Real Wins</div>
+  <div class="concept" style="--cc:#22d3ee">
+    <div class="concept-head"><span class="concept-icon">🎯</span><span class="concept-title">Partition Pruning</span><span class="concept-subtitle">skip whole chunks of data instantly</span></div>
+    <div class="concept-body">When a query filters on the partition key, the database doesn't even look at the other partitions — it knows they can't possibly contain matching rows. A query for June 2026 orders never touches 2025's data at all, even without an index.</div>
+  </div>
+  <div class="concept" style="--cc:#22c55e">
+    <div class="concept-head"><span class="concept-icon">🗑️</span><span class="concept-title">Instant, Cheap Deletes</span><span class="concept-subtitle">drop a partition instead of DELETE</span></div>
+    <div class="concept-body">Need to purge data older than 2 years for compliance? <code>DROP TABLE orders_2023;</code> is nearly instant. Compare that to <code>DELETE FROM orders WHERE created_at < '2024-01-01'</code> on a huge table — that has to scan and delete millions of rows one at a time, generating a massive amount of transaction log along the way.</div>
+  </div>
+
+  <div class="section-title">🎯 Interview Q&amp;A</div>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">P1</span><span class="qa-q-text">What's the actual difference between partitioning and sharding?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Partitioning splits one large table into smaller physical pieces on the <strong>same server</strong> — it's a way of organizing a single database. Sharding splits an entire dataset across <strong>multiple separate servers</strong> — it's a way of scaling beyond one machine's capacity. They solve different problems and can be combined: each shard can internally be partitioned too.<br><br><span class="qa-pill">partitioning = one server</span><span class="qa-pill">sharding = many servers</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">P2</span><span class="qa-q-text">When would you reach for partitioning?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">When one table has grown so large that queries and maintenance (backups, index rebuilds) are getting slow, but the server itself still has capacity to spare. It's especially good for time-series data where old data is rarely queried and eventually needs to be archived or purged in bulk.<br><br><span class="qa-pill">one huge table, not a whole-server capacity problem</span></div></div></div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🧩</div>
+    <div>
+      <div class="loop-title">Same server, smaller physical chunks, queries that skip what they don't need</div>
+      <div class="loop-desc">Partitioning is usually the easier, lower-risk win to try before reaching for full sharding — it needs no new servers and no cross-shard query logic.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SESSIONS & COOKIES -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-sessions">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🍪 Sessions &amp; cookies in one sentence</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🤷</span><div class="analogy-text"><strong>HTTP has amnesia</strong><br>Every request forgets the last one</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🎟️</span><div class="analogy-text"><strong>Cookie = the claim ticket</strong><br>The browser carries it every time</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🗄️</span><div class="analogy-text"><strong>Session = what's on file</strong><br>The server's memory of you</div></div>
+  </div>
+
+  <div class="intro-box">
+    HTTP is <strong>stateless</strong> — like a cashier with total amnesia who forgets you the second your transaction ends. Every single request is treated as if it's from a total stranger, even the one you sent one second ago. Cookies and sessions are the mechanism the entire web uses to fake "the server remembers me" on top of a protocol that fundamentally doesn't.
+  </div>
+
+  <div class="section-title">🍪 What a Cookie Actually Is — the Real HTTP Header</div>
+  <div class="note-box"><strong>Verified against the real MDN HTTP documentation:</strong> the header below is the literal, real syntax a server sends — not simplified.</div>
+  <div class="pu-output"><span class="hi">Set-Cookie:</span> session_id=a3f9c1e8b2d4; <span class="ok">Domain=example.com</span>; <span class="ok">Path=/</span>; <span class="ok">Max-Age=3600</span>; <span class="ok">Secure</span>; <span class="ok">HttpOnly</span>; <span class="ok">SameSite=Lax</span></div>
+  <div class="table-wrap">
+    <table class="concept-table">
+      <thead><tr><th>Attribute</th><th>What it actually does</th></tr></thead>
+      <tbody>
+        <tr><td>Domain / Path</td><td style="color:#94a3b8;">Which site and which URL path the browser is allowed to send this cookie back to.</td></tr>
+        <tr><td>Max-Age / Expires</td><td style="color:#94a3b8;">How long the cookie survives. No value at all = a "session cookie," deleted when the browser closes.</td></tr>
+        <tr><td>Secure</td><td style="color:#94a3b8;">Only ever sent over HTTPS, never plain HTTP — stops it being sniffed on an insecure connection.</td></tr>
+        <tr><td>HttpOnly</td><td style="color:#94a3b8;"><strong style="color:#e2e8f0;">JavaScript on the page cannot read this cookie at all</strong> (<code>document.cookie</code> won't show it). The single biggest defense against session-stealing via XSS.</td></tr>
+        <tr><td>SameSite</td><td style="color:#94a3b8;"><code>Strict</code>/<code>Lax</code>/<code>None</code> — controls whether the cookie is sent on requests coming from a different site, which is the core defense against CSRF attacks.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🪜 How Login Actually Works, Step by Step</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">You submit your username + password</span></div><div class="stage-desc">A normal HTTP POST request — at this point the server has no idea who you are yet.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Server validates the credentials</span></div><div class="stage-desc">Checks the password hash in the <code>users</code> table matches. If it does, the server now needs a way to recognize you on your <em>next</em> request without asking for the password again.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Server creates a session</span><span class="stage-tool">a session store</span></div><div class="stage-desc">A random, unguessable session ID is generated and saved server-side — in Redis, an in-memory store, or a database table — along with which user it belongs to and when it expires.</div><span class="stage-cmd">SET session:a3f9c1e8 { user_id: 42, expires: ... }</span></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Server sends the session ID back as a cookie</span></div><div class="stage-desc">The <code>Set-Cookie</code> header from above — the session ID itself, not your password or user data, is what gets handed to the browser.</div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Every future request, the browser attaches that cookie automatically</span></div><div class="stage-desc">The server looks up that session ID in its session store, finds "oh, this is user 42," and now knows who's asking — without a password in sight.</div></div></div>
+  </div>
+
+  <div class="section-title">⚖️ Cookie + Session vs JWT</div>
+  <div class="table-wrap">
+    <table class="concept-table">
+      <thead><tr><th>Factor</th><th>Cookie + Server Session</th><th>JWT (JSON Web Token)</th></tr></thead>
+      <tbody>
+        <tr><td>Where state lives</td><td style="color:#94a3b8;">Server (session store) — "stateful"</td><td style="color:#94a3b8;">Inside the token itself — "stateless"</td></tr>
+        <tr><td>Instant revoke (logout everywhere)</td><td style="color:#22c55e;">Easy — just delete the session server-side</td><td style="color:#f43f5e;">Hard — the token is valid until it expires, unless you maintain a blocklist (defeats the point)</td></tr>
+        <tr><td>Scaling reads</td><td style="color:#94a3b8;">Needs a shared session store (e.g. Redis) across servers</td><td style="color:#22c55e;">Any server can verify it alone — no shared store needed</td></tr>
+        <tr><td>Common use</td><td style="color:#94a3b8;">Traditional web apps</td><td style="color:#94a3b8;">APIs, mobile apps, microservices</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🔒 The Two Attacks You're Actually Defending Against</div>
+  <div class="good-bad">
+    <div class="bad-box"><div class="box-label">🎯 XSS (Cross-Site Scripting)</div>Malicious JavaScript gets injected into your page (e.g. through an unescaped comment field) and tries to read <code>document.cookie</code> to steal the session ID. <strong style="color:#e2e8f0;">Defense: the HttpOnly flag</strong> — it makes the cookie completely invisible to any JavaScript, even malicious injected JavaScript.</div>
+    <div class="bad-box"><div class="box-label">🎯 CSRF (Cross-Site Request Forgery)</div>A different, malicious site tricks your browser into sending a request to your bank while you're still logged in — the browser attaches your real cookie automatically. <strong style="color:#e2e8f0;">Defense: the SameSite flag</strong> — <code>Strict</code>/<code>Lax</code> stops the cookie being sent on requests that originated from another site.</div>
+  </div>
+
+  <div class="section-title">🎯 Interview Q&amp;A</div>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">C1</span><span class="qa-q-text">Explain the actual difference between a cookie and a session.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">A cookie is a small piece of data the browser stores and sends back on every request — it lives on the client. A session is server-side state — usually just "which user does this session ID belong to" — stored in something like Redis or a database. The cookie's whole job is just to carry the session <em>ID</em> back and forth; the actual meaningful data lives on the server.<br><br><span class="qa-pill">cookie = client-side carrier</span><span class="qa-pill">session = server-side state</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">C2</span><span class="qa-q-text">Why does the session ID get stored in Redis instead of just in memory on one server?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Once you have more than one app server behind a load balancer, a session stored only in that one server's memory becomes invisible to the other servers — a user could get logged out just because their next request landed on a different machine. A shared store like Redis means every app server can look up the same session.<br><br><span class="qa-pill">shared session store = works across multiple servers</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">C3</span><span class="qa-q-text">Why is HttpOnly on the session cookie so important?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Without HttpOnly, any JavaScript running on your page — including malicious JavaScript injected through an XSS vulnerability — can read <code>document.cookie</code> and steal the session ID directly, letting an attacker impersonate that user with zero password needed. HttpOnly makes the cookie completely invisible to JavaScript, closing that entire attack path.<br><br><span class="qa-pill">HttpOnly blocks document.cookie access</span></div></div></div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🍪</div>
+    <div>
+      <div class="loop-title">Login → session created server-side → cookie carries the ID → server looks it up every request</div>
+      <div class="loop-desc">The cookie is never the data — it's just the claim ticket. The real state always lives in the session store on the server.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- PROBLEM SOLVING — REAL TROUBLESHOOTING SCENARIOS -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-problems">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🧯 Real interview scenarios</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🔥</span><div class="analogy-text"><strong>These actually get asked</strong><br>Not textbook trivia</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧠</span><div class="analogy-text"><strong>Show the process</strong><br>Not just the final answer</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🎯</span><div class="analogy-text"><strong>Structured, methodical</strong><br>Investigate before you act</div></div>
+  </div>
+
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR1</span><span class="qa-q-text">A query that was fast last week is suddenly slow. Walk me through your investigation.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text"><strong>1.</strong> Run <code>EXPLAIN ANALYZE</code> on it right now — is it still using the index it used to, or has it silently switched to a sequential scan?<br><strong>2.</strong> Check if the table has grown massively, or if statistics are stale — an out-of-date query planner can pick a bad plan. Run <code>ANALYZE tablename</code> to refresh stats.<br><strong>3.</strong> Check if an index was accidentally dropped, or if a recent migration changed a column type in a way that stopped the index from being used.<br><strong>4.</strong> Check overall server load — is it this one query, or is the whole database under pressure from something else?<br><br><span class="qa-pill">EXPLAIN ANALYZE first</span><span class="qa-pill">check stats freshness</span><span class="qa-pill">confirm the index still exists</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR2</span><span class="qa-q-text">Two transactions just deadlocked each other. What actually happened, and how do you prevent it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">Transaction A locks row 1, then wants row 2. Transaction B locks row 2, then wants row 1. Neither can proceed — each is waiting on the other. The database detects this and forcibly kills one transaction (rolling it back) so the other can continue.<br><br><strong>Prevention:</strong> always acquire locks in the <strong>same order</strong> across every part of your codebase (e.g. always lock the lower ID first). Keep transactions short. Consider lower isolation levels where correctness allows it, since stricter isolation means more locking.<br><br><span class="qa-pill">consistent lock ordering</span><span class="qa-pill">shorter transactions</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR3</span><span class="qa-q-text">Your primary database server just went down. What's your actual recovery plan?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">This is why you run <strong>replication</strong> — one or more read replicas continuously copying the primary's data. When the primary dies: promote a replica to be the new primary (either automatically via a tool like Patroni/orchestrator, or manually), point application traffic at the new primary, then bring the old primary back later as a replica once it's healthy.<br><br>The real interview trap: acknowledging that failover means a brief window of downtime (detection + promotion time) and possibly losing the last few unreplicated writes, depending on whether replication was synchronous or asynchronous.<br><br><span class="qa-pill">replica promotion</span><span class="qa-pill">sync vs async replication trade-off</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR4</span><span class="qa-q-text">What's the N+1 query problem, and how do you actually spot and fix it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">Loading 50 posts, then looping through them and running a separate query for each post's author — that's 1 query + 50 more = 51 queries for data that could've been fetched in 1 or 2. It's incredibly common with ORMs that lazy-load relationships by default.<br><br><strong>Spot it:</strong> log/count actual queries per request in dev — a request doing 50+ queries for one page is the classic smell.<br><strong>Fix it:</strong> use a JOIN, or your ORM's "eager loading" feature (e.g. <code>.includes()</code>, <code>JOIN FETCH</code>) to grab everything in one or two queries instead of one-per-row.<br><br><span class="qa-pill">1 query + N loop queries = N+1</span><span class="qa-pill">fix: JOIN or eager load</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR5</span><span class="qa-q-text">Your app is getting "too many connections" errors from the database. What's going on?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">Every database has a hard cap on simultaneous connections. This usually means either: connections aren't being closed/returned properly (a leak), you're opening a new connection per request instead of reusing a pool, or you genuinely have more traffic than your connection limit allows.<br><br><strong>Fix:</strong> use a connection pool (like PgBouncer for Postgres) so requests share a small, fixed set of real database connections instead of each request opening its own. Audit code for connections that are opened but never explicitly released.<br><br><span class="qa-pill">connection pooling (PgBouncer)</span><span class="qa-pill">check for connection leaks</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR6</span><span class="qa-q-text">You need to add a column to a table with 200 million rows, in production, with zero downtime. How?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">The danger is that some migration types (like adding a column with a non-null default in older MySQL versions) rewrite the entire table, locking it for the whole duration. The safe pattern: add the column as <strong>nullable, with no default</strong> first (usually instant), backfill the data in small batches in the background, then add the <code>NOT NULL</code> constraint once every row is filled in.<br><br><span class="qa-pill">nullable first, backfill in batches, constrain last</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR7</span><span class="qa-q-text">When would you actually choose a NoSQL database over a relational one?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">When your data doesn't naturally fit rows and fixed columns (deeply nested/variable documents), when you need to scale writes horizontally more easily than a relational database typically allows, or when you don't need multi-table transactions or complex JOINs. Common real fits: a product catalog with wildly different attributes per category (document store), a cache/session store (key-value), or time-series metrics (column-family). If you need strong consistency and complex relationships, relational is almost always still the right default.<br><br><span class="qa-pill">variable/nested data → document store</span><span class="qa-pill">need strong consistency → stick with SQL</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">PR8</span><span class="qa-q-text">Disk usage on the database server is at 95% and climbing. What do you actually check, in order?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text"><strong>1.</strong> Check what's actually using the space — table sizes, index sizes, and write-ahead-log/binlog size (these can balloon if replication is stuck or lagging).<br><strong>2.</strong> Check for bloat — deleted rows in some databases (like PostgreSQL with MVCC) aren't immediately reclaimed; a <code>VACUUM</code> may be overdue.<br><strong>3.</strong> Check for old, unpruned partitions or unarchived data that should have been dropped already (see the Partitioning tab).<br><strong>4.</strong> Short-term: free up space safely. Long-term: set up monitoring and alerts well before 95%, and automate partition/log cleanup.<br><br><span class="qa-pill">check WAL/binlog size</span><span class="qa-pill">check for table bloat / VACUUM</span></div></div></div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🧯</div>
+    <div>
+      <div class="loop-title">Investigate with real evidence first — EXPLAIN, logs, metrics — then act</div>
+      <div class="loop-desc">Every scenario above follows the same shape: gather real evidence, form a hypothesis, confirm it, THEN change something. Jumping straight to a fix without evidence is the pattern interviewers are specifically screening against.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SQL PLAYGROUND — the database "compiler": pick a query, run it, see real output -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-playground">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🖥️ What this tab actually is</div></div>
+    <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>A real client, simulated</strong><br>Same output a real psql session shows</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧩</span><div class="analogy-text"><strong>Pieces explained first</strong><br>Before you see them combined</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">▶️</span><div class="analogy-text"><strong>Click Run — see the real output</strong><br>Nothing stays abstract</div></div>
+  </div>
+
+  <div class="intro-box">
+    Every tab above showed you queries as <em>code</em>. This tab is where you actually <strong>run</strong> them. Pick any query below from any topic — schema design, indexing, normalization, partitioning, sessions, or troubleshooting — read what each piece does first, then hit <strong style="color:#3fb950;">▶ Run Query</strong> to see exactly the output a real database client would print. Nothing here is ever left as "just code" — every single query below always shows you what you'd actually get back.
+  </div>
+
+  <div class="section-title">🖥️ Try It — Pick a Query, Then Run It</div>
+
+  <div class="sq-breakdown" id="sqBreakdown">
+    <div class="sq-breakdown-label">🧩 First, what each piece means</div>
+    <div class="sq-breakdown-list" id="sqBreakdownList"><span class="dim">Pick a query below — every keyword it uses gets explained here, one at a time, before you run it.</span></div>
+  </div>
+
+  <div class="sq-editor">
+    <div class="sq-editor-bar">
+      <span class="sq-dot" style="background:#ff5f56"></span>
+      <span class="sq-dot" style="background:#ffbd2e"></span>
+      <span class="sq-dot" style="background:#27c93f"></span>
+      <span class="sq-filename" id="sqFilename">pick-a-query-below.sql</span>
+      <button class="sq-run-btn" onclick="runSqlQuery()">▶ Run Query</button>
+    </div>
+    <div class="pu-code" id="sqCode"><span class="dim">-- click any query below to load it here</span></div>
+  </div>
+  <div class="sq-output-wrap">
+    <div class="sq-output-label">Output — exactly what a real client would print</div>
+    <div class="pu-output" id="sqOutput"><span class="dim">↳ nothing run yet — pick a query, then click ▶ Run Query above</span></div>
+  </div>
+  <div class="sq-info" id="sqInfo">
+    <div><strong>What it does:</strong> <span id="sqDoes">Pick any query below to get started.</span></div>
+    <div style="margin-top:6px;"><strong>Where it connects:</strong> <span id="sqWhere">—</span></div>
+  </div>
+
+  <div class="sq-cat">🌱 Basic CRUD</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('createUsersTable',this)">CREATE TABLE</button>
+    <button class="sq-pill" onclick="loadSqlQuery('insertUser',this)">INSERT</button>
+    <button class="sq-pill" onclick="loadSqlQuery('selectUsers',this)">SELECT</button>
+    <button class="sq-pill" onclick="loadSqlQuery('updateUser',this)">UPDATE</button>
+    <button class="sq-pill" onclick="loadSqlQuery('deleteUser',this)">DELETE</button>
+  </div>
+
+  <div class="sq-cat">🏗️ Schema Design</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('alterTable',this)">ALTER TABLE ... ADD COLUMN</button>
+    <button class="sq-pill" onclick="loadSqlQuery('createJunctionTable',this)">CREATE TABLE (junction)</button>
+  </div>
+
+  <div class="sq-cat">🔍 Indexing</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('createIndex',this)">CREATE INDEX</button>
+    <button class="sq-pill" onclick="loadSqlQuery('explainAnalyze',this)">EXPLAIN ANALYZE</button>
+    <button class="sq-pill" onclick="loadSqlQuery('dropIndex',this)">DROP INDEX</button>
+  </div>
+
+  <div class="sq-cat">🧬 Normalization &amp; Denormalization</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('denormCounter',this)">UPDATE counter column</button>
+    <button class="sq-pill" onclick="loadSqlQuery('createMatView',this)">CREATE MATERIALIZED VIEW</button>
+    <button class="sq-pill" onclick="loadSqlQuery('refreshMatView',this)">REFRESH MATERIALIZED VIEW</button>
+  </div>
+
+  <div class="sq-cat">🧩 Partitioning</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('createPartitionedTable',this)">CREATE TABLE ... PARTITION BY</button>
+    <button class="sq-pill" onclick="loadSqlQuery('createPartition',this)">CREATE TABLE ... PARTITION OF</button>
+    <button class="sq-pill" onclick="loadSqlQuery('dropPartition',this)">DROP TABLE (old partition)</button>
+  </div>
+
+  <div class="sq-cat">🍪 Sessions</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('insertSession',this)">INSERT session</button>
+    <button class="sq-pill" onclick="loadSqlQuery('lookupSession',this)">SELECT session lookup</button>
+  </div>
+
+  <div class="sq-cat">🧯 Troubleshooting</div>
+  <div class="sq-pills">
+    <button class="sq-pill" onclick="loadSqlQuery('checkTableSize',this)">Check table size</button>
+    <button class="sq-pill" onclick="loadSqlQuery('checkActiveConnections',this)">Check active connections</button>
+  </div>
+
+  <div class="loop-box" style="margin-top:24px;">
+    <div class="loop-icon">🖥️</div>
+    <div>
+      <div class="loop-title">Every query here is real syntax, showing real output</div>
+      <div class="loop-desc">None of this is simplified for teaching — <code style="color:#fbbf24;">INSERT 0 1</code>, <code style="color:#fbbf24;">CREATE TABLE</code>, the EXPLAIN ANALYZE format — these are genuinely what your terminal prints back the first time you try any of this yourself.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- QUIZ — same reusable engine as the DevOps cheat sheet -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-quiz">
+  <div class="section-title">🎮 Test Yourself — Database Quiz</div>
+  <div class="quiz-game" id="quiz-database">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">🗄️</div>
+      <div class="quiz-start-title">Database Quiz</div>
+      <div class="quiz-start-desc">50 questions across schema design, normalization, indexing, sharding, partitioning, sessions/cookies, and troubleshooting — shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-database', DATABASE_QUIZ_JOKES, DATABASE_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
       </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
     </div>
-    <svg class="db-hero-rings" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <circle class="ring ring-a" cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 10"/>
-      <circle class="ring ring-b" cx="100" cy="100" r="76" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 7"/>
-    </svg>
-  </div>
 
-  <div class="search-box">
-    <input type="search" id="search" placeholder="Search this island…" aria-label="Search Database content">
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-database')">↻ Play Again</button>
+    </div>
   </div>
-
-  <div id="content"></div>
 </div>
 
 <script src="../js/data.js"></script>
 <script src="../js/render.js"></script>
 <script src="../js/mascot.js"></script>
-<script src="database-fx.js"></script>
 <script>
+  function showTab(name, el) {
+    const panel = document.getElementById('tab-' + name);
+    if (!panel) { console.warn('Panel not found: tab-' + name); return; }
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    panel.classList.add('active');
+    el.classList.add('active');
+  }
+
+  function toggle(qEl) {
+    qEl.closest('.qa-item').classList.toggle('open');
+  }
+
   Revision.renderPage("database", {
     contentEl: document.getElementById("content"),
     searchEl: document.getElementById("search"),
@@ -63,24 +996,449 @@
     progressTextEl: document.getElementById("progress-text")
   });
 
-  // a few slow-rising bubbles for the "deep sea" feel
-  const bubbleWrap = document.getElementById("bubbles");
-  for (let i = 0; i < 14; i++) {
-    const b = document.createElement("span");
-    const size = 6 + Math.random() * 22;
-    b.style.left = Math.random() * 100 + "%";
-    b.style.width = size + "px";
-    b.style.height = size + "px";
-    b.style.animationDuration = (10 + Math.random() * 12) + "s";
-    b.style.animationDelay = (Math.random() * 12) + "s";
-    bubbleWrap.appendChild(b);
+  Mascot.init("database");
+
+  /* ══════════════════════════════════════════════════════════════════
+     SQL PLAYGROUND — the database "compiler". Same load-then-run pattern
+     as the Shell Scripting tab's script runner: pick a query (loads its
+     breakdown + code into the editor), then click Run to reveal output.
+     ══════════════════════════════════════════════════════════════════ */
+  const SQL_QUERIES = {
+    createUsersTable: { filename:`01_create_table.sql`,
+      breakdown:[
+        {term:`CREATE TABLE`, desc:`Defines a brand-new table and the columns it will hold.`},
+        {term:`SERIAL PRIMARY KEY`, desc:`An auto-incrementing integer used as this table's unique row identity.`},
+        {term:`NOT NULL`, desc:`A constraint — the database will refuse to save a row where this column is left empty.`}
+      ],
+      code:`<span class="k">CREATE TABLE</span> users (
+  id            <span class="v">SERIAL PRIMARY KEY</span>,
+  email         <span class="v">VARCHAR(255)</span> <span class="k">UNIQUE NOT NULL</span>,
+  password_hash <span class="v">VARCHAR(255)</span> <span class="k">NOT NULL</span>,
+  created_at    <span class="v">TIMESTAMP NOT NULL DEFAULT</span> now()
+);`,
+      output:`<span class="ok">CREATE TABLE</span>`,
+      does:`Creates the table structure — no rows exist yet, just the shape every future row must follow.`,
+      where:`The very first real command run when building the blog schema in the Schema Design tab.` },
+    insertUser: { filename:`02_insert.sql`,
+      breakdown:[
+        {term:`INSERT INTO`, desc:`Adds one brand-new row to a table.`},
+        {term:`VALUES`, desc:`The actual data being saved, listed in the same order as the columns above it.`}
+      ],
+      code:`<span class="k">INSERT INTO</span> users (email, password_hash)
+<span class="k">VALUES</span> (<span class="s">'alice@example.com'</span>, <span class="s">'$2b$12$KIx...hashed'</span>);`,
+      output:`<span class="ok">INSERT 0 1</span>`,
+      does:`Adds exactly one new row to the users table.`,
+      where:`"INSERT 0 1" is genuine PostgreSQL client output — the 0 is a legacy OID field, the 1 is how many rows were actually inserted.` },
+    selectUsers: { filename:`03_select.sql`,
+      breakdown:[
+        {term:`SELECT`, desc:`Chooses which columns to return in the result.`},
+        {term:`FROM`, desc:`Chooses which table to read the rows from.`}
+      ],
+      code:`<span class="k">SELECT</span> id, email, created_at <span class="k">FROM</span> users;`,
+      output:` id |        email        |     created_at
+<span class="dim">----+----------------------+---------------------</span>
+  1 | alice@example.com   | 2026-01-15 09:22:11
+  2 | bob@example.com      | 2026-02-03 14:05:47
+<span class="dim">(2 rows)</span>`,
+      does:`Reads and returns rows — doesn't change anything in the database.`,
+      where:`The single most common statement in any application — nearly every page load runs at least one of these.` },
+    updateUser: { filename:`04_update.sql`,
+      breakdown:[
+        {term:`UPDATE ... SET`, desc:`Changes the value of one or more columns on existing rows.`},
+        {term:`WHERE`, desc:`Limits the change to specific rows — without this, EVERY row gets updated.`}
+      ],
+      code:`<span class="k">UPDATE</span> users <span class="k">SET</span> email = <span class="s">'alice@newmail.com'</span> <span class="k">WHERE</span> id = <span class="num">1</span>;`,
+      output:`<span class="ok">UPDATE 1</span>`,
+      does:`Changes the email on exactly one row — the one matching id = 1.`,
+      where:`Forgetting the WHERE clause here is a classic, genuinely dangerous mistake — always confirm it before running in production.` },
+    deleteUser: { filename:`05_delete.sql`,
+      breakdown:[
+        {term:`DELETE FROM`, desc:`Permanently removes rows from a table.`},
+        {term:`WHERE`, desc:`Just like UPDATE, this limits which rows get deleted — omit it and the whole table empties.`}
+      ],
+      code:`<span class="k">DELETE FROM</span> users <span class="k">WHERE</span> id = <span class="num">1</span>;`,
+      output:`<span class="ok">DELETE 1</span>`,
+      does:`Permanently removes exactly one row.`,
+      where:`In a real production system, this is often replaced with a "soft delete" (an is_deleted flag) instead — undoing an UPDATE is easy, undoing a DELETE isn't.` },
+    alterTable: { filename:`06_alter_table.sql`,
+      breakdown:[
+        {term:`ALTER TABLE`, desc:`Modifies the structure of a table that already exists and may already have data.`},
+        {term:`ADD COLUMN ... DEFAULT`, desc:`Adds a new column, and fills it with this default value for every existing row.`}
+      ],
+      code:`<span class="k">ALTER TABLE</span> posts
+<span class="k">ADD COLUMN</span> comment_count <span class="v">INT NOT NULL DEFAULT</span> <span class="num">0</span>;`,
+      output:`<span class="ok">ALTER TABLE</span>`,
+      does:`Adds a denormalized counter column to an already-existing table, defaulting every current row to 0.`,
+      where:`This is the exact statement behind the "Denormalized Counter Columns" technique in the Normalization &amp; Denormalization tab.` },
+    createJunctionTable: { filename:`07_junction_table.sql`,
+      breakdown:[
+        {term:`REFERENCES`, desc:`Declares a foreign key — this column must match a real row in the referenced table.`},
+        {term:`PRIMARY KEY (a, b)`, desc:`A composite key made of two columns together — also prevents the same pair being linked twice.`}
+      ],
+      code:`<span class="k">CREATE TABLE</span> post_tags (
+  post_id <span class="v">BIGINT NOT NULL REFERENCES</span> posts(id),
+  tag_id  <span class="v">BIGINT NOT NULL REFERENCES</span> tags(id),
+  <span class="k">PRIMARY KEY</span> (post_id, tag_id)
+);`,
+      output:`<span class="ok">CREATE TABLE</span>`,
+      does:`Creates the junction table that makes the posts ↔ tags many-to-many relationship possible.`,
+      where:`Straight from the worked blog example in the Schema Design tab.` },
+    createIndex: { filename:`08_create_index.sql`,
+      breakdown:[
+        {term:`CREATE INDEX`, desc:`Builds a separate, sorted B-tree structure alongside the table for one column.`},
+        {term:`ON users(email)`, desc:`Which table and column this index is built on.`}
+      ],
+      code:`<span class="k">CREATE INDEX</span> idx_users_email <span class="k">ON</span> users(email);`,
+      output:`<span class="ok">CREATE INDEX</span>`,
+      does:`Builds the index — from this point on, lookups by email skip the full table scan.`,
+      where:`This exact statement is what took the query in the Indexing tab from an 8945-cost Seq Scan down to an 8.30-cost Index Scan.` },
+    explainAnalyze: { filename:`09_explain_analyze.sql`,
+      breakdown:[
+        {term:`EXPLAIN ANALYZE`, desc:`Actually runs the query and shows the real plan the database used, with real measured timing.`},
+        {term:`Index Scan`, desc:`Confirms the query used the B-tree index instead of reading every row.`}
+      ],
+      code:`<span class="k">EXPLAIN ANALYZE</span> <span class="k">SELECT</span> * <span class="k">FROM</span> users <span class="k">WHERE</span> email = <span class="s">'alice@example.com'</span>;`,
+      output:`<span class="ok">Index Scan using idx_users_email on users</span>  (cost=0.29..8.30 rows=1 width=244)
+                   <span class="hi">(actual time=0.030..0.031 rows=1 loops=1)</span>
+<span class="dim">  Index Cond: (email = 'alice@example.com'::text)</span>`,
+      does:`Proves the index from the previous query is actually being used, and shows the real 0.031ms execution time.`,
+      where:`Always run this before AND after adding an index — never assume it worked, confirm it.` },
+    dropIndex: { filename:`10_drop_index.sql`,
+      breakdown:[
+        {term:`DROP INDEX`, desc:`Removes an index — the column can still be queried, just without the speed-up.`}
+      ],
+      code:`<span class="k">DROP INDEX</span> idx_users_email;`,
+      output:`<span class="ok">DROP INDEX</span>`,
+      does:`Removes the index entirely — future writes to this table get slightly faster, but this lookup gets slow again.`,
+      where:`Useful for cleaning up an index you proved (via EXPLAIN ANALYZE) was never actually being used.` },
+    denormCounter: { filename:`11_denorm_counter.sql`,
+      breakdown:[
+        {term:`SET comment_count = comment_count + 1`, desc:`Increments the existing value by one, in a single atomic step.`}
+      ],
+      code:`<span class="c">-- run in the same transaction as inserting the new comment</span>
+<span class="k">UPDATE</span> posts <span class="k">SET</span> comment_count = comment_count + <span class="num">1</span> <span class="k">WHERE</span> id = <span class="num">5</span>;`,
+      output:`<span class="ok">UPDATE 1</span>`,
+      does:`Keeps the denormalized counter column in sync, one increment at a time.`,
+      where:`This is the ongoing "upkeep cost" side of denormalization — someone has to run this every time a comment is added.` },
+    createMatView: { filename:`12_create_matview.sql`,
+      breakdown:[
+        {term:`CREATE MATERIALIZED VIEW`, desc:`Runs the query once right now and physically stores the result, instead of just saving the query text.`},
+        {term:`GROUP BY`, desc:`Collapses many rows into one summary row per order_date.`}
+      ],
+      code:`<span class="k">CREATE MATERIALIZED VIEW</span> daily_sales <span class="k">AS</span>
+<span class="k">SELECT</span> order_date, <span class="k">SUM</span>(total) <span class="k">AS</span> revenue
+<span class="k">FROM</span> orders <span class="k">GROUP BY</span> order_date;`,
+      output:`<span class="ok">SELECT 42</span>`,
+      does:`Precomputes and stores the daily revenue summary — the "42" is really PostgreSQL reporting how many summary rows got populated.`,
+      where:`The real syntax behind the "Summary / Materialized Tables" technique in the Normalization &amp; Denormalization tab.` },
+    refreshMatView: { filename:`13_refresh_matview.sql`,
+      breakdown:[
+        {term:`REFRESH MATERIALIZED VIEW`, desc:`Re-runs the underlying query and replaces the stored data with the current, up-to-date result.`}
+      ],
+      code:`<span class="k">REFRESH MATERIALIZED VIEW</span> daily_sales;`,
+      output:`<span class="ok">REFRESH MATERIALIZED VIEW</span>`,
+      does:`Brings the stored summary back up to date — usually run on a schedule (e.g. once an hour) via a cron job.`,
+      where:`Without this, a materialized view slowly goes stale — it never updates itself automatically.` },
+    createPartitionedTable: { filename:`14_partition_by_range.sql`,
+      breakdown:[
+        {term:`PARTITION BY RANGE (created_at)`, desc:`Declares this table will be split into pieces based on ranges of the created_at column.`}
+      ],
+      code:`<span class="k">CREATE TABLE</span> orders (
+  id         <span class="v">BIGSERIAL</span>,
+  user_id    <span class="v">BIGINT NOT NULL</span>,
+  total      <span class="v">NUMERIC(10,2)</span>,
+  created_at <span class="v">TIMESTAMP NOT NULL</span>
+) <span class="k">PARTITION BY RANGE</span> (created_at);`,
+      output:`<span class="ok">CREATE TABLE</span>`,
+      does:`Creates the "parent" partitioned table — it holds no data directly, its partitions do.`,
+      where:`Step one of the exact worked example from the Partitioning tab.` },
+    createPartition: { filename:`15_create_partition.sql`,
+      breakdown:[
+        {term:`PARTITION OF orders`, desc:`Declares this table as one physical slice of the orders partitioned table.`},
+        {term:`FOR VALUES FROM ... TO`, desc:`The exact date range this specific partition is responsible for.`}
+      ],
+      code:`<span class="k">CREATE TABLE</span> orders_2026 <span class="k">PARTITION OF</span> orders
+  <span class="k">FOR VALUES FROM</span> (<span class="s">'2026-01-01'</span>) <span class="k">TO</span> (<span class="s">'2027-01-01'</span>);`,
+      output:`<span class="ok">CREATE TABLE</span>`,
+      does:`Creates one real physical table underneath, holding just 2026's orders.`,
+      where:`Once this exists, a query filtering to 2026 only ever touches this partition — "partition pruning" from the Partitioning tab.` },
+    dropPartition: { filename:`16_drop_partition.sql`,
+      breakdown:[
+        {term:`DROP TABLE`, desc:`Deletes an entire table — instant, regardless of how many rows it holds.`}
+      ],
+      code:`<span class="k">DROP TABLE</span> orders_2023;`,
+      output:`<span class="ok">DROP TABLE</span>`,
+      does:`Instantly removes every 2023 order — nearly free, compared to a row-by-row DELETE.`,
+      where:`This is the "instant, cheap delete" win from the Partitioning tab — a compliance-driven data purge made trivial.` },
+    insertSession: { filename:`17_insert_session.sql`,
+      breakdown:[
+        {term:`now() + interval '1 hour'`, desc:`Computes a real timestamp exactly one hour from right now — this session's expiry.`}
+      ],
+      code:`<span class="k">INSERT INTO</span> sessions (id, user_id, expires_at)
+<span class="k">VALUES</span> (<span class="s">'a3f9c1e8b2d4'</span>, <span class="num">42</span>, now() + <span class="k">interval</span> <span class="s">'1 hour'</span>);`,
+      output:`<span class="ok">INSERT 0 1</span>`,
+      does:`Creates the server-side session row right after a successful login.`,
+      where:`Step 3 of "How Login Actually Works" in the Sessions &amp; Cookies tab — this happens right before the Set-Cookie header is sent.` },
+    lookupSession: { filename:`18_lookup_session.sql`,
+      breakdown:[
+        {term:`WHERE id = ... AND expires_at > now()`, desc:`Only counts as a valid session if it exists AND hasn't already expired.`}
+      ],
+      code:`<span class="k">SELECT</span> user_id <span class="k">FROM</span> sessions
+<span class="k">WHERE</span> id = <span class="s">'a3f9c1e8b2d4'</span> <span class="k">AND</span> expires_at > now();`,
+      output:` user_id
+<span class="dim">----------</span>
+       42
+<span class="dim">(1 row)</span>`,
+      does:`Looks up which user a session ID belongs to — this is what runs on every single request after login.`,
+      where:`Step 5 of the login flow — the server does this lookup instead of ever asking for a password again.` },
+    checkTableSize: { filename:`19_check_table_size.sql`,
+      breakdown:[
+        {term:`pg_total_relation_size()`, desc:`Returns a table's total size in raw bytes, including all of its indexes.`},
+        {term:`pg_size_pretty()`, desc:`Formats that raw byte count into a human-readable size like "2453 MB".`}
+      ],
+      code:`<span class="k">SELECT</span> pg_size_pretty(pg_total_relation_size(<span class="s">'orders'</span>));`,
+      output:` pg_size_pretty
+<span class="dim">----------------</span>
+ 2453 MB
+<span class="dim">(1 row)</span>`,
+      does:`Shows exactly how much disk space one table (plus its indexes) is actually using.`,
+      where:`The first real command to run for the "disk usage at 95%" scenario in the Problem Solving tab.` },
+    checkActiveConnections: { filename:`20_check_connections.sql`,
+      breakdown:[
+        {term:`pg_stat_activity`, desc:`A built-in view showing every current connection to the database, live.`},
+        {term:`WHERE state = 'active'`, desc:`Filters down to only connections currently running a query, not idle ones.`}
+      ],
+      code:`<span class="k">SELECT</span> count(*) <span class="k">FROM</span> pg_stat_activity <span class="k">WHERE</span> state = <span class="s">'active'</span>;`,
+      output:` count
+<span class="dim">-------</span>
+    47
+<span class="dim">(1 row)</span>`,
+      does:`Shows exactly how many queries are actively running right now — the first check for "too many connections" errors.`,
+      where:`Directly feeds into the connection-pooling scenario in the Problem Solving tab.` }
+  };
+
+  function loadSqlQuery(key, btn) {
+    const d = SQL_QUERIES[key];
+    if (!d) return;
+    document.getElementById('sqFilename').textContent = d.filename;
+    document.getElementById('sqCode').innerHTML = d.code;
+    document.getElementById('sqDoes').innerHTML = d.does;
+    document.getElementById('sqWhere').innerHTML = d.where;
+    document.getElementById('sqOutput').innerHTML = '<span class="dim">↳ click "▶ Run Query" above to see what this actually returns</span>';
+    document.querySelectorAll('.sq-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    document.getElementById('sqOutput').dataset.key = key;
+
+    const list = document.getElementById('sqBreakdownList');
+    if (d.breakdown && d.breakdown.length) {
+      list.innerHTML = d.breakdown.map(item =>
+        `<div class="sq-breakdown-item"><span class="sq-breakdown-term">${item.term}</span><span class="sq-breakdown-desc">${item.desc}</span></div>`
+      ).join('');
+    } else {
+      list.innerHTML = '<span class="dim">No new pieces here — this one just recombines what earlier queries already covered.</span>';
+    }
   }
 
-  // interactive tilt + reveal animations on the rendered notes (database-fx.js)
-  DatabaseFX.init();
+  function runSqlQuery() {
+    const key = document.getElementById('sqOutput').dataset.key;
+    const d = SQL_QUERIES[key];
+    if (!d) { document.getElementById('sqOutput').innerHTML = '<span class="warn">↳ pick a query below first</span>'; return; }
+    document.getElementById('sqOutput').innerHTML = d.output;
+  }
 
-  // the bottom-right guide character, showing this topic's key takeaways
-  Mascot.init("database");
+  /* ══════════════════════════════════════════════════════════════════
+     REUSABLE QUIZ GAME ENGINE — same engine as the DevOps cheat sheet,
+     copied here since this is a separate static page. To add this quiz
+     to yet another page: copy the .quiz-game CSS block, the HTML block
+     (quiz-start-screen / quiz-joke-screen / quiz-question-screen /
+     quiz-end-screen), and everything below this comment, then define a
+     new pair of arrays (JOKES + QUESTIONS) and point the Play button's
+     quizStart() call at them. Nothing else needs to change.
+     ══════════════════════════════════════════════════════════════════ */
+
+  const DATABASE_QUIZ_JOKES = [
+    `A SQL query walks into a bar, walks up to two tables, and asks: "Can I join you?"`,
+    `Why do database administrators never get invited to parties? They always try to normalize the guest list.`,
+    `There are two hard problems in computer science: cache invalidation, naming things, and off-by-one errors.`,
+    `A DBA's favorite kind of relationship? One-to-many — but only if it's properly indexed.`,
+    `Why did the database break up with the spreadsheet? Too many duplicate values in the relationship.`
+  ];
+
+  const DATABASE_QUIZ_QUESTIONS = [
+    { q:`What's the first step in the schema design process taught in this cheat sheet?`, options:[`Add a performance index to every single column upfront`,`Find the entities — the "nouns" in the requirement`,`Write out all the CREATE TABLE statements first`,`Pick a specific database engine to use`], correct:1, why:`You can't design tables until you know what "things" (entities) the app actually needs to remember.` },
+    { q:`Why use a surrogate key like an auto-increment id instead of a natural key like email?`, options:[`Surrogate keys are always shorter for humans to type out`,`Natural keys can change over time, breaking every table that references them`,`Databases technically don't support natural keys at all`,`Natural keys can never be indexed for lookups`], correct:1, why:`Identity should stay stable even when editable data like an email address changes.` },
+    { q:`What does a many-to-many relationship require that a one-to-many doesn't?`, options:[`A composite primary key placed on the main table`,`A junction (join) table with two foreign keys`,`Two entirely separate databases running side by side`,`Switching to a NoSQL database instead of SQL`], correct:1, why:`Neither side can hold a single foreign key for a many-to-many relationship, so a third table bridges them.` },
+    { q:`In a one-to-many relationship between users and posts, where does the foreign key live?`, options:[`On the users table, pointing at posts`,`On the posts table (the "many" side)`,`On neither table — it isn't needed here`,`On a separate junction table between them`], correct:1, why:`The foreign key always lives on the "many" side, pointing back at the "one" side's primary key.` },
+    { q:`What's the risk of adding "just in case" columns during schema design?`, options:[`The database engine will outright reject the table`,`Every unused column is a maintenance cost that lasts forever`,`Extra columns always slow down every single query`,`Tables are limited to exactly 10 columns total`], correct:1, why:`Speculative columns add ongoing cost and confusion without ever paying that cost back.` },
+    { q:`What's a composite primary key, and where does it commonly show up?`, options:[`A key made of randomly generated characters`,`A primary key made of two or more columns together, common on junction tables`,`A key that automatically changes value over time`,`A key that spans across two different databases`], correct:1, why:`post_tags(post_id, tag_id) is a textbook composite primary key — both columns together identify one row.` },
+    { q:`What does 1NF actually require?`, options:[`That no duplicate rows exist anywhere in the database`,`Every column holds one atomic value, no comma-separated lists`,`Every table needs at least one foreign key defined`,`All columns must be stored as numeric types`], correct:1, why:`1NF is about atomicity — one value per cell, not a packed list hiding inside a single column.` },
+    { q:`What's the core idea behind 3NF?`, options:[`No non-key column should depend on another non-key column`,`Every table must have exactly 3 columns total`,`A table needs at least 3 indexes to qualify`,`Foreign keys must reference exactly 3 other tables`], correct:0, why:`3NF removes transitive dependencies — like storing both city and zip when zip alone determines city.` },
+    { q:`What's the actual trade-off you accept when you denormalize?`, options:[`Faster reads, but more complex writes since duplicated data must stay in sync`,`Slower reads, in exchange for a much simpler schema`,`Less storage used, but noticeably slower queries`,`There's no real trade-off at all, it's strictly better`], correct:0, why:`Denormalization always shifts cost from the read side to the write side — nothing is free.` },
+    { q:`What's a denormalized counter column used for?`, options:[`Counting how many indexes a table currently has`,`Avoiding a COUNT(*) query on every page load by storing a running total`,`Limiting how many rows a table is allowed to hold`,`Tracking how long the database server has been running`], correct:1, why:`A comment_count column updated on insert is far cheaper than re-counting comments on every page view.` },
+    { q:`When should you denormalize a schema, according to the recommended process?`, options:[`From the very start, before writing any real queries at all`,`Only after you've measured a real, specific performance problem`,`Never — denormalizing is always the wrong call to make`,`Only ever inside NoSQL-style databases`], correct:1, why:`Denormalizing on a guess, upfront, is the exact mistake this cheat sheet warns against.` },
+    { q:`What's a materialized view actually used for?`, options:[`Storing user passwords in a more secure way`,`Precomputing and caching the result of an expensive aggregate query`,`Automatically creating indexes on a table for you`,`Replacing the need for foreign key constraints`], correct:1, why:`It stores the result of a query physically, refreshed on a schedule, instead of recomputing it every time.` },
+    { q:`What data structure do most database indexes actually use internally?`, options:[`A plain, simple linked list of values`,`A B-tree`,`A hash map, and only ever a hash map`,`A basic unsorted array of rows`], correct:1, why:`B-trees stay balanced and sorted, which is what makes lookups fast even as the table grows.` },
+    { q:`In real EXPLAIN output, what does "Seq Scan" mean?`, options:[`The database successfully used an available index`,`The database read every row in the table, one by one`,`The query failed to execute at all`,`The table currently being scanned is empty`], correct:1, why:`Sequential scan means no index was used — every row was checked against the WHERE clause.` },
+    { q:`What does the "leftmost prefix" rule mean for a composite index on (user_id, created_at)?`, options:[`It only ever speeds up queries that filter on created_at by itself, nothing else`,`It speeds up queries on user_id alone, or user_id AND created_at together — not created_at alone`,`Column order inside a composite index never actually matters to the database at all`,`It only ever works correctly when the index has exactly two columns total`], correct:1, why:`The index is physically sorted by the first column first, so skipping it breaks the lookup shortcut.` },
+    { q:`Why does adding more indexes to a table have a real, ongoing cost?`, options:[`It doesn't — indexes are always completely free to maintain`,`Every INSERT/UPDATE/DELETE has to update every index on that table too`,`Indexes actually make every SELECT query slower`,`A single table is limited to exactly one index`], correct:1, why:`Reads get faster, but writes get slower — that trade-off is why you don't index every column.` },
+    { q:`What's a "covering index"?`, options:[`An index that somehow covers every table in the database`,`An index that includes every column a query needs, enabling an index-only scan`,`An index whose values are encrypted at rest`,`The automatic default index added to a primary key`], correct:1, why:`With every needed column already in the index, the database never has to touch the actual table row.` },
+    { q:`What does EXPLAIN ANALYZE do differently from plain EXPLAIN?`, options:[`It only ever shows the planner's cost estimates`,`It actually runs the query and shows real, measured execution time`,`It permanently deletes the query plan cache`,`It only functions when an index already exists`], correct:1, why:`EXPLAIN alone only estimates; EXPLAIN ANALYZE executes the query and reports real milliseconds.` },
+    { q:`What's a partial index?`, options:[`An index that only covers half of a table's columns`,`An index built on only a subset of rows matching a WHERE condition`,`An index that is still in the process of being built`,`An index that was created without being given a name`], correct:1, why:`Indexing only the "pending" orders (say) makes the index smaller and cheaper to maintain than indexing everything.` },
+    { q:`A query filters on user_id only, but the index is on (created_at, user_id). Will it be used efficiently?`, options:[`Yes, column order inside a composite index genuinely never matters at all`,`No — user_id isn't the leftmost column, so the leftmost-prefix rule doesn't help here`,`Only during scheduled database maintenance windows, and never otherwise`,`Yes, but strictly only when running UPDATE statements, never SELECT`], correct:1, why:`Since created_at is first in the sort order, an index scan can't jump straight to a given user_id.` },
+    { q:`What problem does sharding actually solve?`, options:[`Speeding up one specific slow query that's already been identified`,`A single database server hitting its physical CPU/RAM/disk/connection limits`,`Cleaning up an ugly or messy schema design that was written poorly`,`A table that's simply missing a few indexes it should have had`], correct:1, why:`Sharding is about scaling beyond what one machine can physically handle — a capacity problem, not a query problem.` },
+    { q:`What's the main downside of hash-based sharding compared to range-based?`, options:[`It's noticeably slower to compute the hash than a simple range comparison`,`Range queries now have to hit every shard, since consecutive values land on unrelated shards`,`It always inevitably produces at least one badly overloaded hot shard`,`It fundamentally can't ever be combined with a regular database index`], correct:1, why:`Hashing spreads data evenly but scrambles any natural ordering that range queries rely on.` },
+    { q:`What is a "hot shard"?`, options:[`A shard that just happens to run on newer, faster hardware`,`A shard receiving a disproportionate amount of traffic due to a poorly chosen shard key`,`A shard that happened to be the most recently backed up`,`A shard that currently has disk-level encryption turned on`], correct:1, why:`A time-based shard key, for example, concentrates all new traffic onto whichever shard holds "now."` },
+    { q:`Why is consistent hashing preferred over plain hash(id) % N when sharding?`, options:[`It's simply faster to compute in code than a plain modulo operation`,`Adding a new shard only reshuffles roughly 1/N of the keys instead of nearly all of them`,`It removes the need for having any shard key at all`,`It only actually works correctly with exactly 2 shards total`], correct:1, why:`Plain modulo sharding breaks almost every key's mapping the moment the shard count changes.` },
+    { q:`Why are cross-shard JOINs such a common real-world pain point?`, options:[`SQL itself technically doesn't support JOIN syntax at all`,`Related data can be scattered across separate physical servers, so no single query can join it`,`Sharded databases completely disable the SELECT statement entirely`,`JOINs are automatically and permanently turned off after sharding`], correct:1, why:`A JOIN needs both sides on the same engine — once they're on different machines, the app has to merge results itself.` },
+    { q:`What's a proxy-level sharding approach, and what's a real example of one?`, options:[`The app has zero sharding logic built in and simply can't scale`,`Middleware routes queries to the correct shard automatically — e.g. Vitess or Citus`,`A particular type of database index used for fast lookups`,`A specific kind of database backup and recovery strategy`], correct:1, why:`Vitess (MySQL) and Citus (PostgreSQL) both sit in front of your database and handle routing for you.` },
+    { q:`For a multi-tenant SaaS app, which shard key usually makes the most sense?`, options:[`created_at, the date the account signed up`,`tenant_id (the customer/company ID)`,`A random UUID unrelated to any query pattern`,`The hostname of the server handling the request`], correct:1, why:`Almost every query is already scoped to one tenant, so sharding by tenant_id keeps most queries single-shard.` },
+    { q:`What's the core difference between partitioning and sharding?`, options:[`They're exactly the same thing, just different names`,`Partitioning splits a table on one server; sharding splits data across multiple servers`,`Partitioning only exists inside NoSQL databases`,`Sharding is always strictly faster than partitioning`], correct:1, why:`Partitioning organizes one database; sharding scales beyond a single machine's capacity.` },
+    { q:`What does "partition pruning" actually mean?`, options:[`Automatically deleting old partitions on a fixed schedule`,`The database skips partitions that can't possibly contain matching rows for a query`,`Reducing the number of columns inside a partition`,`Merging several small partitions into one larger one`], correct:1, why:`A query filtered to June 2026 never even looks inside the 2025 partition — it's pruned from the plan entirely.` },
+    { q:`Why is dropping an old partition so much cheaper than a big DELETE with a WHERE clause?`, options:[`DROP TABLE is nearly instant; DELETE scans and removes rows one at a time`,`They actually cost exactly the same amount in practice`,`A row-by-row DELETE is always the faster option`,`Partitions technically can't be deleted at all`], correct:0, why:`Dropping a partition just unlinks a whole table; a row-by-row DELETE generates a huge amount of transaction log.` },
+    { q:`What kind of data is range partitioning by date especially good for?`, options:[`Purely random data with no time component`,`Time-series/log-style data, like orders or events`,`Data that is essentially never queried by anyone`,`Small tables holding under 1,000 rows total`], correct:1, why:`Time-based data naturally splits into clean, query-aligned chunks like "orders_2026."` },
+    { q:`Can a single shard also be partitioned internally?`, options:[`No, partitioning and sharding are fundamentally mutually exclusive concepts`,`Yes — each shard can be partitioned independently, since they solve different problems`,`Only specifically if you happen to be using MySQL`,`Only if there's exactly one single shard in the whole system`], correct:1, why:`They operate at different levels — nothing stops a single shard from also being internally partitioned.` },
+    { q:`What real PostgreSQL keyword declares a table as partitioned?`, options:[`SPLIT BY, followed by a column name`,`PARTITION BY RANGE / LIST / HASH`,`DIVIDE INTO, followed by a column name`,`SHARD BY, followed by a column name`], correct:1, why:`This is the literal, real PostgreSQL syntax for declaring a partitioned table.` },
+    { q:`Why is HTTP described as "stateless"?`, options:[`Because it technically doesn't support cookies at all`,`Every request is treated independently, with no memory of previous requests`,`Because it can only ever work over HTTPS`,`Because it's physically unable to send POST requests`], correct:1, why:`Without cookies/sessions layered on top, the server has no built-in way to recognize repeat visitors.` },
+    { q:`What's the actual difference between a cookie and a session?`, options:[`They're really the same thing, just with two different names`,`A cookie is client-side data sent with each request; a session is server-side state its ID points to`,`Sessions are stored in the browser, cookies live on the server`,`Cookies expire instantly, while sessions never expire`], correct:1, why:`The cookie only ever carries an ID — the meaningful state lives in the server's session store.` },
+    { q:`What does the HttpOnly cookie attribute actually do?`, options:[`Only allows the cookie to travel over plain HTTP, never HTTPS`,`Makes the cookie completely invisible to JavaScript, defending against XSS-based theft`,`Automatically encrypts the cookie's stored value`,`Limits the cookie to being usable on exactly one page`], correct:1, why:`Even malicious injected JavaScript can't read an HttpOnly cookie via document.cookie.` },
+    { q:`What does the SameSite cookie attribute primarily defend against?`, options:[`SQL injection attacks against the backend`,`CSRF (Cross-Site Request Forgery)`,`Slow, unindexed database queries`,`Physical failure of the disk drive`], correct:1, why:`SameSite controls whether the cookie is sent on requests originating from a different site.` },
+    { q:`Why store the session ID in Redis instead of one server's local memory?`, options:[`Because Redis is technically a required part of the HTTP specification`,`So every app server behind a load balancer can see the same session, not just the one that created it`,`Because a server's local memory is physically unable to store text strings`,`Because doing this makes cookies completely unnecessary to use at all`], correct:1, why:`A session stored only in one server's memory becomes invisible the moment a request lands elsewhere.` },
+    { q:`What's the main advantage of a JWT over a traditional server-side session?`, options:[`It can technically be revoked instantly at any moment`,`Any server can verify it alone, without needing a shared session store`,`It only ever needs to live inside a cookie`,`It's guaranteed to never expire once issued`], correct:1, why:`A JWT carries its own signed claims, so no central lookup is needed to trust it.` },
+    { q:`What's the real downside of JWTs compared to server-side sessions?`, options:[`They're always physically larger to transmit over the network`,`Instantly revoking one before it naturally expires is hard, since the server holds no state about it`,`They fundamentally can't ever be used inside native mobile apps`,`They technically require cookies to be present in order to function at all`], correct:1, why:`Without a blocklist (which defeats the "stateless" benefit), a stolen JWT stays valid until it expires.` },
+    { q:`A query that was fast is suddenly slow. What's the very first thing you should do?`, options:[`Immediately add more RAM to the database server`,`Run EXPLAIN ANALYZE on it to see the real, current query plan`,`Restart the entire database service`,`Rewrite the whole schema completely from scratch`], correct:1, why:`You can't fix what you haven't measured — EXPLAIN ANALYZE shows exactly what changed.` },
+    { q:`What causes a database deadlock?`, options:[`Having too many indexes defined on one table`,`Two transactions each holding a lock the other one needs, so neither can proceed`,`Running a query that has no WHERE clause`,`The database server running out of free disk space`], correct:1, why:`Transaction A wants what B holds, and B wants what A holds — the database has to kill one to break the tie.` },
+    { q:`What's the N+1 query problem?`, options:[`Accidentally running exactly one extra query total`,`Running 1 query, then N additional queries in a loop, when 1-2 total would've worked`,`Writing a single query that contains N different JOIN clauses`,`Writing a query that technically never returns at all`], correct:1, why:`Loading 50 posts then querying each post's author separately is 51 queries instead of 1-2.` },
+    { q:`What's the safe pattern for adding a NOT NULL column to a 200-million-row table with zero downtime?`, options:[`Just run ALTER TABLE ADD COLUMN ... NOT NULL directly`,`Add it as nullable first, backfill in batches, then add the NOT NULL constraint`,`Drop the entire table and recreate it from scratch`,`It always requires downtime, with no way around it`], correct:1, why:`A nullable column with no default is typically instant; filling it in gradually avoids locking the whole table.` },
+    { q:`What's the actual fix for "too many connections" errors from the database?`, options:[`Raise the connection limit to an arbitrarily huge number`,`Use a connection pool (like PgBouncer) so requests share a small set of real connections`,`Restart the entire application every few minutes`,`Switch over to a completely different database engine`], correct:1, why:`Pooling lets many app requests share a small, fixed number of actual database connections.` },
+    { q:`If your primary database server goes down, what makes fast recovery actually possible?`, options:[`Nothing — you simply have to wait for it to come back on its own`,`Having read replicas ready to be promoted into the new primary`,`Having a larger hard drive installed on the server`,`Turning off every index on the database temporarily`], correct:1, why:`Replica promotion is the real mechanism behind fast failover — that's the whole point of running replication.` },
+    { q:`What does the "A" in ACID stand for, and what does it guarantee?`, options:[`Availability — meaning the database is always reachable`,`Atomicity — a transaction either fully happens or doesn't happen at all`,`Authentication — meaning users must always log in first`,`Aggregation — meaning SUM/COUNT/AVG always work correctly`], correct:1, why:`Atomicity means a multi-step transaction can't be left half-applied if something fails partway through.` },
+    { q:`What's the difference between a primary key and a unique key?`, options:[`They're actually identical in every meaningful respect`,`A table can have only one primary key but multiple unique keys, and a primary key can't be NULL`,`Unique keys are explicitly allowed to contain duplicate values`,`Primary keys must always be composite, multi-column keys`], correct:1, why:`Only one column (or set) can be THE identity of a row, but you can still enforce uniqueness elsewhere too.` },
+    { q:`What does an INNER JOIN return, compared to a LEFT JOIN?`, options:[`They always return exactly the same identical set of rows, no matter what`,`INNER JOIN returns only matching rows in both tables; LEFT JOIN also keeps unmatched left-side rows, with NULLs`,`A LEFT JOIN technically can never return any rows under any circumstance`,`An INNER JOIN can only ever be used a single time within one query`], correct:1, why:`LEFT JOIN preserves every row from the left table even when there's no match on the right.` },
+    { q:`Why use a foreign key constraint instead of just trusting application code to keep data consistent?`, options:[`Foreign keys automatically make every query run faster`,`The database itself refuses invalid data, catching bugs application code might miss`,`Foreign keys are technically required for a table to be indexed`,`They're purely decorative and have no real functional effect`], correct:1, why:`A FOREIGN KEY constraint is enforced at the database level — no application bug can silently violate it.` }
+  ];
+
+  let QUIZ_STATE = null;
+  let QUIZ_JOKE_TIMEOUT = null;
+
+  function quizStart(rootId, jokes, questions) {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    clearTimeout(QUIZ_JOKE_TIMEOUT);
+
+    const joke = jokes[Math.floor(Math.random() * jokes.length)];
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    QUIZ_STATE = { rootId, questions: shuffled, index: 0, score: 0, answered: 0, total: shuffled.length };
+
+    root.querySelectorAll('.quiz-screen').forEach(s => s.style.display = 'none');
+    root.querySelector('.quiz-joke-screen').style.display = 'flex';
+    root.querySelector('.quiz-joke-text').textContent = joke;
+    root.querySelector('.quiz-close-btn').style.display = 'block';
+
+    QUIZ_JOKE_TIMEOUT = setTimeout(() => {
+      if (!QUIZ_STATE || QUIZ_STATE.rootId !== rootId) return;
+      quizRenderQuestion();
+    }, 5000);
+  }
+
+  function quizRenderQuestion() {
+    if (!QUIZ_STATE) return;
+    const root = document.getElementById(QUIZ_STATE.rootId);
+    const q = QUIZ_STATE.questions[QUIZ_STATE.index];
+
+    const order = [0, 1, 2, 3];
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    const displayedOptions = order.map(i => q.options[i]);
+    const displayedCorrect = order.indexOf(q.correct);
+    QUIZ_STATE.displayedOptions = displayedOptions;
+    QUIZ_STATE.displayedCorrect = displayedCorrect;
+
+    root.querySelectorAll('.quiz-screen').forEach(s => s.style.display = 'none');
+    root.querySelector('.quiz-question-screen').style.display = 'flex';
+    root.querySelector('.quiz-progress').textContent = `Question ${QUIZ_STATE.index + 1} of ${QUIZ_STATE.total}`;
+    root.querySelector('.quiz-score').textContent = `Score: ${QUIZ_STATE.score}`;
+    root.querySelector('.quiz-q-text').textContent = q.q;
+
+    const optWrap = root.querySelector('.quiz-options');
+    optWrap.innerHTML = '';
+    displayedOptions.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option';
+      btn.textContent = opt;
+      btn.onclick = () => quizAnswer(i);
+      optWrap.appendChild(btn);
+    });
+
+    root.querySelector('.quiz-feedback').style.display = 'none';
+    root.querySelector('.quiz-next-btn').style.display = 'none';
+  }
+
+  function quizAnswer(choiceIndex) {
+    if (!QUIZ_STATE) return;
+    const root = document.getElementById(QUIZ_STATE.rootId);
+    const q = QUIZ_STATE.questions[QUIZ_STATE.index];
+    const correctIdx = QUIZ_STATE.displayedCorrect;
+    const options = QUIZ_STATE.displayedOptions;
+    const buttons = root.querySelectorAll('.quiz-option');
+    buttons.forEach(b => b.onclick = null);
+
+    const correct = choiceIndex === correctIdx;
+    QUIZ_STATE.answered++;
+    if (correct) QUIZ_STATE.score++;
+    buttons[correctIdx].classList.add('quiz-correct');
+    if (!correct) buttons[choiceIndex].classList.add('quiz-wrong');
+
+    const fb = root.querySelector('.quiz-feedback');
+    fb.style.display = 'block';
+    fb.innerHTML = correct
+      ? `<span class="quiz-fb-correct">✅ Correct!</span> ${q.why}`
+      : `<span class="quiz-fb-wrong">❌ Not quite.</span> The right answer is <strong>${options[correctIdx]}</strong> — ${q.why}`;
+
+    root.querySelector('.quiz-score').textContent = `Score: ${QUIZ_STATE.score}`;
+    const nextBtn = root.querySelector('.quiz-next-btn');
+    nextBtn.style.display = 'inline-block';
+    nextBtn.textContent = (QUIZ_STATE.index + 1 < QUIZ_STATE.total) ? 'Next Question →' : 'See Results →';
+  }
+
+  function quizNext() {
+    if (!QUIZ_STATE) return;
+    QUIZ_STATE.index++;
+    if (QUIZ_STATE.index >= QUIZ_STATE.total) {
+      quizEnd();
+    } else {
+      quizRenderQuestion();
+    }
+  }
+
+  function quizEnd() {
+    if (!QUIZ_STATE) return;
+    const root = document.getElementById(QUIZ_STATE.rootId);
+    const attempted = QUIZ_STATE.answered;
+    root.querySelectorAll('.quiz-screen').forEach(s => s.style.display = 'none');
+    root.querySelector('.quiz-end-screen').style.display = 'flex';
+    root.querySelector('.quiz-close-btn').style.display = 'none';
+    root.querySelector('.quiz-end-score').textContent = `${QUIZ_STATE.score} / ${attempted}`;
+    root.querySelector('.quiz-end-pct').textContent = attempted > 0 ? Math.round((QUIZ_STATE.score / attempted) * 100) + '%' : '—';
+    QUIZ_STATE = null;
+  }
+
+  function quizQuit() {
+    clearTimeout(QUIZ_JOKE_TIMEOUT);
+    if (!QUIZ_STATE) return;
+    quizEnd();
+  }
+
+  function quizReset(rootId) {
+    clearTimeout(QUIZ_JOKE_TIMEOUT);
+    QUIZ_STATE = null;
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    root.querySelectorAll('.quiz-screen').forEach(s => s.style.display = 'none');
+    root.querySelector('.quiz-start-screen').style.display = 'flex';
+    root.querySelector('.quiz-close-btn').style.display = 'none';
+  }
 </script>
 </body>
 </html>
