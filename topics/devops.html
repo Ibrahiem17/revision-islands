@@ -4032,6 +4032,79 @@ You can plate ten slices (containers) from one boxed cake (image)</div>
     <div class="analogy-item"><span class="analogy-icon">⚠️</span><div class="analogy-text"><strong>Indentation matters!</strong><br>2 spaces, not tabs</div></div>
   </div>
 
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    Same click-to-explore pattern as <strong style="color:#38bdf8;">Linux for DevOps</strong>. Click any piece of syntax below — it "runs" in the little file preview, and underneath you'll always see <strong style="color:#e2e8f0;">what it does</strong>, <strong style="color:#e2e8f0;">where you'll use it</strong>, a full <strong style="color:#e2e8f0;">syntax breakdown</strong>, and a <strong style="color:#e2e8f0;">real reason it's actually useful</strong>. The first section covers YAML itself — the general rules behind every config file you'll ever open. The second section covers the specific keywords GitHub Actions reads out of that YAML.
+  </div>
+
+  <div class="section-title">🖥️ Try It — Click Any YAML Concept to See It</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">example.yml</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">#</span> <span id="yamlCmd">click any concept below</span></div>
+      <div class="pu-output" id="yamlOutput"><span class="dim">↳ the YAML and what it actually parses to show up here</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="yamlInfo">
+    <div><strong>🧩 Syntax (the general shape):</strong> <code id="yamlSyntax">click a concept below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="yamlDoes">Pick a concept below to get started — every syntax rule in YAML, and every keyword GitHub Actions reads, is here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="yamlWhere">—</span></div>
+  </div>
+
+  <div class="sl-breakdown" id="yamlBreakdownBox" style="margin-top:10px;">
+    <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+    <div class="sl-breakdown-list" id="yamlBreakdownList"><span class="dim">Click a concept above — every piece of its syntax gets broken down here, one at a time.</span></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:20px;">
+    <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+    <div id="yamlWhyUseful"><span class="dim">Click a concept above to see a real problem it solves, with a real example.</span></div>
+  </div>
+
+  <div class="ld-cat">📝 Core Syntax</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('keyValue',this)">key: value</button>
+    <button class="ld-pill" onclick="runYamlCmd('nesting',this)">nesting (indentation)</button>
+    <button class="ld-pill" onclick="runYamlCmd('lists',this)">- list items</button>
+    <button class="ld-pill" onclick="runYamlCmd('comments',this)"># comments</button>
+  </div>
+
+  <div class="ld-cat">🧵 Strings &amp; Special Values</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('stringsQuoted',this)">"quoted" vs unquoted</button>
+    <button class="ld-pill" onclick="runYamlCmd('multilineBlock',this)">| block scalar</button>
+    <button class="ld-pill" onclick="runYamlCmd('multilineFolded',this)">&gt; folded scalar</button>
+    <button class="ld-pill" onclick="runYamlCmd('booleanNull',this)">true / false / null</button>
+  </div>
+
+  <div class="ld-cat">🔗 Flow Style &amp; Reuse</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('flowStyle',this)">[a, b] / {k: v}</button>
+    <button class="ld-pill" onclick="runYamlCmd('anchorsAliases',this)">&amp;anchor / *alias</button>
+    <button class="ld-pill" onclick="runYamlCmd('multiDoc',this)">--- multi-document</button>
+  </div>
+
+  <div class="ld-cat">⚙️ GitHub Actions Keywords</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('name',this)">name:</button>
+    <button class="ld-pill" onclick="runYamlCmd('on',this)">on:</button>
+    <button class="ld-pill" onclick="runYamlCmd('jobsKeyword',this)">jobs:</button>
+    <button class="ld-pill" onclick="runYamlCmd('runsOn',this)">runs-on:</button>
+    <button class="ld-pill" onclick="runYamlCmd('steps',this)">steps:</button>
+    <button class="ld-pill" onclick="runYamlCmd('run',this)">run:</button>
+    <button class="ld-pill" onclick="runYamlCmd('uses',this)">uses:</button>
+    <button class="ld-pill" onclick="runYamlCmd('with',this)">with:</button>
+    <button class="ld-pill" onclick="runYamlCmd('envKeyword',this)">env:</button>
+    <button class="ld-pill" onclick="runYamlCmd('needs',this)">needs:</button>
+  </div>
+
+
   <div class="section-title">⚙️ GitHub Actions — Key Keywords</div>
   <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
     <table style="width:100%;border-collapse:collapse;font-size:11px;">
@@ -18254,6 +18327,74 @@ Linux web01 5.15.0-91-generic x86_64 GNU/Linux</div><div class="found-p">A full 
     document.querySelectorAll('.ld-pill').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
   }
+
+  function yamlBlock(yaml, meaning) {
+    return `<div style="white-space:pre;margin-bottom:10px;">${yaml}</div><div style="border-top:1px dashed #263042;padding-top:8px;margin-top:2px;color:#475569;font-size:9.5px;letter-spacing:.04em;">▸ WHAT THIS ACTUALLY MEANS</div>${meaning}`;
+  }
+  const YAML_CMDS = {
+    keyValue: { syntax:`key: value`, cmd:`key: value`, output: yamlBlock(`name: interview-islands\nversion: 2`, `<span class="ok">✓ { name: "interview-islands", version: 2 }</span>`), does:`The most basic building block of YAML — a label, a colon, a space, then the value.`, where:`Every single field you'll ever set in a workflow, a Kubernetes manifest, or a Docker Compose file is fundamentally this.`, breakdown:[{term:`key`, desc:`the label / field name`},{term:`:`, desc:`separates the key from its value — always needs a space after it`},{term:`value`, desc:`the actual data — a string, number, boolean, list, or nested block`}], whyUseful:`<div class="found-p">You open any GitHub Actions or Kubernetes YAML file and it looks intimidating at first glance.</div><div class="found-pre">name: my-app\nreplicas: 3\nimage: nginx:latest</div><div class="found-p">But it's really just a list of <span class="found-code">key: value</span> pairs, stacked up. Once that clicks, nothing in YAML feels unfamiliar again — it's the one idea everything else builds on.</div>` },
+
+    nesting: { syntax:`parent:\n  child: value`, cmd:`nesting (indentation)`, output: yamlBlock(`server:\n  host: localhost\n  port: 8080`, `<span class="ok">✓ { server: { host: "localhost", port: 8080 } }</span>`), does:`Indentation — not braces, not brackets — is what tells YAML a value belongs "inside" another key.`, where:`Every real config file is a tree of nested settings: a job inside a workflow, a container inside a pod spec, a service inside a compose file.`, breakdown:[{term:`server:`, desc:`the parent key — has no value on its own line, so YAML expects children below it`},{term:`(2-space indent)`, desc:`marks host and port as children of server`},{term:`host: / port:`, desc:`sibling keys — same indent level, both belong to server`}], whyUseful:`<div class="found-p">A teammate pastes you a broken workflow file and swears "I didn't change anything" — except one line got un-indented by an accidental tab.</div><div class="found-pre">jobs:\n  build:\n    runs-on: ubuntu-latest\n   steps:        ← wrong indent, breaks the whole file</div><div class="found-p">Recognizing that YAML's entire structure lives in whitespace — not symbols — is exactly what lets you spot this in two seconds instead of staring at it confused.</div>` },
+
+    lists: { syntax:`items:\n  - one\n  - two`, cmd:`- item lists`, output: yamlBlock(`branches:\n  - main\n  - develop`, `<span class="ok">✓ { branches: ["main", "develop"] }</span>`), does:`A dash + space starts each item in a list. Every dash at the same indent is one more element in the same array.`, where:`Which branches trigger a workflow, which ports a container exposes, which steps run in a job — all lists.`, breakdown:[{term:`branches:`, desc:`the key — its value is a list, not a single value`},{term:`- main`, desc:`first list item`},{term:`- develop`, desc:`second list item, same indent as the first`}], whyUseful:`<div class="found-p">You need a workflow to trigger on pushes to two specific branches, not just one.</div><div class="found-pre">on:\n  push:\n    branches:\n      - main\n      - staging</div><div class="found-p">Two dashes, same indent, and GitHub Actions now watches both — no special list syntax to memorize beyond "dash, space, value."</div>` },
+
+    comments: { syntax:`# comment`, cmd:`# comment`, output: yamlBlock(`# This job only runs on main\nruns-on: ubuntu-latest`, `<span class="dim">✓ Everything after # on that line is ignored by the parser</span>`), does:`A hash starts a comment — the parser ignores everything from that character to the end of the line.`, where:`Explaining a non-obvious value ("why is this cron at 2am?") right next to it, so the next person doesn't have to guess.`, breakdown:[{term:`#`, desc:`starts the comment — can begin the line, or follow real YAML on the same line`}], whyUseful:`<div class="found-p">Six months from now, someone (possibly you) will stare at a cron schedule and have no idea why it's set the way it is.</div><div class="found-pre">on:\n  schedule:\n    - cron: '0 2 * * *'  # 2am UTC — low traffic, avoids peak deploy hours</div><div class="found-p">That one comment is the difference between "I'll just leave this alone, too scared to touch it" and confidently changing it later.</div>` },
+
+    stringsQuoted: { syntax:`key: "value"`, cmd:`quoted vs unquoted`, output: yamlBlock(`version: "20"      # string, kept as-is\nversion: 20         # parsed as a number`, `<span class="warn">⚠ Same text, two different types depending on quoting</span>`), does:`Quotes are usually optional in YAML — but they force a value to be read as a literal string, even if it looks like a number or boolean.`, where:`Version numbers like "20" (Node version) or "yes"/"no" style values that YAML might otherwise misinterpret as booleans.`, breakdown:[{term:`"value"`, desc:`double quotes — always parsed as a plain string, no auto-conversion`},{term:`value`, desc:`unquoted — YAML guesses the type (number, boolean, null, or string)`}], whyUseful:`<div class="found-p">A Node version pinned to <span class="found-code">3.10</span> unquoted gets silently parsed as the number 3.1 — dropping the trailing zero entirely.</div><div class="found-pre">node-version: 3.10   ← becomes 3.1 (wrong!)\nnode-version: "3.10" ← stays "3.10" (correct)</div><div class="found-p">This exact gotcha has broken real CI pipelines — quoting anything that looks numeric but is really a version string is a habit worth having from day one.</div>` },
+
+    multilineBlock: { syntax:`key: |\n  line one\n  line two`, cmd:`| block scalar (literal)`, output: yamlBlock(`script: |\n  echo "Starting deploy"\n  ./deploy.sh\n  echo "Done"`, `<span class="ok">✓ Runs all 3 lines, newlines preserved exactly</span>`), does:`The pipe | keeps every line break exactly as written — a multi-line string that stays multi-line.`, where:`A multi-command shell script embedded directly inside a run: step, instead of chaining everything with && on one unreadable line.`, breakdown:[{term:`|`, desc:`literal block scalar — preserves line breaks exactly as typed`},{term:`(indented lines below)`, desc:`each line becomes part of the same multi-line string value`}], whyUseful:`<div class="found-p">A deploy step needs to run three separate commands, and cramming them onto one line with && gets unreadable fast.</div><div class="found-pre">- run: |\n    npm ci\n    npm run build\n    npm run deploy</div><div class="found-p">Each line runs as its own shell command, in order, and the workflow file stays readable instead of turning into one giant chained line.</div>` },
+
+    multilineFolded: { syntax:`key: &gt;\n  line one\n  line two`, cmd:`> folded scalar`, output: yamlBlock(`description: >\n  This job builds\n  and tests the app.`, `<span class="ok">✓ "This job builds and tests the app.\\n" (line breaks become spaces)</span>`), does:`The > folds line breaks into spaces — useful for writing a long line of text across multiple readable source lines.`, where:`A long human-readable description or commit message template where you want one continuous sentence, wrapped for readability in the file.`, breakdown:[{term:`>`, desc:`folded block scalar — turns line breaks into spaces`},{term:`(indented lines below)`, desc:`each line joins the previous with a single space`}], whyUseful:`<div class="found-p">You want to write a long description without a single 200-character line that scrolls off-screen in every editor.</div><div class="found-pre">description: >\n  Deploys the latest build to\n  production after all tests pass.</div><div class="found-p">In the file it's three neat lines; parsed, it's one clean sentence — the pipe (|) and fold (&gt;) are the two block-scalar styles worth knowing the difference between.</div>` },
+
+    booleanNull: { syntax:`flag: true`, cmd:`true / false / null`, output: yamlBlock(`enabled: true\ndisabled: false\nvalue: null`, `<span class="ok">✓ { enabled: true, disabled: false, value: null }</span>`), does:`YAML recognizes true/false as booleans and null (or ~) as an explicit "no value," without any quotes.`, where:`Feature flags, continue-on-error settings, and any config field that's simply on/off.`, breakdown:[{term:`true / false`, desc:`booleans — also accepts yes/no and on/off, though true/false is the safe, unambiguous choice`},{term:`null`, desc:`explicitly "no value" — same idea as null in most programming languages, ~ works too`}], whyUseful:`<div class="found-p">You want a linting step to fail loudly if it breaks, but a step you're still testing not to block the whole pipeline.</div><div class="found-pre">- run: npm run lint\n  continue-on-error: false\n- run: npm run experimental-check\n  continue-on-error: true</div><div class="found-p">Two plain booleans, and the pipeline's failure behavior is completely different for each step.</div>` },
+
+    flowStyle: { syntax:`key: [a, b, c]`, cmd:`flow style [ ] { }`, output: yamlBlock(`branches: [main, develop]\nconfig: {retries: 3, timeout: 30}`, `<span class="ok">✓ Identical result to the multi-line dash/indent version</span>`), does:`Square brackets and curly braces let you write a list or mapping on one line — same data, more compact.`, where:`Short lists (like a couple of branch names) where a full multi-line block would just be unnecessary vertical space.`, breakdown:[{term:`[a, b, c]`, desc:`flow-style list — same as three separate "- " lines`},{term:`{k: v, k2: v2}`, desc:`flow-style mapping — same as an indented key: value block`}], whyUseful:`<div class="found-p">A two-item branch list doesn't need three lines when it fits cleanly on one.</div><div class="found-pre">on:\n  push:\n    branches: [main, develop]</div><div class="found-p">Same meaning as writing each branch on its own dashed line — flow style is just the compact form for short, simple lists and objects.</div>` },
+
+    anchorsAliases: { syntax:`base: &name {...}\nother: *name`, cmd:`&anchor / *alias`, output: yamlBlock(`defaults: &defaults\n  timeout: 30\n  retries: 3\njobA:\n  <<: *defaults`, `<span class="ok">✓ jobA gets timeout: 30, retries: 3 without repeating them</span>`), does:`An anchor (&name) tags a block of YAML so an alias (*name) can reuse it elsewhere, avoiding copy-pasting the same config repeatedly.`, where:`Several jobs in one workflow that share the same runner setup, retry policy, or environment — define it once, reference it everywhere.`, breakdown:[{term:`&defaults`, desc:`the anchor — marks this block as reusable and names it "defaults"`},{term:`*defaults`, desc:`the alias — inserts a copy of the anchored block right here`},{term:`&lt;&lt;: *defaults`, desc:`merge key — merges the anchored mapping's keys into this one`}], whyUseful:`<div class="found-p">Five jobs in a workflow all need the exact same "runs-on" and "timeout" settings, and copy-pasting them five times means five places to update later.</div><div class="found-pre">x-common: &common\n  runs-on: ubuntu-latest\n  timeout-minutes: 15\n\njobs:\n  test:\n    <<: *common\n  build:\n    <<: *common</div><div class="found-p">Change the anchor once, and every job that references it updates automatically — this exact pattern shows up constantly in real docker-compose.yml files with shared service config.</div>` },
+
+    multiDoc: { syntax:`---\ndoc: one\n---\ndoc: two`, cmd:`--- document separator`, output: yamlBlock(`apiVersion: v1\nkind: Service\n---\napiVersion: apps/v1\nkind: Deployment`, `<span class="ok">✓ Parsed as two completely separate YAML documents in one file</span>`), does:`Three dashes on their own line split one file into multiple, independent YAML documents.`, where:`Kubernetes manifests constantly — a Service and a Deployment defined together in one file, applied together with one kubectl apply.`, breakdown:[{term:`---`, desc:`document separator — everything above and below is parsed as two unrelated YAML documents`}], whyUseful:`<div class="found-p">You want one Kubernetes manifest file to define both a Deployment and the Service that exposes it, instead of managing two separate files.</div><div class="found-pre">apiVersion: apps/v1\nkind: Deployment\n...\n---\napiVersion: v1\nkind: Service\n...</div><div class="found-p"><span class="found-code">kubectl apply -f</span> that one file creates both resources — this is exactly why real-world Kubernetes YAML files are so often multi-document.</div>` },
+
+    name: { syntax:`name: &lt;label&gt;`, cmd:`name:`, output: yamlBlock(`name: CI Pipeline`, `<span class="ok">✓ Shown as the workflow's title in the GitHub Actions tab</span>`), does:`A human-readable label — shown in the GitHub UI so you can tell workflows apart at a glance.`, where:`Purely cosmetic, but genuinely useful the moment a repo has more than one workflow file.`, breakdown:[{term:`name:`, desc:`the key GitHub Actions looks for specifically`},{term:`&lt;label&gt;`, desc:`any plain string — shows up as the workflow's display name`}], whyUseful:`<div class="found-p">A repo grows to five workflow files, and the Actions tab is just a wall of "ci.yml", "ci.yml", "ci.yml" with no way to tell them apart.</div><div class="found-pre">name: Lint & Type Check\nname: Deploy to Production\nname: Nightly Backup</div><div class="found-p">One line, and suddenly the Actions tab is actually readable instead of a guessing game based on filenames.</div>` },
+
+    on: { syntax:`on: &lt;event&gt;`, cmd:`on:`, output: yamlBlock(`on:\n  push:\n    branches: [main]`, `<span class="ok">✓ Workflow now runs automatically on every push to main</span>`), does:`Declares the trigger — the event that causes GitHub to actually start this workflow.`, where:`Every single workflow needs exactly one on: block — without it, the workflow file exists but never runs.`, breakdown:[{term:`on:`, desc:`the trigger key — required in every workflow file`},{term:`push / pull_request / schedule / workflow_dispatch`, desc:`the most common event types — see the interactive GitHub Actions for DevOps tab for all of them in depth`}], whyUseful:`<div class="found-p">A brand new workflow file is committed, but nothing ever runs, and there's no error message anywhere.</div><div class="found-pre">jobs:\n  test:\n    runs-on: ubuntu-latest    ← missing "on:" entirely</div><div class="found-p">Without <span class="found-code">on:</span>, GitHub has no idea when to trigger it — this is one of the most common "why isn't my workflow running" mistakes for anyone new to Actions.</div>` },
+
+    jobsKeyword: { syntax:`jobs:\n  &lt;job-id&gt;:\n    ...`, cmd:`jobs:`, output: yamlBlock(`jobs:\n  test:\n    runs-on: ubuntu-latest\n  build:\n    runs-on: ubuntu-latest`, `<span class="ok">✓ test and build both start — in parallel, by default</span>`), does:`The top-level container for all the actual work — one workflow can have several jobs, each with its own name.`, where:`Splitting independent work (lint, test, build) so they run side by side instead of one long sequential list.`, breakdown:[{term:`jobs:`, desc:`required top-level key — everything that actually runs lives under here`},{term:`&lt;job-id&gt;:`, desc:`any name you pick — becomes the job's identifier, used by "needs:" to reference it`}], whyUseful:`<div class="found-p">A pipeline currently runs lint, then tests, then build — one after another — taking three minutes total when each step alone takes one.</div><div class="found-pre">jobs:\n  lint: {...}\n  test: {...}\n  build: {...}</div><div class="found-p">Three separate jobs at the same indent level all start at once, each on its own runner — same work, roughly a third of the wall-clock time.</div>` },
+
+    runsOn: { syntax:`runs-on: &lt;runner&gt;`, cmd:`runs-on:`, output: yamlBlock(`runs-on: ubuntu-latest`, `<span class="ok">✓ Job runs on a fresh Ubuntu VM</span>`), does:`Picks which machine (OS) the job's steps actually execute on.`, where:`Required in every job — most projects use ubuntu-latest, but windows-latest and macos-latest exist for platform-specific builds.`, breakdown:[{term:`runs-on:`, desc:`required per-job key`},{term:`ubuntu-latest / windows-latest / macos-latest`, desc:`GitHub-hosted runner images — a brand-new, disposable VM every single run`}], whyUseful:`<div class="found-p">A desktop app needs to be tested on both Windows and macOS, not just Linux, before every release.</div><div class="found-pre">jobs:\n  test-win:\n    runs-on: windows-latest\n  test-mac:\n    runs-on: macos-latest</div><div class="found-p">Two jobs, two completely different operating systems, both spun up fresh and destroyed automatically when done — no VM management on your end at all.</div>` },
+
+    steps: { syntax:`steps:\n  - ...`, cmd:`steps:`, output: yamlBlock(`steps:\n  - uses: actions/checkout@v4\n  - run: npm install\n  - run: npm test`, `<span class="ok">✓ Runs top to bottom — checkout, then install, then test</span>`), does:`An ordered list of tasks inside a job — each one runs in sequence, and if one fails, the rest are skipped by default.`, where:`Every job needs at least one step — this is where the actual work (checking out code, installing, running tests) lives.`, breakdown:[{term:`steps:`, desc:`required per-job key — its value is always a list`},{term:`- uses: / - run:`, desc:`each dash is one step — either a reusable action, or a raw shell command`}], whyUseful:`<div class="found-p">A test step keeps failing with "npm: command not found" even though the workflow clearly runs npm test.</div><div class="found-pre">steps:\n  - run: npm test          ← ran before code even existed on the runner!\n  - uses: actions/checkout@v4</div><div class="found-p">Steps run strictly top to bottom — checkout has to come <em>before</em> anything that needs the code, which is a genuinely common ordering mistake early on.</div>` },
+
+    run: { syntax:`- run: &lt;shell command&gt;`, cmd:`run:`, output: yamlBlock(`- name: Run tests\n  run: npm test`, `<span class="ok">✓ Executes exactly like typing it in a terminal on the runner</span>`), does:`Runs a raw shell command directly — no pre-built action needed, just plain shell.`, where:`Anything a marketplace action doesn't already cover: installing, building, testing, or any one-off custom script.`, breakdown:[{term:`run:`, desc:`the key — its value is any shell command`},{term:`&lt;shell command&gt;`, desc:`runs exactly as if typed at a terminal on the runner`}], whyUseful:`<div class="found-p">There's no pre-built action for "run our custom lint script that only this repo uses" — and there doesn't need to be.</div><div class="found-pre">- run: ./scripts/custom-lint.sh</div><div class="found-p"><span class="found-code">run:</span> is the escape hatch that makes GitHub Actions endlessly flexible — if you can type it in a terminal, you can put it here.</div>` },
+
+    uses: { syntax:`- uses: &lt;owner/action@version&gt;`, cmd:`uses:`, output: yamlBlock(`- uses: actions/checkout@v4`, `<span class="ok">✓ Runs someone else's pre-built, published step</span>`), does:`Drops in a pre-built, reusable step that someone else already wrote and published — instead of writing the logic yourself.`, where:`Checking out code, setting up a language runtime, logging into a registry — nearly always a pre-built action already exists.`, breakdown:[{term:`uses:`, desc:`the key — points at a published action`},{term:`owner/action`, desc:`who published it and what it's called, e.g. actions/checkout`},{term:`@version`, desc:`pins which version to use — always pin this, don't leave it floating`}], whyUseful:`<div class="found-p">Writing the code to clone a repo, handle authentication, and check out the right commit yourself would take real effort — and it's already been solved.</div><div class="found-pre">- uses: actions/checkout@v4\n- uses: actions/setup-node@v4\n  with:\n    node-version: 20</div><div class="found-p">Two lines, and the runner has your code and the right Node version — this is why almost every real workflow leans on <span class="found-code">uses:</span> heavily instead of writing everything from raw shell.</div>` },
+
+    with: { syntax:`- uses: &lt;action&gt;\n  with:\n    &lt;input&gt;: &lt;value&gt;`, cmd:`with:`, output: yamlBlock(`- uses: actions/setup-node@v4\n  with:\n    node-version: 20`, `<span class="ok">✓ Node 20 installed instead of whatever the action's default is</span>`), does:`Passes input parameters into a uses: action — the action defines what inputs it accepts.`, where:`Configuring any action beyond its defaults: which Node version, which artifact name, which Slack channel to post to.`, breakdown:[{term:`with:`, desc:`only valid directly under a "uses:" step`},{term:`&lt;input&gt;: &lt;value&gt;`, desc:`one key: value pair per input the action defines — check the action's own docs for what it accepts`}], whyUseful:`<div class="found-p">Without any inputs, setup-node installs whatever Node version happens to be its default — which might quietly drift out from under your project over time.</div><div class="found-pre">- uses: actions/setup-node@v4\n  with:\n    node-version: 20</div><div class="found-p">Explicitly pinning it means the workflow behaves the same way today and a year from now, regardless of what the action's own default becomes.</div>` },
+
+    envKeyword: { syntax:`env:\n  &lt;VAR&gt;: &lt;value&gt;`, cmd:`env:`, output: yamlBlock(`- run: npm run build\n  env:\n    NODE_ENV: production`, `<span class="ok">✓ NODE_ENV=production available to that step's shell</span>`), does:`Sets an environment variable — available at the workflow, job, or individual step level depending on where you place it.`, where:`Passing plain, non-secret configuration into a build or test step, like which environment it's building for.`, breakdown:[{term:`env:`, desc:`the key — works at workflow, job, or step level`},{term:`&lt;VAR&gt;: &lt;value&gt;`, desc:`becomes an actual environment variable inside that step's shell`}], whyUseful:`<div class="found-p">A build script behaves differently depending on NODE_ENV, and you need that set correctly without hardcoding it into the script itself.</div><div class="found-pre">- run: npm run build\n  env:\n    NODE_ENV: production\n    API_URL: https://api.example.com</div><div class="found-p">The script reads <span class="found-code">process.env.NODE_ENV</span> exactly like it would locally — the workflow just supplies the value from outside.</div>` },
+
+    needs: { syntax:`&lt;job&gt;:\n  needs: &lt;job-id&gt;`, cmd:`needs:`, output: yamlBlock(`jobs:\n  test:\n    runs-on: ubuntu-latest\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest`, `<span class="ok">✓ test — passed</span>\n<span class="ok">✓ deploy — started (waited for test)</span>`), does:`Forces a job to wait for another named job to finish successfully before it's allowed to start.`, where:`Making sure a deploy job never even attempts to run if the test job failed first.`, breakdown:[{term:`needs:`, desc:`per-job key — its value is the job-id (or list of job-ids) it must wait on`},{term:`test`, desc:`must exactly match another job's id under jobs: elsewhere in the file`}], whyUseful:`<div class="found-p">Without needs:, jobs run in parallel by default — which means "deploy" could start racing ahead before "test" has even finished.</div><div class="found-pre">deploy:\n  needs: test\n  runs-on: ubuntu-latest</div><div class="found-p">One line turns "everything runs at once, hope for the best" into "deploy only ever runs after test has actually passed" — this is the entire mechanism behind safe, ordered pipelines.</div>` }
+  };
+
+  function runYamlCmd(key, btn) {
+    const d = YAML_CMDS[key];
+    if (!d) return;
+    document.getElementById('yamlCmd').textContent = d.cmd;
+    document.getElementById('yamlOutput').innerHTML = d.output;
+    document.getElementById('yamlSyntax').innerHTML = d.syntax;
+    document.getElementById('yamlDoes').innerHTML = d.does;
+    document.getElementById('yamlWhere').innerHTML = d.where;
+    const bdList = document.getElementById('yamlBreakdownList');
+    if (bdList) {
+      bdList.innerHTML = (d.breakdown && d.breakdown.length)
+        ? d.breakdown.map(b => `<div class="sl-breakdown-item"><span class="sl-breakdown-term">${b.term}</span><span class="sl-breakdown-desc">${b.desc}</span></div>`).join('')
+        : '<span class="dim">No further breakdown needed for this one.</span>';
+    }
+    const whyEl = document.getElementById('yamlWhyUseful');
+    if (whyEl) whyEl.innerHTML = d.whyUseful || '<span class="dim">—</span>';
+    document.querySelectorAll('#tab-yaml .ld-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
 
   /* ============ NETWORKING — mini terminal simulator, same pattern
      as runLinuxCmd but targeting its own net* element ids so the two
