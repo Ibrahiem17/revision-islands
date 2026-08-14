@@ -19562,8 +19562,586 @@ myapp.com.  300  IN  A  <span class="ok">203.0.113.10</span>
   </div>
 
   <div class="pu-panel" id="pu-tsGit">
-    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Git troubleshooting — coming soon.</div>
+
+    <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px 18px;margin-bottom:22px;">
+      <div class="found-h" style="color:#a78bfa;margin-top:0;">🧠 How to think, before you touch anything</div>
+      <div class="found-p">Git panics are almost always worse in your head than in reality. A few habits that make every one of these calmer:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Nothing is usually lost</strong> — git almost never actually deletes your work. It just changes what's currently pointing at it. Most "I lost everything" moments are recoverable.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Has it been pushed yet?</strong> — this one question decides everything. Not pushed = safe to rewrite history freely. Already pushed/shared = don't rewrite it, add a new commit instead.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Read the actual error</strong> — git's messages are unusually specific and literal. "Rejected," "conflict," "detached" all mean exactly what they say.</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">4. When git refuses to do something, that's it protecting you</strong> — not being annoying. Understand why before you force anything.</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">🌿 10 Everyday Git Problems, Solved the Same Calm Way</div>
+    <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same style as Linux and Networking — the problem, how to think about it, the real commands, and then watching the actual fix happen.</div>
+
+    <!-- PROBLEM 1 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">1. 😟 "I committed to the wrong branch"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You made changes and committed — then realized you were sitting on <span class="found-code">main</span>, not the feature branch you meant to be on.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> don't redo any work — the commit already exists and is perfectly fine. You just need to move it to where it should actually live.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+a3f9d2c Add login page
+
+$ git branch
+<span class="warn">* main</span>
+  feature/login</div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> confirmed — the commit is sitting on <span class="found-code">main</span> instead of <span class="found-code">feature/login</span>.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Create the correct branch right here (it takes the commit with it), then remove the commit from main. <strong>Why it happened:</strong> forgetting to check which branch you're on before starting work — extremely common. <strong>Prevent it next time:</strong> glance at your branch name (most terminals show it) before your very first edit.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git branch feature/login
+$ git reset --hard HEAD~1
+$ git checkout feature/login
+Switched to branch 'feature/login'
+
+$ git log --oneline -1
+<span class="ok">a3f9d2c Add login page</span>
+<span class="ok">↳ now on the right branch — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 2 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">2. 😟 "I have a merge conflict and don't know what to do"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You run <span class="found-code">git merge</span> and git says <span class="found-code">CONFLICT</span> — and now there's weird <span class="found-code">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> text inside your file.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> a conflict just means two branches changed the exact same line differently, and git genuinely can't guess which one you want. It's not broken — it's politely asking you to decide.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git merge feature/login
+Auto-merging app.js
+<span class="err">CONFLICT (content): Merge conflict in app.js</span>
+
+$ cat app.js
+<span class="warn">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+const port = 3000;
+<span class="warn">=======</span>
+const port = 8080;
+<span class="warn">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> both branches changed the same line to a different value — git is showing you both versions, side by side, waiting for you to pick.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Open the file, delete the <span class="found-code">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> / <span class="found-code">=======</span> / <span class="found-code">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span> markers, keep whichever line (or combination) is actually correct, then add and commit. <strong>Why it happened:</strong> two people (or two branches) genuinely changed the same line — completely normal on any real team. <strong>Prevent it next time:</strong> pull and merge often, in small chunks — tiny conflicts are easy, giant ones are scary.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># edited app.js — removed markers, kept: const port = 8080;</span>
+$ git add app.js
+$ git commit
+<span class="ok">✓ Merge made by the 'recursive' strategy.</span>
+<span class="ok">↳ conflict resolved — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 3 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">3. 😟 "I accidentally committed a secret file"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You committed <span class="found-code">.env</span> — with a real API key inside — and realized it right after.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> the single most important question is: has it been pushed yet? If not, this is simple and completely private. If it HAS been pushed, the key is already exposed and deleting it later doesn't erase it from history — treat it as compromised and rotate it.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+b7e21ab Add .env with API keys
+
+$ git status
+On branch main
+<span class="ok">Your branch is ahead of 'origin/main' by 1 commit.</span>
+<span class="dim">↳ good — this hasn't been pushed yet</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the risky commit is still only local — nobody else has seen it yet, so it can be cleanly undone.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Undo the commit, remove <span class="found-code">.env</span> from tracking, and add it to <span class="found-code">.gitignore</span> so this can't happen again. <strong>Why it happened:</strong> <span class="found-code">.gitignore</span> either didn't exist yet or didn't list this file. <strong>Prevent it next time:</strong> set up <span class="found-code">.gitignore</span> as literally the first thing in any new project, before the first commit.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git reset --soft HEAD~1
+$ git rm --cached .env
+$ echo ".env" &gt;&gt; .gitignore
+$ git add .gitignore
+$ git commit -m "Add .gitignore, remove .env"
+<span class="ok">✓ committed cleanly</span>
+<span class="ok">↳ secret removed before it was ever pushed — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 4 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">4. 😟 "I forgot to add a file to my last commit"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You committed, then noticed one file never actually got included.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> since you haven't pushed yet, you don't need a whole separate commit for one forgotten file — you can just quietly fold it into the one you just made.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git status
+Untracked files:
+  <span class="warn">utils.js</span>
+<span class="dim">↳ this file never got committed</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> confirmed — <span class="found-code">utils.js</span> was sitting there the whole time, just never staged.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Add the file, then <span class="found-code">git commit --amend</span> — it folds into the previous commit instead of creating a new one. <strong>Why it happened:</strong> forgot to <span class="found-code">git add</span> it before committing. <strong>Prevent it next time:</strong> run <span class="found-code">git status</span> right before every commit, as a habit, to see exactly what's about to be included.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git add utils.js
+$ git commit --amend --no-edit
+$ git show --stat HEAD
+<span class="ok">utils.js | 12 ++++++++++++</span>
+<span class="ok">↳ now included in the same commit — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 5 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">5. 😟 "git push says 'rejected — non-fast-forward'"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git push</span> fails: "Updates were rejected because the remote contains work that you do not have locally."</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> this isn't an error in your code at all — it just means someone else pushed before you, and git is refusing to silently overwrite their work. That's a safety feature, not a bug.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git push
+<span class="err">! [rejected]  main -> main (non-fast-forward)</span>
+<span class="err">error: failed to push some refs</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the remote branch has commits your local branch doesn't — a teammate pushed first, and your local history is now behind.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Pull their changes first (merge or rebase them in), then push. <strong>Why it happened:</strong> completely normal on any team — two people worked at the same time. <strong>Prevent it next time:</strong> pull before you start working, and again right before you push, to minimize surprises.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git pull --rebase
+<span class="ok">Successfully rebased and updated refs/heads/main.</span>
+
+$ git push
+<span class="ok">✓ main -> main</span>
+<span class="ok">↳ pushed cleanly — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 6 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">6. 😟 "I want to undo my last commit"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You made a commit and want it gone — maybe it was a mistake, or you're not ready for it yet.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> this splits into two completely different tools depending on one question: has anyone else seen this commit? Not pushed yet → safe to rewrite. Already pushed/shared → don't rewrite it, add a new commit that undoes it instead.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+c4f8a21 Bad commit
+
+$ git status
+<span class="ok">Your branch is ahead of 'origin/main' by 1 commit.</span>
+<span class="dim">↳ not pushed yet — safe to rewrite</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> this commit is still local-only — nobody else has it, so rewriting history here is completely safe.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git reset --soft HEAD~1</span> — removes the commit but keeps all your changes, ready to redo the commit properly. <strong>If it HAD already been pushed:</strong> use <span class="found-code">git revert HEAD</span> instead — it adds a brand new commit that undoes the old one, without erasing shared history. <strong>Prevent it next time:</strong> keep this rule in your head permanently — pushed changes what's safe.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git reset --soft HEAD~1
+$ git status
+Changes to be committed:
+  <span class="ok">modified: app.js</span>
+<span class="ok">↳ commit undone, all changes kept — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 7 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">7. 😟 "I'm in a weird 'detached HEAD' state"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You checked out an old commit, and git warns: "You are in 'detached HEAD' state."</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> nothing is broken — you're just looking at an old snapshot instead of standing on a branch. The only real danger is committing here without realizing it, since those new commits aren't attached to anything and can get lost.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git checkout a3f9d2c
+Note: switching to 'a3f9d2c'.
+<span class="warn">You are in 'detached HEAD' state...</span>
+
+$ git branch
+<span class="warn">* (HEAD detached at a3f9d2c)</span>
+  main</div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> confirmed — you're standing on a specific commit, not a branch. Any commits made right now wouldn't be tracked by anything.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Just looking around? <span class="found-code">git checkout main</span> gets you back, nothing lost. Already made commits you want to keep? Create a branch right here FIRST, before doing anything else. <strong>Why it happened:</strong> checking out a specific commit or tag instead of a branch name. <strong>Prevent it next time:</strong> if you only meant to look at old code, you never needed to check it out at all — <span class="found-code">git show a3f9d2c</span> shows it without moving anywhere.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git checkout -b rescued-work
+Switched to a new branch 'rescued-work'
+<span class="ok">↳ any work made here is now safely on a real branch — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 8 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">8. 😟 "I want to change my last commit message"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">There's a typo in your last commit message — or it's just genuinely unclear what it did.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> same rule as always — if it hasn't been pushed, changing it is completely painless.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+a3f9d2c <span class="warn">fix bugg</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> a typo, and honestly not a very useful message either way.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git commit --amend -m "new message"</span> replaces it entirely. <strong>Why it happened:</strong> typed quickly without a second look. <strong>Prevent it next time:</strong> write commit messages like you're explaining the change to a teammate six months from now — because eventually, you are.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git commit --amend -m "Fix login validation bug"
+$ git log --oneline -1
+<span class="ok">e91c4a2 Fix login validation bug</span>
+<span class="ok">↳ message updated — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 9 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">9. 😟 "I accidentally deleted a branch"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You ran <span class="found-code">git branch -d feature/login</span> — and then realized you still needed it.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> remember the golden rule — git almost never actually throws work away. Deleting a branch just removes the LABEL pointing at those commits; the commits themselves usually still exist for a while, and git keeps a record of everywhere HEAD has recently pointed.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git branch -d feature/login
+Deleted branch feature/login (was <span class="warn">a3f9d2c</span>).
+
+$ git branch
+* main
+<span class="dim">↳ gone from the branch list — but the commit isn't actually gone yet</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the branch is gone, but git told you the exact commit hash it was pointing at — that's everything needed to bring it back.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Use <span class="found-code">git reflog</span> to find the commit, then recreate the branch pointing at it. <strong>Why it happened:</strong> deleted the wrong branch, or forgot it hadn't been merged yet. <strong>Prevent it next time:</strong> git actually warns you with <span class="found-code">-d</span> if a branch has unmerged work — only <span class="found-code">-D</span> (force) skips that warning, so avoid reaching for capital D out of habit.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git reflog
+<span class="ok">a3f9d2c HEAD@{0}: commit: Add login page</span>
+
+$ git branch feature/login a3f9d2c
+$ git branch
+* main
+<span class="ok">  feature/login</span>
+<span class="ok">↳ branch recovered — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 10 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">10. 😟 "I have unfinished changes but need to switch branches right now"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You're mid-way through changes, an urgent fix comes in on another branch, and git won't let you switch cleanly.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> you don't have to choose between "commit unfinished, half-broken work" or "lose it entirely" — there's a shelf for exactly this in-between situation.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git checkout main
+<span class="err">error: Your local changes would be overwritten by checkout.</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> git is protecting your unfinished work by refusing to just throw it away — it needs somewhere to put it first.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git stash</span> shelves your unfinished changes and gives you a clean slate. Switch, do the urgent fix, come back, then <span class="found-code">git stash pop</span> brings everything back exactly as it was. <strong>Why it happened:</strong> real work rarely lines up neatly with when you need to switch context. <strong>Prevent it next time:</strong> nothing to prevent — stash exists precisely for this, completely normal.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git stash
+<span class="ok">Saved working directory and index state WIP on feature: a3f9d2c</span>
+
+$ git checkout main
+Switched to branch 'main'
+<span class="dim"># ...did the urgent fix, switched back...</span>
+
+$ git checkout feature
+$ git stash pop
+<span class="ok">↳ unfinished changes are back, exactly as left — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSING CHECKLIST -->
+    <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.25);box-shadow:0 0 24px rgba(56,189,248,0.1);border-radius:8px;padding:18px 20px;margin-top:20px;">
+      <div class="found-h" style="color:#38bdf8;margin-top:0;text-shadow:0 0 12px rgba(56,189,248,0.4);">🔎 5 Things To Always Check When Git Is Acting Up</div>
+      <div class="found-p">All 10 problems above really come down to these 5 questions. Keep this list in your head:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Has it been pushed?</strong> — <span class="found-code">git status</span> tells you instantly if you're ahead of the remote</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. What branch am I actually on?</strong> — <span class="found-code">git branch</span>, before you do anything else</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. What does the log actually say?</strong> — <span class="found-code">git log --oneline</span> for a quick, honest history</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Is it really gone, or just unreachable right now?</strong> — <span class="found-code">git reflog</span> before you assume anything is lost</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Am I about to rewrite shared history?</strong> — if others have it, add a new commit instead of rewriting the old one</div>
+    </div>
+
   </div>
+
   <div class="pu-panel" id="pu-tsDocker">
     <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Docker troubleshooting — coming soon.</div>
   </div>
