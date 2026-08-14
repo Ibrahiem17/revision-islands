@@ -18784,8 +18784,98 @@ git push origin main</div></div>
   </div>
 
   <div class="pu-panel pu-active" id="pu-tsLinux">
-    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Linux troubleshooting — coming soon.</div>
+
+    <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px 18px;margin-bottom:22px;">
+      <div class="found-h" style="color:#a78bfa;margin-top:0;">🧠 How to think, before you touch anything</div>
+      <div class="found-p">Every problem below follows the exact same thinking process. Learn this once, and it works on almost anything, not just these 5:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. What changed?</strong> — a deploy, an edit, a reboot, or genuinely nothing? This alone solves half of all problems.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Make it happen again</strong> — if you can reliably reproduce it, you can reliably confirm when it's actually fixed.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Check the cheap, obvious thing first</strong> — before anything complicated, before Googling, before panicking.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Change one thing at a time</strong> — then check again. Change three things at once and you'll never know which one actually fixed it.</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Ask "why did this happen"</strong> — a fix that stops it from happening again beats a fix that just makes today's fire go away.</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">🐧 5 Everyday Linux Problems, Solved the Same Calm Way</div>
+    <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">These are genuinely the ones you'll hit most — not exotic edge cases, just Tuesday.</div>
+
+    <!-- PROBLEM 1 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">1. 😟 "My app isn't responding"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> you (or a user) try to reach the app and get nothing — a hang, a timeout, "connection refused."</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> don't jump to anything complicated yet — network, DNS, a bug in the code. Start at the simplest possible layer first: <em>is the program even running at all?</em> That one question rules out or confirms the most common cause in seconds.</div>
+      <div class="found-pre">$ systemctl status myapp
+<span class="err">● myapp.service - inactive (dead)</span></div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the app crashed and simply isn't running anymore — nothing to do with the network at all.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">systemctl restart myapp</span> — it's back up immediately. <strong>Why it happened:</strong> apps crash — an unhandled error, running out of memory, someone stopping it manually and forgetting to start it again. <strong>Prevent it next time:</strong> run it under something that auto-restarts on crash (systemd, pm2) instead of a plain terminal process.</div>
+    </div>
+
+    <!-- PROBLEM 2 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">2. 😟 "No space left on device"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> a command fails with that exact message, or the app can't save uploads or write logs anymore.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> disk space almost never disappears in one dramatic moment — it quietly fills up over weeks from logs, temp files, and old backups nobody's cleaning up. Your job is just to find WHERE it went.</div>
+      <div class="found-pre">$ df -h
+/dev/sda1   50G   49G   0G  <span class="err">100%</span>  /
+
+$ du -sh /var/log/* | sort -rh | head -3
+<span class="warn">9.8G</span>  /var/log/app-debug.log
+120M  /var/log/nginx
+40M   /var/log/syslog</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the root filesystem is completely full, and one single debug log file is responsible for almost all of it.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">&gt; /var/log/app-debug.log</span> empties it instantly without deleting the file (safer than <span class="found-code">rm</span> while something might still be writing to it). <strong>Why it happened:</strong> debug logging was left on and nothing was ever set up to rotate or delete old logs. <strong>Prevent it next time:</strong> set up <span class="found-code">logrotate</span>, or reuse the cleanup script from the 🤖 Bash Automation tab.</div>
+    </div>
+
+    <!-- PROBLEM 3 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">3. 😟 "Permission denied"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> running a script or opening a file gives you exactly that: <span class="found-code">Permission denied</span>.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> this is never mysterious — it's always a plain, checkable fact about two things: <em>who owns this file</em>, and <em>who you actually are</em> right now. Don't guess, don't immediately reach for sudo — look first.</div>
+      <div class="found-pre">$ ./deploy.sh
+bash: ./deploy.sh: Permission denied
+
+$ ls -l deploy.sh
+-rw-r--r--  1 root  root  842  deploy.sh
+
+$ whoami
+devops</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the file has no execute permission for anyone (notice there's no "x" anywhere in <span class="found-code">-rw-r--r--</span>), and it's owned by root, not you.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">chmod +x deploy.sh</span> if it just needs to be executable, or <span class="found-code">sudo chown devops deploy.sh</span> if you genuinely need to own it. <strong>Why it happened:</strong> the file was created by a different user (often root, during setup) and the execute bit was never set. <strong>Prevent it next time:</strong> when you write a new script, make it executable in the same breath you save it — it becomes a habit fast.</div>
+    </div>
+
+    <!-- PROBLEM 4 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">4. 😟 "Command not found"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> you type a command you're SURE exists, and bash says <span class="found-code">command not found</span>.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> there are only ever two real explanations, so check both in order: either the tool genuinely isn't installed on this machine, or it IS installed, but bash doesn't know which folder to look in for it.</div>
+      <div class="found-pre">$ docker --version
+bash: docker: command not found
+
+$ which docker
+<span class="dim">(nothing printed — not found anywhere on PATH)</span>
+
+$ echo $PATH
+/usr/local/bin:/usr/bin:/bin</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> <span class="found-code">which</span> came back empty, meaning it's genuinely not installed at all — not a PATH problem this time.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> install it — <span class="found-code">sudo apt install docker.io</span>. (If <span class="found-code">which</span> HAD found it somewhere, the fix instead would be adding that folder to PATH: <span class="found-code">export PATH=$PATH:/that/folder</span>.) <strong>Why it happened:</strong> a fresh server, or a fresh SSH session as a different user with a different setup than you expected. <strong>Prevent it next time:</strong> bake required tools into your server setup script (see 🏗️ Terraform for DevOps or the AMI/user-data pattern) instead of installing things by hand after the fact.</div>
+    </div>
+
+    <!-- PROBLEM 5 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">5. 😟 "The server is really slow"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> everything feels sluggish — pages take forever, even typing over SSH feels laggy.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> "slow" isn't a real answer — it's a feeling. Your actual job is turning that vague feeling into one specific, measurable number: is it CPU maxed out? Memory full? One command usually tells you immediately which resource is actually the problem.</div>
+      <div class="found-pre">$ top
+
+<span class="dim">%CPU  %MEM  COMMAND</span>
+<span class="err">98.2  4.1   node</span>
+ 0.3   1.2   sshd
+ 0.1   0.8   bash</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> one single node process is eating 98% of the CPU — that's the actual bottleneck, not the whole server being generically "slow."</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> restart that one process (<span class="found-code">systemctl restart myapp</span>) to relieve it immediately, then go look at what it was actually doing — often an infinite loop or a runaway request. <strong>Why it happened:</strong> a bug causing wasted CPU work, a memory leak, or the server genuinely outgrew its size for real traffic. <strong>Prevent it next time:</strong> set up monitoring and alerts (📡 Prometheus + Grafana) so you find out before a user complains, not after.</div>
+    </div>
+
   </div>
+
   <div class="pu-panel" id="pu-tsNetworking">
     <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Networking troubleshooting — coming soon.</div>
   </div>
