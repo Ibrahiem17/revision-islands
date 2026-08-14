@@ -18807,6 +18807,27 @@ git push origin main</div></div>
 <span class="err">● myapp.service - inactive (dead)</span></div>
       <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the app crashed and simply isn't running anymore — nothing to do with the network at all.</div>
       <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">systemctl restart myapp</span> — it's back up immediately. <strong>Why it happened:</strong> apps crash — an unhandled error, running out of memory, someone stopping it manually and forgetting to start it again. <strong>Prevent it next time:</strong> run it under something that auto-restarts on crash (systemd, pm2) instead of a plain terminal process.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ systemctl restart myapp
+$ systemctl status myapp
+<span class="ok">● myapp.service - active (running)</span>
+
+$ curl localhost:3000
+Hello World
+<span class="ok">↳ responding again — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 2 -->
@@ -18823,6 +18844,24 @@ $ du -sh /var/log/* | sort -rh | head -3
 40M   /var/log/syslog</div>
       <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the root filesystem is completely full, and one single debug log file is responsible for almost all of it.</div>
       <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">&gt; /var/log/app-debug.log</span> empties it instantly without deleting the file (safer than <span class="found-code">rm</span> while something might still be writing to it). <strong>Why it happened:</strong> debug logging was left on and nothing was ever set up to rotate or delete old logs. <strong>Prevent it next time:</strong> set up <span class="found-code">logrotate</span>, or reuse the cleanup script from the 🤖 Bash Automation tab.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ &gt; /var/log/app-debug.log
+$ df -h
+/dev/sda1   50G   39G   11G   <span class="ok">78%</span>  /
+<span class="ok">↳ 11GB free again — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 3 -->
@@ -18840,6 +18879,27 @@ $ whoami
 devops</div>
       <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the file has no execute permission for anyone (notice there's no "x" anywhere in <span class="found-code">-rw-r--r--</span>), and it's owned by root, not you.</div>
       <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">chmod +x deploy.sh</span> if it just needs to be executable, or <span class="found-code">sudo chown devops deploy.sh</span> if you genuinely need to own it. <strong>Why it happened:</strong> the file was created by a different user (often root, during setup) and the execute bit was never set. <strong>Prevent it next time:</strong> when you write a new script, make it executable in the same breath you save it — it becomes a habit fast.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ chmod +x deploy.sh
+$ ls -l deploy.sh
+<span class="ok">-rwxr-xr-x</span>  1 root  root  842  deploy.sh
+
+$ ./deploy.sh
+<span class="ok">✓ Deploying...</span>
+<span class="ok">↳ runs fine now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 4 -->
@@ -18857,6 +18917,26 @@ $ echo $PATH
 /usr/local/bin:/usr/bin:/bin</div>
       <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> <span class="found-code">which</span> came back empty, meaning it's genuinely not installed at all — not a PATH problem this time.</div>
       <div class="found-key">🔧 <strong>The fix:</strong> install it — <span class="found-code">sudo apt install docker.io</span>. (If <span class="found-code">which</span> HAD found it somewhere, the fix instead would be adding that folder to PATH: <span class="found-code">export PATH=$PATH:/that/folder</span>.) <strong>Why it happened:</strong> a fresh server, or a fresh SSH session as a different user with a different setup than you expected. <strong>Prevent it next time:</strong> bake required tools into your server setup script (see 🏗️ Terraform for DevOps or the AMI/user-data pattern) instead of installing things by hand after the fact.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ sudo apt install docker.io
+<span class="dim">Setting up docker.io ...</span>
+
+$ docker --version
+<span class="ok">Docker version 24.0.7</span>
+<span class="ok">↳ found it now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 5 -->
@@ -18872,6 +18952,26 @@ $ echo $PATH
  0.1   0.8   bash</div>
       <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> one single node process is eating 98% of the CPU — that's the actual bottleneck, not the whole server being generically "slow."</div>
       <div class="found-key">🔧 <strong>The fix:</strong> restart that one process (<span class="found-code">systemctl restart myapp</span>) to relieve it immediately, then go look at what it was actually doing — often an infinite loop or a runaway request. <strong>Why it happened:</strong> a bug causing wasted CPU work, a memory leak, or the server genuinely outgrew its size for real traffic. <strong>Prevent it next time:</strong> set up monitoring and alerts (📡 Prometheus + Grafana) so you find out before a user complains, not after.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ systemctl restart myapp
+$ top
+
+<span class="dim">%CPU  %MEM  COMMAND</span>
+<span class="ok">2.1   4.0   node</span>
+<span class="ok">↳ CPU usage back to normal — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
 
@@ -18909,6 +19009,27 @@ $ ping 203.0.113.45
         <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
         <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Open port 22 in the firewall — <span class="found-code">sudo ufw allow 22</span> if it's a Linux firewall, or add an inbound rule for port 22 in the AWS Security Group if it's a cloud server. <strong>Why it happened:</strong> the port simply was never opened, or a firewall rule changed. <strong>Prevent it next time:</strong> when you launch a new server, opening port 22 (just for your IP, not the whole internet) is the very first thing to check.</div>
       </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ sudo ufw allow 22
+<span class="ok">Rule added</span>
+
+$ ssh devops@203.0.113.45
+<span class="dim">Welcome to Ubuntu 22.04 LTS</span>
+<span class="ok">devops@server:~$</span>
+<span class="ok">↳ connected — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 7 -->
@@ -18944,6 +19065,24 @@ devops  1044  node app.js   <span class="dim">↳ started 3 hours ago — BEFORE
         <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
         <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Restart it — <span class="found-code">systemctl restart myapp</span> (or however you started it). <strong>Why it happened:</strong> this trips up genuinely everyone at some point — it's such a common gotcha it's almost a rite of passage. <strong>Prevent it next time:</strong> make "did I restart it?" your automatic first question anytime an edit doesn't seem to be working.</div>
       </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ systemctl restart myapp
+$ curl localhost:3000
+<span class="ok">Hello DevOps! (updated)</span>
+<span class="ok">↳ new code is live — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 8 -->
@@ -18977,6 +19116,27 @@ Server starting...
       <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
         <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
         <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Run <span class="found-code">npm install</span> to install whatever's missing, then start it again. <strong>Why it happened:</strong> the code was copied onto this server, but the dependencies it needs never got installed here. <strong>Prevent it next time:</strong> always read the FIRST error line before doing anything else — it's almost always the real answer, and everything printed after it is just extra noise.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ npm install
+<span class="dim">added 57 packages in 4s</span>
+
+$ node app.js
+Server starting...
+<span class="ok">Listening on port 3000</span>
+<span class="ok">↳ running clean, no crash — fixed!</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -19013,6 +19173,27 @@ $ crontab -l
         <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
         <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Use the FULL path in cron: <span class="found-code">0 2 * * * /home/devops/scripts/backup.sh</span>. <strong>Why it happened:</strong> cron simply doesn't know your normal folder or shortcuts the way your own logged-in terminal does. <strong>Prevent it next time:</strong> always write full, exact paths inside anything meant to run automatically — never rely on it "just knowing where things are."</div>
       </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ crontab -e
+<span class="dim"># changed to:</span>
+0 2 * * * /home/devops/scripts/backup.sh
+
+$ tail -3 /var/log/cron.log
+<span class="ok">✓ Backup saved to /home/devops/backups/...</span>
+<span class="ok">↳ runs automatically now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PROBLEM 10 -->
@@ -19048,6 +19229,23 @@ $ find / -name "app.log" 2&gt;/dev/null
         <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
         <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">find / -name "filename" 2&gt;/dev/null</span> — searches the entire machine and quietly ignores any "permission denied" folders along the way. <strong>Why it happened:</strong> different apps store logs in different default places, and there's no reason you'd have them memorized. <strong>Prevent it next time:</strong> reach for <span class="found-code">find</span> immediately instead of guessing — it's faster than clicking around ever will be.</div>
       </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ tail -f /var/log/myapp/app.log
+<span class="ok">[INFO] Server running smoothly</span>
+<span class="ok">↳ found it, now watching the live log — fixed!</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- CLOSING CHECKLIST -->
@@ -19064,8 +19262,305 @@ $ find / -name "app.log" 2&gt;/dev/null
   </div>
 
   <div class="pu-panel" id="pu-tsNetworking">
-    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Networking troubleshooting — coming soon.</div>
+
+    <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px 18px;margin-bottom:22px;">
+      <div class="found-h" style="color:#a78bfa;margin-top:0;">🧠 How to think, before you touch anything</div>
+      <div class="found-p">Networking problems feel scary because there are more moving parts — but the same calm process still works. A few extra habits that help specifically here:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Split it in half: is it DNS, or is it the server?</strong> — test the raw IP directly. If the IP works but the domain doesn't, it's DNS. If neither works, it's the server.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. "Refused" and "timed out" mean different things</strong> — refused means something answered and said no (check what's listening). Timed out usually means a firewall or a dead host (nothing answered at all).</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Test the network path directly</strong> — <span class="found-code">curl</span>, <span class="found-code">ping</span>, <span class="found-code">nc</span>. Don't trust a vague app error — go check the actual connection yourself.</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">4. If it's random, there's probably more than one path</strong> — intermittent failures usually mean multiple IPs or servers, and only one of them is actually broken.</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">🌐 5 Everyday Networking Problems, Solved the Same Calm Way</div>
+    <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same style as the Linux tab — the problem, how to think about it, the real commands, and then watching the actual fix happen.</div>
+
+    <!-- PROBLEM 1 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">1. 😟 "The website works for me, but nobody else can reach it"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You just moved your app to a new server. It loads fine for you — but everyone else swears the site is down.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> DNS is like a phonebook that everyone shares — but that phonebook takes a little time to update everywhere. It's very possible the phonebook still has the OLD address written in it for most people.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ dig myapp.com
+myapp.com.  300  IN  A  <span class="warn">203.0.113.10</span>   <span class="dim">↳ the OLD server</span>
+
+$ curl ifconfig.me   <span class="dim"># run ON the new server</span>
+<span class="ok">203.0.113.99</span>   <span class="dim">↳ this is the NEW server's real address</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> DNS is still pointing everyone at the OLD server — that's the entire mismatch. Nothing is actually broken, the phonebook is just outdated.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Update the DNS A record to point at the new server's IP. <strong>Why it happened:</strong> nobody updated the phonebook entry after moving to the new server. <strong>Prevent it next time:</strong> update DNS BEFORE fully shutting down the old server, so there's overlap instead of a gap.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># updated the A record in the DNS dashboard to 203.0.113.99</span>
+
+$ dig myapp.com
+myapp.com.  300  IN  A  <span class="ok">203.0.113.99</span>
+<span class="ok">↳ now pointing at the right server — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 2 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">2. 😟 "Connection refused" when one service calls another</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Your app tries to call another service on the network and gets <span class="found-code">Connection refused</span> — instantly, every time.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> "refused" is actually good news — it means the network path works fine, and something on the other end is awake enough to actively say no. So the real question is: is that service listening where you think it is?</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ curl http://192.168.1.50:5000/api
+<span class="err">curl: (7) Failed to connect: Connection refused</span>
+
+$ ss -tuln | grep 5000
+tcp  LISTEN  <span class="warn">127.0.0.1:5000</span>   <span class="dim">↳ only listening to itself!</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the service IS running — but it's only listening on <span class="found-code">127.0.0.1</span> (itself), so no other machine on the network can ever reach it, no matter what.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Change the service's bind address to <span class="found-code">0.0.0.0</span> (all interfaces) instead of <span class="found-code">127.0.0.1</span>, then restart it. <strong>Why it happened:</strong> a lot of frameworks default to localhost-only for safety. <strong>Prevent it next time:</strong> decide on purpose whether a service should be reachable from the network — don't leave it to a default.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># changed config: HOST=0.0.0.0 (was 127.0.0.1)</span>
+$ systemctl restart myservice
+$ ss -tuln | grep 5000
+tcp  LISTEN  <span class="ok">0.0.0.0:5000</span>
+
+$ curl http://192.168.1.50:5000/api
+<span class="ok">{"status":"ok"}</span>
+<span class="ok">↳ reachable now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 3 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">3. 😟 The site shows "Not Secure" / a certificate warning</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">The site still loads, but the browser shows a scary warning — "Not Secure," or a certificate error.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> HTTPS certificates aren't permanent — they expire on a schedule (often every 90 days for free ones). If nothing automatically renews it, one day it just quietly stops being valid.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ curl -vI https://myapp.com 2&gt;&amp;1 | grep expire
+* SSL certificate expire date: <span class="err">Jul 10 2026 (EXPIRED)</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the certificate genuinely expired — plain and simple, nobody renewed it in time.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Renew it — <span class="found-code">certbot renew</span> for a free Let's Encrypt certificate — then reload the web server so it picks up the new one. <strong>Why it happened:</strong> renewal was never automated, so it silently expired. <strong>Prevent it next time:</strong> set renewal on a cron job so it happens automatically, well before expiry.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ sudo certbot renew
+<span class="ok">Congratulations, all renewals succeeded</span>
+
+$ sudo systemctl reload nginx
+$ curl -vI https://myapp.com 2&gt;&amp;1 | grep expire
+* SSL certificate expire date: <span class="ok">Oct 08 2026</span>
+<span class="ok">↳ valid again — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 4 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">4. 😟 The app server can't reach the database server</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Your app tries to connect to the database on another server, and it just... hangs. Then eventually times out.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> a hang and a timeout (not an instant "refused") is a very specific clue — it usually means something in between the two machines is silently dropping the traffic, most often a firewall.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@app-server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ nc -zv 10.0.1.20 5432
+<span class="err">nc: connect to 10.0.1.20 port 5432 timed out</span>
+<span class="dim">↳ not "refused" — just silence. Something is blocking it.</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> total silence, not a rejection — a strong sign a firewall or security group between the two servers is quietly dropping the connection before it ever reaches the database.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Add a firewall/security group rule allowing port 5432 FROM the app server's IP TO the database server. <strong>Why it happened:</strong> the database's firewall was locked down (correctly!) and this app server was just never added to the allow list. <strong>Prevent it next time:</strong> whenever you add a new server that needs to talk to another, opening that specific path is part of the setup, not an afterthought.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@app-server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># added rule: allow port 5432 from app-server IP</span>
+$ nc -zv 10.0.1.20 5432
+<span class="ok">Connection to 10.0.1.20 5432 port succeeded!</span>
+
+$ psql -h 10.0.1.20 -U admin mydb
+<span class="ok">mydb=></span>
+<span class="ok">↳ connected — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 5 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">5. 😟 "It works sometimes, and fails randomly"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Same request, same everything — but sometimes it works fine, and sometimes it just fails. No obvious pattern.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> a problem that isn't ALWAYS broken is a big clue on its own — it usually means there's more than one possible path your request could take, and only one of those paths is actually broken.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ dig myapp.com
+myapp.com.  300  IN  A  <span class="ok">203.0.113.10</span>
+myapp.com.  300  IN  A  <span class="warn">203.0.113.11</span>
+<span class="dim">↳ two different servers answer for the same domain!</span>
+
+$ curl -I http://203.0.113.11
+<span class="err">curl: (7) Connection refused</span>   <span class="dim">↳ found the broken one</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> DNS is actually handing out TWO different server addresses for the same domain, and one of the two is dead. Roughly half of all requests randomly land on the broken one.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Fix or restart the dead server, or remove it from DNS until it's healthy again, so only working servers ever receive traffic. <strong>Why it happened:</strong> one server in the group quietly crashed or was never fully set up, but nothing was checking its health. <strong>Prevent it next time:</strong> use a load balancer with health checks (see the Networking for DevOps tab) instead of raw DNS with multiple IPs — it automatically stops sending traffic to anything unhealthy.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># removed the dead 203.0.113.11 record from DNS</span>
+$ dig myapp.com
+myapp.com.  300  IN  A  <span class="ok">203.0.113.10</span>
+<span class="ok">↳ only the healthy server remains — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSING CHECKLIST -->
+    <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.25);box-shadow:0 0 24px rgba(56,189,248,0.1);border-radius:8px;padding:18px 20px;margin-top:20px;">
+      <div class="found-h" style="color:#38bdf8;margin-top:0;text-shadow:0 0 12px rgba(56,189,248,0.4);">🔎 5 Things To Always Check When The Network Is The Suspect</div>
+      <div class="found-p">All 5 problems above really come down to these 5 questions. Keep this list in your head:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Does the raw IP work?</strong> — tells you instantly if it's DNS or the server itself</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Refused, or timed out?</strong> — refused = something answered. Timed out = probably a firewall, or nothing's there</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Is it actually listening where you expect?</strong> — <span class="found-code">ss -tuln</span>, and on which address (0.0.0.0 vs 127.0.0.1)</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Is a certificate involved, and is it still valid?</strong> — <span class="found-code">curl -vI</span> shows the expiry date</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Is there more than one path?</strong> — multiple DNS records or backend servers means only one might be the broken one</div>
+    </div>
+
   </div>
+
   <div class="pu-panel" id="pu-tsGit">
     <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Git troubleshooting — coming soon.</div>
   </div>
