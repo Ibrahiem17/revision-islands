@@ -18874,6 +18874,193 @@ $ echo $PATH
       <div class="found-key">🔧 <strong>The fix:</strong> restart that one process (<span class="found-code">systemctl restart myapp</span>) to relieve it immediately, then go look at what it was actually doing — often an infinite loop or a runaway request. <strong>Why it happened:</strong> a bug causing wasted CPU work, a memory leak, or the server genuinely outgrew its size for real traffic. <strong>Prevent it next time:</strong> set up monitoring and alerts (📡 Prometheus + Grafana) so you find out before a user complains, not after.</div>
     </div>
 
+
+    <!-- PROBLEM 6 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">6. 😟 "I can't SSH into my server"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You type your normal <span class="found-code">ssh</span> command and... nothing. It just hangs forever, or says "connection refused."</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> don't panic and don't assume the server is dead. Ask one simple question first: <em>is the server even reachable at all, or is it just this one door (port 22) that's closed?</em> Those are two very different problems.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ ssh devops@203.0.113.45
+<span class="err">ssh: connect to host 203.0.113.45 port 22: Connection timed out</span>
+
+$ ping 203.0.113.45
+<span class="ok">64 bytes from 203.0.113.45: icmp_seq=1 time=12ms</span>
+<span class="dim">↳ it answered! the server itself is alive and reachable</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the server answers ping just fine — it's alive. So it's not a dead server, it's specifically port 22 being blocked.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Open port 22 in the firewall — <span class="found-code">sudo ufw allow 22</span> if it's a Linux firewall, or add an inbound rule for port 22 in the AWS Security Group if it's a cloud server. <strong>Why it happened:</strong> the port simply was never opened, or a firewall rule changed. <strong>Prevent it next time:</strong> when you launch a new server, opening port 22 (just for your IP, not the whole internet) is the very first thing to check.</div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 7 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">7. 😟 "I changed the code, but nothing happened"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You edit a file, save it, refresh the page — and it's still showing the old version, like your edit never happened.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> saving a file and a program actually USING that file are two completely separate things. A program reads your code once, when it starts — editing the file afterward doesn't magically update a program that's already running.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ curl localhost:3000
+Hello World   <span class="warn">← the OLD text — my edit isn't showing</span>
+
+$ ps aux | grep node
+devops  1044  node app.js   <span class="dim">↳ started 3 hours ago — BEFORE I edited the file</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the process still running is the OLD one, from before your edit — it has no idea the file changed underneath it.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Restart it — <span class="found-code">systemctl restart myapp</span> (or however you started it). <strong>Why it happened:</strong> this trips up genuinely everyone at some point — it's such a common gotcha it's almost a rite of passage. <strong>Prevent it next time:</strong> make "did I restart it?" your automatic first question anytime an edit doesn't seem to be working.</div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 8 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">8. 😟 "The app crashes right after I start it"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You start the app and it just... dies. Instantly. No idea why.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> resist the urge to guess. Almost every crash prints an actual error message explaining exactly what went wrong — the answer is usually sitting right there on screen, you just have to actually read it instead of skimming past it.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ node app.js
+Server starting...
+<span class="err">Error: Cannot find module 'express'</span>
+<span class="dim">    at Function.Module._resolveFilename (...)</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the very first line already tells you exactly what's wrong — a required piece of code ("express") is missing.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Run <span class="found-code">npm install</span> to install whatever's missing, then start it again. <strong>Why it happened:</strong> the code was copied onto this server, but the dependencies it needs never got installed here. <strong>Prevent it next time:</strong> always read the FIRST error line before doing anything else — it's almost always the real answer, and everything printed after it is just extra noise.</div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 9 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">9. 😟 "It works when I run it myself, but not through cron"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You run your script by hand and it works perfectly. You schedule it with cron to run automatically — and it silently fails every time.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> when YOU type a command, your terminal quietly hands it a ton of setup for free (your normal folder, your normal shortcuts). Cron gets none of that — it starts from a completely bare, empty setup, so anything your script assumed was "just there" might not be.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ ./backup.sh
+<span class="ok">✓ Backup saved</span>   <span class="dim">↳ works fine when I run it myself</span>
+
+$ crontab -l
+0 2 * * * backup.sh   <span class="warn">← just the filename, no folder</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the crontab line just says <span class="found-code">backup.sh</span> — no folder in front of it. Cron has no idea where to even look for that file.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Use the FULL path in cron: <span class="found-code">0 2 * * * /home/devops/scripts/backup.sh</span>. <strong>Why it happened:</strong> cron simply doesn't know your normal folder or shortcuts the way your own logged-in terminal does. <strong>Prevent it next time:</strong> always write full, exact paths inside anything meant to run automatically — never rely on it "just knowing where things are."</div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 10 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">10. 😟 "I can't find where a file or log actually is"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Someone says "check the log file" — but you have no idea which folder it's actually sitting in.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> you don't need to guess or click through folder after folder by hand. Linux can just search the whole machine for you in seconds — let it do the work instead of you doing it manually.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ cat app.log
+cat: app.log: No such file or directory   <span class="dim">↳ not here, where did it go?</span>
+
+$ find / -name "app.log" 2&gt;/dev/null
+<span class="ok">/var/log/myapp/app.log</span>   <span class="dim">↳ found it!</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the file was never in the folder you were sitting in — it lives somewhere else entirely, and <span class="found-code">find</span> located it instantly.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">find / -name "filename" 2&gt;/dev/null</span> — searches the entire machine and quietly ignores any "permission denied" folders along the way. <strong>Why it happened:</strong> different apps store logs in different default places, and there's no reason you'd have them memorized. <strong>Prevent it next time:</strong> reach for <span class="found-code">find</span> immediately instead of guessing — it's faster than clicking around ever will be.</div>
+      </div>
+    </div>
+
+    <!-- CLOSING CHECKLIST -->
+    <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.25);box-shadow:0 0 24px rgba(56,189,248,0.1);border-radius:8px;padding:18px 20px;margin-top:20px;">
+      <div class="found-h" style="color:#38bdf8;margin-top:0;text-shadow:0 0 12px rgba(56,189,248,0.4);">🔎 5 Things To Always Check, No Matter What Broke</div>
+      <div class="found-p">All 10 problems above really come down to just these 5 questions. Keep this list in your head — it works on almost anything:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Is it even running?</strong> — <span class="found-code">ps aux</span> or <span class="found-code">systemctl status</span></div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. What do the logs actually say?</strong> — don't guess, go read the real error</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Is there room to work with?</strong> — <span class="found-code">df -h</span> for disk, <span class="found-code">free -h</span> for memory</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Are you actually allowed to do this?</strong> — file permissions, firewall rules, who owns what</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Did something about the environment change?</strong> — different user, manual run vs. cron, a fresh server vs. an old one</div>
+    </div>
+
   </div>
 
   <div class="pu-panel" id="pu-tsNetworking">
