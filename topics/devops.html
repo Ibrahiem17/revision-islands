@@ -206,7 +206,7 @@
   <div class="badge">Interview Prep · Live Cheatsheet</div>
   <h1>Dev<span>Ops</span> Cheat Sheet</h1>
   <div class="subtitle">Lifecycle · CI/CD · Kubernetes · IaC · Monitoring · Q&amp;A</div>
-  <div class="version-tag">v14.0 FINAL — 130+ Q&amp;As · 27 Tabs · All Errors Fixed · Complete 🔥</div>
+  <div class="version-tag">v15.0 FINAL — 180+ Q&amp;As · 48 Tabs · All Errors Fixed · Complete 🔥</div>
 </div>
 
 <div class="tabs">
@@ -257,6 +257,7 @@
   <div class="tab" onclick="showTab('jenkins',this)">🔧 Jenkins</div>
   <div class="tab" onclick="showTab('practical',this)">🧪 Practical Use</div>
   <div class="tab" onclick="showTab('howused',this)">🎬 How It's Used</div>
+  <div class="tab" onclick="showTab('troubleshoot',this)">🧯 Troubleshooting</div>
 </div>
 
 <!-- LIFECYCLE -->
@@ -18746,6 +18747,78 @@ git push origin main</div></div>
 </div>
 
 </div><!-- /tab-howused -->
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- TROUBLESHOOTING TAB — a tab with tabs inside it, one per
+     DevOps area. Skeleton only, no content yet. Reuses the exact
+     .pu-tabs / .pu-tab / .pu-panel CSS and showPU() JS already
+     built for the "How It's Used" tab — nothing new defined here. -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-troubleshoot">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🧯 Troubleshooting, organized by area</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🗂️</span><div class="analogy-text"><strong>One tab per area</strong><br>Linux, Networking, Git, Docker...</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔍</span><div class="analogy-text"><strong>Pick the one that fits</strong><br>Where the problem actually is</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🛠️</span><div class="analogy-text"><strong>Work it, step by step</strong><br>Same way every time</div></div>
+  </div>
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    Every category of thing DevOps actually troubleshoots, gathered in one place — pick a tab below. <strong style="color:#e2e8f0;">Content for each one is being built out</strong>, the same way as everywhere else in this cheat sheet: real commands, real output, real fixes.
+  </div>
+
+  <div class="pu-tabs">
+    <div class="pu-tab pu-active" onclick="showPU('tsLinux',this)">🐧 Linux</div>
+    <div class="pu-tab" onclick="showPU('tsNetworking',this)">🌐 Networking</div>
+    <div class="pu-tab" onclick="showPU('tsGit',this)">🌿 Git</div>
+    <div class="pu-tab" onclick="showPU('tsDocker',this)">🐳 Docker</div>
+    <div class="pu-tab" onclick="showPU('tsK8s',this)">☸️ Kubernetes</div>
+    <div class="pu-tab" onclick="showPU('tsTerraform',this)">🏗️ Terraform</div>
+    <div class="pu-tab" onclick="showPU('tsCicd',this)">🐙 CI/CD</div>
+    <div class="pu-tab" onclick="showPU('tsAws',this)">☁️ AWS</div>
+    <div class="pu-tab" onclick="showPU('tsNginx',this)">🔁 Nginx</div>
+    <div class="pu-tab" onclick="showPU('tsSecurity',this)">🔒 Security</div>
+    <div class="pu-tab" onclick="showPU('tsBash',this)">🐚 Shell / Bash</div>
+  </div>
+
+  <div class="pu-panel pu-active" id="pu-tsLinux">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Linux troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsNetworking">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Networking troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsGit">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Git troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsDocker">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Docker troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsK8s">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Kubernetes troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsTerraform">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Terraform troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsCicd">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 CI/CD troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsAws">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 AWS troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsNginx">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Nginx troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsSecurity">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Security troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsBash">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Shell / Bash troubleshooting — coming soon.</div>
+  </div>
+
+</div><!-- /tab-troubleshoot -->
+
 
 <script>
   function showTab(name, el) {
