@@ -1788,40 +1788,56 @@ env -i bash -c "/home/deploy/backup.sh"</div>
     <div class="analogy-item"><span class="analogy-icon">🤝</span><div class="analogy-text"><strong>Team collaboration</strong><br>Everyone works in parallel</div></div>
   </div>
 
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:16px 18px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    Every heading below is unchanged. What's different is HOW it's explained — short, exact sentences, with a picture of "before" and "after" for anything that changes. No skipped steps. If a sentence uses a word it hasn't defined yet, that's a mistake — flag it.
+  </div>
+
   <div class="section-title">📦 The Daily Git Workflow</div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px 16px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    A change you make never jumps straight into permanent history. It always passes through <strong style="color:#e2e8f0;">three boxes</strong>, in this exact order:
+    <div class="found-pre" style="margin:10px 0;">Working Directory  →  Staging Area  →  Repository
+   (you edit a file)      (git add)        (git commit)</div>
+    <strong style="color:#e2e8f0;">Important:</strong> "committed" means it's in the Repository box. "Staged" means it's only in the middle box, waiting. These are two different boxes with two different contents — that single fact is the whole workflow below.
+  </div>
+
   <div class="cmd-grid">
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git status</span><span class="cmd-tag">inspect</span></div>
-      <div class="cmd-desc">Shows what changed, what's staged, what's untracked. Run this constantly — it's your orientation command.<br><code>git status -s</code> = short format: <code>M</code>=modified, <code>A</code>=added (staged), <code>??</code>=untracked.</div>
+      <div class="cmd-desc">Shows the difference between all three boxes right now. Run it before every single command below — it tells you exactly what state you're in.<br><code>M</code> = modified, <code>A</code> = staged, <code>??</code> = untracked (git doesn't know this file yet).</div>
       <div class="cmd-ex">$ git status -s
 <span class="cmd-out">M  src/auth.js
 ?? notes.txt</span></div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git add</span><span class="cmd-tag">stage</span></div>
-      <div class="cmd-desc">Staging = choosing what goes into the next commit snapshot.<br><code>git add .</code> — stage everything (<code>.</code> = all files in current dir)<br><code>git add src/auth.js</code> — stage one specific file<br><code>git add -p</code> — stage chunks interactively, not whole files. Great for clean commits.</div>
-      <div class="cmd-ex">$ git add -p &nbsp;# review each chunk</div>
+      <div class="cmd-desc">Copies a change from the Working Directory into the Staging Area. Nothing is saved permanently yet — you can still change your mind.<br><div class="found-pre" style="margin:6px 0 0;">Before: Working Dir = new edit, Staging = old, Repo = old
+After:  Working Dir = new edit, Staging = new edit, Repo = old</div></div>
+      <div class="cmd-ex">$ git add .  &nbsp;# stage everything
+$ git add -p &nbsp;# review each chunk first</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git commit</span><span class="cmd-tag">snapshot</span></div>
-      <div class="cmd-desc">Creates the snapshot. Each commit gets a unique hash (e.g. <code>a3f9d2c</code>). The message should describe WHAT changed and WHY.<br>Convention: <code>feat:</code>, <code>fix:</code>, <code>chore:</code>, <code>docs:</code> prefix (Conventional Commits).</div>
+      <div class="cmd-desc">Takes everything sitting in the Staging Area and turns it into a permanent commit. Git does this in order: look at HEAD → find the current branch → create the new commit → move that branch to point at it.<br><div class="found-pre" style="margin:6px 0 0;">Before: main → C1
+After:  main → C2   (C2 is the new commit; C1 still exists behind it)</div></div>
       <div class="cmd-ex">$ git commit -m "feat: add JWT auth"</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git push</span><span class="cmd-tag">upload</span></div>
-      <div class="cmd-desc">Upload your local commits to the remote (GitHub). Always specify branch.<br><code>git push origin feature/auth</code> — push to your feature branch, not main directly.</div>
+      <div class="cmd-desc">Copies your local commits to a second copy of the repository living somewhere else — almost always GitHub, under the name <code>origin</code>.<br>Always name the branch, so you know exactly what you're sending.</div>
       <div class="cmd-ex">$ git push origin feature/auth</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git log</span><span class="cmd-tag">history</span></div>
-      <div class="cmd-desc">See the full commit history with hashes, authors, dates, messages.<br><code>git log --oneline</code> = compact view, one line per commit. Use the hash to reference specific commits.</div>
+      <div class="cmd-desc">Lists every commit in the Repository box, newest first — the full chain: C0 ← C1 ← C2 ← ... <code>--oneline</code> shows one short line per commit instead of the full message.</div>
       <div class="cmd-ex">$ git log --oneline
 <span class="cmd-out">a3f9d2c feat: add JWT auth
 b1e8c4a fix: null check on login</span></div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git checkout &lt;hash&gt;</span><span class="cmd-tag">time travel</span></div>
-      <div class="cmd-desc">Travel back to any past commit using its hash. You enter "detached HEAD" state — you can look around but shouldn't commit here. Use <code>git checkout main</code> to return.</div>
+      <div class="cmd-desc">Moves HEAD to point directly at an old commit instead of a branch.<br><div class="found-pre" style="margin:6px 0 0;">Before: HEAD → main
+After:  HEAD → a3f9d2c   (a specific commit, not a branch)</div>Important: this is "detached HEAD." Committing here creates commits that nothing points to. <code>git checkout main</code> gets you back.</div>
       <div class="cmd-ex">$ git checkout a3f9d2c &nbsp;# go back
 $ git checkout main &nbsp;&nbsp;&nbsp;# come back</div>
     </div>
@@ -1831,48 +1847,77 @@ $ git checkout main &nbsp;&nbsp;&nbsp;# come back</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:24px;">
     <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;font-size:13px;margin-bottom:8px;">git fetch</div>
-      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Downloads changes from remote and updates remote-tracking branches (<code style="color:#fbbf24;">origin/main</code> etc.) but does <strong style="color:#e2e8f0;">NOT</strong> touch your working files or current branch.<br><br>✅ Safe — inspect before integrating.</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Downloads new commits from the remote. Updates a label called <code style="color:#fbbf24;">origin/main</code> to point at them.<div class="found-pre" style="margin:8px 0;font-size:10px;">Before: origin/main → C2 (old)
+After:  origin/main → C4 (updated)</div><strong style="color:#e2e8f0;">Your own files never move.</strong> Your own <code style="color:#fbbf24;">main</code> branch never moves. Only that one remote-tracking label changes.</div>
     </div>
     <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;font-size:13px;margin-bottom:8px;">git pull</div>
-      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Fetch + merge (or fetch + rebase if configured). Immediately integrates remote changes into your current branch.<br><br>⚡ Faster but less control than doing fetch + rebase manually.</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Exactly <code style="color:#fbbf24;">git fetch</code>, immediately followed by <code style="color:#fbbf24;">git merge</code> (or rebase, if you've configured that). This time your own branch DOES move — it's fetch, then one more step.</div>
     </div>
     <div style="background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.2);border-left:3px solid #a855f7;border-radius:4px;padding:14px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;color:#a855f7;font-size:13px;margin-bottom:8px;">git merge</div>
-      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Combines one branch into another. Creates a merge commit that preserves full history. Non-destructive.<br><br>Use when combining finished features into main.</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Combines two branches back into one.<div class="found-pre" style="margin:8px 0;font-size:10px;">If main didn't move (fast-forward):
+main → C4  (just slides forward, nothing new)
+
+If main ALSO has new commits:
+git creates a new commit C6 with
+TWO parent arrows — one to each side</div></div>
     </div>
     <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
       <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;font-size:13px;margin-bottom:8px;">git rebase</div>
-      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Replays your commits on top of another branch. Creates a <em>linear</em> history — cleaner but rewrites commits.<br><br>⚠️ Never rebase shared/public branches.</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Takes your branch's commits OFF, and replays them as brand new commits on top of another branch.<div class="found-pre" style="margin:8px 0;font-size:10px;">Before: feature: C0→C1→C2→C3→C4
+        main:    C0→C1→C2→C5
+After:  C0→C1→C2→C5→C3'→C4'</div>C3 and C4 aren't moved — C3' and C4' are new commits with new IDs. ⚠️ Never rebase a branch someone else already has a copy of.</div>
     </div>
   </div>
 
   <div class="section-title">🛠️ Fixing &amp; Undoing Things</div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px 16px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    To actually understand <code style="color:#fbbf24;">reset</code>, you need to know exactly what's sitting in each of the three boxes. Walk through this slowly:
+    <div class="found-sub" style="margin-top:12px;">Step 1 — commit "Hello"</div>
+    <div class="found-pre" style="margin:6px 0;">git add app.js
+git commit -m "C1"</div>
+    State: Working Directory = Hello · Staging Area = Hello · Repository = Hello
+    <div class="found-sub" style="margin-top:12px;">Step 2 — edit the file, add "Git" (no add, no commit yet)</div>
+    State: Working Directory = <strong style="color:#e2e8f0;">Hello + Git</strong> · Staging Area = Hello · Repository = Hello
+    <div class="found-sub" style="margin-top:12px;">Step 3 — git add app.js</div>
+    State: Working Directory = Hello + Git · Staging Area = <strong style="color:#e2e8f0;">Hello + Git</strong> · Repository = Hello
+    <div class="found-sub" style="margin-top:12px;">Step 4 — git commit -m "C2"</div>
+    State: Working Directory = Hello + Git · Staging Area = Hello + Git · Repository = <strong style="color:#e2e8f0;">Hello + Git</strong>
+    <div class="found-key" style="margin-top:14px;">Now reset actually makes sense — each flavor undoes the commit, but stops touching the boxes at a different point:<br><br>
+    <strong style="color:#e2e8f0;">--soft</strong> → moves the branch pointer back. Staging Area untouched. Working Directory untouched.<br>
+    <strong style="color:#e2e8f0;">--mixed</strong> → moves the branch pointer back, AND clears the Staging Area. Working Directory untouched.<br>
+    <strong style="color:#e2e8f0;">--hard</strong> → moves the branch pointer back, clears the Staging Area, AND resets the Working Directory to match.<br><br>
+    <strong style="color:#e2e8f0;">None of them delete the commit.</strong> C2 still exists in the Repository — reset only changes which commit your branch points to. <code style="color:#fbbf24;">git reflog</code> finds it again if you need it.</div>
+  </div>
+
   <div class="cmd-grid">
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git stash</span><span class="cmd-tag">shelve work</span></div>
-      <div class="cmd-desc">Shelves your uncommitted work-in-progress to a temporary stack, giving you a clean working directory without committing. Useful when you need to urgently switch branches.<br><code>git stash pop</code> brings it back.</div>
+      <div class="cmd-desc">Takes whatever's in the Working Directory and Staging Area right now, sets it aside, and resets both boxes to match the last commit — without creating a commit. <code>git stash pop</code> puts it all back exactly as it was.</div>
       <div class="cmd-ex">$ git stash &nbsp;&nbsp;&nbsp;# save WIP
 $ git stash pop &nbsp;# restore it</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git reset --soft HEAD~1</span><span class="cmd-tag">undo commit</span></div>
-      <div class="cmd-desc">Undoes the last commit but keeps your changes staged. <code>--soft</code> = undo commit only. <code>--mixed</code> = undo commit + unstage. <code>--hard</code> = undo commit + delete changes (dangerous ⚠️).</div>
+      <div class="cmd-desc">Moves your branch back one commit. Staging Area and Working Directory stay exactly as they were — nothing is lost, the commit just isn't "official" anymore.</div>
       <div class="cmd-ex">$ git reset --soft HEAD~1 &nbsp;# safe undo</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git revert &lt;hash&gt;</span><span class="cmd-tag">safe undo</span></div>
-      <div class="cmd-desc">Creates a <em>new</em> commit that reverses the changes of a previous commit. Safe for shared branches — it doesn't rewrite history, just adds an "undo" commit on top.</div>
+      <div class="cmd-desc">Creates a brand NEW commit that does the exact opposite of an old one. The old commit is still right there in history — nothing is removed or rewritten.<div class="found-pre" style="margin:6px 0 0;">Before: C0→C1→C2
+After:  C0→C1→C2→C3   (C3 undoes C2)</div>Safe on shared branches, because history only grows — it never gets rewritten.</div>
       <div class="cmd-ex">$ git revert a3f9d2c &nbsp;# adds undo commit</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git restore &lt;file&gt;</span><span class="cmd-tag">discard changes</span></div>
-      <div class="cmd-desc">Discards unstaged changes in a file, restoring it to the last committed state. Cannot be undone — the changes are gone. Different from reset which operates on commits.</div>
+      <div class="cmd-desc">Resets ONE file in the Working Directory back to match the last commit. Cannot be undone — whatever wasn't committed is simply gone.</div>
       <div class="cmd-ex">$ git restore src/auth.js &nbsp;⚠️</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git remote</span><span class="cmd-tag">remotes</span></div>
-      <div class="cmd-desc">Manage remote connections. <code>git remote -v</code> shows all remotes and their URLs. <code>origin</code> is the default name for the remote you cloned from (usually GitHub).</div>
+      <div class="cmd-desc">Lists the other copies of this repository git knows about. <code>origin</code> is just a name — the default name for whichever remote you cloned from.</div>
       <div class="cmd-ex">$ git remote -v
 <span class="cmd-out">origin  https://github.com/you/repo.git</span></div>
     </div>
@@ -1880,27 +1925,26 @@ $ git stash pop &nbsp;# restore it</div>
 
   <div class="section-title">⚔️ Merge Conflicts</div>
   <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:16px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
-    A conflict happens when two people edited the same part of the same file. Git can't auto-decide whose version wins.<br><br>
-    <strong style="color:#e2e8f0;">Step-by-step resolution:</strong><br>
-    <strong>1.</strong> <code style="color:#fbbf24;">git log</code> — understand which commits introduced the conflict<br>
-    <strong>2.</strong> Open the conflicting file — Git marks it:<br>
+    A merge tries to combine two branches automatically, line by line. A conflict happens on exactly one condition: <strong style="color:#e2e8f0;">the same line was changed to two different things on each side.</strong> Git genuinely cannot guess which one you want — so it stops and shows you both.<br><br>
+    <strong style="color:#e2e8f0;">What to do, in order:</strong><br>
+    <strong>1.</strong> Open the file. Git has marked exactly where the conflict is:<br>
     <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:3px;padding:8px;margin:8px 0;font-size:10.5px;color:#fbbf24;">
 &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-your changes here
+your version
 =======
-their changes here
+their version
 &gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/their-branch</pre>
-    <strong>3.</strong> Manually edit to the correct final state, remove all markers<br>
-    <strong>4.</strong> <code style="color:#fbbf24;">git add conflicting-file.js</code><br>
-    <strong>5.</strong> <code style="color:#fbbf24;">git merge --continue</code> or <code style="color:#fbbf24;">git rebase --continue</code><br><br>
-    💬 <strong style="color:#fb923c;">Communicate</strong> with the person whose change conflicts with yours — conflicts often reveal an integration problem worth discussing.
+    <strong>2.</strong> Delete the <code style="color:#fbbf24;">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> / <code style="color:#fbbf24;">=======</code> / <code style="color:#fbbf24;">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> lines, and keep only whichever version (or combination) is actually correct.<br>
+    <strong>3.</strong> <code style="color:#fbbf24;">git add</code> the file — this tells git "the conflict here is resolved."<br>
+    <strong>4.</strong> <code style="color:#fbbf24;">git commit</code> (or <code style="color:#fbbf24;">git merge --continue</code>) — this finishes the merge you were already doing.<br><br>
+    💬 <strong style="color:#fb923c;">Talk to whoever wrote the other side</strong> — a conflict usually means two people had genuinely different ideas about the same piece of code, which is worth a real conversation.
   </div>
 
   <div class="section-title">🔀 Pull Requests (PRs)</div>
   <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
-    A <strong style="color:#e2e8f0;">Pull Request (PR)</strong> is a request to merge a feature branch into main. It's not a Git command — it's a GitHub/GitLab feature.<br><br>
-    A PR gives teammates a chance to <strong>review your code</strong> before it merges. They can leave comments, request changes, or approve. CI/CD pipelines also run automatically on the PR — if tests fail, the PR can't merge.<br><br>
-    <strong style="color:#e2e8f0;">Flow:</strong> feature branch → push → open PR → code review → CI passes → merge into main → pipeline deploys
+    A Pull Request is not a git command at all — git doesn't even know what one is. It's a GitHub (or GitLab) feature layered on top: a request that says <em>"please merge my branch into main."</em><br><br>
+    Opening one gives your teammates a chance to read the change before it becomes permanent. They can comment, ask for changes, or approve. Automated checks (tests, CI) run on it too — if those fail, the PR usually can't merge.<br><br>
+    <strong style="color:#e2e8f0;">The full path:</strong> new branch → commits → push → open PR → review + checks pass → merge into main → pipeline deploys it
   </div>
 
   <div class="loop-box">
@@ -1917,7 +1961,7 @@ their changes here
   <div class="cmd-grid">
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git reflog</span><span class="cmd-tag">HEAD history</span></div>
-      <div class="cmd-desc">Records <strong>every single movement of HEAD</strong> — commits, merges, rebases, resets, branch switches. Unlike <code>git log</code> which only shows commit history, reflog is your safety net. Accidentally deleted a branch or did a bad reset? Find the lost hash here and recover.</div>
+      <div class="cmd-desc"><code>git log</code> only shows the commits your current branch can currently reach. <code>git reflog</code> shows something different: <strong>every place HEAD has ever pointed</strong> — including commits a reset or rebase left behind. Nothing you "lost" is actually gone. Find the hash here, then <code>git checkout -b recovery &lt;hash&gt;</code> to get it back.</div>
       <div class="cmd-ex">$ git reflog
 <span class="cmd-out">a3f9d2c HEAD@{0}: commit: feat: auth
 b1e8c4a HEAD@{1}: reset: moving to HEAD~1
@@ -1925,23 +1969,23 @@ c9d7f3a HEAD@{2}: checkout: moved to main</span></div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">clone vs fork</span><span class="cmd-tag">copy a repo</span></div>
-      <div class="cmd-desc"><strong>git clone</strong> — creates a local copy on your machine. You're working with the original repo's remote (origin). Used for repos you have direct write access to.<br><br><strong>Fork (GitHub)</strong> — creates your own personal copy of a repo under your GitHub account. Freely commit to your fork. To contribute back, open a PR from your fork to the original. Used for open-source contributions.</div>
+      <div class="cmd-desc"><strong style="color:#e2e8f0;">git clone</strong> — makes a local copy on your own machine. Your <code>origin</code> points at the SAME remote everyone else on the team uses. For repos you already have write access to.<br><br><strong style="color:#e2e8f0;">Fork</strong> (a GitHub feature, not a git command) — makes your own separate copy of the whole repo, under your account. You commit there freely, then open a PR from your fork back to the original. For contributing to a project you don't have write access to.</div>
       <div class="cmd-ex">clone = local copy, same origin
-fork = your GitHub copy → PR back</div>
+fork = your own GitHub copy → PR back</div>
     </div>
   </div>
 
   <div class="section-title">🪝 Git Hooks</div>
   <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
-    Executable scripts in <code style="color:#fbbf24;">.git/hooks/</code> that run automatically at specific Git events. Used to enforce policies, run checks, and automate tasks. Share them via <strong style="color:#e2e8f0;">Husky</strong> (npm) to ensure the whole team uses the same hooks.
+    A hook is just a script sitting in <code style="color:#fbbf24;">.git/hooks/</code> that git runs automatically at one specific moment. Nothing magic — it's your own shell script, triggered for you. Share them across a team with a tool like <strong style="color:#e2e8f0;">Husky</strong>, so everyone's hooks match.
   </div>
   <div class="cmd-grid">
     <div class="cmd-card" style="border-left-color:#f97316;">
       <div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">CLIENT-SIDE</span><span class="cmd-tag">local machine</span></div>
       <div class="cmd-desc">
-        <strong style="color:#e2e8f0;">pre-commit</strong> — runs before commit is created. Run linters, formatters, quick tests. Exit non-zero = commit rejected.<br><br>
-        <strong style="color:#e2e8f0;">commit-msg</strong> — validates commit message format. Enforce Conventional Commits (<code>feat:</code>, <code>fix:</code>, <code>chore:</code>).<br><br>
-        <strong style="color:#e2e8f0;">pre-push</strong> — runs before <code>git push</code>. Run full test suite. Stops push if tests fail — last local defence.
+        <strong style="color:#e2e8f0;">pre-commit</strong> — runs right before a commit is created. If the script exits with an error, the commit is blocked. Used for linters and fast checks.<br><br>
+        <strong style="color:#e2e8f0;">commit-msg</strong> — checks the commit message itself. Used to require a format like <code>feat:</code> or <code>fix:</code>.<br><br>
+        <strong style="color:#e2e8f0;">pre-push</strong> — runs right before <code>git push</code>. The last local checkpoint before code leaves your machine.
       </div>
       <div class="cmd-ex">#!/bin/sh
 npm run lint && npm test</div>
@@ -1949,9 +1993,9 @@ npm run lint && npm test</div>
     <div class="cmd-card" style="border-left-color:#818cf8;">
       <div class="cmd-head"><span class="cmd-label" style="color:#818cf8;background:rgba(129,140,248,0.08);border-color:rgba(129,140,248,0.2);">SERVER-SIDE</span><span class="cmd-tag">remote / GitHub</span></div>
       <div class="cmd-desc">
-        <strong style="color:#e2e8f0;">pre-receive</strong> — runs on the server before accepting a push. Reject pushes that violate policy (e.g. direct push to main).<br><br>
-        <strong style="color:#e2e8f0;">post-receive</strong> — runs after push is accepted. Trigger CI/CD pipelines, send Slack notifications, update dashboards.<br><br>
-        In GitHub/GitLab these are implemented as <strong>webhooks</strong> — HTTP callbacks that fire on events.
+        <strong style="color:#e2e8f0;">pre-receive</strong> — runs on the SERVER, before it accepts an incoming push. Can reject a push outright — e.g. blocking anyone from pushing directly to main.<br><br>
+        <strong style="color:#e2e8f0;">post-receive</strong> — runs after the push is already accepted. Used to kick off a CI/CD pipeline or send a notification.<br><br>
+        On GitHub/GitLab these are called <strong>webhooks</strong> instead — same idea, delivered as an HTTP request.
       </div>
     </div>
   </div>
@@ -1960,34 +2004,34 @@ npm run lint && npm test</div>
   <div class="cmd-grid">
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git cherry-pick</span><span class="cmd-tag">copy a commit</span></div>
-      <div class="cmd-desc">Apply a specific commit from another branch to your current branch — without merging the whole branch. Useful for hotfixing: apply a bug fix commit to both <code>main</code> and <code>release/1.2</code>.</div>
-      <div class="cmd-ex">$ git cherry-pick a3f9d2c &nbsp;# apply specific commit</div>
+      <div class="cmd-desc">Takes ONE specific commit from another branch and replays it onto your current branch — nothing else from that branch comes with it. Used to apply a hotfix to two places at once without merging everything.</div>
+      <div class="cmd-ex">$ git cherry-pick a3f9d2c &nbsp;# apply that one commit here</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git rebase -i HEAD~3</span><span class="cmd-tag">squash commits</span></div>
-      <div class="cmd-desc">Interactive rebase — rewrite the last 3 commits. <strong>Squash</strong> multiple commits into one clean commit before opening a PR. Keeps main branch history clean. Never interactive-rebase shared branches.</div>
-      <div class="cmd-ex">$ git rebase -i HEAD~3 &nbsp;# opens editor</div>
+      <div class="cmd-desc">Opens your last 3 commits in an editable list. Change <code>pick</code> to <code>squash</code> on the ones you want folded into the commit above them. Rewrites those commits — never do this on a branch someone else already has.</div>
+      <div class="cmd-ex">$ git rebase -i HEAD~3 &nbsp;# opens an editor</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git tag</span><span class="cmd-tag">releases</span></div>
-      <div class="cmd-desc">Mark a specific commit as a release version. Annotated tags are best practice. CI/CD pipelines often trigger differently on tag pushes (build + deploy release artifacts).</div>
+      <div class="cmd-desc">Marks one exact commit as important — usually a release. Unlike a branch, a tag never moves once created. A pipeline can trigger differently when a tag is pushed vs. a normal commit.</div>
       <div class="cmd-ex">$ git tag -a v2.0 -m "Release v2.0"
 $ git push origin v2.0</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git commit --amend</span><span class="cmd-tag">fix last commit</span></div>
-      <div class="cmd-desc">Fix the last commit — change its message or add forgotten files. Only safe if you haven't pushed yet. After pushing, use <code>git revert</code> instead to avoid rewriting shared history.</div>
+      <div class="cmd-desc">Replaces your last commit with a new one — a fixed message, or forgotten files folded in. Only safe before you've pushed it. Already pushed? Use <code>git revert</code> instead, so you're not rewriting history someone else already has.</div>
       <div class="cmd-ex">$ git commit --amend -m "fixed: better message"</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">git clean -fd</span><span class="cmd-tag">remove untracked</span></div>
-      <div class="cmd-desc">Remove all untracked files and directories from the working tree. <code>-f</code> = force, <code>-d</code> = include directories. Use <code>-n</code> first to dry-run (see what would be deleted without deleting).</div>
+      <div class="cmd-desc">Deletes every file git isn't tracking yet — permanently, no undo. <code>-n</code> first shows you exactly what WOULD be deleted, without deleting anything. Always run <code>-n</code> before the real thing.</div>
       <div class="cmd-ex">$ git clean -n &nbsp;&nbsp;# dry run first
 $ git clean -fd &nbsp;# actually delete</div>
     </div>
     <div class="cmd-card">
       <div class="cmd-head"><span class="cmd-label">.gitignore</span><span class="cmd-tag">exclude files</span></div>
-      <div class="cmd-desc">File patterns that Git should never track. Always include: <code>node_modules/</code>, <code>.env</code>, <code>*.log</code>, <code>.terraform/</code>, <code>dist/</code>. Committed to the repo so everyone on the team ignores the same files.</div>
+      <div class="cmd-desc">A plain list of file patterns git should never track — <code>node_modules/</code>, <code>.env</code>, <code>*.log</code> and similar. It's committed to the repo itself, so the whole team ignores exactly the same files, automatically.</div>
       <div class="cmd-ex"># .gitignore
 node_modules/
 .env
@@ -2001,60 +2045,60 @@ node_modules/
     <table style="width:100%;border-collapse:collapse;font-size:11px;">
       <thead><tr style="background:rgba(244,63,94,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#f43f5e;font-weight:700;text-align:left;width:220px;">SITUATION</th><th style="padding:8px 12px;color:#f43f5e;font-weight:700;text-align:left;">HOW TO RECOVER</th></tr></thead>
       <tbody>
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Accidentally committed a secret</td><td style="padding:7px 12px;color:#94a3b8;"><strong style="color:#f43f5e;">Rotate the secret immediately</strong> — assume it's compromised. Then use <code>git filter-branch</code> or BFG Repo Cleaner to remove it from history. Force-push. Notify security team.</td></tr>
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Force-pushed and lost commits</td><td style="padding:7px 12px;color:#94a3b8;"><code>git reflog</code> — find the lost commit hash. <code>git checkout -b recovery &lt;hash&gt;</code> to recover.</td></tr>
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">git reset --hard (wrong branch)</td><td style="padding:7px 12px;color:#94a3b8;"><code>git reflog</code> — find HEAD before reset. <code>git reset --hard &lt;that-hash&gt;</code> to restore.</td></tr>
-        <tr><td style="padding:7px 12px;color:#fbbf24;">Monorepo vs Polyrepo</td><td style="padding:7px 12px;color:#94a3b8;"><strong>Monorepo</strong> — all services in one repo. Easier cross-service changes, atomic commits. Used by Google, Meta. <strong>Polyrepo</strong> — each service in its own repo. More independent but harder to coordinate. Most startups use polyrepo initially.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Accidentally committed a secret</td><td style="padding:7px 12px;color:#94a3b8;"><strong style="color:#f43f5e;">The secret is compromised the moment it's pushed — rotate it first.</strong> Then remove it from history with BFG Repo Cleaner or <code>git filter-branch</code>, and force-push the clean version.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Force-pushed and lost commits</td><td style="padding:7px 12px;color:#94a3b8;">The commits are still there — you just don't have a label pointing at them. <code>git reflog</code> finds the hash, then <code>git checkout -b recovery &lt;hash&gt;</code> brings it back.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">git reset --hard (wrong branch)</td><td style="padding:7px 12px;color:#94a3b8;">Same idea — reset only moved a pointer, nothing was deleted. <code>git reflog</code> to find where you were before the reset, then <code>git reset --hard &lt;that-hash&gt;</code>.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;">Monorepo vs Polyrepo</td><td style="padding:7px 12px;color:#94a3b8;"><strong>Monorepo</strong> — every service lives in one repository. One commit can change several services at once. <strong>Polyrepo</strong> — each service gets its own repository. More independent, but a change spanning two services now needs two separate commits, in two separate repos.</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="section-title">🍒 git cherry-pick — Steal a Single Commit</div>
   <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
-    Apply a specific commit from one branch onto another, without merging the entire branch. Useful when a hotfix was applied to main and you need that exact fix on a release branch — without pulling in any other changes.
+    Copies exactly one commit from one branch onto another — the rest of that branch is never touched. The real use case: a bug fix landed on <code style="color:#fbbf24;">main</code>, and a release branch needs that exact fix and nothing else new from main.
   </div>
   <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
-    <span style="color:#fbbf24;">git cherry-pick a3f9d2c</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# apply one commit onto current branch</span><br>
-    <span style="color:#fbbf24;">git cherry-pick a3f9d2c..b1e8c4a</span><span style="color:#475569;"> &nbsp;&nbsp;# apply a range of commits</span><br>
-    <span style="color:#fbbf24;">git cherry-pick --no-commit a3f9d2c</span><span style="color:#475569;"> # apply changes but don't commit yet</span>
+    <span style="color:#fbbf24;">git cherry-pick a3f9d2c</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# copy exactly this one commit here</span><br>
+    <span style="color:#fbbf24;">git cherry-pick a3f9d2c..b1e8c4a</span><span style="color:#475569;"> &nbsp;&nbsp;# copy a whole range of commits</span><br>
+    <span style="color:#fbbf24;">git cherry-pick --no-commit a3f9d2c</span><span style="color:#475569;"> # apply the changes, don't commit yet</span>
   </div>
 
   <div class="section-title">🏷️ Git Tags — Semantic Versioning</div>
   <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
-    Tags mark specific commits as important — typically release versions. Unlike branches, tags don't move. <strong style="color:#e2e8f0;">Semantic Versioning:</strong> <code style="color:#fbbf24;">MAJOR.MINOR.PATCH</code> — e.g. <code style="color:#fbbf24;">v2.1.3</code>. MAJOR = breaking change, MINOR = new feature backward-compatible, PATCH = bug fix. Docker images are tagged the same way.
+    A tag marks one exact commit as meaningful — usually a release. <strong style="color:#e2e8f0;">The one rule that matters: a branch keeps moving forward as you commit; a tag, once created, never moves again.</strong> <strong style="color:#e2e8f0;">Semantic Versioning:</strong> <code style="color:#fbbf24;">MAJOR.MINOR.PATCH</code>, e.g. <code style="color:#fbbf24;">v2.1.3</code>. MAJOR = something breaks. MINOR = a new feature, nothing breaks. PATCH = a bug fix, nothing new.
   </div>
   <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
     <span style="color:#fbbf24;">git tag v2.1.0</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# lightweight tag</span><br>
     <span style="color:#fbbf24;">git tag -a v2.1.0 -m "Release 2.1.0"</span><span style="color:#475569;"> # annotated tag (recommended)</span><br>
-    <span style="color:#fbbf24;">git push origin v2.1.0</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# push tag to remote</span><br>
-    <span style="color:#fbbf24;">git push origin --tags</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# push all tags</span><br>
-    <span style="color:#fbbf24;">git tag</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# list all tags</span>
+    <span style="color:#fbbf24;">git push origin v2.1.0</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# tags don't push automatically</span><br>
+    <span style="color:#fbbf24;">git tag</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# list every tag</span>
   </div>
 
   <div class="section-title">📝 .gitignore — What to Never Commit</div>
   <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
-    <span style="color:#64748b;"># Dependencies</span><br>
+    <span style="color:#64748b;"># Dependencies — reinstalled, never hand-edited</span><br>
     <span style="color:#fbbf24;">node_modules/</span><br>
     <span style="color:#fbbf24;">vendor/</span><br><br>
-    <span style="color:#64748b;"># Build outputs</span><br>
+    <span style="color:#64748b;"># Build outputs — regenerated from source every time</span><br>
     <span style="color:#fbbf24;">dist/</span><br>
     <span style="color:#fbbf24;">*.jar *.class</span><br><br>
-    <span style="color:#64748b;"># SECRETS — NEVER COMMIT THESE</span><br>
+    <span style="color:#64748b;"># SECRETS — a committed secret is a leaked secret</span><br>
     <span style="color:#fbbf24;">.env</span><br>
     <span style="color:#fbbf24;">*.pem *.key</span><br>
-    <span style="color:#fbbf24;">terraform.tfstate</span><span style="color:#64748b;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# terraform state has secrets</span><br>
+    <span style="color:#fbbf24;">terraform.tfstate</span><span style="color:#64748b;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# often contains real secret values</span><br>
     <span style="color:#fbbf24;">.terraform/</span><br><br>
-    <span style="color:#64748b;"># OS / IDE junk</span><br>
+    <span style="color:#64748b;"># OS / editor clutter — nobody else needs these</span><br>
     <span style="color:#fbbf24;">.DS_Store &nbsp;&nbsp;.idea/ &nbsp;&nbsp;*.swp</span>
   </div>
 
   <div class="section-title">🔀 Squash Commits — Clean History Before Merge</div>
   <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
-    Combine multiple messy "WIP", "fix typo", "oops" commits into a single meaningful commit before merging a PR. Keeps the main branch history clean and readable.<br><br>
-    <code style="color:#fbbf24;">git rebase -i HEAD~5</code> — interactively rebase last 5 commits. Change <code>pick</code> to <code>squash</code> (or <code>s</code>) on all but the first. Git will merge them into one commit and let you write a clean message.
+    While you're building a feature, your commits are often messy — "wip", "fix typo", "actually fix it". Squashing takes several of those and folds them into one clean commit before the branch merges, so main's history stays readable.<br><br>
+    <code style="color:#fbbf24;">git rebase -i HEAD~5</code> — opens the last 5 commits as an editable list. Change <code>pick</code> to <code>squash</code> on every commit except the first, and git folds them all into one, letting you write a single clean message.
   </div>
 
 </div>
+
 
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- GIT FOR DEVOPS TAB — graphical, animated, live git simulator.
