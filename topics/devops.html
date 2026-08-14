@@ -239,6 +239,7 @@
   <div class="tab" onclick="showTab('gitadv',this)">🔬 Git Deep</div>
   <div class="tab" onclick="showTab('concepts2',this)">💡 Concepts+</div>
   <div class="tab" onclick="showTab('networking',this)">🌐 Networking</div>
+  <div class="tab" onclick="showTab('networkingdevops',this)">🌐 Networking for DevOps</div>
   <div class="tab" onclick="showTab('shell',this)">⌨️ Shell/SSH</div>
   <div class="tab" onclick="showTab('advanced',this)">🚀 Advanced</div>
   <div class="tab" onclick="showTab('quickfire',this)">⚡ Quick Fire</div>
@@ -6671,6 +6672,228 @@ example.com.  <span class="warn">3542</span>  IN  A  <span class="err">203.0.113
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- SHELL / SSH TAB -->
 <!-- ══════════════════════════════════════════════════════════ -->
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- NETWORKING FOR DEVOPS TAB — beginner-friendly, hands-on
+     companion to the 🌐 Networking tab (which has the deep
+     foundational theory). This tab is: 13 topics, in the order a
+     DevOps engineer would actually learn them, each with real
+     commands + real output + a hands-on lab. Reuses global
+     .ld-term / .ld-pill / .ld-cat / .ld-info / .sl-breakdown /
+     .found-* / .pipeline / .loop-box CSS — nothing new defined here.
+-->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-networkingdevops">
+
+  <div class="analogy">
+    <div><div class="analogy-label">🌐 Networking, the practical way</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🧠</span><div class="analogy-text"><strong>Learn the idea</strong><br>One concept at a time</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>Run the real command</strong><br>See the real output</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧪</span><div class="analogy-text"><strong>Build a tiny lab</strong><br>Prove it to yourself</div></div>
+  </div>
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    The <strong style="color:#e2e8f0;">🌐 Networking</strong> tab next to this one covers the deep theory — OSI-style concepts, the full request journey, why any of this exists. This tab is the <strong style="color:#38bdf8;">hands-on, practical companion</strong>: 13 topics, in the exact order a DevOps engineer would actually learn them, each one built the same way — <strong style="color:#e2e8f0;">what it is, the real command, the real output, and a tiny lab</strong> to actually prove it to yourself. Built for someone who's never typed a single one of these commands before.
+  </div>
+
+  <div class="section-title">🚀 The Order I'd Learn These In</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:16px 20px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:2.1;display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+    <div><span class="found-code">1</span>&nbsp; IP Addressing<br><span class="found-code">2</span>&nbsp; DNS<br><span class="found-code">3</span>&nbsp; Ports<br><span class="found-code">4</span>&nbsp; TCP vs UDP<br><span class="found-code">5</span>&nbsp; HTTP / HTTPS<br><span class="found-code">6</span>&nbsp; SSH</div>
+    <div><span class="found-code">7</span>&nbsp; Firewalls<br><span class="found-code">8</span>&nbsp; Routing<br><span class="found-code">9</span>&nbsp; Nginx (Reverse Proxy)<br><span class="found-code">10</span> Load Balancing<br><span class="found-code">11</span> APIs + JSON<br><span class="found-code">12</span> AWS Networking &nbsp;<span class="found-code">13</span> Troubleshooting</div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🧪</div>
+    <div>
+      <div class="loop-title">The formula behind every topic below</div>
+      <div class="loop-desc">Learn the concept <span class="loop-arrow">→</span> use Linux commands <span class="loop-arrow">→</span> try a tiny app example <span class="loop-arrow">→</span> (eventually) deploy it to AWS <span class="loop-arrow">→</span> break it on purpose <span class="loop-arrow">→</span> fix it. <span class="loop-arrow">|</span> That loop — not memorizing definitions — is genuinely how DevOps engineers actually learn networking.</div>
+    </div>
+  </div>
+
+  <div class="section-title">🖥️ Try It — Click Any Command Below to "Run" It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same simulator as Linux for DevOps — pick any command from any topic below, in any order.</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">devops@server: ~</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> <span id="ndCmd">click any command below</span></div>
+      <div class="pu-output" id="ndOutput"><span class="dim">↳ output shows up here the moment you click something</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="ndInfo">
+    <div><strong>🧩 Syntax (the general shape):</strong> <code id="ndSyntax">click a command below</code></div>
+    <div style="margin-top:6px;"><strong>▶️ What it does:</strong> <span id="ndDoes">Pick any command below to get started — IP addressing, DNS, ports, SSH, firewalls, Nginx, and more are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="ndWhere">—</span></div>
+  </div>
+
+  <div class="sl-breakdown" id="ndBreakdownBox" style="margin-top:10px;">
+    <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+    <div class="sl-breakdown-list" id="ndBreakdownList"><span class="dim">Click a command above — every piece of its syntax gets broken down here, one at a time.</span></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:24px;">
+    <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+    <div id="ndWhyUseful"><span class="dim">Click a command above to see a real problem it solves, with a real example.</span></div>
+  </div>
+
+  <!-- ============ TOPIC 1: IP ADDRESSING ============ -->
+  <div class="ld-cat">1️⃣ 📍 IP Addressing ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">An IP address is just a machine's "phone number" on a network. Every device gets one — a <strong style="color:#e2e8f0;">private</strong> one (like 192.168.1.100) that only works inside your own network, and often a <strong style="color:#e2e8f0;">public</strong> one that the whole internet can see. <span class="found-code">127.0.0.1</span> is special — it always means "this machine, talking to itself." CIDR notation like <span class="found-code">/24</span> says how many addresses are in a block — the deep math is in the 🌐 Networking tab; here, just recognize it when you see it.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ipAddr',this)">ip addr</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('hostnameI',this)">hostname -I</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ifconfigMe',this)">curl ifconfig.me</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run <span class="found-code">ip addr</span> on your own machine, and separately run <span class="found-code">curl ifconfig.me</span>. Write down both numbers. One is your <strong>private</strong> IP (only your router/home network can reach it) — the other is your <strong>public</strong> IP (what the entire internet sees you as). If you're behind a router — which almost everyone is — these two numbers will be completely different. That difference <em>is</em> the whole lesson.</div>
+
+  <!-- ============ TOPIC 2: DNS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">2️⃣ 🌍 DNS ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">DNS is the internet's phonebook — it turns a name like <span class="found-code">google.com</span> into an IP address, because humans remember names and computers need numbers. An <strong style="color:#e2e8f0;">A record</strong> maps a name to an IPv4 address (the most common one). <strong style="color:#e2e8f0;">AAAA</strong> does the same for IPv6. <strong style="color:#e2e8f0;">CNAME</strong> points one name at another name instead of an IP. <strong style="color:#e2e8f0;">MX</strong> says where email for a domain should go. <strong style="color:#e2e8f0;">TXT</strong> holds arbitrary text, often used to prove you own a domain.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('nslookup',this)">nslookup</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('dig',this)">dig</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('host',this)">host</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run <span class="found-code">dig</span> (or <span class="found-code">nslookup</span>) against three different domains — <span class="found-code">github.com</span>, <span class="found-code">google.com</span>, and <span class="found-code">amazon.com</span> — and write down the IP address each one resolves to. Notice they're all completely different numbers, run by completely different companies, and DNS is the only reason typing a name instead of a raw IP works at all.</div>
+
+  <!-- ============ TOPIC 3: PORTS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">3️⃣ 🔌 Ports ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">If an IP address is a building, a port is the specific apartment number inside it — one machine can run many services at once, each one "listening" on its own port. A port is <strong style="color:#e2e8f0;">listening</strong> if something is actively waiting for connections on it, and <strong style="color:#e2e8f0;">closed</strong> if nothing is. Worth memorizing: <span class="found-code">22</span> SSH · <span class="found-code">53</span> DNS · <span class="found-code">80</span> HTTP · <span class="found-code">443</span> HTTPS · <span class="found-code">3306</span> MySQL · <span class="found-code">5432</span> PostgreSQL · <span class="found-code">6379</span> Redis · <span class="found-code">27017</span> MongoDB.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ssTuln',this)">ss -tuln</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('lsofPort',this)">lsof -i :3000</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Start any tiny local web server (even <span class="found-code">python3 -m http.server 3000</span> works) so it's listening on port 3000. Open <span class="found-code">http://localhost:3000</span> in a browser to confirm it responds — then, in a terminal, use <span class="found-code">ss -tuln</span> to find port 3000 in the listening list, and <span class="found-code">lsof -i :3000</span> to see exactly which process owns it. Stop the server and run both commands again — notice port 3000 disappears from both.</div>
+
+  <!-- ============ TOPIC 4: TCP vs UDP ============ -->
+  <div class="ld-cat" style="margin-top:24px;">4️⃣ 🔀 TCP vs UDP ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;"><strong style="color:#e2e8f0;">TCP</strong> is reliable and connection-oriented — it checks every piece of data arrived, in order, and resends anything lost. Slower, but nothing goes missing. <strong style="color:#e2e8f0;">UDP</strong> is connectionless and faster — it just fires data and doesn't look back. Nothing is guaranteed to arrive, but there's no handshake overhead either. Neither is "better" — they're for different jobs.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ssT',this)">ss -t</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ssU',this)">ss -u</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Without looking it up, guess whether each of these is TCP or UDP, then check your reasoning: SSH, HTTP, DNS, a live video call. (Answer: SSH → TCP, HTTP → TCP — a dropped byte in a web page would actually break it. DNS → UDP, video calls → UDP — speed matters more than a perfectly reliable single lookup or frame.) The pattern: <em>anything where losing a little data is fine, but delay isn't, leans UDP — everything else leans TCP.</em></div>
+
+  <!-- ============ TOPIC 5: HTTP/HTTPS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">5️⃣ 🌐 HTTP and HTTPS ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">Every web request is a <strong style="color:#e2e8f0;">request</strong> going out and a <strong style="color:#e2e8f0;">response</strong> coming back — each one has <strong style="color:#e2e8f0;">headers</strong> (metadata) and often a <strong style="color:#e2e8f0;">body</strong> (the actual content). The method says the intent: <span class="found-code">GET</span> read, <span class="found-code">POST</span> create, <span class="found-code">PUT</span>/<span class="found-code">PATCH</span> update, <span class="found-code">DELETE</span> remove. The status code says the outcome: <span class="found-code">200</span>/<span class="found-code">201</span> success, <span class="found-code">301</span> redirected, <span class="found-code">400</span>/<span class="found-code">401</span>/<span class="found-code">403</span>/<span class="found-code">404</span> a problem with the request, <span class="found-code">500</span>/<span class="found-code">502</span>/<span class="found-code">503</span> a problem on the server. <strong style="color:#e2e8f0;">HTTPS</strong> is the exact same thing, wrapped in TLS/SSL encryption using a certificate, so nobody in between can read or tamper with it.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlPlain',this)">curl</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlI',this)">curl -I</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlV',this)">curl -v</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Make a tiny Express API — literally just <span class="found-code">app.get("/", (req, res) =&gt; res.send("Hello"))</span> — run it locally, then hit it three different ways: <span class="found-code">curl localhost:3000</span> (see the body), <span class="found-code">curl -I localhost:3000</span> (see only the status/headers), and <span class="found-code">curl -v localhost:3000</span> (see the entire request AND response). Same endpoint, three completely different levels of detail.</div>
+
+  <!-- ============ TOPIC 6: SSH ============ -->
+  <div class="ld-cat" style="margin-top:24px;">6️⃣ 🔑 SSH ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">SSH is how you remotely log into another machine's terminal, securely. <strong style="color:#e2e8f0;">Password authentication</strong> works but is weaker and annoying to type every time. <strong style="color:#e2e8f0;">SSH keys</strong> are the real-world default: a <strong style="color:#e2e8f0;">private key</strong> that stays on your machine forever and a <strong style="color:#e2e8f0;">public key</strong> you copy onto every server you want to access — the server can verify it's really you without a password ever crossing the network.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('sshKeygen',this)">ssh-keygen</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('sshConnect',this)">ssh user@ip</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('scpCopy',this)">scp</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Launch a small AWS EC2 instance (the <strong style="color:#38bdf8;">☁️ VPC &amp; EC2</strong> tab covers this in depth), generate a key pair with <span class="found-code">ssh-keygen</span> if you haven't already, and connect to your new instance with <span class="found-code">ssh -i your-key.pem user@your-instance-ip</span>. The moment your terminal prompt changes to show the instance's hostname, you're genuinely operating a real remote computer.</div>
+
+  <!-- ============ TOPIC 7: FIREWALLS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">7️⃣ 🛡️ Firewalls ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A firewall decides what traffic is allowed in or out. <strong style="color:#e2e8f0;">Inbound</strong> is traffic coming TO this machine; <strong style="color:#e2e8f0;">outbound</strong> is traffic leaving it. An <strong style="color:#e2e8f0;">allow</strong> rule lets specific traffic through; a <strong style="color:#e2e8f0;">deny</strong> rule blocks it. The golden rule everywhere in DevOps: only open exactly the ports that need to be open.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ufwStatus',this)">sudo ufw status</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ufwAllow80',this)">sudo ufw allow 80</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ufwAllow443',this)">sudo ufw allow 443</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> With your Node app running on port 3000, block it with <span class="found-code">sudo ufw deny 3000</span> and try to reach it — it should now time out or refuse the connection, even though the app itself is still running fine. Then run <span class="found-code">sudo ufw allow 3000</span> and try again — it works instantly. This is the clearest possible proof that "the app is running" and "the app is reachable" are two completely separate questions.</div>
+
+  <!-- ============ TOPIC 8: ROUTING ============ -->
+  <div class="ld-cat" style="margin-top:24px;">8️⃣ 🛣️ Routing ⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A <strong style="color:#e2e8f0;">router</strong> forwards traffic between networks. Every machine has a <strong style="color:#e2e8f0;">default gateway</strong> — the router it sends anything to when it doesn't have a more specific route. The <strong style="color:#e2e8f0;">routing table</strong> is the actual list of rules deciding where each destination's traffic goes.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ipRoute',this)">ip route</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('traceroute',this)">traceroute</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run <span class="found-code">traceroute google.com</span> and read every hop out loud, in order: your laptop → your router → your ISP → the wider internet → Google's own network. Each line is a real, physical (or virtual) network your request actually passed through in milliseconds — this is what "the internet" concretely is.</div>
+
+  <!-- ============ TOPIC 9: REVERSE PROXY ============ -->
+  <div class="ld-cat" style="margin-top:24px;">9️⃣ 🔁 Reverse Proxies (Nginx) ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A <strong style="color:#e2e8f0;">reverse proxy</strong> sits in front of your real app and forwards ("proxies") requests to it — users only ever talk to the proxy, never directly to your app. This is also called <strong style="color:#e2e8f0;">port forwarding</strong> in the simplest case: taking a request on one port and quietly handing it to a different port behind the scenes.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('nginxInstall',this)">sudo apt install nginx</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('nginxConfig',this)">nginx proxy_pass config</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> With your Node app still running on port 3000, install Nginx and add the <span class="found-code">proxy_pass http://localhost:3000;</span> config from the pill above. Reload Nginx, then visit your server on plain port 80 (no ":3000" in the URL) — you should see your app's exact response. Browser → Nginx → Node.js, three hops, one seamless response.</div>
+
+  <!-- ============ TOPIC 10: LOAD BALANCING ============ -->
+  <div class="ld-cat" style="margin-top:24px;">🔟 ⚖️ Load Balancing ⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">Load balancing exists because one server can only handle so much, and one server dying shouldn't take your whole app down with it. A load balancer <strong style="color:#e2e8f0;">distributes</strong> incoming traffic across several identical backends, which is exactly what gives a system <strong style="color:#e2e8f0;">high availability</strong> — no single point of failure.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('nginxUpstream',this)">nginx upstream (2 backends)</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run two copies of the exact same tiny Node app — one on port 3000, one on port 3001 (each printing which port it's on, so you can tell them apart). Put Nginx in front of both using the <span class="found-code">upstream</span> block from the pill above. Refresh the page in your browser a few times and watch the response alternate between "3000" and "3001" — that alternation IS load balancing, happening live in front of you.</div>
+
+  <!-- ============ TOPIC 11: APIs + JSON ============ -->
+  <div class="ld-cat" style="margin-top:24px;">1️⃣1️⃣ 📦 APIs and JSON ⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A <strong style="color:#e2e8f0;">REST API</strong> is just a web server whose responses are meant to be read by code instead of a browser. <strong style="color:#e2e8f0;">JSON</strong> is the plain-text format almost every API speaks — nested keys and values, easy for both humans and programs to read. An API "request" and "response" are genuinely just HTTP, exactly like everything else in this tab.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlApi',this)">curl (call an API)</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlJq',this)">curl | jq</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Install <span class="found-code">jq</span> (<span class="found-code">sudo apt install jq</span>), then run <span class="found-code">curl https://jsonplaceholder.typicode.com/posts/1</span> and read the dense, one-line result. Now pipe the exact same command into <span class="found-code">jq</span> and compare — same data, but suddenly indented and genuinely readable. This one habit will save you real time on every API you ever debug.</div>
+
+  <!-- ============ TOPIC 12: AWS NETWORKING ============ -->
+  <div class="ld-cat" style="margin-top:24px;">1️⃣2️⃣ ☁️ AWS Networking ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 12px;">A <strong style="color:#e2e8f0;">VPC</strong> is your own private network inside AWS — nothing in it is reachable by anyone until you explicitly allow it. Inside a VPC, <strong style="color:#e2e8f0;">subnets</strong> split it into smaller pieces — a <strong style="color:#e2e8f0;">public subnet</strong> can reach the internet, a <strong style="color:#e2e8f0;">private subnet</strong> can't (on purpose — that's where your database usually lives). An <strong style="color:#e2e8f0;">Internet Gateway</strong> is what actually provides that internet access. A <strong style="color:#e2e8f0;">Security Group</strong> acts like a firewall around individual resources. A <strong style="color:#e2e8f0;">Route Table</strong> controls where each subnet's traffic is allowed to go. This is genuinely everything above (IPs, ports, firewalls, routing) — just AWS's specific names for the same ideas. The <strong style="color:#38bdf8;">☁️ VPC &amp; EC2</strong> tab covers building these step by step in real depth.</div>
+  <div class="found-pre" style="margin-bottom:12px;">VPC
+ └─ Public subnet
+      └─ Internet Gateway (gives it internet access)
+      └─ Security Group (firewall around your instance)
+      └─ EC2 instance ← your actual server</div>
+  <div class="found-key">🧪 <strong>Build a lab:</strong> Following the <strong style="color:#38bdf8;">☁️ VPC &amp; EC2</strong> tab, create a VPC → a public subnet → attach an Internet Gateway → open a Security Group rule for port 22 (and 80, once your app is on it) → launch an EC2 instance inside that subnet. Then deploy your tiny Node app to it. Every single piece you just clicked through has a name from earlier in THIS tab — a VPC is a network, a subnet is a smaller network, a Security Group is a firewall, and SSH is still just SSH.</div>
+
+  <!-- ============ TOPIC 13: TROUBLESHOOTING ============ -->
+  <div class="section-title" style="margin-top:28px;">1️⃣3️⃣ 🧯 Troubleshooting ⭐⭐⭐⭐⭐ — Probably the Most Important Skill in This Whole Tab</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 14px;">When something breaks, you don't need to be a genius — you need to check things <em>in order</em>, one layer at a time, and stop as soon as you find the one that's actually broken. This exact order works for almost every "it's not working" networking problem you'll ever hit:</div>
+  <div class="found-pre" style="font-size:11px;">Application isn't working.
+        │
+        ↓
+Is the application running?              →  ps aux / ss -tuln
+        │
+        ↓
+Is the port open?                        →  ss -tuln / lsof -i :port
+        │
+        ↓
+Can I ping the server?                   →  ping &lt;ip&gt;
+        │
+        ↓
+Does DNS work?                           →  dig / nslookup
+        │
+        ↓
+Can I SSH into it?                       →  ssh user@ip
+        │
+        ↓
+Is the firewall blocking it?             →  sudo ufw status
+        │
+        ↓
+Is Nginx configured correctly?           →  cat /etc/nginx/sites-available/default
+        │
+        ↓
+Are the AWS Security Groups correct?     →  check inbound rules in the AWS console</div>
+  <div class="loop-box" style="margin-top:14px;">
+    <div class="loop-icon">🧯</div>
+    <div>
+      <div class="loop-title">Every single command in that checklist is already above, in this exact tab</div>
+      <div class="loop-desc">That's not a coincidence — troubleshooting isn't a 14th skill on top of everything else, it's just the other 12 topics, used together, in order, under pressure. <span class="loop-arrow">|</span> The engineers who look calm during an outage aren't smarter — they just have this exact list memorized.</div>
+    </div>
+  </div>
+
+</div>
+
 <div class="panel" id="tab-shell">
 
   <style>
@@ -18812,6 +19035,104 @@ Linux web01 5.15.0-91-generic x86_64 GNU/Linux</div><div class="found-p">A full 
     document.querySelectorAll('.ld-pill').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
   }
+
+  const NETDEVOPS_CMDS = {
+    ipAddr: { syntax:`ip addr`, cmd:`ip addr`, output:`2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500\n    inet <span class="ok">192.168.1.100</span>/24 brd 192.168.1.255 scope global eth0\n\n1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536\n    inet <span class="hi">127.0.0.1</span>/8 scope host lo`, does:`Lists every network interface on this machine and the IP address(es) assigned to each one.`, where:`The very first command to run when you need to know "what is this machine's own IP address" — before you can SSH into a server, share it, or debug connectivity, you need this.`, breakdown:[{term:`ip addr`, desc:`show every network interface and its assigned address`},{term:`eth0`, desc:`a real network interface — this machine's actual connection`},{term:`192.168.1.100/24`, desc:`its private IP, in CIDR notation`},{term:`lo`, desc:`the "loopback" interface — always 127.0.0.1, the machine talking to itself`}], whyUseful:`<div class="found-p">You just launched a server and need to know its private IP to SSH into it, or to tell another service how to reach it.</div><div class="found-pre">$ ip addr\n2: eth0: ... inet 192.168.1.100/24 ...</div><div class="found-p">That's the machine's real address on the network — the number everything else in this tab builds on top of.</div>` },
+    hostnameI: { syntax:`hostname -I`, cmd:`hostname -I`, output:`<span class="ok">192.168.1.100</span> <span class="dim">172.17.0.1</span>`, does:`Prints just the IP address(es) for this machine — no extra interface details, one clean line.`, where:`A quick one-liner when you just need the IP and nothing else, especially inside a script.`, breakdown:[{term:`hostname`, desc:`the command — normally prints the machine's name`},{term:`-I`, desc:`instead, print every IP address assigned to it`}], whyUseful:`<div class="found-p">A deploy script needs this server's own IP to register itself with a load balancer — parsing the full "ip addr" output just for one number is overkill.</div><div class="found-pre">$ MY_IP=$(hostname -I | awk '{print $1}')</div><div class="found-p">One clean value, straight into a variable, no extra parsing needed.</div>` },
+    ifconfigMe: { syntax:`curl ifconfig.me`, cmd:`curl ifconfig.me`, output:`<span class="ok">203.0.113.45</span>`, does:`Asks an external website what IP address your request came from — that's your machine's PUBLIC IP, as the internet actually sees it.`, where:`Your private IP (192.168.x.x) means nothing outside your own network — this is the address the rest of the internet uses to reach you.`, breakdown:[{term:`curl`, desc:`makes an HTTP request`},{term:`ifconfig.me`, desc:`a free service whose whole job is to reply with "here's the IP you just connected from"`}], whyUseful:`<div class="found-p">You need to whitelist your home/office IP in a cloud firewall rule so only you can SSH in — but "ip addr" only shows your PRIVATE IP, which is useless for that.</div><div class="found-pre">$ curl ifconfig.me\n203.0.113.45</div><div class="found-p">That's the number you actually put in the security group rule — your private IP behind a router is never what the outside world sees.</div>` },
+
+    nslookup: { syntax:`nslookup &lt;domain&gt;`, cmd:`nslookup google.com`, output:`Server:   8.8.8.8\nAddress:  8.8.8.8#53\n\nNon-authoritative answer:\nName:  google.com\n<span class="ok">Address: 142.250.80.14</span>`, does:`Asks a DNS server "what IP address does this domain point to" and prints the answer.`, where:`The quickest way to check whether a domain resolves at all, and to what.`, breakdown:[{term:`nslookup`, desc:`the DNS lookup tool`},{term:`google.com`, desc:`the domain you're asking about`},{term:`Address: 142.250.80.14`, desc:`the actual answer — this is the IP behind the domain`}], whyUseful:`<div class="found-p">Someone says "the site isn't loading" and you need to rule DNS in or out as the cause, fast.</div><div class="found-pre">$ nslookup myapp.com\n** server can't find myapp.com: NXDOMAIN</div><div class="found-p">That error means the domain isn't resolving at all — the problem is DNS, not the server, not the app, not the network path. You just saved yourself from debugging the wrong layer.</div>` },
+    dig: { syntax:`dig &lt;domain&gt;`, cmd:`dig google.com`, output:`;; ANSWER SECTION:\ngoogle.com.   <span class="dim">300</span>  IN  A  <span class="ok">142.250.80.14</span>\n\n;; Query time: 21 msec\n;; SERVER: 8.8.8.8#53(8.8.8.8)`, does:`A more detailed DNS lookup than nslookup — shows the record type, the TTL (how long it's cached for), and exactly which server answered.`, where:`When nslookup's answer isn't enough detail — checking a record's TTL, or confirming which specific DNS server responded.`, breakdown:[{term:`dig`, desc:`Domain Information Groper — the detailed DNS tool`},{term:`A`, desc:`the record type — this one maps a domain straight to an IPv4 address`},{term:`300`, desc:`the TTL in seconds — how long this answer can be cached before asking again`}], whyUseful:`<div class="found-p">You just changed a DNS record and need to know exactly when the change will actually take effect everywhere.</div><div class="found-pre">$ dig myapp.com\nmyapp.com.  <span class="warn">3600</span>  IN  A  93.184.216.34</div><div class="found-p">A TTL of 3600 means old, cached answers can still be handed out for up to an hour — this is exactly why DNS changes don't feel instant, and dig is how you confirm the real cache lifetime.</div>` },
+    host: { syntax:`host &lt;domain&gt;`, cmd:`host google.com`, output:`<span class="ok">google.com has address 142.250.80.14</span>`, does:`The simplest possible DNS lookup — one line, one answer, nothing else.`, where:`Fastest way to grab just an IP from a domain, especially inside a shell script.`, breakdown:[{term:`host`, desc:`the simplest DNS lookup tool`},{term:`google.com`, desc:`the domain to resolve`}], whyUseful:`<div class="found-p">A script needs to confirm three different domains all resolve before continuing a deploy — you don't need dig's full detail, just yes/no and the IP.</div><div class="found-pre">$ host github.com\ngithub.com has address 140.82.112.3</div><div class="found-p">One line in, one line out — the fastest of the three DNS tools when you just need the answer.</div>` },
+
+    ssTuln: { syntax:`ss -tuln`, cmd:`ss -tuln`, output:`Netid  State    Local Address:Port\ntcp    LISTEN   0.0.0.0:<span class="hi">22</span>\ntcp    LISTEN   0.0.0.0:<span class="hi">80</span>\ntcp    LISTEN   127.0.0.1:<span class="hi">3000</span>`, does:`Lists every port this machine is actively listening on, and whether it's reachable from anywhere (0.0.0.0) or only from itself (127.0.0.1).`, where:`Confirming a service actually started and is listening where you expect — one of the very first checks in any "my app isn't reachable" investigation.`, breakdown:[{term:`ss`, desc:`socket statistics — the modern tool for this`},{term:`-t / -u`, desc:`show TCP and UDP sockets`},{term:`-l`, desc:`only LISTENING sockets — services waiting for connections`},{term:`-n`, desc:`show port numbers, not service names — faster and unambiguous`}], whyUseful:`<div class="found-p">You just started a server and a request to it times out — is the app even running, and on the port you think it is?</div><div class="found-pre">$ ss -tuln | grep 3000\n<span class="dim">(nothing printed)</span></div><div class="found-p">No output for port 3000 means the app isn't actually listening there at all — the problem is the app itself, not the network, DNS, or firewall. This single check rules out an entire category of causes in seconds.</div>` },
+    lsofPort: { syntax:`lsof -i :&lt;port&gt;`, cmd:`lsof -i :3000`, output:`COMMAND  PID   USER   NAME\n<span class="ok">node</span>    4821  devops *:3000 (LISTEN)`, does:`Shows exactly which process — by name and PID — is holding open a specific port.`, where:`"Port already in use" errors, or confirming exactly which app is answering on a port before you kill anything.`, breakdown:[{term:`lsof`, desc:`list open files — sockets count as "files" in Linux`},{term:`-i :3000`, desc:`filter to just this one port`},{term:`4821`, desc:`the process ID — use this with "kill" if you need to stop it`}], whyUseful:`<div class="found-p">You try to start your app and get "Error: port 3000 already in use" — but you don't remember starting anything else.</div><div class="found-pre">$ lsof -i :3000\nnode  4821  devops  *:3000 (LISTEN)</div><div class="found-p">Now you know exactly what's squatting on the port and its PID — <span class="found-code">kill 4821</span> frees it up, instead of guessing.</div>` },
+
+    ssT: { syntax:`ss -t`, cmd:`ss -t`, output:`State   Local Address:Port     Peer Address:Port\n<span class="ok">ESTAB</span>   192.168.1.100:22        203.0.113.45:51820`, does:`Shows active TCP connections specifically — who this machine is actually talking to right now, over a reliable, connection-based protocol.`, where:`Confirming an SSH session, a database connection, or an API call is actually established, not just attempted.`, breakdown:[{term:`ss -t`, desc:`TCP sockets only`},{term:`ESTAB`, desc:`the connection is live and fully set up — both sides agreed to talk`}], whyUseful:`<div class="found-p">Someone claims they're connected to your server over SSH right now — you can actually verify that from the server's side.</div><div class="found-pre">$ ss -t\nESTAB  192.168.1.100:22  203.0.113.45:51820</div><div class="found-p">A live, established connection to port 22 — proof the SSH session is real and currently open, not just attempted.</div>` },
+    ssU: { syntax:`ss -u`, cmd:`ss -u`, output:`State    Local Address:Port    Peer Address:Port\n<span class="ok">UNCONN</span>  0.0.0.0:68              0.0.0.0:*`, does:`Shows UDP sockets — connectionless traffic where there's no persistent "connection" to display, just a port that's active.`, where:`DNS, DHCP, and other lightweight protocols that don't hold a connection open the way TCP does.`, breakdown:[{term:`ss -u`, desc:`UDP sockets only`},{term:`UNCONN`, desc:`normal for UDP — there's no handshake or persistent link, just a socket ready to send/receive`}], whyUseful:`<div class="found-p">You're debugging why DNS lookups from this machine seem to be failing, and want to confirm the local resolver is even active.</div><div class="found-pre">$ ss -u | grep :53</div><div class="found-p">UDP is genuinely the right tool to check here — DNS runs over UDP specifically because speed matters more than guaranteed delivery for a quick lookup.</div>` },
+
+    curlPlain: { syntax:`curl &lt;url&gt;`, cmd:`curl google.com`, output:`&lt;!doctype html&gt;\n&lt;html&gt;...&lt;/html&gt;\n<span class="dim">(the full HTML body of the page)</span>`, does:`Sends an HTTP GET request and prints the response body straight to your terminal.`, where:`The single most-used networking command in DevOps — testing whether any HTTP endpoint responds at all.`, breakdown:[{term:`curl`, desc:`the tool — makes an HTTP request from the command line`},{term:`google.com`, desc:`the URL — curl assumes http:// if you don't specify`}], whyUseful:`<div class="found-p">You just deployed an app and want to know if it's actually serving requests, without opening a browser.</div><div class="found-pre">$ curl localhost:3000\nHello from my app!</div><div class="found-p">If that text comes back, the app is alive, listening, and responding — the fastest possible confirmation, straight from the terminal.</div>` },
+    curlI: { syntax:`curl -I &lt;url&gt;`, cmd:`curl -I google.com`, output:`<span class="ok">HTTP/1.1 200 OK</span>\ncontent-type: text/html\nserver: gws\ndate: Wed, 12 Aug 2026 14:00:00 GMT`, does:`Sends a HEAD request — fetches only the response headers, not the full page body.`, where:`A fast health check on an endpoint, or checking the status code without downloading everything behind it.`, breakdown:[{term:`-I`, desc:`"headers only" — much faster than downloading the whole response`},{term:`HTTP/1.1 200 OK`, desc:`the status line — 200 means success`}], whyUseful:`<div class="found-p">A monitoring script needs to check 50 different services every minute — downloading every full page every time would be slow and wasteful.</div><div class="found-pre">$ curl -I https://api.example.com\nHTTP/1.1 200 OK</div><div class="found-p">Just the status, instantly — this exact pattern is how uptime checks and health monitors work under the hood.</div>` },
+    curlV: { syntax:`curl -v &lt;url&gt;`, cmd:`curl -v google.com`, output:`*   Trying 142.250.80.14:80...\n* Connected to google.com (142.250.80.14) port 80\n<span class="hi">> GET / HTTP/1.1</span>\n<span class="hi">> Host: google.com</span>\n<span class="ok">< HTTP/1.1 200 OK</span>\n< content-type: text/html`, does:`Shows the entire request/response cycle in detail — the DNS lookup, the TCP connection, every header sent and received.`, where:`When curl plain or curl -I isn't enough — debugging exactly where a request is failing (DNS? connection? TLS? the app itself?).`, breakdown:[{term:`-v`, desc:`verbose — show everything happening under the hood`},{term:`&gt; lines`, desc:`what YOUR request actually sent`},{term:`&lt; lines`, desc:`what the SERVER sent back`}], whyUseful:`<div class="found-p">A request is failing and a plain curl just says "connection refused" — not enough detail to know why.</div><div class="found-pre">$ curl -v https://api.example.com\n* Connected to api.example.com...\n* TLS handshake failed</div><div class="found-p">Now you know the TCP connection actually worked, but TLS is the problem specifically — a certificate issue, not a network or DNS one. That's a completely different fix than if the connection itself had failed.</div>` },
+
+    sshKeygen: { syntax:`ssh-keygen`, cmd:`ssh-keygen -t ed25519`, output:`Generating public/private ed25519 key pair.\nEnter file in which to save the key (/home/you/.ssh/id_ed25519):\nEnter passphrase (empty for no passphrase):\n<span class="ok">Your identification has been saved in /home/you/.ssh/id_ed25519</span>\n<span class="ok">Your public key has been saved in /home/you/.ssh/id_ed25519.pub</span>`, does:`Generates a matching pair of keys — a private key that never leaves your machine, and a public key you can safely share.`, where:`Run this once, ever, per machine you SSH from — the foundation every SSH connection and every Git-over-SSH setup is built on.`, breakdown:[{term:`ssh-keygen`, desc:`the key generator`},{term:`-t ed25519`, desc:`the key type — a modern, fast, secure default`},{term:`id_ed25519`, desc:`your PRIVATE key — never share this, ever`},{term:`id_ed25519.pub`, desc:`your PUBLIC key — this is the one you copy to servers`}], whyUseful:`<div class="found-p">Typing a password every single time you SSH into a server gets old fast, and passwords can be guessed or brute-forced.</div><div class="found-pre">$ ssh-keygen -t ed25519\n...\nYour public key has been saved in ~/.ssh/id_ed25519.pub</div><div class="found-p">Put that public key on a server once, and every future connection authenticates automatically and more securely — no password typed, ever again.</div>` },
+    sshConnect: { syntax:`ssh &lt;user&gt;@&lt;ip-address&gt;`, cmd:`ssh devops@203.0.113.45`, output:`<span class="dim">Welcome to Ubuntu 22.04 LTS</span>\n<span class="ok">devops@ip-203-0-113-45:~$</span> <span class="dim">_</span>`, does:`Opens a secure, encrypted remote terminal session on another machine.`, where:`How you actually get onto a real cloud server to run any other command in this tab — nothing else here works until you're on the box.`, breakdown:[{term:`ssh`, desc:`the client — opens a secure remote session`},{term:`devops`, desc:`the username to log in as`},{term:`203.0.113.45`, desc:`the server's IP — its public one, since you're connecting from outside`}], whyUseful:`<div class="found-p">You just launched a cloud server (see the "Build a lab" below) and need to actually get onto it to install anything.</div><div class="found-pre">$ ssh devops@203.0.113.45\nWelcome to Ubuntu 22.04 LTS\ndevops@ip-203-0-113-45:~$</div><div class="found-p">You're now typing commands that run ON that remote server, not your own laptop — this is the line between "reading about a server" and "actually operating one."</div>` },
+    scpCopy: { syntax:`scp &lt;file&gt; &lt;user&gt;@&lt;ip-address&gt;:&lt;path&gt;`, cmd:`scp app.tar.gz devops@203.0.113.45:/home/devops`, output:`app.tar.gz    100%   14MB   8.2MB/s   00:01\n<span class="ok">✓ transfer complete</span>`, does:`Securely copies a file from your machine to a remote server (or the other way around), reusing the exact same encrypted connection as SSH.`, where:`Getting a build artifact, a config file, or a backup onto or off of a server, without setting up any separate file-transfer tool.`, breakdown:[{term:`scp`, desc:`secure copy`},{term:`app.tar.gz`, desc:`the local file being sent`},{term:`devops@203.0.113.45:/home/devops`, desc:`where it lands — same user@host as ssh, plus a destination path`}], whyUseful:`<div class="found-p">You built a deployable app locally and need it on the actual server, without setting up Git or a CI pipeline just for a quick manual test.</div><div class="found-pre">$ scp app.tar.gz devops@203.0.113.45:/home/devops\napp.tar.gz  100%  14MB  8.2MB/s  00:01</div><div class="found-p">One command, and the file is on the server, ready to unpack and run — the same trust and encryption as SSH, just moving a file instead of opening a shell.</div>` },
+
+    ufwStatus: { syntax:`sudo ufw status`, cmd:`sudo ufw status`, output:`Status: <span class="ok">active</span>\n\nTo                         Action      From\n--                         ------      ----\n22/tcp                     ALLOW       Anywhere\n80/tcp                     ALLOW       Anywhere`, does:`Shows whether the firewall is even turned on, and exactly which rules are currently active.`, where:`Always the first command to run when something "should" be reachable but isn't — confirming whether the firewall is the culprit.`, breakdown:[{term:`ufw`, desc:`Uncomplicated Firewall — a friendly frontend over Linux's real firewall`},{term:`status`, desc:`show current state and rules`},{term:`22/tcp ALLOW Anywhere`, desc:`SSH is allowed in from any source`}], whyUseful:`<div class="found-p">Your app is running (confirmed with ss -tuln) but nobody outside the server can reach it — the firewall is a prime suspect.</div><div class="found-pre">$ sudo ufw status\n22/tcp   ALLOW   Anywhere\n<span class="dim">(port 3000 is not listed at all)</span></div><div class="found-p">Port 3000 isn't in the allowed list — that's the actual problem, confirmed in one command, before you waste time debugging the app itself.</div>` },
+    ufwAllow80: { syntax:`sudo ufw allow &lt;port&gt;`, cmd:`sudo ufw allow 80`, output:`<span class="ok">Rule added</span>\n<span class="ok">Rule added (v6)</span>`, does:`Adds a rule allowing inbound traffic on this port, for both IPv4 and IPv6.`, where:`Opening up exactly the port a web server needs — HTTP traffic — nothing more, nothing less.`, breakdown:[{term:`ufw allow`, desc:`add an ALLOW rule`},{term:`80`, desc:`the port — HTTP's standard port`}], whyUseful:`<div class="found-p">You just installed Nginx (see the Reverse Proxy section below), but the firewall is still blocking regular web traffic from reaching it.</div><div class="found-pre">$ sudo ufw allow 80\nRule added</div><div class="found-p">Now anyone on the internet can actually reach port 80 — one command, and the exact gap found with "ufw status" is closed.</div>` },
+    ufwAllow443: { syntax:`sudo ufw allow &lt;port&gt;`, cmd:`sudo ufw allow 443`, output:`<span class="ok">Rule added</span>\n<span class="ok">Rule added (v6)</span>`, does:`Same idea as allowing port 80, but for encrypted HTTPS traffic.`, where:`Any real production website — HTTPS is the default expectation today, not an extra.`, breakdown:[{term:`443`, desc:`the port — HTTPS's standard port, encrypted web traffic`}], whyUseful:`<div class="found-p">A site works fine over plain http:// but https:// times out completely — a very common, very specific symptom.</div><div class="found-pre">$ sudo ufw allow 443\nRule added</div><div class="found-p">Port 80 being open doesn't automatically open 443 too — they're two separate rules for two separate ports, and this is the one that was still missing.</div>` },
+
+    ipRoute: { syntax:`ip route`, cmd:`ip route`, output:`default via <span class="hi">192.168.1.1</span> dev eth0\n192.168.1.0/24 dev eth0 scope link src 192.168.1.100`, does:`Shows this machine's routing table — where it sends traffic depending on the destination, and critically, its default gateway.`, where:`Confirming a machine actually knows how to reach the internet at all, before blaming DNS or a firewall for a connectivity issue.`, breakdown:[{term:`default via 192.168.1.1`, desc:`the default gateway — where ANY traffic goes if no more specific route matches (almost everything)`},{term:`192.168.1.0/24 dev eth0`, desc:`traffic to other machines on this same local network goes straight out eth0, no gateway needed`}], whyUseful:`<div class="found-p">A server can reach other machines on its own local network fine, but can't reach the internet at all.</div><div class="found-pre">$ ip route\n192.168.1.0/24 dev eth0\n<span class="dim">(no "default via" line at all)</span></div><div class="found-p">No default route means the machine genuinely has no idea where to send traffic bound for anywhere outside its local network — that's the actual root cause, not DNS, not the firewall.</div>` },
+    traceroute: { syntax:`traceroute &lt;host&gt;`, cmd:`traceroute google.com`, output:` 1  192.168.1.1        1.1 ms\n 2  isp-edge-router     8.3 ms\n 3  <span class="warn">* * * (timeout)</span>\n 4  142.250.80.14      40.2 ms`, does:`Shows every network hop between you and a destination, and how long each one takes — not just whether you got there, but the exact path.`, where:`When ping or curl fails and you need to know WHERE along the way things break down, not just that they did.`, breakdown:[{term:`traceroute`, desc:`traces the path, hop by hop`},{term:`1.1 ms / 8.3 ms`, desc:`round-trip time to each hop — rising numbers are normal as you get farther away`},{term:`* * * (timeout)`, desc:`one hop didn't respond — often normal (some routers hide themselves), but a good clue if everything after it also fails`}], whyUseful:`<div class="found-p">A connection to a server is slow, and you need to know if it's your network, your ISP, or the destination that's the actual bottleneck.</div><div class="found-pre">$ traceroute myserver.com\n1  1.1ms\n2  8.3ms\n3  210ms  ← huge jump here\n4  212ms</div><div class="found-pre">The delay appears at hop 3 and never recovers — that's specifically where the slowdown is happening, information a plain ping could never give you.</div>` },
+
+    nginxInstall: { syntax:`sudo apt install nginx`, cmd:`sudo apt install nginx`, output:`Reading package lists... Done\nSetting up nginx...\n<span class="ok">nginx is now running</span>\n\n$ curl localhost\n&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;`, does:`Installs and starts Nginx, a web server that's also the standard tool DevOps uses as a reverse proxy — a "front door" that sits in front of your actual app.`, where:`The very first step before Nginx can do anything for you — proxy traffic, load balance, serve static files, terminate HTTPS.`, breakdown:[{term:`apt install nginx`, desc:`installs Nginx from the system's package manager`},{term:`Welcome to nginx!`, desc:`its default page — confirms it installed AND is already running, listening on port 80`}], whyUseful:`<div class="found-p">Your Node app runs fine on port 3000, but you don't want users typing ":3000" into a URL, and you eventually want HTTPS — a raw Node server doesn't handle that well on its own.</div><div class="found-pre">$ sudo apt install nginx\n$ curl localhost\n&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;</div><div class="found-p">Nginx is now running on port 80, ready to be pointed at your actual app — the next pill below is exactly that.</div>` },
+    nginxConfig: { syntax:`server { listen 80; location / { proxy_pass &lt;url&gt;; } }`, cmd:`cat /etc/nginx/sites-available/default`, output:`server {
+  listen <span class="v">80</span>;
+
+  location / {
+    proxy_pass <span class="s">http://localhost:3000</span>;
+  }
+}
+
+$ sudo systemctl reload nginx
+<span class="ok">✓ nginx reloaded</span>
+
+$ curl localhost
+Hello from my Node app!`, does:`Tells Nginx: "when a request comes in on port 80, quietly forward it to my actual app running on port 3000, and hand the response back."`, where:`This exact block is what makes reverse proxying real — the browser only ever sees Nginx, never your app's real port.`, breakdown:[{term:`listen 80`, desc:`accept incoming connections on the standard web port`},{term:`location /`, desc:`applies to every URL path, unless a more specific location block overrides it`},{term:`proxy_pass http://localhost:3000`, desc:`forward the request here — your app, running locally, on its own port`}], whyUseful:`<div class="found-p">A user visits your-site.com (port 80, no port number needed), but the actual app only knows how to listen on port 3000.</div><div class="found-pre">Browser → your-site.com  (port 80)\n            ↓ Nginx quietly forwards it\n         localhost:3000  (your real app)</div><div class="found-p">The user never sees ":3000" anywhere, and later, adding HTTPS or swapping the app underneath means changing this one config file — not anything the user-facing URL depends on.</div>` },
+
+    nginxUpstream: { syntax:`upstream backend { server &lt;ip&gt;:3000; server &lt;ip&gt;:3001; }`, cmd:`cat /etc/nginx/sites-available/default`, output:`upstream backend {
+  server <span class="s">localhost:3000</span>;
+  server <span class="s">localhost:3001</span>;
+}
+
+server {
+  listen <span class="v">80</span>;
+  location / {
+    proxy_pass <span class="s">http://backend</span>;
+  }
+}
+
+$ curl localhost   # request 1
+Hello from server on <span class="hi">3000</span>
+
+$ curl localhost   # request 2
+Hello from server on <span class="hi">3001</span>`, does:`Instead of forwarding to one single app, Nginx now spreads requests across a whole list of them — this is load balancing, and it's a small addition to the exact same reverse proxy config.`, where:`Running the same app on two or more ports (or servers) so that no single instance carries all the traffic — and so if one goes down, the other keeps serving.`, breakdown:[{term:`upstream backend { ... }`, desc:`defines a named group of servers to choose between`},{term:`server localhost:3000 / :3001`, desc:`each one a separate running copy of the exact same app`},{term:`proxy_pass http://backend`, desc:`now points at the GROUP, not one single instance — Nginx picks one for each request`}], whyUseful:`<div class="found-p">One instance of your app can only handle so much traffic — and if that one instance crashes, the whole site goes down with it.</div><div class="found-pre">Users → Nginx → 3000\n              → 3001</div><div class="found-p">Two independent copies of the same app, and Nginx quietly spreads requests between them — more capacity, and if one dies, the other keeps the site up. This is genuinely what "high availability" means in practice.</div>` },
+
+    curlApi: { syntax:`curl &lt;api-url&gt;`, cmd:`curl https://jsonplaceholder.typicode.com/posts/1`, output:`{"userId":1,"id":1,"title":"sunt aut facere","body":"quia et suscipit..."}`, does:`Calls a REST API exactly like a browser or an app would — sends a GET request, gets JSON back as plain text.`, where:`Testing any API — your own, or a third-party one — without writing any code just to see what it returns.`, breakdown:[{term:`curl`, desc:`same tool as every other curl command in this tab — an API is just an HTTP endpoint`},{term:`/posts/1`, desc:`the specific resource being requested`},{term:`{"userId":1, ...}`, desc:`the response body — JSON, a plain-text way of representing structured data`}], whyUseful:`<div class="found-p">A frontend developer says "the API is returning weird data" and you need to see exactly what it actually sends back, with nothing in between.</div><div class="found-pre">$ curl https://api.example.com/users/1\n{"id":1,"name":"..."}</div><div class="found-p">The raw, unfiltered response — no app code, no framework, no possible frontend bug in the way. If it's wrong here, the problem is the API itself.</div>` },
+    curlJq: { syntax:`curl &lt;api-url&gt; | jq`, cmd:`curl https://jsonplaceholder.typicode.com/posts/1 | jq`, output:`{
+  <span class="hi">"userId"</span>: <span class="num">1</span>,
+  <span class="hi">"id"</span>: <span class="num">1</span>,
+  <span class="hi">"title"</span>: <span class="s">"sunt aut facere"</span>,
+  <span class="hi">"body"</span>: <span class="s">"quia et suscipit..."</span>
+}`, does:`Pretty-prints raw JSON — same data as plain curl, but indented, colored, and actually readable.`, where:`Any time an API response is more than a couple of fields — raw JSON on one line is genuinely unreadable past a certain size.`, breakdown:[{term:`|`, desc:`the pipe — sends curl's raw output straight into jq instead of printing it directly`},{term:`jq`, desc:`a dedicated JSON formatter/query tool`}], whyUseful:`<div class="found-p">An API response comes back as one dense, unreadable wall of text — spotting a single wrong field in it by eye is nearly impossible.</div><div class="found-pre">$ curl .../posts/1\n{"userId":1,"id":1,"title":"...", ...}\n\n$ curl .../posts/1 | jq\n{\n  "userId": 1,\n  "id": 1,\n  ...\n}</div><div class="found-p">Same exact data, instantly scannable — this one habit alone makes debugging any API dramatically less painful.</div>` }
+  };
+
+  function runNetDevopsCmd(key, btn) {
+    const d = NETDEVOPS_CMDS[key];
+    if (!d) return;
+    const lines = d.cmd.split('\n');
+    document.getElementById('ndCmd').textContent = lines[0];
+    let extra = '';
+    if (lines.length > 1) {
+      extra = lines.slice(1).map(l => '<span class="ld-prompt">devops@server:~$</span> ' + l).join('\n') + '\n';
+    }
+    document.getElementById('ndOutput').innerHTML = extra + d.output;
+    document.getElementById('ndSyntax').innerHTML = d.syntax || lines[0];
+    document.getElementById('ndDoes').innerHTML = d.does;
+    document.getElementById('ndWhere').innerHTML = d.where;
+    const bdList = document.getElementById('ndBreakdownList');
+    if (bdList) {
+      bdList.innerHTML = (d.breakdown && d.breakdown.length)
+        ? d.breakdown.map(b => `<div class="sl-breakdown-item"><span class="sl-breakdown-term">${b.term}</span><span class="sl-breakdown-desc">${b.desc}</span></div>`).join('')
+        : '<span class="dim">No further breakdown needed for this one.</span>';
+    }
+    const whyEl = document.getElementById('ndWhyUseful');
+    if (whyEl) whyEl.innerHTML = d.whyUseful || '<span class="dim">—</span>';
+    document.querySelectorAll('#tab-networkingdevops .ld-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
 
   const TERRAFORM_CMDS = {
     init: { syntax:`terraform init`, cmd:`terraform init`, output:`Initializing the backend...
