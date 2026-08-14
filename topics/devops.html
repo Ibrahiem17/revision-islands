@@ -2109,6 +2109,143 @@ node_modules/
 
 <div class="panel" id="tab-gitdevops">
 
+  <details class="found-details">
+    <summary>🧱 Foundation for Git — Start Here If Any of This Feels Confusing</summary>
+    <div class="found-body">
+
+      <div class="found-p">Before commits and branches and the live terminal below — let's build this from true zero: what git actually is, what a commit really means, what a branch really is (it's simpler than it sounds), and the handful of commands that cover almost everything you'll ever do.</div>
+
+      <div class="found-h" style="font-size:14px;">Git — Complete Foundation for DevOps</div>
+
+      <div class="found-sub">1. First: what even IS git?</div>
+      <div class="found-p">Git is a save-game system for your code. Instead of one file that just gets overwritten every time you save, git keeps a full history of every version you've ever committed — you can always go back and see (or restore) exactly how the code looked at any point.</div>
+      <div class="found-pre">Without git: app.js, app_v2.js, app_FINAL.js, app_FINAL_REAL.js 😩
+With git:    app.js  (one file — every past version is saved automatically)</div>
+      <div class="found-p">That's really it. Everything else in git is just tooling built around "save a snapshot, and let me move between snapshots safely."</div>
+
+      <div class="found-sub">2. Why does DevOps even need this?</div>
+      <div class="found-p">Because more than one person touches the same code, at the same time, and someone has to make that not be chaos. Git lets everyone work independently, then combine their work back together — with a full, honest record of who changed what, and when.</div>
+      <div class="found-key">🔑 The uncomfortable truth: without git (or something like it), "who broke production" is a guessing game. With git, it's one command — <span class="found-code">git log</span> — away from a certain answer.</div>
+
+      <div class="found-sub">3. A commit — what it actually is</div>
+      <div class="found-p">A commit is a snapshot of your entire project at one moment, plus a link pointing back to the commit right before it. String enough of those links together, and you get your whole history — a chain.</div>
+      <div class="found-pre">commit A ← commit B ← commit C ← commit D (this is where you are now)</div>
+      <div class="found-p">Each commit has its own unique ID (like <span class="found-code">a3f9d2c</span>), a message describing what changed, and that one link back to its parent. That's the entire data structure git is built on.</div>
+
+      <div class="found-sub">4. The three stops every change makes</div>
+      <div class="found-p">Before a change becomes a permanent commit, it passes through three places, in order:</div>
+      <div class="found-pre">Working directory        Staging area           Repository
+(you edit a file)   →   (git add)          →   (git commit)
+"the file on disk"       "what will be         "permanently saved
+                          in the next commit"    in history"</div>
+      <div class="found-p">This two-step "add, then commit" might feel like an extra step at first — but it means you can carefully choose exactly what goes into each commit, instead of everything you've touched getting bundled together.</div>
+
+      <div class="found-sub">5. A branch — genuinely simpler than it sounds</div>
+      <div class="found-p">This is the single biggest "aha" moment in git: a branch is NOT a copy of your code. It's just a small, movable label pointing at one specific commit.</div>
+      <div class="found-pre">main  ──→  commit C
+                 ↑
+              (main is just a sticky note on this commit)</div>
+      <div class="found-p">When you commit while "on" a branch, that branch's label automatically slides forward to point at the new commit. That's the entire mechanism — no copying, no duplicating files, just a label that moves.</div>
+
+      <div class="found-sub">6. HEAD — your actual "you are here" marker</div>
+      <div class="found-p"><span class="found-code">HEAD</span> is a pointer to whichever branch (or commit) you currently have checked out — it's how git knows what "here" means when you run a command.</div>
+      <div class="found-pre">HEAD → main → commit C</div>
+      <div class="found-p">Switching branches with <span class="found-code">git checkout</span> just moves HEAD to point somewhere else — and your files on disk update to match whatever that branch's latest commit looked like.</div>
+
+      <div class="found-sub">7. Merging — putting two histories back together</div>
+      <div class="found-p">Two branches drift apart as each gets its own commits. Merging brings them back into one: either a simple fast-forward (if nothing moved on the other side), or a real merge commit with two parents (if both sides made progress).</div>
+      <div class="found-pre">main:     A ── B ────── D (merge commit, 2 parents)
+                    \    /
+feature:            C ─┘</div>
+      <div class="found-p">You'll see this exact shape animate in the live graph below the moment you try Guided Scenario #2.</div>
+
+      <div class="found-sub">8. Remote (origin) — a copy living somewhere else</div>
+      <div class="found-p">Everything above happens entirely on your own machine — that's your "local" repository. A remote (almost always named <span class="found-code">origin</span>) is a copy of that same repository living somewhere else, usually GitHub.</div>
+      <div class="found-pre">Your laptop (local)  ⟷  GitHub (origin/remote)
+     git push  →
+     git pull  ←</div>
+      <div class="found-p"><span class="found-code">push</span> sends your local commits up to the remote. <span class="found-code">pull</span> brings the remote's commits down to you. That's the entire relationship.</div>
+
+      <div class="found-sub">9. Commands you'll actually use, in the order you'll actually use them</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">git init — "start tracking this folder"</div>
+      <div class="found-pre">git init</div>
+      <div class="found-p">Run once, ever, per project. Creates the hidden <span class="found-code">.git</span> folder where all the history actually lives.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">git add — "stage this change"</div>
+      <div class="found-pre">git add .</div>
+      <div class="found-p">The dot means "everything I've changed." Moves your edits into the staging area, ready to be committed.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">git commit — "save this snapshot, permanently"</div>
+      <div class="found-pre">git commit -m "Add login page"</div>
+      <div class="found-p">Turns whatever's staged into a real, permanent commit with a message explaining what changed.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">git branch / git checkout -b — "start a separate line of work"</div>
+      <div class="found-pre">git checkout -b feature-login</div>
+      <div class="found-p">Creates a new branch AND switches to it in one step — now any commits you make happen on this new line, not main.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">git merge — "bring another branch's work into this one"</div>
+      <div class="found-pre">git checkout main
+git merge feature-login</div>
+      <div class="found-p">Switch to where you want the work to end up FIRST, then merge the other branch into it.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">git push / git pull — "sync with the remote"</div>
+      <div class="found-pre">git push origin main
+git pull origin main</div>
+      <div class="found-p">Send your commits up, or bring everyone else's commits down.</div>
+
+      <div class="found-sub">10. What does a DevOps engineer actually DO with git, day to day?</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Reviewing pull requests</strong> — reading someone else's commits before their branch merges into main.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Untangling a messy branch</strong> — someone's history is a wreck, and rebase or reset cleans it up before it merges.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Tracking down when a bug was introduced</strong> — using <span class="found-code">git log</span> and <span class="found-code">git diff</span> to find the exact commit that broke something.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Tagging releases</strong> — marking exactly which commit shipped as v1.0.0, v1.1.0, and so on.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Wiring git into CI/CD</strong> — a push or merge to main is usually the exact trigger that kicks off a deploy pipeline (see the 🐙 GitHub Actions tab).</div>
+
+      <div class="found-h">🧠 Git cheat sheet</div>
+      <table class="found-table">
+        <thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Repository</td><td>A project git is tracking the history of</td></tr>
+          <tr><td>Commit</td><td>A permanent snapshot, linked to the one before it</td></tr>
+          <tr><td>Branch</td><td>A movable label pointing at one commit</td></tr>
+          <tr><td>HEAD</td><td>"You are here" — which branch/commit is checked out</td></tr>
+          <tr><td>Staging area</td><td>Changes ready to go into the next commit</td></tr>
+          <tr><td>Merge</td><td>Combining two branches' histories back together</td></tr>
+          <tr><td>Remote / origin</td><td>A copy of the repo living somewhere else (GitHub)</td></tr>
+          <tr><td>git add</td><td>Stage a change</td></tr>
+          <tr><td>git commit</td><td>Permanently save the staged changes</td></tr>
+          <tr><td>git push / pull</td><td>Sync your commits with the remote</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 Kid-friendly memory trick</div>
+      <div class="found-p">Think of git like a video game's save system:</div>
+      <div class="found-pre">git commit
+ ↓
+Pressing SAVE — a checkpoint you can always return to
+
+git branch
+ ↓
+Starting a "what if" save file, without touching your main one
+
+git checkout
+ ↓
+Loading a specific save file
+
+git merge
+ ↓
+Combining progress from two save files into one
+
+HEAD
+ ↓
+The save file you're CURRENTLY playing on</div>
+
+      <div class="found-key">🔑 Key takeaway<br><br>Everything in git traces back to one idea: <em>every change is a saved snapshot, linked to the one before it — and a branch is just a movable label pointing at one of those snapshots.</em> Once "branch = label, not a copy" genuinely clicks, the live terminal below stops being mysterious — you're just watching labels move and new snapshots appear.</div>
+
+    </div>
+  </details>
+
+
+
   <div class="git-lab-intro">
     <strong style="color:#a78bfa;">🌿 Git for DevOps — Live, Graphical, Interactive.</strong> Type a real git command (or click a button below to fill one in), press ▶ Run, and watch the actual commit graph animate as it happens — commits appear, branches move, merges connect two lines into one. Nothing here is scripted footage — it's a real, working mini Git engine running in your browser.
   </div>
@@ -2137,6 +2274,17 @@ node_modules/
   <!-- ══════════════════════════════════════════════════════════
        THE COMPILER — type a real command, see real output
        ══════════════════════════════════════════════════════════ -->
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:16px 18px;margin:14px 0 20px;">
+    <div class="found-h" style="color:#38bdf8;margin-top:0;font-size:13px;">🪜 How To Actually Use This — Step by Step</div>
+    <div class="found-p">If the graph and the typed-command box below feel like a lot at once, ignore everything except these 4 steps for now:</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">1. Click a pill.</strong> Scroll down to the colored buttons (like <span class="found-code">git init</span> or <span class="found-code">git commit -m</span>) and click one — it types a real, working example into the box above the buttons for you. You don't have to know the syntax yet.</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">2. Click ▶ Run (or press Enter).</strong> That's it — that actually executes the command against a real, working mini git repository.</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">3. Watch the graph above react.</strong> Every dot is a commit. Every colored line is a branch. When a new dot appears, that's a new commit. When a label like <span class="found-code">main</span> jumps to a different dot, that branch just moved there.</div>
+    <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">4. Don't worry about breaking anything.</strong> This is a practice repo, not a real project — click <span class="found-code">↻ Reset Repo</span> above the graph any time and start completely fresh.</div>
+    <div class="found-p" style="margin-top:10px;margin-bottom:0;">New to this entirely? Skip straight to <strong style="color:#38bdf8;">🎭 Guided Scenarios</strong> further down this page — click ▶ Run This Scenario and just watch a real workflow play out automatically, no typing required at all.</div>
+  </div>
+
+
   <div class="git-term">
     <div class="git-term-scrollback" id="gitTermScrollback"></div>
     <div class="git-term-inputrow">
