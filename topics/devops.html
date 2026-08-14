@@ -2097,6 +2097,169 @@ node_modules/
     <code style="color:#fbbf24;">git rebase -i HEAD~5</code> — opens the last 5 commits as an editable list. Change <code>pick</code> to <code>squash</code> on every commit except the first, and git folds them all into one, letting you write a single clean message.
   </div>
 
+  <div class="section-title">🧾 Cheatsheet — The Whole Mental Model, Compressed</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Everything above, distilled to 11 diagrams. If you understand every one of these, your foundation is solid.</div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:8px;padding:18px 20px;">
+
+    <div class="found-sub" style="margin-top:0;">1. A commit is a snapshot</div>
+    <div class="found-pre">C0 → C1 → C2</div>
+    <div class="found-p">Each <span class="found-code">C</span> is a snapshot of your project at a specific moment. <span class="found-code">git commit</span> creates a new snapshot.</div>
+
+    <div class="found-sub">2. A branch is just a label</div>
+    <div class="found-pre">C0 → C1 → C2
+
+main → C2</div>
+    <div class="found-p"><span class="found-code">main</span> doesn't contain code. <span class="found-code">main</span> doesn't contain files. <span class="found-code">main</span> is just a label that points to a commit.</div>
+
+    <div class="found-sub">3. main is a branch too</div>
+    <div class="found-pre">main → C2</div>
+    <div class="found-p"><span class="found-code">main</span> isn't special. It's just the default branch. You can create as many branches as you want:</div>
+    <div class="found-pre">main    → C2
+feature → C2
+bugfix  → C2</div>
+
+    <div class="found-sub">4. Creating a branch doesn't copy anything</div>
+    <div class="found-pre">git branch feature</div>
+    <div class="found-p">Before:</div>
+    <div class="found-pre">C0 → C1 → C2
+
+main → C2</div>
+    <div class="found-p">After:</div>
+    <div class="found-pre">C0 → C1 → C2
+
+main    → C2
+feature → C2</div>
+    <div class="found-p">No commits were copied. Git only created another label.</div>
+
+    <div class="found-sub">5. HEAD tells you which branch you're currently using</div>
+    <div class="found-pre">HEAD → main
+
+    or
+
+HEAD → feature</div>
+    <div class="found-p">HEAD points to a branch. The branch points to a commit.</div>
+    <div class="found-pre">HEAD → branch → commit</div>
+    <div class="found-p">This is probably the most important diagram in Git.</div>
+
+    <div class="found-sub">6. git checkout moves HEAD</div>
+    <div class="found-p">Before:</div>
+    <div class="found-pre">HEAD → main
+
+main    → C2
+feature → C2</div>
+    <div class="found-p">Command:</div>
+    <div class="found-pre">git checkout feature</div>
+    <div class="found-p">After:</div>
+    <div class="found-pre">HEAD → feature
+
+main    → C2
+feature → C2</div>
+    <div class="found-p">Only HEAD moved. The branches didn't move.</div>
+
+    <div class="found-sub">7. git commit creates a new commit and moves the current branch</div>
+    <div class="found-p">Before:</div>
+    <div class="found-pre">C0 → C1 → C2
+
+main → C2
+HEAD → main</div>
+    <div class="found-p">Command:</div>
+    <div class="found-pre">git commit</div>
+    <div class="found-p">After:</div>
+    <div class="found-pre">C0 → C1 → C2 → C3
+
+main → C3
+HEAD → main</div>
+    <div class="found-p">The current branch moved.</div>
+
+    <div class="found-sub">8. git merge X</div>
+    <div class="found-p">Rule:</div>
+    <div class="found-pre">git merge X  =  merge X into the current branch.</div>
+    <div class="found-p">Before:</div>
+    <div class="found-pre">           C3 → C4
+          /
+C0 → C1 → C2
+          \
+           C5
+
+feature → C4
+main    → C5
+HEAD    → main</div>
+    <div class="found-p">Command:</div>
+    <div class="found-pre">git merge feature</div>
+    <div class="found-p">After:</div>
+    <div class="found-pre">           C3 → C4
+          /        \
+C0 → C1 → C2        C6
+          \        /
+           C5</div>
+    <div class="found-p"><span class="found-code">main</span> moved. <span class="found-code">feature</span> didn't move.</div>
+
+    <div class="found-sub">9. git rebase X</div>
+    <div class="found-p">Rule:</div>
+    <div class="found-pre">git rebase X  =  take the commits that belong only to the current
+                 branch, copy them, rebuild them after X.</div>
+    <div class="found-p">Before:</div>
+    <div class="found-pre">main:    C0 → C1 → C2 → C5
+feature: C0 → C1 → C2 → C3 → C4
+
+HEAD → feature</div>
+    <div class="found-p">Command:</div>
+    <div class="found-pre">git rebase main</div>
+    <div class="found-p">Git copies C3 and C4, then rebuilds them as C3' and C4'. Result:</div>
+    <div class="found-pre">C0 → C1 → C2 → C5 → C3' → C4'</div>
+
+    <div class="found-sub">10. Git has three boxes</div>
+    <div class="found-pre">Working Directory
+       ↓
+Staging Area
+       ↓
+Repository</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">Working Directory</strong> — your actual files.</div>
+    <div class="found-pre">app.js
+index.html
+login.js</div>
+    <div class="found-p">You edit a file. The change appears here first.</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">Staging Area</strong></div>
+    <div class="found-pre">git add app.js</div>
+    <div class="found-p"><span class="found-code">git add</span> copies changes into the staging area. It doesn't move them.</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">Repository</strong></div>
+    <div class="found-pre">git commit</div>
+    <div class="found-p">Git creates a snapshot. The snapshot becomes a commit.</div>
+    <div class="found-p"><strong style="color:#e2e8f0;">The complete flow:</strong></div>
+    <div class="found-pre">Edit file
+   ↓
+Working Directory
+   ↓
+git add
+   ↓
+Staging Area
+   ↓
+git commit
+   ↓
+Repository</div>
+
+    <div class="found-sub">11. git reset</div>
+    <div class="found-p"><span class="found-code">git reset</span> moves the current branch. The current branch is the branch HEAD points to.</div>
+    <div class="found-p" style="font-weight:700;color:#e2e8f0;">git reset --soft</div>
+    <div class="found-pre">Working Directory = unchanged
+Staging Area      = unchanged
+Repository        = unchanged
+Branch pointer    = moved</div>
+    <div class="found-p" style="font-weight:700;color:#e2e8f0;">git reset --mixed</div>
+    <div class="found-pre">Working Directory = unchanged
+Staging Area      = cleared
+Repository        = unchanged
+Branch pointer    = moved</div>
+    <div class="found-p" style="font-weight:700;color:#e2e8f0;">git reset --hard</div>
+    <div class="found-pre" style="margin-bottom:0;">Working Directory = reset
+Staging Area      = cleared
+Repository        = unchanged
+Branch pointer    = moved</div>
+
+  </div>
+
+
 </div>
 
 
