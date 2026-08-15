@@ -1322,6 +1322,213 @@ env -i bash -c "/home/deploy/backup.sh"</div>
   </div>
 </div>
 
+  <details class="found-details" style="margin-top:24px;">
+    <summary>📁 Linux Filesystem Cheatsheet — Where Everything Actually Lives</summary>
+    <div class="found-body">
+
+      <div class="found-p">Every folder off the root <span class="found-code">/</span> has one specific job. Once you know what lives where, you stop guessing and start going straight to the answer.</div>
+
+      <div class="found-sub" style="margin-top:4px;">/etc</div>
+      <div class="found-pre">/etc
+ ↓
+System configuration files</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/etc/passwd  → users
+/etc/group   → groups
+/etc/hosts   → hostname-to-IP mapping
+/etc/fstab   → filesystem mount configuration
+/etc/crontab → scheduled tasks
+/etc/ssh     → SSH configuration</div>
+      <div class="found-p">Commands you'll use:</div>
+      <div class="found-pre">cat /etc/passwd
+cat /etc/hosts
+grep '^john:' /etc/passwd</div>
+
+      <div class="found-sub">/home</div>
+      <div class="found-pre">/home
+ ↓
+User home directories</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/home/steve
+/home/tony
+/home/banner</div>
+      <div class="found-p">Each user's personal files are stored here.</div>
+
+      <div class="found-sub">/root</div>
+      <div class="found-pre">/root
+ ↓
+Root user's home directory</div>
+      <div class="found-pre">Normal users: /home/steve
+Root user:    /root</div>
+
+      <div class="found-sub">/var</div>
+      <div class="found-pre">/var
+ ↓
+Frequently changing data</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/var/log
+/var/cache
+/var/tmp</div>
+      <div class="found-p">Disk problems often start here.</div>
+
+      <div class="found-sub">/var/log</div>
+      <div class="found-pre">/var/log
+ ↓
+Log files</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/var/log/messages
+/var/log/secure
+/var/log/httpd
+/var/log/nginx</div>
+      <div class="found-p">Application crashing? Look here first.</div>
+      <div class="found-p">Commands you'll use:</div>
+      <div class="found-pre">cd /var/log
+ls
+find . -type f -size +500M</div>
+
+      <div class="found-sub">/tmp</div>
+      <div class="found-pre">/tmp
+ ↓
+Temporary files</div>
+      <div class="found-p">Applications store temporary data here. Files may be deleted automatically.</div>
+
+      <div class="found-sub">/opt</div>
+      <div class="found-pre">/opt
+ ↓
+Optional or third-party software</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/opt/app
+/opt/backups
+/opt/scripts</div>
+      <div class="found-p">You'll see /opt a lot in KodeKloud labs.</div>
+
+      <div class="found-sub">/usr</div>
+      <div class="found-pre">/usr
+ ↓
+Programs and application files</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/usr/bin
+/usr/sbin
+/usr/local</div>
+
+      <div class="found-sub">/usr/bin</div>
+      <div class="found-pre">/usr/bin
+ ↓
+Regular executable commands</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">python
+grep
+cat
+ssh</div>
+      <div class="found-pre">Command: which python
+Output:  /usr/bin/python</div>
+
+      <div class="found-sub">/usr/sbin</div>
+      <div class="found-pre">/usr/sbin
+ ↓
+Administrative commands</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">useradd
+nologin
+systemctl</div>
+      <div class="found-pre">Command: which nologin
+Output:  /usr/sbin/nologin</div>
+
+      <div class="found-sub">/bin</div>
+      <div class="found-pre">/bin
+ ↓
+Essential commands</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">ls
+cp
+mv
+rm</div>
+
+      <div class="found-sub">/boot</div>
+      <div class="found-pre">/boot
+ ↓
+Boot files</div>
+      <div class="found-p">Examples: Kernel, GRUB, bootloader files.</div>
+      <div class="found-p">Remember:</div>
+      <div class="found-pre">BIOS/UEFI
+ ↓
+GRUB
+ ↓
+Kernel
+ ↓
+systemd
+ ↓
+Login</div>
+
+      <div class="found-sub">/dev</div>
+      <div class="found-pre">/dev
+ ↓
+Devices</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/dev/sda
+/dev/sda1
+/dev/null</div>
+      <div class="found-p">Disks, partitions, and devices appear here.</div>
+
+      <div class="found-sub">/proc</div>
+      <div class="found-pre">/proc
+ ↓
+Process information</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/proc/cpuinfo
+/proc/meminfo</div>
+      <div class="found-p">System information lives here.</div>
+
+      <div class="found-sub">~</div>
+      <div class="found-pre">~
+ ↓
+Your home directory</div>
+      <div class="found-p">Example:</div>
+      <div class="found-pre">User = steve
+~ → /home/steve</div>
+
+      <div class="found-sub">~/.bashrc</div>
+      <div class="found-pre">~/.bashrc
+ ↓
+Bash configuration</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">alias ll='ls -la'
+export APP_ENV=production</div>
+      <div class="found-p">After editing:</div>
+      <div class="found-pre">source ~/.bashrc</div>
+
+      <div class="found-h">🔥 The 10 Locations I Want You To Memorize</div>
+      <table class="found-table">
+        <thead><tr><th>Location</th><th>What's stored there?</th></tr></thead>
+        <tbody>
+          <tr><td>/etc/passwd</td><td>Users</td></tr>
+          <tr><td>/etc/group</td><td>Groups</td></tr>
+          <tr><td>/etc/hosts</td><td>Hostnames and IP addresses</td></tr>
+          <tr><td>/home</td><td>User files</td></tr>
+          <tr><td>/root</td><td>Root user's files</td></tr>
+          <tr><td>/var/log</td><td>Logs</td></tr>
+          <tr><td>/tmp</td><td>Temporary files</td></tr>
+          <tr><td>/opt</td><td>Applications</td></tr>
+          <tr><td>/usr/bin</td><td>Commands</td></tr>
+          <tr><td>~/.bashrc</td><td>Bash settings</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 DevOps Cheat Sheet</div>
+      <div class="found-pre">User?                  ↓  /etc/passwd
+Group?                 ↓  /etc/group
+Logs?                  ↓  /var/log
+Applications?          ↓  /opt
+Commands?              ↓  /usr/bin
+Hostname?              ↓  /etc/hosts
+Shell configuration?   ↓  ~/.bashrc
+User files?            ↓  /home
+Disk problems?         ↓  /var</div>
+
+    </div>
+  </details>
+
+
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ -->
