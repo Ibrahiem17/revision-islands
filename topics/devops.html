@@ -3181,42 +3181,1014 @@ $ snyk container test myapp:v1</div>
   <div class="section-title">🎯 Docker Interview Q&amp;A — Click to Reveal</div>
   <button class="expand-btn" onclick="toggleAllDocker()">▸ expand all</button>
   <div class="qa-list" id="dockerQaList">
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D1</span><span class="qa-q-text">How do Docker layers work?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D1</span><span class="qa-q-text">How do Docker layers work?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">An image is a stack of <strong>read-only layers</strong>. A container is that stack plus one thin <strong>writable layer</strong> on top — the only part that gets thrown away when the container is deleted.<br><br><strong>What creates a layer:</strong> <code>RUN</code>, <code>COPY</code>, <code>ADD</code>. <strong>What doesn't:</strong> <code>ENV</code>, <code>WORKDIR</code>, <code>CMD</code>, <code>EXPOSE</code> — those just add metadata.<br><br>Layers are <strong>cached</strong> by fingerprint, and changing one layer rebuilds every layer <em>below</em> it — which is exactly why Dockerfile order matters. Deleting a file in a later layer doesn't shrink the image either; it just hides it. The earlier layer still has it, so cleanup has to happen in the <em>same</em> <code>RUN</code> that created the file.<br><br><span class="qa-pill">read-only + 1 writable layer</span><span class="qa-pill">cache breaks downward</span><span class="qa-pill">delete ≠ shrink</span><span class="qa-pill">docker history</span></div></div></div>
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">An image is a stack of read-only sheets. A container is that stack plus one blank sheet on top that it can write on.</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D2</span><span class="qa-q-text">Why use a multi-stage build?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Build the app with a big toolbox, then ship only the finished product in a tiny box. You write two (or more) <code>FROM</code> lines — each starts a fresh, empty stage — and <code>COPY --from=builder</code> reaches back into an earlier stage to grab only what you actually name. Everything else from that stage (compilers, source code, dev dependencies) is discarded.<br><br><strong>What you gain:</strong> a Go app can go from 800MB to 10MB; a React app from 1.2GB to 30MB. Smaller images also mean less attack surface (no compiler, no <code>git</code>, sometimes no shell at all) and faster pulls when starting many replicas.<br><br><span class="qa-pill">multiple FROM lines</span><span class="qa-pill">COPY --from=</span><span class="qa-pill">fat build, thin ship</span><span class="qa-pill">smaller + safer</span></div></div></div>
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Think of transparent plastic sheets stacked on an overhead projector.</div>
+<div class="found-p">• Sheet 1: the base operating system<br>• Sheet 2: the libraries you installed<br>• Sheet 3: your code<br>• Top sheet (blank, writable): whatever the running container creates</div>
+<div class="found-p">Look down through the stack and you see one complete picture. That's your filesystem. The bottom sheets are locked — nobody can edit them. Only the top blank sheet can be written on, and <strong>that sheet is thrown away when the container is deleted.</strong></div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D3</span><span class="qa-q-text">How would you shrink a Docker image from 1GB down to 200MB?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Measure first with <code>docker history myimage</code> — don't guess which layer is the problem.<br><br>Then, in order of impact: <strong>1)</strong> Multi-stage build — usually the single biggest win. <strong>2)</strong> Smaller base image — <code>node:20</code> (~1.1GB) → <code>node:20-slim</code> (~200MB) → <code>node:20-alpine</code> (~130MB). <strong>3)</strong> Clean up in the <em>same</em> <code>RUN</code> as the install, e.g. <code>apt-get update &amp;&amp; apt-get install -y --no-install-recommends curl &amp;&amp; rm -rf /var/lib/apt/lists/*</code>. <strong>4)</strong> Add a <code>.dockerignore</code> so <code>.git</code> and <code>node_modules</code> never even enter the build.<br><br><strong>Honest caveat:</strong> Alpine uses musl instead of glibc and can break native libraries — <code>-slim</code> is the safer default unless you've tested Alpine for that stack.<br><br><span class="qa-pill">docker history first</span><span class="qa-pill">multi-stage</span><span class="qa-pill">smaller base</span><span class="qa-pill">cleanup in same RUN</span><span class="qa-pill">.dockerignore</span></div></div></div>
+<div class="found-p"><strong style="color:#38bdf8;">THE DETAILS</strong></div>
+<div class="found-p"><strong>What creates a layer:</strong> <span class="found-code">RUN</span>, <span class="found-code">COPY</span>, <span class="found-code">ADD</span>. These change files.<br><strong>What doesn't:</strong> <span class="found-code">ENV</span>, <span class="found-code">WORKDIR</span>, <span class="found-code">CMD</span>, <span class="found-code">EXPOSE</span>, <span class="found-code">LABEL</span>. These only add notes.</div>
+<div class="found-p"><strong>Layers are shared.</strong> If you run 50 containers from the same image, they all share the same bottom sheets. Only their top blank sheets cost extra space. This is why containers are so much lighter than virtual machines.</div>
+<div class="found-p"><strong>Layers are cached.</strong> Docker gives each layer a fingerprint. On rebuild, if the instruction and its inputs are unchanged, it reuses the old layer instead of redoing the work.</div>
+<div class="found-p"><strong>Cache breaks downward.</strong> The moment one layer changes, every layer below it is rebuilt. This is why order matters so much.</div>
+<div class="found-p"><strong>The trap everybody hits:</strong> deleting a file doesn't shrink the image.</div>
+<div class="found-pre">RUN wget bigfile.tar.gz    # +500 MB
+RUN rm bigfile.tar.gz      # image is STILL 500 MB bigger</div>
+<div class="found-p">The file is still sitting on the earlier sheet. The second layer just draws a black box over it. To actually remove it, do both in one step:</div>
+<div class="found-pre">RUN wget bigfile.tar.gz && tar -xzf bigfile.tar.gz && rm bigfile.tar.gz</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D4</span><span class="qa-q-text">Volumes vs bind mounts vs tmpfs — what's the difference?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">All three keep data alive outside the container's disposable writable layer.<br><br><strong>Volume</strong> — Docker manages the storage location for you. Portable across machines, the right choice for production data like databases.<br><strong>Bind mount</strong> — you point directly at a folder on the host. Great for local dev (edits appear instantly), but the exact path has to exist on every machine, so it breaks on CI or a teammate's laptop.<br><strong>tmpfs</strong> — lives in RAM only, never touches disk, gone the instant the container stops. Good for secrets you don't want recoverable from disk later.<br><br>One subtle trap: a <strong>bind mount hides</strong> whatever the image had at that path, while mounting an empty <strong>volume fills in</strong> from the image's own contents first — opposite behavior.<br><br><span class="qa-pill">volume = Docker-managed</span><span class="qa-pill">bind = host path</span><span class="qa-pill">tmpfs = RAM only</span><span class="qa-pill">bind hides, volume fills</span></div></div></div>
+<div class="found-p"><strong style="color:#38bdf8;">COMMANDS</strong></div>
+<div class="found-pre"># Shows every layer and how much space it added.
+# This is how you find which line made your image huge.
+$ docker history myimage
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D5</span><span class="qa-q-text">How do containers communicate with each other?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Put them on the same <strong>user-defined network</strong>, then just use the other container's <strong>name</strong> as the hostname — Docker runs a built-in DNS on that network that resolves it automatically.<br><br>The trap almost everyone hits: the <strong>default <code>bridge</code> network has no DNS at all</strong>. Container names simply don't resolve there. You have to explicitly run <code>docker network create app-net</code> and attach both containers to it — <code>docker-compose</code> does this step for you automatically.<br><br>Also: <code>-p 8080:80</code> is only for reaching a container <em>from outside Docker</em> (your browser). Container-to-container traffic never needs <code>-p</code> — it just uses the internal port directly.<br><br><span class="qa-pill">same network + name</span><span class="qa-pill">default bridge has no DNS</span><span class="qa-pill">-p is for outside traffic only</span></div></div></div>
+# Same, but shows the full command instead of cutting it short.
+$ docker history --no-trunc myimage
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D6</span><span class="qa-q-text">CMD vs ENTRYPOINT — what's the difference, and can they work together?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text"><strong>ENTRYPOINT</strong> is the fixed program. <strong>CMD</strong> is its default, easily-overridden arguments. Used together (the recommended pattern), whatever you pass to <code>docker run</code> gets appended to ENTRYPOINT instead of replacing anything: <code>ENTRYPOINT ["ping","-c","3"]</code> + <code>CMD ["localhost"]</code> means <code>docker run img google.com</code> actually runs <code>ping -c 3 google.com</code>.<br><br><strong>Always use the bracket form</strong> — <code>CMD ["node","server.js"]</code>, not <code>CMD node server.js</code>. With plain text, <code>/bin/sh</code> becomes the main process and never forwards the shutdown signal from <code>docker stop</code> to your actual app — it just gets force-killed after the grace period instead of shutting down cleanly.<br><br><span class="qa-pill">ENTRYPOINT = program</span><span class="qa-pill">CMD = default args</span><span class="qa-pill">bracket form for graceful shutdown</span><span class="qa-pill">--entrypoint sh to debug</span></div></div></div>
+# Ignore the cache and rebuild everything.
+# Use this when you suspect an old cached layer is causing a weird bug.
+$ docker build --no-cache -t myapp .</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D7</span><span class="qa-q-text">How do you pass secrets to a container securely?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Inject them at <strong>runtime</strong>, never bake them into the image. Anything in <code>ENV</code> or <code>ARG</code> is permanently visible via <code>docker inspect</code> or <code>docker history</code> — even if you delete the file in a later layer, the earlier layer still has it.<br><br>For build-time secrets (a private npm/git token), use a BuildKit <code>--mount=type=secret</code>, which exists only for that one <code>RUN</code> and is never saved into any layer. For runtime, prefer mounting a secret as a <strong>read-only file</strong> over an environment variable — env vars get inherited by every child process and often get scooped up by crash reporters and logging tools; files don't. In real production, the actual answer is a secrets manager (Vault, AWS Secrets Manager) with rotation and audit logs.<br><br><span class="qa-pill">never ENV/ARG for secrets</span><span class="qa-pill">--mount=type=secret at build</span><span class="qa-pill">files &gt; env vars at runtime</span><span class="qa-pill">secrets manager in prod</span></div></div></div>
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"An image is a stack of read-only layers. A container is that stack plus one thin writable layer on top."<br><br>"Layers are cached, and changing one layer rebuilds everything below it — so I order my Dockerfile from least-changing to most-changing."<br><br>"Deleting a file in a later layer only hides it. The cleanup has to happen in the same RUN that created it."</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D8</span><span class="qa-q-text">Why does a container exit immediately after starting?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">A container isn't a mini computer sitting idle — it's a wrapper around <strong>one main process</strong>. The moment that process ends, the container has nothing left to hold, so it stops. The question is never "why did the container stop," it's "why did the process finish."<br><br>Common causes: the command was genuinely short-lived (<code>echo hi</code>); a shell run without <code>-it</code> gets no input and exits instantly; the app crashed on a missing config or unreachable database; or the app <strong>daemonizes itself into the background</strong> (plain <code>nginx</code>, <code>systemctl</code>) — the starter process launches the real one and then exits, taking the container with it. Everything in a container must stay in the foreground.<br><br><strong>Read the exit code</strong> first: <code>0</code> = finished normally, <code>1</code> = app error, <code>127</code> = command not found, <code>137</code> = killed (almost always out of memory), <code>143</code> = clean <code>docker stop</code>.<br><br><span class="qa-pill">container = 1 process</span><span class="qa-pill">must stay foreground</span><span class="qa-pill">docker ps -a → exit code</span><span class="qa-pill">137 = OOM</span></div></div></div>
+<span class="qa-pill">read-only + 1 writable layer</span><span class="qa-pill">cache breaks downward</span><span class="qa-pill">delete ≠ shrink</span><span class="qa-pill">docker history</span>
+</div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D2</span><span class="qa-q-text">Why use a multi-stage build?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D9</span><span class="qa-q-text">How do you troubleshoot a container that keeps restarting?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Two things are happening: the app keeps crashing, and a restart policy keeps bringing it back. The restart is just the symptom — fix the crash, not the loop.<br><br>Check the restart count, exit code, and out-of-memory flag together: <code>docker inspect mycontainer --format 'restarts={{.RestartCount}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}'</code>. <code>137</code> with <code>OOMKilled: true</code> means a memory limit — raise it or fix a leak. A clean app error usually means bad config or a dependency that isn't ready yet — very commonly the app starting before its database is actually accepting connections.<br><br>To actually investigate without it dying every few seconds: <code>docker update --restart=no mycontainer</code> stops the loop so you can start it manually and watch it fail once.<br><br><span class="qa-pill">restart = symptom, crash = disease</span><span class="qa-pill">restart count + exit code + OOM flag</span><span class="qa-pill">docker update --restart=no</span></div></div></div>
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Build the app with a big toolbox, then ship only the finished product in a tiny box.</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D10</span><span class="qa-q-text">The app runs inside the container, but I can't reach it in the browser. What do you check?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Three doors, checked from the app outward: is the app <strong>listening on 0.0.0.0</strong>, is the port <strong>published with -p</strong>, and is anything <strong>blocking it on the host</strong>.<br><br>Door 1 is the #1 cause by far: an app bound to <code>127.0.0.1</code> inside a container is only reachable from that container itself, no matter how many ports you publish — it has to bind to <code>0.0.0.0</code>. Check with <code>docker exec -it mycontainer ss -lntp</code>.<br><br>Door 2: <code>-p HOST:CONTAINER</code> — the order trips people up constantly. <code>-p 8080:3000</code> means the browser uses 8080, the container receives 3000. And <code>EXPOSE</code> in a Dockerfile is documentation only — it publishes nothing.<br><br>Door 3: host firewall, cloud security group, or (on a remote server) remembering that <code>localhost</code> in your own browser means your laptop, not the server.<br><br><span class="qa-pill">bind 0.0.0.0 not 127.0.0.1</span><span class="qa-pill">-p host:container</span><span class="qa-pill">EXPOSE ≠ publish</span><span class="qa-pill">test inside → out</span></div></div></div>
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Think of building furniture in your garage. To build a table you need a saw, a drill, a sander, sawdust everywhere, offcuts of wood — that's the <strong>build stage</strong>. To <em>use</em> the table, you need... the table. That's the <strong>runtime stage</strong>.</div>
+<div class="found-p">You don't deliver the customer's table with the saw taped to it and sawdust in the drawers. But that's exactly what a single-stage Docker build does. Multi-stage lets you write both in one file: do the messy work in stage 1, then carry only the finished table into a clean stage 2.</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D11</span><span class="qa-q-text">How do you troubleshoot a failed image build?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Docker names the exact failing step and its exit code in the error message — read it first. Then rebuild with full output: <code>docker build --progress=plain --no-cache -t myapp .</code>, since BuildKit hides most output by default and the useful part is usually in the hidden bit.<br><br>The best trick: <code>docker build --target builder -t debug .</code> builds only up to a named stage and stops, then <code>docker run -it --entrypoint sh debug</code> puts you inside the image right before the failing line, so you can run the exact command by hand and read the real error.<br><br>Common causes: <code>COPY failed: file not found</code> means the path is outside the build context (you can't <code>COPY ../file</code>); <code>Unable to locate package</code> usually means <code>apt-get update</code> and <code>install</code> weren't chained together; <code>exec format error</code> means a CPU architecture mismatch, fixed with <code>--platform linux/amd64</code>.<br><br><span class="qa-pill">--progress=plain --no-cache</span><span class="qa-pill">--target to stop mid-build</span><span class="qa-pill">shell in, run by hand</span></div></div></div>
+<div class="found-p"><strong style="color:#38bdf8;">HOW IT WORKS</strong></div>
+<div class="found-p">You write two <span class="found-code">FROM</span> lines. Each <span class="found-code">FROM</span> starts a fresh, empty stage.</div>
+<div class="found-pre">FROM golang:1.22 AS builder     # stage 1: has the whole Go compiler
+RUN go build -o /app/server
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D12</span><span class="qa-q-text">A container can't reach another container. What do you check?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Three separate questions, tested individually instead of guessed: are they on the <strong>same network</strong>, does the <strong>name resolve</strong>, and is the <strong>port actually open</strong>.<br><br><code>docker inspect container1 --format '{{json .NetworkSettings.Networks}}'</code> on both confirms the network. If either is on the default <code>bridge</code>, that's the bug — no DNS there. Then split resolution from connectivity: <code>docker exec -it container1 getent hosts container2</code> proves DNS works, and <code>docker exec -it container1 nc -zv container2 5432</code> proves the port is reachable — knowing which one failed tells you exactly where to look.<br><br>Also check the app isn't still pointed at <code>localhost</code> for the database URL (extremely common when moving code from a laptop into Docker) — it needs to be the other container's name, not "itself."<br><br><span class="qa-pill">same network?</span><span class="qa-pill">getent hosts = DNS check</span><span class="qa-pill">nc -zv = port check</span><span class="qa-pill">not pointed at localhost</span></div></div></div>
+FROM alpine:3.20                # stage 2: fresh and empty
+COPY --from=builder /app/server /server</div>
+<div class="found-p"><span class="found-code">COPY --from=builder</span> is the magic line. It reaches back into stage 1 and takes only what you name. Everything else in stage 1 gets thrown away.</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D13</span><span class="qa-q-text">"Port is already allocated" — how do you fix it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Something already owns that host port. Find it, then either stop it or use a different port.<br><br><code>docker ps -a --filter "publish=8080"</code> checks whether another container (even a stopped one) still holds the mapping. <code>sudo lsof -i :8080</code> or <code>sudo ss -lntp | grep :8080</code> checks whether a normal program on the machine is using it. Then either <code>docker stop</code> the other container, kill the other process, or just remap the host side with <code>-p 8081:8080</code> — the container's own port never needs to change.<br><br>If nothing shows up but Docker still complains, it's usually an orphaned <code>docker-proxy</code> helper process left over from an earlier run — killing it, or restarting the Docker daemon as a last resort, clears it.<br><br><span class="qa-pill">docker ps --filter publish=</span><span class="qa-pill">lsof / ss to find it</span><span class="qa-pill">remap host side, not container side</span></div></div></div>
+<div class="found-p"><strong style="color:#38bdf8;">WHAT YOU GAIN</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 8px;color:#38bdf8;font-weight:700;width:130px;">Size</td><td style="padding:6px 8px;color:#94a3b8;">A Go app: 800MB → 10MB. A React app: 1.2GB → 30MB.</td></tr>
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 8px;color:#38bdf8;font-weight:700;">Security</td><td style="padding:6px 8px;color:#94a3b8;">No compiler, no curl, no git, sometimes no shell at all. Far less for an attacker to use.</td></tr>
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 8px;color:#38bdf8;font-weight:700;">Source doesn't ship</td><td style="padding:6px 8px;color:#94a3b8;">Your .js and .go files stay in stage 1.</td></tr>
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:6px 8px;color:#38bdf8;font-weight:700;">Build secrets don't leak</td><td style="padding:6px 8px;color:#94a3b8;">A private-repo token used in stage 1 never reaches the final image.</td></tr>
+<tr><td style="padding:6px 8px;color:#38bdf8;font-weight:700;">Faster deploys</td><td style="padding:6px 8px;color:#94a3b8;">Small images pull faster. Matters a lot when starting 50 copies.</td></tr>
+</table>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D14</span><span class="qa-q-text">"No space left on device" — how do you fix it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Docker never throws anything away on its own — every image, stopped container, volume, and log file just accumulates. Check <code>df -h</code> <strong>and</strong> <code>df -i</code> — inode exhaustion gives the exact same error with plenty of GB still free, and Docker's habit of creating millions of tiny files makes this a real possibility.<br><br><code>docker system df -v</code> shows where the space actually went, itemized. The four usual suspects: old images, unused named volumes (<code>docker rm</code> does <strong>not</strong> delete volumes — they pile up silently), build cache, and container logs (the default log driver has <strong>no rotation</strong> at all — a chatty app can produce a 100GB log file).<br><br>Clean up from safest to most destructive: <code>docker container prune</code> → <code>docker image prune</code> → <code>docker builder prune</code> → (⚠️) <code>docker volume prune</code>. Set <code>log-opts</code> with <code>max-size</code>/<code>max-file</code> in <code>daemon.json</code> so it doesn't come back.<br><br><span class="qa-pill">check df -h AND df -i</span><span class="qa-pill">docker system df -v</span><span class="qa-pill">logs never rotate by default</span><span class="qa-pill">prune safest → most destructive</span></div></div></div>
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Multi-stage separates the build environment from the runtime environment. I build with a fat image and ship with a thin one."<br><br>"COPY --from= is the whole trick. Everything else in the earlier stage is discarded."</div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D15</span><span class="qa-q-text">Why is my data gone after restarting the container?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Because it was never saved anywhere permanent — and usually you didn't <em>restart</em> the container, you <em>recreated</em> it. <code>docker stop</code> then <code>docker start</code> keeps the same writable layer and the data survives; <code>docker rm</code> then <code>docker run</code> makes a brand-new blank writable layer and the data is gone.<br><br>If a volume genuinely is attached and data still vanishes: check for an <strong>anonymous volume</strong> (<code>-v /var/lib/postgresql/data</code> with no name creates a fresh unnamed volume on every single run — it needs <code>-v pgdata:/var/lib/postgresql/data</code>); check for <code>--rm</code>, which deletes anonymous volumes on exit too; and confirm the app is actually writing to the mounted path with <code>docker inspect mycontainer --format '{{json .Mounts}}'</code> — if it prints <code>[]</code>, there's no volume at all.<br><br><span class="qa-pill">stop/start survives, rm+run doesn't</span><span class="qa-pill">named volume, not anonymous</span><span class="qa-pill">docker inspect .Mounts</span></div></div></div>
+<span class="qa-pill">multiple FROM lines</span><span class="qa-pill">COPY --from=</span><span class="qa-pill">fat build, thin ship</span><span class="qa-pill">smaller + safer</span>
+</div></div></div>
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D16</span><span class="qa-q-text">A container is using too much CPU or memory. How do you troubleshoot?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text"><code>docker stats</code> to see it live, <code>docker top mycontainer</code> to find the exact process (works even on minimal images with no shell), then check whether it was actually killed for memory: <code>docker inspect mycontainer --format '{{.State.OOMKilled}} {{.State.ExitCode}}'</code>.<br><br><strong>Read CPU% as per-core</strong> — on an 8-core machine, 400% means four cores fully busy, not a broken tool. The shape of the memory graph over time tells you the real story: steadily climbing and never coming down means a genuine leak; high but flat just means the app needs more memory.<br><br>Classic gotcha worth mentioning: older Java runtimes <strong>ignored the container's memory limit</strong> entirely and sized the heap from the whole host's RAM, so a 512MB container with an old JVM tries to allocate an 8GB heap and gets killed almost instantly. Always set explicit <code>--memory</code> and <code>--cpus</code> limits — an unlimited container can take down its neighbors.<br><br><span class="qa-pill">docker stats + docker top</span><span class="qa-pill">CPU% is per-core</span><span class="qa-pill">137+OOMKilled = memory limit</span><span class="qa-pill">old JVMs ignore cgroup limits</span></div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D3</span><span class="qa-q-text">Write and explain a multi-stage Dockerfile.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D17</span><span class="qa-q-text">What are the first commands you'd run in a production Docker incident?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Broad to narrow, like a doctor checking vitals before ordering a specific test: <code>docker ps -a</code> (what's running, what's not, what's flapping — the STATUS column alone often answers it) → <code>docker logs --tail 200 --timestamps</code> (what did it say before it broke) → <code>docker stats --no-stream</code> (is anything starved) → <code>docker inspect</code> for exit code, OOM flag, and restart count together.<br><br><strong>Capture evidence before fixing anything</strong> — save the logs to a file, save <code>docker inspect</code> output, and consider <code>docker commit mycontainer incident-snapshot</code> to freeze the exact filesystem for later investigation, because restarting the service destroys everything you'd need for the postmortem.<br><br>Also worth saying: don't run any prune commands mid-incident — fix first, clean up later once the cause is actually known.<br><br><span class="qa-pill">ps -a → logs → stats → inspect</span><span class="qa-pill">capture evidence before fixing</span><span class="qa-pill">no prune mid-incident</span></div></div></div>
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">NODE.JS VERSION</strong></div>
+<div class="found-pre"># ---------- STAGE 1: build ----------
+FROM node:20 AS builder
+# Full Node image. Has everything needed to compile.
+# "AS builder" names this stage.
 
-    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D18</span><span class="qa-q-text">What's the biggest mistake beginners make with Dockerfiles?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">Putting <code>COPY . .</code> before installing dependencies. Docker caches each layer, and the moment one layer's input changes, <strong>every layer below it rebuilds too</strong>. Source code changes on nearly every commit; the dependency list changes rarely — so copying the whole codebase first means every tiny edit forces a full reinstall.<br><br>The fix is ordering by how often things change: copy just the manifest (<code>package.json</code>, <code>requirements.txt</code>) first, install, <em>then</em> copy the rest of the source. That turns a 3-minute rebuild on every edit into a 2-second one, because the install layer stays cached.<br><br>Runner-up mistakes worth naming: running everything as <code>root</code> instead of switching to a non-root <code>USER</code>; using <code>FROM node:latest</code> instead of a pinned version, so builds aren't reproducible; and forgetting a <code>.dockerignore</code>, which lets <code>.git</code> and <code>node_modules</code> quietly balloon the build context and the image.<br><br><span class="qa-pill">deps before source</span><span class="qa-pill">non-root USER</span><span class="qa-pill">pin versions, never latest</span><span class="qa-pill">.dockerignore</span></div></div></div>
+WORKDIR /app
+COPY package*.json ./
+# Manifests first, so the install below stays cached.
+
+RUN npm ci
+# Install EVERYTHING including dev tools, because we need them to build.
+
+COPY . .
+RUN npm run build
+# Produces the compiled output in /app/dist
+
+
+# ---------- STAGE 2: run ----------
+FROM node:20-alpine
+# Fresh tiny image. Nothing from stage 1 is here yet.
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+# This time skip dev tools. We only need what the app needs at runtime.
+
+COPY --from=builder /app/dist ./dist
+# The key line. Only the built output crosses over.
+# Source code and dev tools are left behind in stage 1.
+
+USER node
+EXPOSE 3000
+CMD ["node", "dist/server.js"]</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">GO VERSION (the most dramatic size drop)</strong></div>
+<div class="found-pre">FROM golang:1.22 AS builder
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/server
+# CGO_ENABLED=0 makes a single self-contained file with no external dependencies.
+# That's what lets it run on a nearly-empty base image.
+
+FROM alpine:3.20
+COPY --from=builder /app/server /server
+ENTRYPOINT ["/server"]</div>
+<div class="found-p">800MB → about 12MB.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">JAVA VERSION</strong></div>
+<div class="found-pre">FROM maven:3.9-eclipse-temurin-21 AS builder
+WORKDIR /build
+COPY pom.xml .
+RUN mvn dependency:go-offline
+# Downloads dependencies in their own cached layer, before the source is copied.
+COPY src ./src
+RUN mvn package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
+# JRE only. No Maven, no compiler.
+COPY --from=builder /build/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">USEFUL TRICK</strong></div>
+<div class="found-pre"># Build ONLY up to stage 1 and stop.
+# Great for debugging: build to the point just before the failure,
+# then shell in and look around.
+$ docker build --target builder -t debug .</div>
+
+<span class="qa-pill">two+ FROM lines</span><span class="qa-pill">manifest before source</span><span class="qa-pill">--target to stop mid-build</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D4</span><span class="qa-q-text">How would you reduce a Docker image from 1GB to 200MB?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Measure first, then: multi-stage build, smaller base image, clean up in the same step, and add a .dockerignore.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 0 — FIND OUT WHAT'S ACTUALLY BIG</strong></div>
+<div class="found-p">Don't guess.</div>
+<div class="found-pre"># Ranked list of what each line added. The culprit is usually obvious.
+$ docker history myimage</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE FOUR BIG LEVERS, IN ORDER OF IMPACT</strong></div>
+<div class="found-p"><strong>1. Multi-stage build</strong> — usually the biggest single win. Ship the app, not the toolchain. Often cuts 60–90%.</div>
+<div class="found-p"><strong>2. Smaller base image</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 12px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Base</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Size</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">node:20</span></td><td style="padding:5px 8px;color:#94a3b8;">~1.1GB</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">node:20-slim</span></td><td style="padding:5px 8px;color:#94a3b8;">~200MB</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">node:20-alpine</span></td><td style="padding:5px 8px;color:#94a3b8;">~130MB</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">alpine:3.20</span></td><td style="padding:5px 8px;color:#94a3b8;">~7MB</td></tr>
+</table>
+<div class="found-p">One line change, 900MB saved. <strong>Honest warning:</strong> Alpine uses a different C library (musl instead of glibc). It can break certain native libraries and has caused DNS oddities. -slim is the safer default. Use Alpine once you've tested it.</div>
+<div class="found-p"><strong>3. Clean up in the same step</strong></div>
+<div class="found-pre">RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*</div>
+<div class="found-p">• <span class="found-code">--no-install-recommends</span> skips optional suggested packages. Often saves 100+ MB.<br>• <span class="found-code">rm -rf /var/lib/apt/lists/*</span> deletes the package index, about 40MB.<br>• All in <strong>one</strong> RUN, because cleanup in a separate step doesn't shrink anything.</div>
+<div class="found-p"><strong>4. Add a .dockerignore</strong></div>
+<div class="found-pre">.git
+node_modules
+*.log
+tests/</div>
+<div class="found-p">A .git folder alone is often hundreds of MB.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">SMALLER EXTRAS</strong></div>
+<div class="found-pre">pip install --no-cache-dir -r requirements.txt   # don't keep downloads
+npm ci --omit=dev                                 # skip test tools
+go build -ldflags="-s -w"                         # strip debug symbols
+apt-get install --no-install-recommends           # skip optional packages</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">A REALISTIC WORKED EXAMPLE</strong></div>
+<div class="found-p">Python app, 1GB → 180MB:</div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Change</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Saved</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">python:3.12 → python:3.12-slim</td><td style="padding:5px 8px;color:#94a3b8;">800MB</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Multi-stage (drop gcc, build tools)</td><td style="padding:5px 8px;color:#94a3b8;">150MB</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">--no-cache-dir and apt cleanup</td><td style="padding:5px 8px;color:#94a3b8;">60MB</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;">.dockerignore for .git and tests</td><td style="padding:5px 8px;color:#94a3b8;">40MB</td></tr>
+</table>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"First I measure with docker history. I don't guess."<br><br>"Then in order: multi-stage build, smaller base image, cleanup inside the same RUN, and a proper .dockerignore."<br><br>"It's not just about disk. Smaller images pull faster, start faster, and have fewer security vulnerabilities to patch."</div>
+
+<span class="qa-pill">docker history first</span><span class="qa-pill">multi-stage</span><span class="qa-pill">smaller base</span><span class="qa-pill">cleanup in same RUN</span><span class="qa-pill">.dockerignore</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D5</span><span class="qa-q-text">Volumes vs bind mounts vs tmpfs — what's the difference?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">All three keep data alive outside the container. <strong>Volume</strong> = Docker manages it. <strong>Bind mount</strong> = you point at a folder on your computer. <strong>tmpfs</strong> = stored in memory only, never on disk.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Your container is a hotel room. When you check out, housekeeping throws everything away.</div>
+<div class="found-p">• <strong>Volume</strong> = the hotel safe. The hotel manages it, it's in their storage room, and it's still there next time you check in.<br>• <strong>Bind mount</strong> = a window into your own house. Whatever you change in the room appears at home instantly, and vice versa. Convenient, but the room now has access to your house.<br>• <strong>tmpfs</strong> = a whiteboard. Useful while you're there, wiped completely the second you leave, and no copy exists anywhere.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE COMPARISON</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;"></td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Volume</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Bind mount</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">tmpfs</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Where data lives</td><td style="padding:5px 8px;color:#94a3b8;">Docker's own folder</td><td style="padding:5px 8px;color:#94a3b8;">Any folder on your computer</td><td style="padding:5px 8px;color:#94a3b8;">RAM only</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Who manages it</td><td style="padding:5px 8px;color:#94a3b8;">Docker</td><td style="padding:5px 8px;color:#94a3b8;">You</td><td style="padding:5px 8px;color:#94a3b8;">Docker</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Survives container delete</td><td style="padding:5px 8px;color:#94a3b8;">Yes</td><td style="padding:5px 8px;color:#94a3b8;">Yes</td><td style="padding:5px 8px;color:#94a3b8;">No</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Works on any machine</td><td style="padding:5px 8px;color:#94a3b8;">Yes</td><td style="padding:5px 8px;color:#94a3b8;">No, path must exist there</td><td style="padding:5px 8px;color:#94a3b8;">N/A</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Speed on Mac/Windows</td><td style="padding:5px 8px;color:#94a3b8;">Good</td><td style="padding:5px 8px;color:#94a3b8;">Slow</td><td style="padding:5px 8px;color:#94a3b8;">Fast</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;">Best for</td><td style="padding:5px 8px;color:#94a3b8;">Production data (databases)</td><td style="padding:5px 8px;color:#94a3b8;">Local development</td><td style="padding:5px 8px;color:#94a3b8;">Passwords, temp files</td></tr>
+</table>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE THREE POINTS THAT COME UP IN INTERVIEWS</strong></div>
+<div class="found-p"><strong>1. Volumes don't care about your folder structure.</strong> A bind mount hardcodes /home/ali/project. That breaks on the CI server and on your colleague's Mac. A volume just works everywhere.</div>
+<div class="found-p"><strong>2. A bind mount HIDES what was already there. A volume FILLS IN.</strong> Mount an empty folder from your computer onto /app? /app inside the container is now empty, even if the image had files there. Mount an empty <strong>volume</strong> onto /app? Docker copies the image's /app contents into the volume first. Opposite behaviors — worth saying out loud.</div>
+<div class="found-p"><strong>3. tmpfs never touches the hard drive.</strong> That's the point. A decrypted password in tmpfs cannot be recovered from the disk later. Linux only.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">COMMANDS</strong></div>
+<div class="found-pre"># --- Volume ---
+$ docker volume create pgdata
+# Create a named volume.
+
+$ docker run -d -v pgdata:/var/lib/postgresql/data postgres:16
+# -v NAME:PATH_INSIDE_CONTAINER
+# No slash at the start of the left side = it's a named volume.
+
+$ docker volume ls              # list them
+$ docker volume inspect pgdata  # see where it lives on disk
+$ docker volume rm pgdata       # delete it
+$ docker volume prune           # delete all unused ones — CAREFUL, deletes data
+
+# --- Bind mount ---
+$ docker run -it -v "$(pwd)":/app node:20 sh
+# $(pwd) = your current folder.
+# A slash or ./ or $(pwd) on the left = it's a bind mount.
+# Edit a file on your laptop, it changes inside the container instantly.
+
+# --- tmpfs ---
+$ docker run -d --tmpfs /app/cache:size=64m myapp
+# Lives in RAM, capped at 64MB, gone when the container stops.
+
+# --- Check what a container has mounted ---
+$ docker inspect mycontainer --format '{{json .Mounts}}'
+# If this shows [] then you have no volume at all.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">IN DOCKER-COMPOSE</strong></div>
+<div class="found-pre">services:
+  db:
+    image: postgres:16
+    volumes:
+      - pgdata:/var/lib/postgresql/data          # volume
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro   # bind mount, read-only
+
+volumes:
+  pgdata:      # you must declare named volumes down here</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Bind mounts for development, named volumes for production data, tmpfs for secrets."<br><br>"Volumes are managed by Docker and portable. Bind mounts depend on the host's folder layout, so they break when you move machines."<br><br>"A bind mount hides whatever was at that path. An empty volume gets filled from the image instead."</div>
+
+<span class="qa-pill">volume = Docker-managed</span><span class="qa-pill">bind = host path</span><span class="qa-pill">tmpfs = RAM only</span><span class="qa-pill">bind hides, volume fills</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D6</span><span class="qa-q-text">How do containers communicate with each other?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Put them on the same user-defined network, then use the container name as the hostname.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Containers are computers on a small private office network. If two computers are plugged into the same switch, they can talk. If they're on different switches, they can't. That's it.</div>
+<div class="found-p">And Docker runs a little phone book on that network: type the container's name, get its address. So your app connects to <span class="found-code">postgres://db:5432</span> and <span class="found-code">db</span> is just the other container's name.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE ONE THING THAT TRIPS EVERYBODY UP</strong></div>
+<div class="found-p"><strong>The default network has no phone book.</strong> Docker gives you a network called <span class="found-code">bridge</span> out of the box. Container names do <strong>not</strong> resolve on it. You have to create your own network for name lookup to work.</div>
+<div class="found-pre">$ docker network create app-net     # creates a network WITH the phone book</div>
+<div class="found-p">This single fact explains most "my containers can't talk to each other" tickets.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE NETWORK TYPES</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Type</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What it is</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">When to use</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">default bridge</td><td style="padding:5px 8px;color:#94a3b8;">The one you get for free. No name lookup.</td><td style="padding:5px 8px;color:#94a3b8;">Try not to</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">user-defined bridge</td><td style="padding:5px 8px;color:#94a3b8;">The one you make. Name lookup works.</td><td style="padding:5px 8px;color:#94a3b8;">Normal apps. Use this.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">host</td><td style="padding:5px 8px;color:#94a3b8;">Container shares the computer's network directly</td><td style="padding:5px 8px;color:#94a3b8;">Max speed, no isolation</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">none</td><td style="padding:5px 8px;color:#94a3b8;">No network at all</td><td style="padding:5px 8px;color:#94a3b8;">Isolated batch jobs</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;">overlay</td><td style="padding:5px 8px;color:#94a3b8;">Spans several machines</td><td style="padding:5px 8px;color:#94a3b8;">Clusters (Swarm/Kubernetes)</td></tr>
+</table>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE OTHER THING PEOPLE GET WRONG</strong></div>
+<div class="found-p"><span class="found-code">-p 8080:80</span> is for reaching a container <strong>from outside Docker</strong> (your browser). Container-to-container traffic doesn't need <span class="found-code">-p</span> at all. They just need to be on the same network and use the container's internal port.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">COMMANDS</strong></div>
+<div class="found-pre">$ docker network create app-net
+# Make your own network. This is the important step.
+
+$ docker run -d --name api --network app-net myapi
+$ docker run -d --name db  --network app-net postgres:16
+# Now "api" can connect to  postgres://db:5432
+# "db" works as a hostname because it's the container's --name.
+
+$ docker network connect app-net some-container
+# Add an already-running container to a network.
+
+$ docker network inspect app-net
+# See the network's address range and which containers are on it.
+
+# --- Testing ---
+$ docker exec -it api ping -c 3 db
+$ docker exec -it api getent hosts db
+# getent hosts = "can I look up this name?" Proves the phone book works.
+
+$ docker exec -it api nc -zv db 5432
+# nc -z = "is this port open?" -v = show me. Proves the connection works.
+# Testing these two separately tells you exactly which part is broken.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">DOCKER-COMPOSE DOES THIS FOR YOU</strong></div>
+<div class="found-pre">services:
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgres://user:pass@db:5432/app   # "db" is the service name
+  db:
+    image: postgres:16</div>
+<div class="found-p">Compose automatically creates a network and registers every <strong>service name</strong> as a hostname. Nothing extra to do.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Same user-defined network, then use the container name. Docker's built-in DNS handles the rest."<br><br>"The default bridge network has no DNS, which is why container names don't resolve there. I always create a user-defined network."<br><br>"Published ports are for the outside world. Containers talking to each other use the internal port and don't need -p."</div>
+
+<span class="qa-pill">same network + name</span><span class="qa-pill">default bridge has no DNS</span><span class="qa-pill">-p is for outside traffic only</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D7</span><span class="qa-q-text">CMD vs ENTRYPOINT — what's the difference, and can they work together?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">ENTRYPOINT is the program. CMD is its default arguments. Yes, they work together, and that's the recommended way.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Think of a coffee machine. <strong>ENTRYPOINT</strong> = the machine itself. It makes coffee. That's fixed. <strong>CMD</strong> = the default setting, say "medium, one sugar."</div>
+<div class="found-p">Press the button with no input → medium, one sugar. Press it and say "strong, no sugar" → you get strong with no sugar. Still coffee. The machine didn't change.</div>
+<div class="found-p">If you'd only set a CMD with no ENTRYPOINT, saying "make me toast" would actually replace the whole machine with a toaster.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">CMD ON ITS OWN</strong></div>
+<div class="found-pre">CMD ["nginx", "-g", "daemon off;"]</div>
+<div class="found-pre">$ docker run myimage          # runs nginx
+$ docker run myimage bash     # runs bash — CMD is COMPLETELY REPLACED</div>
+<div class="found-p">CMD is easy to override. That's the point of it.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">ENTRYPOINT ON ITS OWN</strong></div>
+<div class="found-pre">ENTRYPOINT ["ping"]</div>
+<div class="found-pre">$ docker run myimage google.com    # runs: ping google.com</div>
+<div class="found-p">The argument gets <strong>added on the end</strong>, not swapped in. To replace ENTRYPOINT you have to be explicit:</div>
+<div class="found-pre"># This is your most useful debugging flag. Remember it.
+$ docker run --entrypoint sh -it myimage</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">BOTH TOGETHER (the recommended pattern)</strong></div>
+<div class="found-pre">ENTRYPOINT ["ping", "-c", "3"]
+CMD ["localhost"]</div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">You type</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What actually runs</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">docker run img</span></td><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">ping -c 3 localhost</span></td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">docker run img google.com</span></td><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">ping -c 3 google.com</span></td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">docker run --entrypoint sh -it img</span></td><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">sh</span></td></tr>
+</table>
+<div class="found-p">Real example:</div>
+<div class="found-pre">ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+CMD ["--spring.profiles.active=prod"]
+# Runs prod by default. Pass a different profile to override.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">SQUARE BRACKETS VS PLAIN TEXT — THE IMPORTANT BIT</strong></div>
+<div class="found-pre">CMD ["node", "server.js"]     # bracket form — USE THIS
+CMD node server.js            # plain form — becomes  /bin/sh -c "node server.js"</div>
+<div class="found-p"><strong>Why it matters:</strong> when you run <span class="found-code">docker stop</span>, Docker sends a polite "please shut down" signal to the main program, waits 10 seconds, then force-kills it.</div>
+<div class="found-p">• <strong>Bracket form:</strong> your app is the main program. It gets the signal. It closes database connections, finishes the current request, exits cleanly.<br>• <strong>Plain form:</strong> /bin/sh is the main program. <strong>sh does not pass the signal on.</strong> Your app never hears it. After 10 seconds Docker force-kills everything. Dropped requests, half-written files, unclosed connections.</div>
+<div class="found-p">Bracket form gives you graceful shutdown. Plain form doesn't. (Plain form does let you use $VARIABLES and pipes, which is why RUN normally uses it. But for CMD and ENTRYPOINT, use brackets.)</div>
+<div class="found-p"><strong>One gotcha:</strong> if ENTRYPOINT is written in plain form, CMD is ignored entirely.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE ENTRYPOINT-SCRIPT PATTERN (common in real images)</strong></div>
+<div class="found-pre">COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["node", "server.js"]</div>
+<div class="found-pre">#!/bin/sh
+set -e
+# Stop immediately if anything fails.
+
+# Do setup first: wait for the database, run migrations
+until nc -z "$DB_HOST" 5432; do echo "waiting for db"; sleep 1; done
+npm run migrate
+
+exec "$@"
+# exec  = replace this script with the real command, so your app becomes the
+#         main program and receives shutdown signals properly.
+# "$@"  = whatever CMD said (or whatever you typed after docker run).</div>
+<div class="found-p">That <span class="found-code">exec "$@"</span> line is a detail interviewers notice.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"CMD sets easily-overridden defaults. ENTRYPOINT sets what always runs. Together: ENTRYPOINT is the program, CMD is its arguments."<br><br>"I always use the bracket form, because with the plain form /bin/sh becomes the main process and never passes the shutdown signal to the app. docker stop turns into a force-kill."<br><br>"--entrypoint sh is my go-to flag when an image won't start and I need to look inside."</div>
+
+<span class="qa-pill">ENTRYPOINT = program</span><span class="qa-pill">CMD = default args</span><span class="qa-pill">bracket form for graceful shutdown</span><span class="qa-pill">--entrypoint sh to debug</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D8</span><span class="qa-q-text">How do you pass secrets to a container securely?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Inject them when the container runs. Never build them into the image.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">An image is like a photocopy that gets handed around. Everyone who has the image has everything inside it, forever, including deleted files (remember the layers). So a password written into the image is a password you've published.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">WHAT NOT TO DO</strong></div>
+<div class="found-pre">ENV DB_PASSWORD=supersecret     # visible via docker inspect
+ARG API_KEY                     # visible via docker history
+COPY .env /app/.env             # baked into a layer permanently
+RUN echo $TOKEN > /root/.netrc  # still in the layer even if you delete it later</div>
+<div class="found-p">You can prove it in one line:</div>
+<div class="found-pre">$ docker history --no-trunc myimage | grep -i secret</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">WHAT TO DO — AT BUILD TIME</strong></div>
+<div class="found-p">If you need a private token <em>while building</em> (private npm registry, private git repo), use a BuildKit secret. It exists only during that one command and is never saved into any layer.</div>
+<div class="found-pre"># syntax=docker/dockerfile:1
+RUN --mount=type=secret,id=npmtoken \
+    NPM_TOKEN=$(cat /run/secrets/npmtoken) npm ci</div>
+<div class="found-pre">$ docker build --secret id=npmtoken,src=$HOME/.npmtoken -t app .</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">WHAT TO DO — AT RUN TIME (better to best)</strong></div>
+<div class="found-p"><strong>1. --env-file</strong> — better than typing -e PASSWORD=x, because that ends up in your shell history and in ps output.</div>
+<div class="found-pre">$ docker run --env-file ./prod.env myapp</div>
+<div class="found-p"><strong>2. Mount it as a file, read-only</strong> — better than an environment variable.</div>
+<div class="found-pre">$ docker run -v /host/secrets/db_pass:/run/secrets/db_pass:ro myapp</div>
+<div class="found-p"><em>Why files beat environment variables:</em> environment variables are inherited by every child process, and they get scooped up by crash reporters and logging tools. Files don't.</div>
+<div class="found-p"><strong>3. Docker/Kubernetes secrets</strong> — encrypted at rest, delivered over TLS, appear as files at /run/secrets/.</div>
+<div class="found-pre">$ echo "s3cr3t" | docker secret create db_password -
+$ docker service create --secret db_password myapp</div>
+<div class="found-p"><strong>4. A secrets manager — the real production answer.</strong> HashiCorp Vault, AWS Secrets Manager, Azure Key Vault. The app fetches its password at startup using a short-lived identity. Central rotation, audit logs, instant revocation.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE _FILE CONVENTION</strong></div>
+<div class="found-p">The official Postgres, MySQL and Redis images accept a <em>path</em> instead of a value:</div>
+<div class="found-pre">environment:
+  POSTGRES_PASSWORD_FILE: /run/secrets/db_password</div>
+<div class="found-p">Naming this pattern scores points.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Secrets are injected at runtime, never baked into the image. Anything in ENV or ARG shows up in docker history or docker inspect."<br><br>"For build-time secrets I use BuildKit's --mount=type=secret, which exists only for that one command and never persists to a layer."<br><br>"I prefer mounting secrets as files rather than environment variables, because env vars get inherited by child processes and picked up by crash reporters."<br><br>"In production the real answer is a secrets manager with rotation, not files in a repo."</div>
+
+<span class="qa-pill">never ENV/ARG for secrets</span><span class="qa-pill">--mount=type=secret at build</span><span class="qa-pill">files &gt; env vars at runtime</span><span class="qa-pill">secrets manager in prod</span>
+</div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D9</span><span class="qa-q-text">Why does a container exit immediately after starting?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Because its main program finished. A container lives exactly as long as that one program.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">A container isn't a little computer sitting idle. It's a wrapper around <strong>one program</strong>. When that program ends, the wrapper has nothing to hold, so it closes.</div>
+<div class="found-p">So the question is never "why did the container stop." It's always "why did the program finish."</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE USUAL CAUSES</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;width:170px;">Cause</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What's happening</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">The command was short</td><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">CMD ["echo","hi"]</span> ran, printed, finished. Working correctly.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">A shell with no terminal</td><td style="padding:5px 8px;color:#94a3b8;"><span class="found-code">docker run ubuntu bash</span> — bash gets no keyboard input, sees the end of input, exits. Add -it.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">The app crashed</td><td style="padding:5px 8px;color:#94a3b8;">Missing setting, can't reach the database, bad config. Read the logs.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">The app backgrounds itself</td><td style="padding:5px 8px;color:#94a3b8;">nginx without daemon off;, apache2ctl start, systemctl. The starter program launches the real one behind it and then exits. <strong>Anything in a container must stay in the foreground.</strong></td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Wrong command</td><td style="padding:5px 8px;color:#94a3b8;">Typo, binary not installed, or wrong CPU architecture.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Script not executable</td><td style="padding:5px 8px;color:#94a3b8;">Forgot chmod +x.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Windows line endings</td><td style="padding:5px 8px;color:#94a3b8;">A script edited on Windows fails with "bad interpreter: /bin/sh^M". Genuinely common.</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;">Ran out of memory</td><td style="padding:5px 8px;color:#94a3b8;">The system killed it.</td></tr>
+</table>
+
+<div class="found-p"><strong style="color:#38bdf8;">READ THE EXIT CODE — IT TELLS YOU THE CATEGORY INSTANTLY</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;width:70px;">Code</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Meaning</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><strong>0</strong></td><td style="padding:5px 8px;color:#94a3b8;">Finished normally. Nothing crashed.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><strong>1</strong></td><td style="padding:5px 8px;color:#94a3b8;">The app itself errored. Read the logs.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><strong>126</strong></td><td style="padding:5px 8px;color:#94a3b8;">Found the command but couldn't execute it → permissions</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><strong>127</strong></td><td style="padding:5px 8px;color:#94a3b8;">Command not found → typo or missing program</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><strong>137</strong></td><td style="padding:5px 8px;color:#94a3b8;">Killed → almost always <strong>out of memory</strong></td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;"><strong>139</strong></td><td style="padding:5px 8px;color:#94a3b8;">Crashed → segmentation fault</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;"><strong>143</strong></td><td style="padding:5px 8px;color:#94a3b8;">Shut down cleanly by docker stop</td></tr>
+</table>
+<div class="found-p">Memorise 137, 127 and 0. They cover most cases.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">COMMANDS</strong></div>
+<div class="found-pre">$ docker ps -a
+# -a = ALSO show stopped containers.
+# Plain "docker ps" hides them, which is why people think the container vanished.
+# The STATUS column shows: Exited (137) 4 seconds ago
+
+$ docker logs mycontainer
+$ docker logs --tail 100 --timestamps mycontainer
+# --tail 100 = just the last 100 lines
+# --timestamps = add a time to each line
+
+$ docker inspect mycontainer --format '{{.State.ExitCode}} {{.State.OOMKilled}}'
+# The exit code, plus whether it was killed for using too much memory.
+
+$ docker run -it --entrypoint sh myimage
+# Skip the broken command and get a shell instead.
+# Now you can look around and run the real command by hand to see the error.
+
+$ docker cp deadcontainer:/app/error.log ./
+# You can copy files OUT of a stopped container.
+
+$ docker run -d myimage tail -f /dev/null
+# A trick to keep a container alive so you can inspect it.
+# tail -f /dev/null runs forever doing nothing.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"The container's life is tied to its main process. If that process exits, the container exits. That's by design."<br><br>"First docker ps -a for the exit code, then docker logs. The code narrows it down instantly — 137 is out of memory, 127 is command not found, 0 means it just finished."<br><br>"A very common cause is an app that puts itself in the background. Everything in a container has to stay in the foreground, which is why nginx images use daemon off;."</div>
+
+<span class="qa-pill">container = 1 process</span><span class="qa-pill">must stay foreground</span><span class="qa-pill">docker ps -a → exit code</span><span class="qa-pill">137 = OOM</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D10</span><span class="qa-q-text">How do you troubleshoot a container that keeps restarting?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Two things are happening: the app keeps crashing, and a restart policy keeps bringing it back. Fix the crash. The restart is just the symptom.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Imagine a car that stalls, and you've set it to auto-restart. It stalls, restarts, stalls, restarts. Turning off the auto-restart doesn't fix the car. It just lets you look under the bonnet in peace.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">HOW TO WORK THROUGH IT</strong></div>
+<div class="found-p"><strong>1. Confirm it's actually looping.</strong> docker ps shows "Restarting (1) 3 seconds ago". Check if the restart count is climbing.<br><br><strong>2. Read the logs.</strong> They survive across restarts, so you can see what it said before it died.<br><br><strong>3. Check the exit code and the out-of-memory flag.</strong> Exit 137 plus OOMKilled: true means it hit a memory limit. That's a different problem from a crash.<br><br><strong>4. Check the health check.</strong> A health check that points at the wrong port will restart a perfectly healthy app forever.<br><br><strong>5. Check its dependencies.</strong> Very common: the app starts before the database is ready, can't connect, exits. Then restarts, and the database still isn't ready.<br><br><strong>6. Stop the loop so you can work.</strong> Turn off the restart policy and start the app manually.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">COMMANDS</strong></div>
+<div class="found-pre">$ docker ps
+# STATUS says "Restarting (1) 5 seconds ago" — that's your confirmation.
+
+$ docker inspect mycontainer --format \
+ 'restarts={{.RestartCount}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}'
+# One line with the three facts you need.
+
+$ docker logs --tail 200 mycontainer
+$ docker logs -f mycontainer
+# -f = keep watching, so you catch the next crash live.
+
+$ docker inspect mycontainer --format '{{json .State.Health}}'
+# Shows the last few health check results and their output.
+# Often reveals a check hitting the wrong port.
+
+$ docker update --restart=no mycontainer
+# Turn off auto-restart on a RUNNING container without recreating it.
+# Now it stays dead and you can investigate.
+
+$ docker events --filter container=mycontainer
+# Live feed of what the container is doing: die, restart, oom.
+
+$ docker stats --no-stream mycontainer
+# Is memory pinned at the limit right before each death?</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">RESTART POLICIES</strong></div>
+<div class="found-pre">--restart=no                  # never restart (default)
+--restart=on-failure:5        # restart only on a crash, max 5 tries
+--restart=always              # always restart
+--restart=unless-stopped      # always, but respect a manual docker stop</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Restarting is the symptom. The crash is the disease. I check the restart count, exit code, and out-of-memory flag first."<br><br>"137 with OOMKilled means a memory limit — either raise it or fix the leak. A clean app error usually means bad config or a dependency that isn't ready."<br><br>"docker update --restart=no stops the loop so I can inspect it properly."<br><br>"In compose, depends_on alone only waits for the container to start, not to be ready. I use a health check with condition: service_healthy."</div>
+
+<span class="qa-pill">restart = symptom, crash = disease</span><span class="qa-pill">restart count + exit code + OOM flag</span><span class="qa-pill">docker update --restart=no</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D11</span><span class="qa-q-text">The app runs inside the container but I can't reach it in the browser.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Check three things in order: is the app listening on 0.0.0.0, is the port published with -p, and is anything blocking it on the host.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">There are three doors between your browser and the app. Test them one at a time instead of guessing.</div>
+<div class="found-pre">Browser  →  [door 3: host firewall]  →  [door 2: -p port mapping]  →  [door 1: app listening]  →  App</div>
+<div class="found-p">Work from the app outwards.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">DOOR 1 — IS THE APP LISTENING ON THE RIGHT ADDRESS? (the #1 cause)</strong></div>
+<div class="found-p">This is the single most common cause. The app is bound to 127.0.0.1. Inside a container, 127.0.0.1 means "only this container." Nothing outside can ever reach it, no matter how many ports you publish. It must bind to 0.0.0.0, which means "accept from anywhere."</div>
+<div class="found-pre">$ docker exec -it mycontainer sh -c "ss -lntp"
+# Look for  0.0.0.0:3000   ← good
+#      vs   127.0.0.1:3000 ← this is your bug</div>
+<div class="found-p">Fixes by language:<br>• Node/Express: <span class="found-code">app.listen(3000, '0.0.0.0')</span><br>• Flask: <span class="found-code">flask run --host=0.0.0.0</span><br>• Django: <span class="found-code">runserver 0.0.0.0:8000</span><br>• Spring: <span class="found-code">server.address=0.0.0.0</span></div>
+<div class="found-p">Then check it responds from inside:</div>
+<div class="found-pre">$ docker exec -it mycontainer curl http://localhost:3000/
+# If this fails, the problem is your app, not Docker. Stop and fix the app.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">DOOR 2 — IS THE PORT PUBLISHED, IN THE RIGHT DIRECTION?</strong></div>
+<div class="found-pre">$ docker port mycontainer
+# Shows the actual mapping, e.g.  3000/tcp -> 0.0.0.0:8080</div>
+<div class="found-p">Things to check:<br>• <strong>-p HOST:CONTAINER</strong> — the order confuses everyone. -p 8080:3000 means <em>browser uses 8080, container receives 3000.</em><br>• <strong>Empty PORTS column?</strong> You forgot -p entirely.<br>• <strong>EXPOSE doesn't publish anything.</strong> It's a note. You still need -p.<br>• <span class="found-code">--network host</span> means -p is ignored completely.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">DOOR 3 — IS THE HOST BLOCKING IT?</strong></div>
+<div class="found-pre">$ curl -v http://localhost:8080/
+# Works here but not in the browser? → browser cache, or http vs https, or wrong URL.
+# Doesn't work here? → firewall, security group, or nothing is listening.</div>
+<div class="found-p">Check: ufw/firewalld on the machine, AWS Security Groups, Azure NSG. Also: on a remote server, localhost means <strong>your laptop</strong>, not the server. Use the server's IP.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">FULL DEBUG SEQUENCE</strong></div>
+<div class="found-pre">$ docker ps                                     # is it running? what's in PORTS?
+$ docker port mycontainer                       # exact mapping
+$ docker logs mycontainer                       # what address did it say it's listening on?
+$ docker exec -it mycontainer ss -lntp          # 0.0.0.0 or 127.0.0.1?
+$ docker exec -it mycontainer curl localhost:3000   # healthy from inside?
+$ curl -v http://localhost:8080                 # reachable from the host?
+$ sudo ss -lntp | grep 8080                     # is the host actually listening?</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"First I check whether the app is bound to 0.0.0.0 instead of 127.0.0.1. That's the most common cause by far, because localhost inside a container means only that container."<br><br>"Then the port mapping direction: -p host:container. And EXPOSE doesn't publish anything, it's documentation."<br><br>"I test one hop at a time — inside the container, then from the host, then from outside — so I know exactly which layer is broken."</div>
+
+<span class="qa-pill">bind 0.0.0.0 not 127.0.0.1</span><span class="qa-pill">-p host:container</span><span class="qa-pill">EXPOSE ≠ publish</span><span class="qa-pill">test inside → out</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D12</span><span class="qa-q-text">How do you troubleshoot a failed image build?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Read which step failed, rebuild with full output, then shell into the stage just before the failure and run the command by hand.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Docker literally tells you which line broke:</div>
+<div class="found-pre">ERROR: failed to solve: process "/bin/sh -c npm ci" did not complete
+successfully: exit code: 1</div>
+<div class="found-p">That's the line. Half of build debugging is people not reading this message.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 1 — GET THE FULL OUTPUT</strong></div>
+<div class="found-p">BuildKit hides most of the output by default, and the useful part is usually in the hidden bit.</div>
+<div class="found-pre">$ docker build --progress=plain --no-cache -t myapp .
+# --progress=plain = show everything, don't collapse it
+# --no-cache = rebuild from scratch, in case a stale cached layer is lying to you</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 2 — GET A SHELL AT THE POINT OF FAILURE (the best trick)</strong></div>
+<div class="found-pre">$ docker build --target builder -t debug .
+# Build only up to that stage and stop.
+
+$ docker run -it --entrypoint sh debug
+# Now you're standing inside the image right before the failing line.
+# Run the failing command by hand and read the real error.</div>
+<div class="found-p">If it's not multi-stage, just comment out the failing line, build, and shell in.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 3 — MATCH YOUR ERROR TO THE USUAL CAUSES</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Error message</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What it means</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Fix</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">COPY failed: file not found</td><td style="padding:5px 8px;color:#94a3b8;">The file is outside your build folder, or .dockerignore excluded it</td><td style="padding:5px 8px;color:#94a3b8;">Paths are relative to the folder you passed to docker build. You can't COPY ../file.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Could not resolve host</td><td style="padding:5px 8px;color:#94a3b8;">No internet or a corporate proxy inside the build</td><td style="padding:5px 8px;color:#94a3b8;">Check VPN, pass proxy settings</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Unable to locate package X</td><td style="padding:5px 8px;color:#94a3b8;">apt-get update is missing, or in a separate stale cached layer</td><td style="padding:5px 8px;color:#94a3b8;">Always apt-get update &amp;&amp; apt-get install -y together</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">exec format error</td><td style="padding:5px 8px;color:#94a3b8;">Wrong CPU architecture (very common on Apple Silicon)</td><td style="padding:5px 8px;color:#94a3b8;">docker build --platform linux/amd64 .</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">permission denied</td><td style="padding:5px 8px;color:#94a3b8;">Script isn't executable, or you switched USER too early</td><td style="padding:5px 8px;color:#94a3b8;">RUN chmod +x script.sh; put USER last</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">no space left on device</td><td style="padding:5px 8px;color:#94a3b8;">Build cache filled the disk</td><td style="padding:5px 8px;color:#94a3b8;">docker builder prune</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;"><strong>Works locally, fails in CI</strong></td><td style="padding:5px 8px;color:#94a3b8;">Your local cache is hiding the problem</td><td style="padding:5px 8px;color:#94a3b8;">Reproduce with --no-cache</td></tr>
+</table>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 4 — SHRINK THE PROBLEM</strong></div>
+<div class="found-p">Comment out everything after the failing line. Get a green build. Add lines back one at a time until it breaks.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">ALSO CHECK</strong></div>
+<div class="found-p">If the build <strong>hangs at "sending build context: 1.2GB"</strong>, you're missing a .dockerignore.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">COMMANDS</strong></div>
+<div class="found-pre">$ docker build --progress=plain --no-cache -t app . 2>&1 | tee build.log
+# tee saves the whole log to a file while still showing it on screen.
+
+$ docker build --target builder -t debug .    # build up to one stage
+$ docker buildx build --platform linux/amd64 -t app .   # build for a specific CPU
+$ docker builder prune                        # clear build cache</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"I read which step failed and its exit code — Docker names it explicitly — then rebuild with --progress=plain --no-cache for the full output."<br><br>"The best trick is --target to build up to just before the failure, then shell in and run the failing command by hand."<br><br>"COPY paths are relative to the build context, so 'file not found' is almost always a .dockerignore entry or a path outside the folder."</div>
+
+<span class="qa-pill">--progress=plain --no-cache</span><span class="qa-pill">--target to stop mid-build</span><span class="qa-pill">shell in, run by hand</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D13</span><span class="qa-q-text">A container can't reach another container. What do you check?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Same network first, then whether the name resolves, then whether the port is open.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Three separate questions, and you must test them separately or you'll be guessing:</div>
+<div class="found-p">1. <strong>Are they plugged into the same switch?</strong> (same network)<br>2. <strong>Can one find the other's address?</strong> (DNS)<br>3. <strong>Is the door open when it gets there?</strong> (port)</div>
+<div class="found-p">Test them individually and the answer falls out.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE CHECKLIST</strong></div>
+<div class="found-p"><strong>1. Same network?</strong> (right about 70% of the time)</div>
+<div class="found-pre">$ docker inspect container1 --format '{{json .NetworkSettings.Networks}}'
+$ docker inspect container2 --format '{{json .NetworkSettings.Networks}}'</div>
+<div class="found-p"><strong>2. Is it the default bridge?</strong> The default bridge network has <strong>no DNS</strong>. Container names simply don't work there. Make your own network.</div>
+<div class="found-pre">$ docker network create app-net
+$ docker network connect app-net container1
+$ docker network connect app-net container2</div>
+<div class="found-p"><strong>3. Right hostname?</strong> It's the container's --name, or in compose, the <strong>service</strong> name.</div>
+<div class="found-p"><strong>4. Does the name resolve?</strong></div>
+<div class="found-pre">$ docker exec -it container1 getent hosts container2
+# Works → DNS is fine, move to the port.
+# Fails → go back to steps 1 and 2.</div>
+<div class="found-p"><strong>5. Is the port open, and is the target bound to 0.0.0.0?</strong></div>
+<div class="found-pre">$ docker exec -it container1 nc -zv container2 5432
+$ docker exec -it container2 ss -lntp</div>
+<div class="found-p">Same trap as door 1 above. A database bound to 127.0.0.1 inside its own container can't be reached by anyone else.</div>
+<div class="found-p"><strong>6. Right port number?</strong> Between containers you use the <strong>internal</strong> port (5432), not the published one. -p 5433:5432 doesn't change the internal port.</div>
+<div class="found-p"><strong>7. Using localhost by mistake?</strong> DATABASE_URL=postgres://localhost:5432 means "the app container itself." Extremely common when moving code from a laptop into Docker. It has to be the other container's name.</div>
+<div class="found-p"><strong>8. Is the target even up?</strong> docker ps. It might be restarting, or just not ready yet.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE BEST DEBUGGING TRICK</strong></div>
+<div class="found-p">If your image is minimal and has no tools inside:</div>
+<div class="found-pre">$ docker run --rm -it --network container:myapp nicolaka/netshoot
+# This borrows myapp's exact network, but gives you a container full of
+# network tools: dig, curl, tcpdump, ss, nmap.
+# You're now debugging from inside your app's network with real tools.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"First: are both on the same user-defined network? That's the cause most of the time."<br><br>"The default bridge network has no DNS, so container names don't resolve there."<br><br>"Then I separate name resolution from connectivity — getent hosts proves DNS, nc -zv proves the port. Knowing which one failed tells me exactly where to look."<br><br>"And I check the app isn't pointed at localhost, because inside a container localhost is that container, not its neighbour."</div>
+
+<span class="qa-pill">same network?</span><span class="qa-pill">getent hosts = DNS check</span><span class="qa-pill">nc -zv = port check</span><span class="qa-pill">not pointed at localhost</span>
+</div></div></div>
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D14</span><span class="qa-q-text">"Port is already allocated". How do you fix it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Something else already owns that port. Find it, then either stop it or use a different port.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Two things can't use the same door. Either move the other thing, or use a different door.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 1 — FIND WHO HAS IT</strong></div>
+<div class="found-pre">$ docker ps -a --filter "publish=8080"
+# Is another container using it? Note the -a: a stopped container can
+# still be holding the mapping.
+
+$ sudo lsof -i :8080
+# Is a normal program on your computer using it?
+# Shows the process ID and its name.
+
+$ sudo ss -lntp | grep :8080
+# Same information, modern command.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 2 — PICK A FIX</strong></div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What you found</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What to do</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Another container</td><td style="padding:5px 8px;color:#94a3b8;">docker stop &lt;name&gt;</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">A normal program (nginx, another dev server)</td><td style="padding:5px 8px;color:#94a3b8;">sudo systemctl stop nginx or sudo kill &lt;PID&gt;</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">You just need it working now</td><td style="padding:5px 8px;color:#94a3b8;">Change the left-hand number: -p 8081:8080</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">Old leftover containers</td><td style="padding:5px 8px;color:#94a3b8;">docker rm $(docker ps -aq -f status=exited)</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">A compose stack still running</td><td style="padding:5px 8px;color:#94a3b8;">docker compose down</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;"><strong>Nothing found, but Docker still complains</strong></td><td style="padding:5px 8px;color:#94a3b8;">Leftover docker-proxy process. See below.</td></tr>
+</table>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 3 — THE STUBBORN CASE</strong></div>
+<div class="found-pre">$ ps aux | grep docker-proxy
+$ sudo kill &lt;pid&gt;
+# Docker runs one helper process per published port. An orphaned one holds the port.
+
+$ sudo systemctl restart docker
+# Last resort. Clears stale networking rules.
+# Warning: this restarts containers with restart policies. Careful in production.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">AVOIDING IT IN FUTURE</strong></div>
+<div class="found-pre">$ docker run -d -P myapp
+# Capital -P = let Docker pick free ports automatically.
+$ docker port mycontainer     # then look up which ones it chose</div>
+<div class="found-p">In compose, write <span class="found-code">${WEB_PORT:-8080}:80</span> so each person can override it in their own .env.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Something already owns that host port. I find it with docker ps --filter publish= or sudo lsof -i :PORT, then either stop it or remap the host side. The container port doesn't need to change."<br><br>"If nothing shows up but Docker still complains, it's usually an orphaned docker-proxy process, and restarting the daemon clears it."</div>
+
+<span class="qa-pill">docker ps --filter publish=</span><span class="qa-pill">lsof / ss to find it</span><span class="qa-pill">remap host side, not container side</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D15</span><span class="qa-q-text">"No space left on device". How do you fix it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Check disk <strong>and inodes</strong>, see what Docker is holding with docker system df, then clean up from safest to most destructive.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Docker never throws anything away on its own. Every image you ever built, every stopped container, every volume, every log file — it all just accumulates until the disk is full.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 1 — CHECK WHAT'S ACTUALLY FULL</strong></div>
+<div class="found-pre">$ df -h     # disk space
+$ df -i     # INODES</div>
+<div class="found-p"><strong>Don't skip df -i.</strong> An inode is a slot for a file. You can have plenty of free GB but zero free inodes, and you get the <strong>exact same error message</strong>. Docker creates millions of tiny files, so this happens. Mentioning it in an interview is a nice touch.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 2 — SEE WHAT DOCKER IS HOLDING</strong></div>
+<div class="found-pre">$ docker system df</div>
+<div class="found-pre">TYPE            TOTAL   ACTIVE   SIZE     RECLAIMABLE
+Images            42       5     18.2GB   15.1GB (82%)
+Containers        18       3      2.1GB    1.9GB
+Local Volumes     23       4     31.4GB   28.0GB
+Build Cache        -       -     12.7GB   12.7GB</div>
+<div class="found-pre">$ docker system df -v
+# -v = itemised. Every single image, container and volume with its own size.
+# This is how you find the one 40GB volume nobody knew about.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 3 — THE FOUR USUAL CULPRITS</strong></div>
+<div class="found-p">1. <strong>Old images</strong> — every rebuild orphans the previous one<br>2. <strong>Unused volumes</strong> — docker rm does <strong>not</strong> delete volumes. They pile up silently and are often the biggest item.<br>3. <strong>Build cache</strong> — grows without limit<br>4. <strong>Container logs</strong> — the one everyone forgets</div>
+<div class="found-p"><strong>About the logs:</strong> Docker's default log setup <strong>has no rotation</strong>. A chatty app writes to one file forever. 100GB log files are a real thing.</div>
+<div class="found-pre">$ sudo du -sh /var/lib/docker/containers/* | sort -rh | head
+# Ranks containers by log size. Often the smoking gun.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 4 — CLEAN UP, SAFEST FIRST</strong></div>
+<div class="found-pre">$ docker container prune
+# Removes stopped containers. Safe.
+
+$ docker image prune
+# Removes untagged leftover images. Safe.
+
+$ docker image prune -a
+# Removes every image not currently in use. You'll have to re-download them.
+
+$ docker builder prune
+# Clears build cache. Safe.
+
+$ docker volume prune
+# ⚠️ THIS DELETES DATA. Check docker volume ls first.
+
+$ docker system prune
+# Containers + networks + unused images + build cache.
+
+$ docker system prune -a --volumes
+# ⚠️ THE NUCLEAR OPTION. Everything not in use, including your databases.
+# Never run this in production without checking docker system df -v first.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 5 — STOP THE LOGS COMING BACK</strong></div>
+<div class="found-p">Edit /etc/docker/daemon.json:</div>
+<div class="found-pre">{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}</div>
+<div class="found-pre">$ sudo systemctl restart docker
+# Now each container is capped at 3 files × 10MB = 30MB.</div>
+<div class="found-p">Note: this only affects <strong>newly created</strong> containers. To empty a huge log right now:</div>
+<div class="found-pre">$ sudo truncate -s 0 /var/lib/docker/containers/&lt;id&gt;/&lt;id&gt;-json.log
+# Empties the file in place.
+# Do NOT use rm — Docker keeps writing to the deleted file and you get no space back.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 6 — PREVENT IT</strong></div>
+<div class="found-p">• Weekly cron: docker system prune -af --filter "until=168h" (only things older than 7 days)<br>• Set up log rotation as part of every new server's setup<br>• Send logs somewhere central instead of leaving them on disk<br>• Alert at 80% disk, before it becomes an outage</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"I check df -h and df -i — inode exhaustion gives the identical error and catches people out."<br><br>"Then docker system df -v to see where it went. The four usual suspects are old images, unused volumes, build cache, and unrotated logs."<br><br>"Logs are the one people forget. The default driver never rotates, so I set max-size and max-file in daemon.json as standard server setup."<br><br>"I prune from safest to most destructive, and I never run system prune -a --volumes in production without checking what's in those volumes first."</div>
+
+<span class="qa-pill">check df -h AND df -i</span><span class="qa-pill">docker system df -v</span><span class="qa-pill">4 culprits: images, volumes, cache, logs</span><span class="qa-pill">prune safest → most destructive</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D16</span><span class="qa-q-text">Why is my data gone after restarting the container?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">Because it was never saved anywhere permanent. And usually you didn't restart the container, you replaced it with a new one.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Remember the stack of sheets from D1? The container's blank top sheet is where all its writing goes. Delete the container, the sheet goes in the bin.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">FIRST, WORK OUT WHAT ACTUALLY HAPPENED</strong></div>
+<div class="found-p">This distinction is the mark of someone who has actually done this:</div>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin:6px 0 14px;">
+<tr style="border-bottom:1px solid #1e293b;"><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">What you did</td><td style="padding:5px 8px;color:#38bdf8;font-weight:700;">Data</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">docker stop then docker start</td><td style="padding:5px 8px;color:#94a3b8;"><strong>Survives.</strong> Same container, same sheet.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">docker rm then docker run</td><td style="padding:5px 8px;color:#94a3b8;"><strong>Gone.</strong> New container = brand new blank sheet.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">docker run again</td><td style="padding:5px 8px;color:#94a3b8;"><strong>Gone.</strong> You made a new container, you didn't restart the old one.</td></tr>
+<tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:5px 8px;color:#94a3b8;">docker compose down</td><td style="padding:5px 8px;color:#94a3b8;">Containers deleted. Named volumes survive.</td></tr>
+<tr><td style="padding:5px 8px;color:#94a3b8;">docker compose down -v</td><td style="padding:5px 8px;color:#94a3b8;"><strong>-v deletes the volumes too.</strong> Real data loss.</td></tr>
+</table>
+<div class="found-p">So most of the time the answer is: <em>you didn't restart it, you recreated it,</em> and the data only ever lived on the disposable sheet.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">IF YOU DO HAVE A VOLUME AND IT'S STILL NOT WORKING</strong></div>
+<div class="found-p"><strong>1. Wrong path.</strong> The volume is fine, but the app writes somewhere else. Each database has a specific folder:<br>• Postgres → /var/lib/postgresql/data<br>• MySQL → /var/lib/mysql<br>• MongoDB → /data/db<br>• Redis → /data (and Redis needs appendonly yes, otherwise it's memory-only by design)</div>
+<div class="found-p"><strong>2. Anonymous volume.</strong> -v /var/lib/postgresql/data with no name creates a <strong>brand new unnamed volume every single run.</strong> You need -v pgdata:/var/lib/postgresql/data.</div>
+<div class="found-p"><strong>3. The --rm flag.</strong> docker run --rm deletes the container and its anonymous volumes on exit. Easy to leave in from testing.</div>
+<div class="found-p"><strong>4. Permissions.</strong> The container's user can't write to the folder, so the app fails silently or writes somewhere temporary. Check ls -la inside.</div>
+<div class="found-p"><strong>5. Compose renamed the volume.</strong> Compose names volumes after the project folder. Rename the folder, and you're now pointing at a different, empty volume.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">HOW TO CHECK</strong></div>
+<div class="found-pre">$ docker inspect mycontainer --format '{{json .Mounts}}'
+# The definitive answer.
+# If it prints []  →  you have no volume at all. That's your bug.
+# Otherwise check that "Destination" matches where the app actually writes.
+
+$ docker volume ls
+# Seeing lots of long unnamed hashes? Those are anonymous volumes piling up.
+
+# Prove the volume works with a test file:
+$ docker exec mycontainer sh -c 'echo test > /var/lib/postgresql/data/canary.txt'
+$ docker restart mycontainer
+$ docker exec mycontainer cat /var/lib/postgresql/data/canary.txt
+# Survives → the volume works, so the app is writing somewhere else.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE FIX</strong></div>
+<div class="found-pre">$ docker volume create pgdata
+$ docker run -d --name db \
+  -v pgdata:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD=secret \
+  postgres:16</div>
+<div class="found-pre">services:
+  db:
+    image: postgres:16
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:      # declaring it here makes it a NAMED volume that persists</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">BONUS: HOW TO BACK UP A VOLUME</strong></div>
+<div class="found-pre">$ docker run --rm -v pgdata:/data -v $(pwd):/backup alpine \
+  tar czf /backup/backup.tar.gz -C /data .
+# Starts a throwaway container with both the volume and your current folder
+# attached, then zips the volume contents into your folder.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"Containers are disposable by design. The writable layer dies with the container, so anything you want to keep has to be in a volume."<br><br>"First I check whether they restarted it or recreated it. stop/start keeps the data; rm + run doesn't."<br><br>"Then docker inspect --format '{{json .Mounts}}'. If Mounts is empty there's no volume. If it's there, I check the path matches where the app actually writes."<br><br>"Watch out for anonymous volumes and --rm — both give you a fresh empty volume on every run."</div>
+
+<span class="qa-pill">stop/start survives, rm+run doesn't</span><span class="qa-pill">named volume, not anonymous</span><span class="qa-pill">docker inspect .Mounts</span><span class="qa-pill">-v deletes volumes too</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D17</span><span class="qa-q-text">A container is using too much CPU or memory. How do you troubleshoot?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">docker stats to see it, docker top to find the process, then check whether it was killed for memory and whether limits are set.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 1 — SEE IT</strong></div>
+<div class="found-pre">$ docker stats
+# Live view: CPU%, memory used / limit, network, disk, number of processes.
+
+$ docker stats --no-stream
+# One snapshot instead of a live view. Better for copying into a ticket.</div>
+<div class="found-p"><strong>Read CPU% correctly.</strong> It's per core. On an 8-core machine, 400% means four cores are fully busy, and 800% is the maximum. People see 200% and think the tool is broken.</div>
+<div class="found-p"><strong>Watch the PIDS column.</strong> If the process count keeps climbing, you have a thread or process leak, and that's usually the actual bug.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 2 — FIND THE CULPRIT PROCESS</strong></div>
+<div class="found-pre">$ docker top mycontainer
+# Lists the processes inside. Works even on minimal images with no shell.
+
+$ docker exec -it mycontainer ps aux --sort=-%mem | head
+# Heaviest memory users first.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 3 — WAS IT KILLED FOR MEMORY?</strong></div>
+<div class="found-pre">$ docker inspect mycontainer --format '{{.State.OOMKilled}} {{.State.ExitCode}}'
+# true and 137 = the system killed it for exceeding its memory limit.
+
+$ dmesg -T | grep -i "killed process"
+# The system log confirming it, with the exact memory usage at the moment it died.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 4 — ARE LIMITS EVEN SET?</strong></div>
+<div class="found-pre">$ docker inspect mycontainer --format 'mem={{.HostConfig.Memory}} cpus={{.HostConfig.NanoCpus}}'
+# 0 means unlimited.
+# An unlimited container can eat the whole machine and take down its neighbours.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 5 — IS IT A LEAK OR JUST UNDER-PROVISIONED?</strong></div>
+<div class="found-p">The shape of the graph tells you:<br>• <strong>Memory climbs steadily and never comes down</strong> → a leak. You need a heap dump or profiler.<br>• <strong>Memory is high but flat</strong> → the app just needs more memory. Raise the limit.<br>• <strong>CPU pinned at 100%</strong> → an infinite loop, a slow database query being retried, or garbage collection struggling.</div>
+<div class="found-p">Profilers: Java jcmd GC.heap_dump, Node --inspect, Python tracemalloc, Go pprof.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE CLASSIC CONTAINER GOTCHA WORTH MENTIONING</strong></div>
+<div class="found-p">Older Java versions <strong>ignored the container's memory limit</strong> and sized the heap based on the whole machine's RAM. Give a 512MB container to a JVM on a 32GB server and it tries to use an 8GB heap, then gets killed instantly.</div>
+<div class="found-p">Fix: -XX:MaxRAMPercentage=75. (-XX:+UseContainerSupport is on by default from Java 10.) Same problem exists elsewhere: libraries that count CPUs and size their thread pool from the <em>host's</em> core count, not the container's share.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">STEP 6 — SET LIMITS</strong></div>
+<div class="found-pre">$ docker run -d --memory 512m --memory-swap 512m --cpus 1.5 myapp
+# --memory      = hard limit; going over gets it killed
+# --memory-swap = memory + swap combined. Setting it EQUAL to --memory turns swap off,
+#                 which you want — swap hides leaks and destroys performance.
+# --cpus 1.5    = at most one and a half cores
+
+$ docker update --memory 1g --memory-swap 1g mycontainer
+# Change the limit on a running container without recreating it.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"docker stats first, and I read CPU% as per-core — 400% on an 8-core machine is four cores, not a broken tool."<br><br>"docker top gives me the offending process without needing a shell inside."<br><br>"Exit 137 with OOMKilled means the memory limit. Then the real question is leak versus under-provisioning, and the memory-over-time shape answers that."<br><br>"A classic gotcha is a runtime that ignores the container's limit. Old JVMs sized the heap from the host's RAM."<br><br>"I always set memory and CPU limits. An unlimited container can take down the whole machine."</div>
+
+<span class="qa-pill">docker stats + docker top</span><span class="qa-pill">CPU% is per-core</span><span class="qa-pill">137+OOMKilled = memory limit</span><span class="qa-pill">old JVMs ignore cgroup limits</span>
+</div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">D18</span><span class="qa-q-text">What are the first commands you run in a production incident?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+
+<div class="found-p" style="margin-top:0;"><strong style="color:#38bdf8;">SHORT ANSWER</strong></div>
+<div class="found-p">docker ps -a → docker logs → docker stats → docker inspect. Broad to narrow: what's running, what did it say, is it starved, why did it die.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">EXPLAIN IT SIMPLY</strong></div>
+<div class="found-p">Think of it like a doctor. Look at the patient, ask what happened, check the vital signs, then run the specific test. You don't start with the specific test.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">THE SEQUENCE</strong></div>
+<div class="found-pre"># 1 — What's running, what isn't, what's flapping
+$ docker ps -a
+# The STATUS column tells you immediately: "Up 3 days", "Exited (137)",
+# or "Restarting (1)". That one column often solves it.
+
+# 2 — What did it say before it broke
+$ docker logs --tail 200 --timestamps mycontainer
+$ docker logs -f --since 10m mycontainer
+# --since 10m narrows a noisy log down to the incident window.
+
+# 3 — Is anything starved
+$ docker stats --no-stream
+# Instant read on CPU and memory across everything.
+
+# 4 — Why exactly did it stop
+$ docker inspect mycontainer --format \
+ 'status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}} restarts={{.RestartCount}}'
+# Four facts on one line. These classify almost any container failure.
+
+# 5 — Get inside and look
+$ docker exec -it mycontainer sh
+$ docker exec -it mycontainer sh -c 'ps aux; df -h'
+
+# 6 — Is the disk full (the silent killer)
+$ df -h && df -i
+$ docker system df
+
+# 7 — Timeline of what happened
+$ docker events --since 30m
+# Everything the daemon did: starts, deaths, out-of-memory kills, health changes.
+# Great for lining up with when the alert fired.
+
+# 8 — Did someone deploy?
+$ docker inspect mycontainer --format '{{.Config.Image}}'
+# "Was anything changed" is the answer more often than you'd think.</div>
+
+<div class="found-p"><strong style="color:#38bdf8;">BEFORE YOU FIX ANYTHING, SAVE THE EVIDENCE</strong></div>
+<div class="found-pre">$ docker logs mycontainer > /tmp/incident.log
+$ docker inspect mycontainer > /tmp/incident.json
+$ docker commit mycontainer incident-snapshot
+# docker commit saves the container's exact filesystem as an image, so you
+# can investigate later, after you've restarted the service and fixed the customer.</div>
+<div class="found-p">Restarting destroys everything you need for the postmortem. Capture first.</div>
+
+<div class="found-key"><strong style="color:#22c55e;">SAY THIS</strong><br><br>"docker ps -a → docker logs → docker stats → docker inspect. Broad to narrow: what's running, what did it say, is it starved, why did it die."<br><br>"I capture evidence before I fix — logs, inspect output, and a docker commit snapshot — because restarting destroys the state I need for the postmortem."<br><br>"I don't run any prune commands during an incident. Fix first, clean up later once I know the cause."<br><br>"In real life I'd be looking at central logging and dashboards first. These are the commands for when I actually need to be on the machine."</div>
+
+<span class="qa-pill">ps -a → logs → stats → inspect</span><span class="qa-pill">capture evidence before fixing</span><span class="qa-pill">no prune mid-incident</span>
+</div></div></div>
 
   </div>
 
