@@ -753,16 +753,19 @@
 
 <div class="section-title">🖥️ Try It — Click Any Command Below to "Run" It</div>
 
-<div class="ld-term">
-  <div class="ld-term-bar">
-    <span class="ld-dot" style="background:#ff5f56"></span>
-    <span class="ld-dot" style="background:#ffbd2e"></span>
-    <span class="ld-dot" style="background:#27c93f"></span>
-    <span class="ld-term-title">devops@server: ~</span>
-  </div>
-  <div class="ld-term-body">
-    <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> <span id="ldCmd">click any command below</span></div>
-    <div class="pu-output" id="ldOutput"><span class="dim">↳ output shows up here the moment you click something</span></div>
+<div style="font-size:11px;color:#475569;margin:-2px 0 12px;">Every command below runs <strong style="color:#94a3b8;">3 separate times</strong>, in 3 different real situations — each in its own box, so you see the different outputs side by side instead of guessing what changes.</div>
+<div id="ldRunsArea">
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">devops@server: ~</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> click any command below</div>
+      <div class="pu-output"><span class="dim">↳ output shows up here the moment you click something</span></div>
+    </div>
   </div>
 </div>
 <div class="ld-info" id="ldInfo">
@@ -21035,17 +21038,50 @@ Linux web01 5.15.0-91-generic x86_64 GNU/Linux</div><div class="found-p">A full 
     tmuxScreen: { syntax:`tmux new -s &lt;name&gt;`, cmd:`tmux new -s deploy`, output:`<span class="dim">(opens a persistent terminal session named "deploy" that keeps running even if your SSH connection drops)</span>`, does:`Creates a terminal session that survives disconnects — reattach later from anywhere with "tmux attach -t deploy".`, where:`Running a long deploy or database migration over SSH without it dying the moment your laptop sleeps or the wifi drops.` , breakdown:[{term:`tmux`, desc:`terminal multiplexer — a session that survives disconnects`},{term:`new`, desc:`create a new session`},{term:`-s &lt;name&gt;`, desc:`give it a name so you can reattach later`}], whyUseful:`<div class="found-p">You're running a long database migration over SSH, and your laptop is about to sleep or the wifi might drop.</div><div class="found-pre">$ tmux new -s deploy
 (opens a persistent terminal session that keeps running even if your SSH connection drops)</div><div class="found-p">Reattach later from anywhere with <span class="found-code">tmux attach -t deploy</span> — the migration never even noticed you left.</div>` }
   };
+  /* Renders one or more "runs" of a command, each as its own separate
+     black terminal box, with a short "how to read it" callout under
+     each one. Shared by any command-simulator tab that adopts the new
+     runs:[] shape — currently just Linux for DevOps. */
+  function renderCmdRuns(runs, containerEl) {
+    containerEl.innerHTML = runs.map((run, i) => {
+      const lines = run.cmd.split('\n');
+      const extra = lines.length > 1
+        ? lines.slice(1).map(l => '<span class="ld-prompt">devops@server:~$</span> ' + l).join('\n') + '\n'
+        : '';
+      const readingHtml = run.reading
+        ? `<div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.7;"><strong style="color:#38bdf8;">How to read it:</strong> ${run.reading}</div>`
+        : '';
+      return `<div class="ld-term" style="margin-bottom:8px;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">Run ${i + 1} of ${runs.length} — devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> ${lines[0]}</div>
+          <div class="pu-output">${extra}${run.output}</div>
+        </div>
+      </div>${readingHtml}`;
+    }).join('');
+  }
+
   function runLinuxCmd(key, btn) {
     const d = LINUX_CMDS[key];
     if (!d) return;
-    const lines = d.cmd.split('\n');
-    document.getElementById('ldCmd').textContent = lines[0];
-    let extra = '';
-    if (lines.length > 1) {
-      extra = lines.slice(1).map(l => '<span class="ld-prompt">devops@server:~$</span> ' + l).join('\n') + '\n';
+    const runsArea = document.getElementById('ldRunsArea');
+    if (d.runs && d.runs.length) {
+      renderCmdRuns(d.runs, runsArea);
+    } else {
+      // legacy shape — single cmd/output pair, not yet migrated to runs:[]
+      const lines = d.cmd.split('\n');
+      let extra = '';
+      if (lines.length > 1) {
+        extra = lines.slice(1).map(l => '<span class="ld-prompt">devops@server:~$</span> ' + l).join('\n') + '\n';
+      }
+      renderCmdRuns([{ cmd: lines[0], output: extra + d.output }], runsArea);
     }
-    document.getElementById('ldOutput').innerHTML = extra + d.output;
-    document.getElementById('ldSyntax').innerHTML = d.syntax || lines[0];
+    document.getElementById('ldSyntax').innerHTML = d.syntax || (d.runs ? d.runs[0].cmd.split('\n')[0] : d.cmd.split('\n')[0]);
     document.getElementById('ldDoes').innerHTML = d.does;
     document.getElementById('ldWhere').innerHTML = d.where;
     const bdList = document.getElementById('ldBreakdownList');
