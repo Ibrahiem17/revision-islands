@@ -22260,7 +22260,10 @@ $ git stash pop
             optimalPatterns: [/^pkill\s+(-15\s+)?\w+$/i, /^killall\s+\w+$/i]
           }
         ],
-        /* -------- PHASE 3: Core — Real Incident (read_the_room, diagnose -> fix) -------- */
+        /* -------- PHASE 3: Core — Real Incident (read_the_room, diagnose -> fix) --------
+           6 distinct incident scenarios, randomly picked each time a player reaches this
+           phase (reuses the same shuffle/reshuffle logic every other phase already uses —
+           no engine changes needed, this is pure content). */
         [
           {
             mode: 'read_the_room',
@@ -22279,6 +22282,119 @@ $ git stash pop
               prompt: 'Now find what\'s eating the space (or clear it):',
               acceptablePatterns: [/^du\s+-sh\s+\/\*\s*\|\s*sort\s+-rh(\s*\|\s*head)?$/i, /^find\s+\/\s+-size\s+\+\d+M$/i, /^journalctl\s+--vacuum-size=\d+M$/i],
               optimalPatterns: [/^du\s+-sh\s+\/var\/log\/\*\s*\|\s*sort\s+-rh(\s*\|\s*head)?$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The Golem\'s core flickers red-hot. <strong>Something is devouring memory. Diagnose it, then stop it — cleanly.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Check "available" memory, not just "used" — and see which process is named right below it.',
+            hintPartial: 'One process is using 78% of RAM by itself. That\'s your target.',
+            hintFull: 'Diagnosis: out of memory / a runaway process. Fix: kill 5233 (SIGTERM) — graceful, not kill -9.',
+            outputBlock: [
+              '$ free -h',
+              '              total   used   free  shared  buff/cache  available',
+              'Mem:           7.8G   7.2G   120M    45M       480M        180M',
+              'Swap:          2.0G   1.8G   200M',
+              '',
+              '$ ps aux --sort=-%mem | head -3',
+              'USER    PID  %CPU %MEM  COMMAND',
+              'devops  5233  0.4  78.2  node leaky-worker.js',
+              'devops  1102  0.1   2.1  nginx'
+            ],
+            acceptableDiagnosesPatterns: [/out\s*of\s*memory/i, /memory\s*(is\s*)?(almost\s*)?full/i, /low\s*(on\s*)?memory/i, /ram\s*(is\s*)?full/i, /5233.*(memory|mem|hogging|eating|leak)/i, /(memory\s*)?leak/i],
+            followUpFix: {
+              prompt: 'Now gracefully stop the runaway process (PID 5233):',
+              acceptablePatterns: [/^kill\s+-9\s+5233$/i, /^pkill\s+(-9\s+)?(-f\s+)?(node|leaky-worker)$/i],
+              optimalPatterns: [/^kill\s+(-15\s+)?5233$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The Golem slams a fist down. <strong>A service refuses to start. Diagnose it, then find the real blocker.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Read the journalctl line carefully — it names the exact problem, in the exact language a Node/Express app would use.',
+            hintPartial: '"EADDRINUSE" means an address (host+port) is already claimed by something else.',
+            hintFull: 'Diagnosis: port 3000 is already in use. Fix: lsof -i :3000 to find exactly what\'s squatting on it.',
+            outputBlock: [
+              '$ sudo systemctl start myapp',
+              'Job for myapp.service failed because the control process exited with error code.',
+              '',
+              '$ journalctl -u myapp -n 5 --no-pager',
+              'myapp[8821]: Error: listen EADDRINUSE: address already in use :::3000'
+            ],
+            acceptableDiagnosesPatterns: [/port\s*(is\s*)?(already\s*)?(in\s*use|bound|taken|occupied)/i, /address\s*(is\s*)?already\s*in\s*use/i, /eaddrinuse/i, /something\s*else.*(port|3000)/i],
+            followUpFix: {
+              prompt: 'Find exactly what\'s already using port 3000:',
+              acceptablePatterns: [/^(sudo\s+)?netstat\s+-tulpn\s*\|\s*grep\s+3000$/i, /^(sudo\s+)?ss\s+-tulpn\s*\|\s*grep\s+3000$/i],
+              optimalPatterns: [/^(sudo\s+)?lsof\s+-i\s*:3000$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'Steam vents from a crack in the Golem\'s core. <strong>Something on disk has grown out of control. Diagnose it, then deal with it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The df output narrows it to one mount point — the du output right below it narrows it further, to one file.',
+            hintPartial: 'One single log file is 14GB. That\'s the entire problem.',
+            hintFull: 'Diagnosis: debug.log has grown huge and filled /var. Fix: truncate -s 0 the file — never rm it while something may still be writing to it.',
+            outputBlock: [
+              '$ df -h /var',
+              'Filesystem      Size  Used Avail Use% Mounted on',
+              '/dev/sda2        20G   19G  512M  98% /var',
+              '',
+              '$ du -sh /var/log/* | sort -rh | head -3',
+              '14G    /var/log/app/debug.log',
+              '200M   /var/log/nginx',
+              '50M    /var/log/syslog'
+            ],
+            acceptableDiagnosesPatterns: [/debug\.log.*(huge|large|big|out\s*of\s*control)/i, /log\s*file\s*(is\s*)?(too\s*)?(large|big|huge)/i, /\/var\s*(is\s*)?(almost\s*)?full/i, /disk\s*(is\s*)?(almost\s*)?full/i],
+            followUpFix: {
+              prompt: 'Safely empty the huge log file, without breaking the process still writing to it:',
+              acceptablePatterns: [/^>\s*\/var\/log\/app\/debug\.log$/i, /^cat\s+\/dev\/null\s*>\s*\/var\/log\/app\/debug\.log$/i],
+              optimalPatterns: [/^truncate\s+-s\s*0\s+\/var\/log\/app\/debug\.log$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'Cracks spread across the Golem\'s chest, but nothing seems to actually respond. <strong>Diagnose the stuck processes, then clean them up properly.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'That tag next to STAT — Z — is a specific, well-known process state, not a typo.',
+            hintPartial: '"<defunct>" processes are zombies. You cannot kill a zombie directly — something else needs fixing.',
+            hintFull: 'Diagnosis: zombie/defunct processes. Fix: you can\'t kill a zombie — restart the parent (PID 4821) so it reaps them properly.',
+            outputBlock: [
+              '$ ps aux | grep defunct',
+              'devops   9001  0.0  0.0  0  0  ?  Z  10:02  0:00  [worker] <defunct>',
+              'devops   9002  0.0  0.0  0  0  ?  Z  10:02  0:00  [worker] <defunct>',
+              '',
+              '$ ps -o ppid= -p 9001',
+              '  4821'
+            ],
+            acceptableDiagnosesPatterns: [/zombie/i, /defunct/i, /orphaned?\s*process/i],
+            followUpFix: {
+              prompt: 'You can\'t kill a zombie directly — restart the parent (PID 4821) so it reaps them:',
+              acceptablePatterns: [/^kill\s+-9\s+4821$/i],
+              optimalPatterns: [/^kill\s+(-15\s+)?4821$/i, /^kill\s+-hup\s+4821$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The Golem points a stony finger at a script that refuses to run. <strong>Diagnose why, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The error isn\'t about the script\'s logic at all — check what ls -l says right below it.',
+            hintPartial: 'Compare the permission bits to any other executable script you\'ve seen — one bit that should be set, isn\'t.',
+            hintFull: 'Diagnosis: deploy.sh isn\'t executable. Fix: chmod +x deploy.sh.',
+            outputBlock: [
+              '$ ./deploy.sh',
+              'bash: ./deploy.sh: Permission denied',
+              '',
+              '$ ls -l deploy.sh',
+              '-rw-r--r-- 1 devops devops 812 Aug 27 deploy.sh'
+            ],
+            acceptableDiagnosesPatterns: [/(not|no|missing)\s*(an?\s*)?execut(able|e\s*permission)/i, /permission\s*denied/i, /not\s*chmod(ded)?/i],
+            followUpFix: {
+              prompt: 'Give it execute permission and it\'ll run:',
+              acceptablePatterns: [/^chmod\s+7[45]4\s+deploy\.sh$/i],
+              optimalPatterns: [/^chmod\s+(\+x|u\+x)\s+deploy\.sh$/i]
             }
           }
         ]
@@ -22316,6 +22432,7 @@ $ git stash pop
     return {
       bossId: bossId,
       boss: BOSSES[bossId],
+      locked: false, // true while a submitted answer is resolving, to block double-submits
       phaseIdx: 0,
       heroHpMax: 100,
       heroHp: 100,
@@ -22482,6 +22599,7 @@ $ git stash pop
      RENDER QUESTION BY MODE
      ============================================================ */
   function renderQuestion(q) {
+    state.locked = false; // a fresh question is interactable again
     $('dgcPrompt').innerHTML = q.prompt;
     var area = $('dgcModeArea');
     area.innerHTML = '';
@@ -22679,6 +22797,13 @@ $ git stash pop
      RESOLVE ANSWER → APPLY DAMAGE, COMBO, COINS, FX
      ============================================================ */
   function resolveAnswer(tier, isTimeout) {
+    // Guards against a double-submit during the ~1-2s window between a
+    // question resolving and the next question/victory/defeat screen
+    // actually appearing — without this, a fast click (or a timeout firing
+    // right as the player also clicks submit) could award coins/XP twice
+    // for the same question, or double-fire the victory sequence.
+    if (state.locked) return;
+    state.locked = true;
     clearInterval(state.timer);
     var q = state.currentQuestion;
     var hintFullUsed = state.hintFullUsedThisQ;
@@ -22765,6 +22890,7 @@ $ git stash pop
   }
 
   function startSpecialAttack() {
+    state.locked = false; // fresh interactable moment, same as renderQuestion()
     var sa = state.boss.specialAttack;
     $('dgcPrompt').innerHTML = sa.prompt;
     var fakeQ = { mode: 'build_the_pipeline', steps: sa.steps };
@@ -22809,6 +22935,8 @@ $ git stash pop
     }
 
     function resolveSpecialAttack() {
+      if (state.locked) return; // same double-submit guard as resolveAnswer()
+      state.locked = true;
       clearInterval(state.timer);
       var tier = validatePipeline(sa, state.seqChosen);
       $('dgcHintNudge').disabled = false;
