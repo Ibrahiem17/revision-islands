@@ -21773,6 +21773,1309 @@ $ git stash pop
 
 <!-- GAME — placeholder tab, intentionally empty for now -->
 <div class="panel" id="tab-game">
+<style>
+  /* ============================================================
+     DevOps Terminal Combat — all styles prefixed .dgc- to guarantee
+     zero collision with any existing class on the page.
+     ============================================================ */
+  .dgc-root { font-family:'JetBrains Mono',monospace; color:#e2e8f0; position:relative; min-height:520px; }
+  .dgc-root * { box-sizing:border-box; }
+  .dgc-screen { display:block; }
+  .dgc-screen[hidden] { display:none; }
+
+  /* ---------- START SCREEN ---------- */
+  .dgc-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; text-align:center; color:#38bdf8; text-shadow:0 0 18px rgba(56,189,248,0.5); margin-bottom:4px; letter-spacing:.5px; }
+  .dgc-subtitle { text-align:center; color:#94a3b8; font-size:12px; margin-bottom:22px; }
+  .dgc-hero-preview { display:flex; flex-direction:column; align-items:center; margin-bottom:18px; }
+  .dgc-hero-sprite { font-size:64px; filter:drop-shadow(0 0 14px rgba(56,189,248,0.45)); animation:dgc-idle-bob 2.4s ease-in-out infinite; }
+  .dgc-hero-name { margin-top:6px; font-family:'Syne',sans-serif; font-weight:700; font-size:13px; color:#e2e8f0; }
+  .dgc-stats-row { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
+  .dgc-stat-chip { background:rgba(255,255,255,0.03); border:1px solid #1e293b; border-radius:20px; padding:6px 14px; font-size:11.5px; color:#e2e8f0; }
+  .dgc-boss-select { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
+  .dgc-boss-card { width:190px; background:radial-gradient(circle at 50% 0%,rgba(63,185,80,0.08),rgba(0,0,0,0.3)); border:1px solid #1e293b; border-radius:10px; padding:18px 14px; text-align:center; transition:transform .18s, border-color .18s; }
+  .dgc-boss-card:hover { transform:translateY(-3px); border-color:#3fb950; }
+  .dgc-boss-card-icon { font-size:46px; margin-bottom:8px; filter:drop-shadow(0 0 10px rgba(63,185,80,0.5)); }
+  .dgc-boss-card-name { font-family:'Syne',sans-serif; font-weight:700; font-size:13px; color:#e2e8f0; }
+  .dgc-boss-card-topic { font-size:10px; color:#64748b; margin:2px 0 8px; text-transform:uppercase; letter-spacing:1px; }
+  .dgc-boss-card-status { font-size:10px; color:#fbbf24; margin-bottom:10px; }
+  .dgc-boss-card-status.dgc-cleared { color:#3fb950; }
+  .dgc-more-soon { text-align:center; color:#475569; font-size:11px; margin-top:22px; }
+
+  .dgc-btn { font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; color:#e2e8f0; background:rgba(255,255,255,0.04); border:1px solid #334155; border-radius:6px; padding:9px 16px; cursor:pointer; transition:all .15s; }
+  .dgc-btn:hover { border-color:#38bdf8; color:#38bdf8; background:rgba(56,189,248,0.08); }
+  .dgc-btn-fight { background:rgba(63,185,80,0.12); border-color:rgba(63,185,80,0.4); color:#3fb950; width:100%; }
+  .dgc-btn-fight:hover { background:rgba(63,185,80,0.22); border-color:#3fb950; color:#7ee2a8; }
+  .dgc-btn-primary { background:rgba(56,189,248,0.14); border-color:#38bdf8; color:#38bdf8; }
+  .dgc-btn-quit { padding:5px 10px; font-size:10px; }
+
+  /* ---------- COMBAT SCREEN ---------- */
+  .dgc-topbar { display:flex; align-items:center; gap:14px; margin-bottom:10px; padding:8px 12px; background:rgba(255,255,255,0.02); border:1px solid #1e293b; border-radius:6px; }
+  .dgc-topbar-item { font-size:12px; color:#fbbf24; font-weight:700; }
+  .dgc-combo { margin-left:auto; margin-right:10px; font-size:12px; font-weight:800; color:#a78bfa; padding:4px 10px; border:1px solid rgba(167,139,250,0.35); border-radius:20px; background:rgba(167,139,250,0.06); transition:transform .15s; }
+  .dgc-combo.dgc-combo-pulse { animation:dgc-combo-pulse .35s ease; }
+  .dgc-combo.dgc-combo-break { animation:dgc-combo-break .3s ease; }
+
+  .dgc-arena { position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; background:#05070c; border:1px solid #1e293b; border-radius:10px; padding:22px 18px 16px; margin-bottom:10px; overflow:hidden; min-height:230px; }
+  .dgc-ambient-bg { position:absolute; inset:0; background:
+      repeating-linear-gradient(180deg, rgba(63,185,80,0.035) 0px, rgba(63,185,80,0.035) 1px, transparent 1px, transparent 3px),
+      radial-gradient(circle at 20% 20%, rgba(56,189,248,0.06), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(63,185,80,0.05), transparent 55%);
+    animation:dgc-ambient-drift 9s linear infinite; pointer-events:none; }
+  .dgc-fighter { position:relative; flex:1; text-align:center; z-index:1; }
+  .dgc-fighter-name { font-size:11.5px; font-weight:700; color:#e2e8f0; margin-bottom:6px; }
+  .dgc-fighter-lvl { color:#64748b; font-weight:400; font-size:10px; }
+  .dgc-hpbar-track { height:12px; background:#111826; border:1px solid #1e293b; border-radius:6px; overflow:hidden; margin-bottom:3px; }
+  .dgc-hpbar-fill { height:100%; width:100%; border-radius:6px; transition:width .6s cubic-bezier(.22,.9,.35,1); }
+  .dgc-hpbar-hero { background:linear-gradient(90deg,#22c55e,#3fb950); box-shadow:0 0 10px rgba(63,185,80,0.5); }
+  .dgc-hpbar-boss { background:linear-gradient(90deg,#f85149,#ef4444); box-shadow:0 0 10px rgba(248,81,73,0.5); }
+  .dgc-hpbar-fill.dgc-hp-low { background:linear-gradient(90deg,#dc2626,#7f1d1d); animation:dgc-hp-low-pulse 1s ease-in-out infinite; }
+  .dgc-hp-text { font-size:9.5px; color:#64748b; margin-bottom:10px; }
+  .dgc-sprite-wrap { position:relative; height:88px; display:flex; align-items:center; justify-content:center; }
+  .dgc-sprite { font-size:56px; transition:transform .12s, filter .12s; animation:dgc-idle-bob 2.2s ease-in-out infinite; }
+  .dgc-boss-side .dgc-sprite { animation-delay:.4s; }
+  .dgc-boss-glyphs { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:8.5px; color:rgba(63,185,80,0.28); line-height:1.3; overflow:hidden; letter-spacing:1px; white-space:pre-wrap; padding:4px; text-align:center; pointer-events:none; }
+  .dgc-vs { align-self:center; font-family:'Syne',sans-serif; font-weight:800; font-size:15px; color:#334155; padding-top:60px; }
+  .dgc-phase-tag { margin-top:8px; font-size:9.5px; color:#a78bfa; background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.25); border-radius:12px; padding:3px 10px; display:inline-block; }
+
+  .dgc-fx-layer { position:absolute; inset:0; pointer-events:none; z-index:5; overflow:visible; }
+  .dgc-dmg-num { position:absolute; font-family:'Syne',sans-serif; font-weight:800; white-space:nowrap; animation:dgc-floatup 1s ease-out forwards; text-shadow:0 0 8px currentColor; }
+  .dgc-dmg-num.dgc-dmg-hero { color:#f85149; left:22%; top:40%; font-size:20px; }
+  .dgc-dmg-num.dgc-dmg-boss { color:#e2e8f0; right:22%; top:40%; font-size:20px; }
+  .dgc-dmg-num.dgc-dmg-crit { color:#c084fc; font-size:30px; }
+  .dgc-crit-stamp { position:absolute; left:50%; top:36%; transform:translate(-50%,-50%) scale(0.4) rotate(-8deg); font-family:'Syne',sans-serif; font-weight:900; font-size:26px; color:#c084fc; text-shadow:0 0 18px rgba(192,132,252,0.9); letter-spacing:2px; animation:dgc-crit-pop .7s cubic-bezier(.2,1.4,.4,1) forwards; z-index:6; }
+  .dgc-coin { position:absolute; font-size:16px; animation:dgc-coinfly 0.9s ease-in forwards; }
+
+  .dgc-arena.dgc-shake-sm { animation:dgc-shake-sm .3s; }
+  .dgc-arena.dgc-shake-md { animation:dgc-shake-md .4s; }
+  .dgc-arena.dgc-shake-lg { animation:dgc-shake-lg .5s; }
+
+  .dgc-sprite.dgc-hit-flash { animation:dgc-hitflash .35s ease; }
+  .dgc-sprite.dgc-knockdown { animation:dgc-knockdown .6s ease forwards; }
+  .dgc-sprite.dgc-dissolve { animation:dgc-dissolve 1s ease forwards; }
+
+  .dgc-sudo { position:absolute; right:-6px; top:0; display:flex; flex-direction:column; align-items:center; z-index:4; }
+  .dgc-sudo-cursor { font-size:20px; color:#3fb950; text-shadow:0 0 10px rgba(63,185,80,0.7); animation:dgc-blink 1s step-end infinite, dgc-idle-bob 2.6s ease-in-out infinite; }
+  .dgc-sudo.dgc-sudo-cheer .dgc-sudo-cursor { animation:dgc-sudo-cheer .5s ease; color:#fbbf24; }
+  .dgc-sudo.dgc-sudo-wince .dgc-sudo-cursor { animation:dgc-sudo-wince .4s ease; color:#f85149; }
+  .dgc-sudo.dgc-sudo-hide .dgc-sudo-cursor { opacity:0.15; transform:translateY(6px); }
+  .dgc-sudo-bubble { margin-top:2px; font-size:9px; color:#94a3b8; background:rgba(0,0,0,0.55); border:1px solid #1e293b; border-radius:8px; padding:2px 7px; opacity:0; transition:opacity .2s; white-space:nowrap; }
+  .dgc-sudo-bubble.dgc-show { opacity:1; }
+
+  .dgc-timerbar-track { height:5px; background:#111826; border-radius:3px; overflow:hidden; margin-bottom:12px; }
+  .dgc-timerbar-fill { height:100%; width:100%; background:linear-gradient(90deg,#38bdf8,#3fb950); transition:width 1s linear, background-color .3s; }
+  .dgc-timerbar-fill.dgc-timer-warn { background:linear-gradient(90deg,#f59e0b,#f97316); }
+  .dgc-timerbar-fill.dgc-timer-danger { background:linear-gradient(90deg,#ef4444,#dc2626); }
+
+  .dgc-question-panel { background:rgba(255,255,255,0.02); border:1px solid #1e293b; border-radius:8px; padding:16px 18px; }
+  .dgc-prompt { font-size:12.5px; color:#e2e8f0; line-height:1.7; margin-bottom:12px; }
+  .dgc-prompt strong { color:#fbbf24; }
+  .dgc-mode-area { margin-bottom:12px; }
+
+  /* terminal input widget */
+  .dgc-terminal { background:#0a0e14; border:1px solid #1e293b; border-radius:6px; padding:10px 12px; display:flex; align-items:center; gap:6px; box-shadow:0 0 0 1px rgba(63,185,80,0.06), 0 0 22px rgba(63,185,80,0.08) inset; }
+  .dgc-terminal:focus-within { border-color:#3fb950; box-shadow:0 0 0 1px rgba(63,185,80,0.3), 0 0 22px rgba(63,185,80,0.18) inset; }
+  .dgc-terminal-prompt { color:#3fb950; font-size:12.5px; white-space:nowrap; }
+  .dgc-terminal-input { flex:1; background:transparent; border:none; outline:none; color:#e2e8f0; font-family:'JetBrains Mono',monospace; font-size:12.5px; caret-color:#3fb950; }
+  .dgc-terminal-submit { flex-shrink:0; }
+
+  .dgc-codeblock, .dgc-outputblock { background:#0a0e14; border:1px solid #1e293b; border-radius:6px; padding:10px 12px; font-size:11.5px; line-height:1.8; overflow-x:auto; margin-bottom:10px; }
+  .dgc-code-line { display:block; padding:1px 6px; border-radius:3px; cursor:pointer; white-space:pre; color:#94a3b8; }
+  .dgc-code-line:hover { background:rgba(56,189,248,0.08); color:#e2e8f0; }
+  .dgc-code-line.dgc-line-selected { background:rgba(251,191,36,0.15); color:#fbbf24; }
+  .dgc-outputblock pre { margin:0; white-space:pre-wrap; color:#94a3b8; }
+
+  .dgc-option-cards { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .dgc-option-card { flex:1; min-width:150px; background:rgba(255,255,255,0.02); border:1px solid #1e293b; border-radius:6px; padding:10px 12px; font-size:11.5px; color:#94a3b8; cursor:pointer; transition:all .15s; }
+  .dgc-option-card:hover { border-color:#38bdf8; color:#e2e8f0; }
+  .dgc-option-card.dgc-option-selected { border-color:#a78bfa; background:rgba(167,139,250,0.1); color:#e2e8f0; }
+
+  .dgc-seq-pool, .dgc-seq-chosen { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; min-height:34px; }
+  .dgc-seq-chip { background:rgba(255,255,255,0.03); border:1px solid #334155; border-radius:5px; padding:6px 10px; font-size:11px; color:#e2e8f0; cursor:pointer; }
+  .dgc-seq-chip:hover { border-color:#38bdf8; }
+  .dgc-seq-chosen { border:1px dashed #1e293b; border-radius:6px; padding:6px; }
+  .dgc-seq-chosen .dgc-seq-chip { background:rgba(167,139,250,0.12); border-color:rgba(167,139,250,0.4); cursor:default; }
+  .dgc-seq-num { color:#a78bfa; font-weight:700; margin-right:5px; }
+
+  .dgc-hint-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .dgc-hint-btn { font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#94a3b8; background:rgba(255,255,255,0.02); border:1px solid #1e293b; border-radius:5px; padding:6px 10px; cursor:pointer; }
+  .dgc-hint-btn:hover { border-color:#fbbf24; color:#fbbf24; }
+  .dgc-hint-btn:disabled { opacity:.35; cursor:not-allowed; }
+  .dgc-hint-cost { color:#fbbf24; margin-left:3px; }
+  .dgc-hint-display { margin-top:10px; font-size:11px; color:#94a3b8; background:rgba(251,191,36,0.05); border:1px solid rgba(251,191,36,0.2); border-left:3px solid #fbbf24; border-radius:4px; padding:8px 12px; }
+
+  .dgc-recon-overlay { position:absolute; inset:0; background:rgba(3,5,10,0.96); border-radius:10px; z-index:8; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; }
+  .dgc-recon-title { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#38bdf8; margin-bottom:4px; text-shadow:0 0 14px rgba(56,189,248,0.5); }
+  .dgc-recon-sub { font-size:10.5px; color:#64748b; margin-bottom:14px; }
+  .dgc-recon-progress { font-size:10px; color:#a78bfa; margin-bottom:10px; }
+
+  /* ---------- VICTORY / DEFEAT ---------- */
+  .dgc-screen-victory, .dgc-screen-defeat { text-align:center; padding:40px 20px; position:relative; }
+  .dgc-victory-banner { font-family:'Syne',sans-serif; font-weight:900; font-size:24px; color:#fbbf24; text-shadow:0 0 22px rgba(251,191,36,0.6); animation:dgc-crit-pop .6s cubic-bezier(.2,1.4,.4,1); margin-bottom:6px; }
+  .dgc-victory-boss-name { color:#94a3b8; font-size:12px; margin-bottom:18px; }
+  .dgc-victory-rewards { display:flex; justify-content:center; gap:22px; margin-bottom:24px; font-size:13px; color:#e2e8f0; flex-wrap:wrap; }
+  .dgc-victory-rewards div { animation:dgc-reward-in .5s ease both; }
+  .dgc-victory-rewards div:nth-child(2) { animation-delay:.12s; }
+  .dgc-victory-rewards div:nth-child(3) { animation-delay:.24s; }
+
+  .dgc-defeat-vignette { position:absolute; inset:0; box-shadow:inset 0 0 120px 40px rgba(220,38,38,0.55); animation:dgc-vignette-flash .8s ease; border-radius:10px; pointer-events:none; }
+  .dgc-defeat-banner { font-family:'Syne',sans-serif; font-weight:900; font-size:22px; color:#f85149; margin-bottom:6px; text-shadow:0 0 18px rgba(248,81,73,0.5); }
+  .dgc-defeat-sub { color:#64748b; font-size:11.5px; margin-bottom:22px; }
+  .dgc-screen-defeat .dgc-btn { margin:0 5px; }
+
+  /* ---------- keyframes ---------- */
+  @keyframes dgc-idle-bob { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+  @keyframes dgc-ambient-drift { 0%{ background-position:0 0, 0 0, 0 0; } 100%{ background-position:0 60px, 0 0, 0 0; } }
+  @keyframes dgc-combo-pulse { 0%{ transform:scale(1); } 40%{ transform:scale(1.35); } 100%{ transform:scale(1); } }
+  @keyframes dgc-combo-break { 0%{ transform:scale(1); opacity:1; } 50%{ transform:scale(0.8); opacity:.4; } 100%{ transform:scale(1); opacity:1; } }
+  @keyframes dgc-hp-low-pulse { 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.5); } }
+  @keyframes dgc-shake-sm { 0%,100%{ transform:translate(0,0); } 25%{ transform:translate(-2px,1px); } 75%{ transform:translate(2px,-1px); } }
+  @keyframes dgc-shake-md { 0%,100%{ transform:translate(0,0); } 20%{ transform:translate(-5px,2px); } 40%{ transform:translate(5px,-2px); } 60%{ transform:translate(-4px,2px); } 80%{ transform:translate(4px,-1px); } }
+  @keyframes dgc-shake-lg { 0%,100%{ transform:translate(0,0); } 15%{ transform:translate(-9px,4px); } 30%{ transform:translate(8px,-4px); } 45%{ transform:translate(-7px,3px); } 60%{ transform:translate(7px,-3px); } 75%{ transform:translate(-5px,2px); } 90%{ transform:translate(4px,-1px); } }
+  @keyframes dgc-hitflash { 0%{ filter:brightness(1); } 30%{ filter:brightness(3) saturate(0) drop-shadow(0 0 14px #fff); } 100%{ filter:brightness(1); } }
+  @keyframes dgc-floatup { 0%{ transform:translateY(0) scale(0.8); opacity:0; } 15%{ opacity:1; transform:translateY(-6px) scale(1.1); } 100%{ transform:translateY(-52px) scale(1); opacity:0; } }
+  @keyframes dgc-crit-pop { 0%{ transform:translate(-50%,-50%) scale(0.3) rotate(-8deg); opacity:0; } 40%{ transform:translate(-50%,-50%) scale(1.25) rotate(-4deg); opacity:1; } 70%{ transform:translate(-50%,-50%) scale(1) rotate(0deg); opacity:1; } 100%{ transform:translate(-50%,-50%) scale(1) rotate(0deg); opacity:0; } }
+  @keyframes dgc-coinfly { 0%{ transform:translate(0,0) scale(1); opacity:1; } 100%{ transform:translate(var(--dgc-cx,60px),var(--dgc-cy,-90px)) scale(0.4); opacity:0; } }
+  @keyframes dgc-knockdown { 0%{ transform:rotate(0) translateY(0); opacity:1; } 100%{ transform:rotate(85deg) translateY(14px); opacity:.5; } }
+  @keyframes dgc-dissolve { 0%{ transform:scale(1) rotate(0); opacity:1; filter:blur(0); } 100%{ transform:scale(0.3) rotate(25deg); opacity:0; filter:blur(6px); } }
+  @keyframes dgc-blink { 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+  @keyframes dgc-sudo-cheer { 0%{ transform:translateY(0) scale(1); } 40%{ transform:translateY(-8px) scale(1.3); } 100%{ transform:translateY(0) scale(1); } }
+  @keyframes dgc-sudo-wince { 0%{ transform:translateX(0); } 30%{ transform:translateX(-4px) rotate(-8deg); } 60%{ transform:translateX(4px) rotate(8deg); } 100%{ transform:translateX(0); } }
+  @keyframes dgc-reward-in { 0%{ transform:translateY(10px); opacity:0; } 100%{ transform:translateY(0); opacity:1; } }
+
+  @media (max-width:640px) {
+    .dgc-arena { flex-direction:column; align-items:stretch; }
+    .dgc-vs { padding-top:0; }
+    .dgc-boss-select { flex-direction:column; align-items:center; }
+  }
+</style>
+
+<div class="dgc-root">
+
+  <!-- ============ START SCREEN ============ -->
+  <div class="dgc-screen dgc-screen-start" id="dgcStartScreen">
+    <div class="dgc-title">⚔️ DevOps Terminal Combat</div>
+    <div class="dgc-subtitle">Level up your career. Fight topic bosses. Type real commands.</div>
+    <div class="dgc-hero-preview">
+      <div class="dgc-hero-sprite">🧑‍💻</div>
+      <div class="dgc-hero-name">Junior Dev</div>
+    </div>
+    <div class="dgc-stats-row">
+      <div class="dgc-stat-chip">🪙 <span id="dgcCoinsDisplay">0</span> coins</div>
+      <div class="dgc-stat-chip">⭐ <span id="dgcXpDisplay">0</span> XP</div>
+      <div class="dgc-stat-chip">🔥 Best combo x<span id="dgcBestComboDisplay">1</span></div>
+      <div class="dgc-stat-chip">🏆 <span id="dgcClearedCountDisplay">0</span> bosses cleared</div>
+    </div>
+    <div class="dgc-boss-select">
+      <div class="dgc-boss-card">
+        <div class="dgc-boss-card-icon">🗿</div>
+        <div class="dgc-boss-card-name">The Terminal Golem</div>
+        <div class="dgc-boss-card-topic">Linux</div>
+        <div class="dgc-boss-card-status" id="dgcBossStatusTerminalGolem">Not Cleared</div>
+        <button class="dgc-btn dgc-btn-fight" id="dgcFightBtn">⚔️ Fight</button>
+      </div>
+    </div>
+    <div class="dgc-more-soon">More bosses (Docker, Git, Kubernetes, CI/CD...) coming in a future update.</div>
+  </div>
+
+  <!-- ============ COMBAT SCREEN ============ -->
+  <div class="dgc-screen dgc-screen-combat" id="dgcCombatScreen" hidden>
+    <div class="dgc-topbar">
+      <div class="dgc-topbar-item">🪙 <span id="dgcCoinsCombat">0</span></div>
+      <div class="dgc-topbar-item">⭐ <span id="dgcXpCombat">0</span></div>
+      <div class="dgc-combo" id="dgcCombo">Combo x1</div>
+      <button class="dgc-btn dgc-btn-quit" id="dgcQuitBtn">✕ Retreat</button>
+    </div>
+
+    <div class="dgc-arena" id="dgcArena">
+      <div class="dgc-ambient-bg"></div>
+
+      <div class="dgc-fighter dgc-hero-side">
+        <div class="dgc-fighter-name">Junior Dev</div>
+        <div class="dgc-hpbar-track"><div class="dgc-hpbar-fill dgc-hpbar-hero" id="dgcHeroHpFill"></div></div>
+        <div class="dgc-hp-text"><span id="dgcHeroHpText">100/100</span></div>
+        <div class="dgc-sprite-wrap">
+          <div class="dgc-sprite" id="dgcHeroSprite">🧑‍💻</div>
+        </div>
+        <div class="dgc-sudo" id="dgcSudo">
+          <div class="dgc-sudo-cursor">▍</div>
+          <div class="dgc-sudo-bubble" id="dgcSudoBubble"></div>
+        </div>
+      </div>
+
+      <div class="dgc-vs">VS</div>
+
+      <div class="dgc-fighter dgc-boss-side">
+        <div class="dgc-fighter-name" id="dgcBossName">The Terminal Golem</div>
+        <div class="dgc-hpbar-track"><div class="dgc-hpbar-fill dgc-hpbar-boss" id="dgcBossHpFill"></div></div>
+        <div class="dgc-hp-text"><span id="dgcBossHpText">100/100</span></div>
+        <div class="dgc-sprite-wrap">
+          <div class="dgc-boss-glyphs">sudo&#10;chmod&#10;grep -rn&#10;#!/bin/sh&#10;0x1F&#10;rm -rf</div>
+          <div class="dgc-sprite" id="dgcBossSprite">🗿</div>
+        </div>
+        <div class="dgc-phase-tag" id="dgcPhaseTag">Phase 1/3 — Arms</div>
+      </div>
+
+      <div class="dgc-fx-layer" id="dgcFxLayer"></div>
+      <div class="dgc-recon-overlay" id="dgcReconOverlay" hidden></div>
+    </div>
+
+    <div class="dgc-timerbar-track"><div class="dgc-timerbar-fill" id="dgcTimerFill"></div></div>
+
+    <div class="dgc-question-panel" id="dgcQuestionPanel">
+      <div class="dgc-prompt" id="dgcPrompt"></div>
+      <div class="dgc-mode-area" id="dgcModeArea"></div>
+      <div class="dgc-hint-row">
+        <button class="dgc-hint-btn" id="dgcHintNudge">💡 Nudge <span class="dgc-hint-cost">5🪙</span></button>
+        <button class="dgc-hint-btn" id="dgcHintPartial">🧩 Partial <span class="dgc-hint-cost">15🪙</span></button>
+        <button class="dgc-hint-btn" id="dgcHintFull">📖 Full reveal <span class="dgc-hint-cost">30🪙</span></button>
+      </div>
+      <div class="dgc-hint-display" id="dgcHintDisplay" hidden></div>
+    </div>
+  </div>
+
+  <!-- ============ VICTORY SCREEN ============ -->
+  <div class="dgc-screen dgc-screen-victory" id="dgcVictoryScreen" hidden>
+    <div class="dgc-victory-banner">🏆 BOSS DEFEATED!</div>
+    <div class="dgc-victory-boss-name" id="dgcVictoryBossName"></div>
+    <div class="dgc-victory-rewards">
+      <div>🪙 +<span id="dgcVictoryCoins">0</span> coins earned</div>
+      <div>⭐ +<span id="dgcVictoryXp">0</span> XP earned</div>
+      <div>🔥 Best combo: x<span id="dgcVictoryCombo">1</span></div>
+    </div>
+    <button class="dgc-btn dgc-btn-primary" id="dgcVictoryContinueBtn">Continue</button>
+  </div>
+
+  <!-- ============ DEFEAT SCREEN ============ -->
+  <div class="dgc-screen dgc-screen-defeat" id="dgcDefeatScreen" hidden>
+    <div class="dgc-defeat-vignette"></div>
+    <div class="dgc-defeat-banner">💀 You Went Down</div>
+    <div class="dgc-defeat-sub" id="dgcDefeatSub">The golem's glyphs blur your vision for a moment...</div>
+    <button class="dgc-btn dgc-btn-primary" id="dgcRetryBtn">🔁 Retry This Phase</button>
+    <button class="dgc-btn" id="dgcDefeatQuitBtn">Return to Start</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+     PERSISTENCE — namespaced localStorage keys (dgc_*) so this
+     never collides with anything else this page might store.
+     ============================================================ */
+  var STORE_KEY = 'dgc_save_v1';
+  function loadSave() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) throw 0;
+      var s = JSON.parse(raw);
+      return {
+        coins: s.coins || 0,
+        xp: s.xp || 0,
+        bossesDefeated: Array.isArray(s.bossesDefeated) ? s.bossesDefeated : [],
+        bestCombo: s.bestCombo || 1,
+        highScore: s.highScore || 0
+      };
+    } catch (e) {
+      return { coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0 };
+    }
+  }
+  var save = loadSave();
+  function persist() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(save)); } catch (e) { /* storage unavailable — game still works, just won't persist */ }
+  }
+
+  /* ============================================================
+     SMALL HELPERS
+     ============================================================ */
+  function $(id) { return document.getElementById(id); }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function normalize(str) {
+    return String(str || '').trim().replace(/\s+/g, ' ');
+  }
+  function testPatterns(patterns, input) {
+    var n = normalize(input);
+    for (var i = 0; i < patterns.length; i++) {
+      if (patterns[i].test(n)) return true;
+    }
+    return false;
+  }
+  // Guards a delayed callback against firing against a STALE fight session —
+  // e.g. a player mashing Retreat/Fight fast enough that an old fight's
+  // pending 700ms "advance to next question" callback would otherwise land
+  // on the brand-new fight's state. Captures the current `state` object by
+  // reference at schedule time and no-ops if `state` has since been replaced
+  // (which only happens via startFight() creating a new run).
+  function guardedTimeout(fn, delay) {
+    var stateRef = state;
+    setTimeout(function () {
+      if (state !== stateRef) return;
+      fn();
+    }, delay);
+  }
+  function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr) { return arr[rand(0, arr.length - 1)]; }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = rand(0, i);
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  /* ============================================================
+     QUESTION BANK — fully data-driven, per the shared schema.
+     mode: 'terminal' | 'spot_the_bug' | 'triage_call' | 'read_the_room' | 'build_the_pipeline' | 'rapid_recon'
+     ============================================================ */
+  var BOSSES = {
+    terminalGolem: {
+      id: 'terminalGolem',
+      name: 'The Terminal Golem',
+      topic: 'Linux',
+      icon: '🗿',
+      phaseHp: [100, 110, 130],
+      phaseNames: ['Arms — File & Permissions', 'Chest — Process & System', 'Core — Real Incident'],
+      xpReward: 120,
+      coinBaseReward: 80,
+      phases: [
+        /* -------- PHASE 1: Arms — File & Permissions -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'The Golem flexes a stony arm: <strong>"Give execute permission to <code>script.sh</code> for the OWNER ONLY — nobody else."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'Think about which permission *class* you\'re targeting — not "everyone", just one specific class.',
+            hintPartial: 'chmod u___ script.sh',
+            hintFull: 'chmod u+x script.sh',
+            acceptablePatterns: [/^chmod\s+7[45]4\s+script\.sh$/i, /^chmod\s+u\+x,?\s*script\.sh$/i],
+            optimalPatterns: [/^chmod\s+u\+x\s+script\.sh$/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A crack of stone: <strong>"Find every file modified in the last 24 hours, right here in the current directory."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'One classic command searches a directory tree by all kinds of criteria — including modification time.',
+            hintPartial: 'find . -mtime ___',
+            hintFull: 'find . -mtime -1',
+            acceptablePatterns: [/^find\s+\.\s+-newermt\s+["']?24\s*hours?\s*ago["']?$/i, /^find\s+\.\s+-mtime\s+-1\s+-type\s+f$/i],
+            optimalPatterns: [/^find\s+\.\s+-mtime\s+-1$/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The Golem rumbles: <strong>"Show human-readable disk usage of the current folder, one level deep — I don\'t want a wall of text."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'This is a "disk usage" command, not a "disk free" command — and it needs a depth limit flag.',
+            hintPartial: 'du -h --max-depth=___',
+            hintFull: 'du -h --max-depth=1',
+            acceptablePatterns: [/^du\s+-h$/i, /^du\s+-sh\s+\*$/i],
+            optimalPatterns: [/^du\s+-h\s+(--max-depth=1|-d\s*1)$/i, /^du\s+-sh\s+--max-depth=1$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Golem shows you a cracked stone tablet — a broken shell script. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 28,
+            hintNudge: 'Read the if-statement carefully — something bash always expects right after the condition is missing.',
+            hintPartial: 'Line 2 is missing a keyword bash requires after "if [ ... ]".',
+            hintFull: 'Line 2 needs "then" at the end: if [ "$STATUS" = "active" ]; then',
+            codeBlock: [
+              '#!/bin/bash',
+              'if [ "$STATUS" = "active" ]',
+              '    echo "Service is running"',
+              'fi'
+            ],
+            buggyLineId: 1,
+            correctFixPatterns: [/^if\s*\[\s*"?\$STATUS"?\s*=\s*"active"\s*\]\s*;?\s*then$/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Last for this arm: <strong>"List every file in this directory, including hidden ones, in long format."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'One command, two flags: "all files" and "long listing."',
+            hintPartial: 'ls -l_',
+            hintFull: 'ls -la',
+            acceptablePatterns: [/^ls\s+-a\s+-l$/i, /^ls\s+-al$/i],
+            optimalPatterns: [/^ls\s+-la$/i, /^ls\s+-lah?$/i]
+          }
+        ],
+        /* -------- PHASE 2: Chest — Process & System -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'The chest plating hisses steam: <strong>"Show me the top memory-consuming processes on this box."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'ps has a sort flag — sort by memory percentage, descending.',
+            hintPartial: 'ps aux --sort=___',
+            hintFull: 'ps aux --sort=-%mem | head',
+            acceptablePatterns: [/^top$/i, /^htop$/i, /^ps\s+aux$/i],
+            optimalPatterns: [/^ps\s+aux\s+--sort=-%mem(\s*\|\s*head)?$/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A vent hisses open: <strong>"Something is bound to port 8080. Find out what."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'One tool literally means "list open files" — sockets count as files in Linux.',
+            hintPartial: 'lsof -i :___',
+            hintFull: 'lsof -i :8080',
+            acceptablePatterns: [/^(sudo\s+)?netstat\s+-tulpn\s*\|\s*grep\s+8080$/i, /^(sudo\s+)?ss\s+-tulpn\s*\|\s*grep\s+8080$/i],
+            optimalPatterns: [/^(sudo\s+)?lsof\s+-i\s*:8080$/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'The Golem groans: <strong>"A process is unresponsive and needs to stop. Pick your move, then justify it in one line."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'One of these options gives the process a chance to clean up first. The other doesn\'t ask — it just ends it.',
+            hintPartial: 'The best option sends a polite signal first, and only escalates if that fails.',
+            hintFull: 'Best: kill PID (SIGTERM) first, then escalate to kill -9 only if it doesn\'t respond within a few seconds.',
+            options: [
+              { id: 'a', label: 'kill -9 PID immediately', tier: 'wrong' },
+              { id: 'b', label: 'kill PID first, escalate to kill -9 only if it ignores it', tier: 'best' },
+              { id: 'c', label: 'Reboot the whole server', tier: 'defensible' }
+            ],
+            justificationPatterns: [/graceful|sigterm|clean\s*up|chance|finish|cleanly|escalate/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The Golem pulses with heat: <strong>"Show live, updating CPU and memory usage per process."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The classic, always-available live process monitor.',
+            hintPartial: 't__',
+            hintFull: 'top',
+            acceptablePatterns: [/^ps\s+aux$/i],
+            optimalPatterns: [/^top$/i, /^htop$/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'One last hiss: <strong>"Gracefully stop a process by NAME — not by PID."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'There\'s a "kill" command that takes a process name directly, no PID lookup needed.',
+            hintPartial: 'pk__ processname',
+            hintFull: 'pkill processname',
+            acceptablePatterns: [/^kill\s+\$\(pgrep\s+\w+\)$/i],
+            optimalPatterns: [/^pkill\s+(-15\s+)?\w+$/i, /^killall\s+\w+$/i]
+          }
+        ],
+        /* -------- PHASE 3: Core — Real Incident (read_the_room, diagnose -> fix) -------- */
+        [
+          {
+            mode: 'read_the_room',
+            prompt: 'The Golem\'s core cracks open, venting alarm klaxons. <strong>Diagnose the incident from this output, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Look closely at the "Use%" column — one line stands out.',
+            hintPartial: 'One filesystem shows 100% used. What does that mean for anything trying to write to it?',
+            hintFull: 'Diagnosis: the disk (/) is full. Fix: find and clear the largest offenders, e.g. du -sh /var/log/* | sort -rh | head.',
+            outputBlock: [
+              'Filesystem      Size  Used Avail Use% Mounted on',
+              '/dev/sda1        40G   40G     0 100% /',
+              '/dev/sdb1       200G   62G   138G  32% /data'
+            ],
+            acceptableDiagnosesPatterns: [/disk\s*(is\s*)?full/i, /out\s*of\s*(disk\s*)?space/i, /root\s*(filesystem\s*)?(is\s*)?full/i, /100%\s*usage/i, /no\s*(free\s*)?space\s*left/i],
+            followUpFix: {
+              prompt: 'Now find what\'s eating the space (or clear it):',
+              acceptablePatterns: [/^du\s+-sh\s+\/\*\s*\|\s*sort\s+-rh(\s*\|\s*head)?$/i, /^find\s+\/\s+-size\s+\+\d+M$/i, /^journalctl\s+--vacuum-size=\d+M$/i],
+              optimalPatterns: [/^du\s+-sh\s+\/var\/log\/\*\s*\|\s*sort\s+-rh(\s*\|\s*head)?$/i]
+            }
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'The Golem raises BOTH arms — a special move incoming! <strong>Sequence the correct incident-response checklist before it lands.</strong>',
+        steps: [
+          'Check disk usage (df -h)',
+          'Identify largest space users (du -sh)',
+          'Clear or rotate old logs',
+          'Confirm space freed (df -h again)'
+        ],
+        damageIfCorrect: 34,
+        damageToHeroIfWrong: 22
+      }
+    }
+  };
+
+  var RAPID_RECON_POOL = [
+    { prompt: 'Print the current working directory.', patterns: [/^pwd$/i] },
+    { prompt: 'List running processes for the current user.', patterns: [/^ps$/i, /^ps\s+ux$/i] },
+    { prompt: 'Show the current logged-in user.', patterns: [/^whoami$/i] },
+    { prompt: 'Show system uptime.', patterns: [/^uptime$/i] },
+    { prompt: 'Clear the terminal screen.', patterns: [/^clear$/i] },
+    { prompt: 'Show the current git branch (quick check).', patterns: [/^git\s+branch$/i, /^git\s+status$/i] }
+  ];
+
+  /* ============================================================
+     RUNTIME STATE
+     ============================================================ */
+  var state = null; // built fresh each fight in startFight()
+
+  function newRunState(bossId) {
+    return {
+      bossId: bossId,
+      boss: BOSSES[bossId],
+      phaseIdx: 0,
+      heroHpMax: 100,
+      heroHp: 100,
+      bossHp: BOSSES[bossId].phaseHp[0],
+      bossHpMax: BOSSES[bossId].phaseHp[0],
+      combo: 1,
+      comboCountThisTier: 0,
+      questionPoolIdx: 0,
+      questionOrder: shuffle(BOSSES[bossId].phases[0].map(function (_, i) { return i; })),
+      orderPos: 0,
+      currentQuestion: null,
+      readTheRoomStep: 'diagnose', // for chained read_the_room questions
+      selectedOption: null, // triage_call
+      selectedLine: null, // spot_the_bug
+      seqChosen: [], // build_the_pipeline
+      timer: null,
+      timeLeft: 50,
+      timeAllotted: 50,
+      specialAttackDone: false,
+      reconDone: false,
+      runCoins: 0,
+      runXp: 0
+    };
+  }
+
+  /* ============================================================
+     UI: SCREEN SWITCHING
+     ============================================================ */
+  function showScreen(name) {
+    $('dgcStartScreen').hidden = name !== 'start';
+    $('dgcCombatScreen').hidden = name !== 'combat';
+    $('dgcVictoryScreen').hidden = name !== 'victory';
+    $('dgcDefeatScreen').hidden = name !== 'defeat';
+  }
+
+  function refreshStartScreen() {
+    $('dgcCoinsDisplay').textContent = save.coins;
+    $('dgcXpDisplay').textContent = save.xp;
+    $('dgcBestComboDisplay').textContent = save.bestCombo;
+    $('dgcClearedCountDisplay').textContent = save.bossesDefeated.length;
+    var statusEl = $('dgcBossStatusTerminalGolem');
+    if (save.bossesDefeated.indexOf('terminalGolem') !== -1) {
+      statusEl.textContent = '✓ Cleared';
+      statusEl.classList.add('dgc-cleared');
+    } else {
+      statusEl.textContent = 'Not Cleared';
+      statusEl.classList.remove('dgc-cleared');
+    }
+  }
+
+  /* ============================================================
+     COMBAT: START / RENDER
+     ============================================================ */
+  function startFight(bossId) {
+    if (state && state.timer) clearInterval(state.timer); // defensive: kill any timer from a fight the player abandoned
+    state = newRunState(bossId);
+    $('dgcBossName').textContent = state.boss.name;
+    $('dgcHeroSprite').textContent = '🧑‍💻';
+    $('dgcHeroSprite').className = 'dgc-sprite';
+    $('dgcBossSprite').textContent = state.boss.icon;
+    $('dgcBossSprite').className = 'dgc-sprite';
+    $('dgcSudo').className = 'dgc-sudo';
+    $('dgcFxLayer').innerHTML = '';
+    updateTopbar();
+    updateHpBars(true);
+    updatePhaseTag();
+    showScreen('combat');
+    nextQuestion();
+  }
+
+  function updateTopbar() {
+    $('dgcCoinsCombat').textContent = save.coins;
+    $('dgcXpCombat').textContent = save.xp;
+    $('dgcCombo').textContent = 'Combo x' + state.combo;
+  }
+
+  function updateHpBars(instant) {
+    var heroPct = Math.max(0, state.heroHp / state.heroHpMax * 100);
+    var bossPct = Math.max(0, state.bossHp / state.bossHpMax * 100);
+    var heroFill = $('dgcHeroHpFill');
+    var bossFill = $('dgcBossHpFill');
+    heroFill.style.width = heroPct + '%';
+    bossFill.style.width = bossPct + '%';
+    heroFill.classList.toggle('dgc-hp-low', heroPct <= 25);
+    bossFill.classList.toggle('dgc-hp-low', bossPct <= 25);
+    $('dgcHeroHpText').textContent = Math.max(0, Math.round(state.heroHp)) + '/' + state.heroHpMax;
+    $('dgcBossHpText').textContent = Math.max(0, Math.round(state.bossHp)) + '/' + state.bossHpMax;
+  }
+
+  function updatePhaseTag() {
+    $('dgcPhaseTag').textContent = 'Phase ' + (state.phaseIdx + 1) + '/3 — ' + state.boss.phaseNames[state.phaseIdx];
+  }
+
+  function currentPhaseQuestions() {
+    return state.boss.phases[state.phaseIdx];
+  }
+
+  function nextQuestion() {
+    clearInterval(state.timer);
+    $('dgcHintDisplay').hidden = true;
+    $('dgcHintDisplay').textContent = '';
+    $('dgcHintNudge').disabled = false;
+    $('dgcHintPartial').disabled = false;
+    $('dgcHintFull').disabled = false;
+    state.readTheRoomStep = 'diagnose';
+    state.selectedOption = null;
+    state.selectedLine = null;
+    state.seqChosen = [];
+
+    var pool = currentPhaseQuestions();
+    if (state.orderPos >= state.questionOrder.length) {
+      state.questionOrder = shuffle(pool.map(function (_, i) { return i; }));
+      state.orderPos = 0;
+    }
+    var q = pool[state.questionOrder[state.orderPos]];
+    state.orderPos++;
+    state.currentQuestion = q;
+    renderQuestion(q);
+    startTimer(q.timeAllotted || 50);
+  }
+
+  /* ============================================================
+     TIMER + ENRAGE
+     ============================================================ */
+  function startTimer(seconds, onTimeout) {
+    onTimeout = onTimeout || function () { resolveAnswer('wrong', true); };
+    state.timeAllotted = seconds;
+    state.timeLeft = seconds;
+    var fill = $('dgcTimerFill');
+    fill.style.transition = 'none';
+    fill.style.width = '100%';
+    fill.classList.remove('dgc-timer-warn', 'dgc-timer-danger');
+    void fill.offsetWidth; // force reflow so the transition re-applies cleanly
+    fill.style.transition = 'width 1s linear, background-color .3s';
+
+    // Capture the current state object + a fresh interval id so this tick
+    // self-clears if a NEW fight (a new `state` object) has since started —
+    // this is what prevents a leftover timer from a previous/quit fight
+    // from continuing to drain time on whatever fight is currently active.
+    var stateRefForTimer = state;
+    var intervalId = setInterval(function () {
+      if (state !== stateRefForTimer) { clearInterval(intervalId); return; }
+      state.timeLeft--;
+      var pct = Math.max(0, state.timeLeft / state.timeAllotted * 100);
+      fill.style.width = pct + '%';
+      if (pct <= 50 && pct > 20) fill.classList.add('dgc-timer-warn');
+      if (pct <= 20) { fill.classList.remove('dgc-timer-warn'); fill.classList.add('dgc-timer-danger'); }
+      if (state.timeLeft <= 0) {
+        clearInterval(intervalId);
+        onTimeout();
+      }
+    }, 1000);
+    state.timer = intervalId;
+  }
+
+  function enrageFactor() {
+    var elapsedFrac = 1 - (state.timeLeft / state.timeAllotted);
+    if (elapsedFrac > 0.7) return 1.5;
+    if (elapsedFrac > 0.4) return 1.2;
+    return 1;
+  }
+
+  /* ============================================================
+     RENDER QUESTION BY MODE
+     ============================================================ */
+  function renderQuestion(q) {
+    $('dgcPrompt').innerHTML = q.prompt;
+    var area = $('dgcModeArea');
+    area.innerHTML = '';
+
+    if (q.mode === 'terminal') {
+      area.innerHTML =
+        '<div class="dgc-terminal">' +
+          '<span class="dgc-terminal-prompt">devops@golem:~$</span>' +
+          '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="type your command...">' +
+          '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
+        '</div>';
+      wireEnterAndSubmit(function () {
+        var val = $('dgcModeInput').value;
+        var tier = validateTerminal(q, val);
+        resolveAnswer(tier);
+      });
+      $('dgcModeInput').focus();
+
+    } else if (q.mode === 'spot_the_bug') {
+      var linesHtml = q.codeBlock.map(function (line, i) {
+        return '<span class="dgc-code-line" data-line="' + i + '">' + escapeHtml(line) + '</span>';
+      }).join('\n');
+      area.innerHTML =
+        '<div class="dgc-codeblock">' + linesHtml + '</div>' +
+        '<div class="dgc-terminal">' +
+          '<span class="dgc-terminal-prompt">fix:</span>' +
+          '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="click the buggy line above, then type the fix...">' +
+          '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
+        '</div>';
+      area.querySelectorAll('.dgc-code-line').forEach(function (el) {
+        el.addEventListener('click', function () {
+          area.querySelectorAll('.dgc-code-line').forEach(function (e2) { e2.classList.remove('dgc-line-selected'); });
+          el.classList.add('dgc-line-selected');
+          state.selectedLine = parseInt(el.getAttribute('data-line'), 10);
+        });
+      });
+      wireEnterAndSubmit(function () {
+        var val = $('dgcModeInput').value;
+        var tier = validateSpotTheBug(q, val);
+        resolveAnswer(tier);
+      });
+
+    } else if (q.mode === 'triage_call') {
+      var cardsHtml = q.options.map(function (opt) {
+        return '<div class="dgc-option-card" data-id="' + opt.id + '">' + escapeHtml(opt.label) + '</div>';
+      }).join('');
+      area.innerHTML =
+        '<div class="dgc-option-cards">' + cardsHtml + '</div>' +
+        '<div class="dgc-terminal">' +
+          '<span class="dgc-terminal-prompt">why:</span>' +
+          '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="pick an option above, then justify it in one line...">' +
+          '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
+        '</div>';
+      area.querySelectorAll('.dgc-option-card').forEach(function (el) {
+        el.addEventListener('click', function () {
+          area.querySelectorAll('.dgc-option-card').forEach(function (e2) { e2.classList.remove('dgc-option-selected'); });
+          el.classList.add('dgc-option-selected');
+          state.selectedOption = el.getAttribute('data-id');
+        });
+      });
+      wireEnterAndSubmit(function () {
+        var val = $('dgcModeInput').value;
+        var tier = validateTriageCall(q, val);
+        resolveAnswer(tier);
+      });
+
+    } else if (q.mode === 'read_the_room') {
+      renderReadTheRoomStep(q);
+
+    } else if (q.mode === 'build_the_pipeline') {
+      renderPipelineSequencer(q);
+    }
+  }
+
+  function wireEnterAndSubmit(handler) {
+    var input = $('dgcModeInput');
+    var btn = $('dgcModeSubmit');
+    if (btn) btn.addEventListener('click', handler);
+    if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') handler(); });
+  }
+
+  function renderReadTheRoomStep(q) {
+    var area = $('dgcModeArea');
+    var outHtml = q.outputBlock.map(function (l) { return escapeHtml(l); }).join('\n');
+    if (state.readTheRoomStep === 'diagnose') {
+      area.innerHTML =
+        '<div class="dgc-outputblock"><pre>' + outHtml + '</pre></div>' +
+        '<div class="dgc-terminal">' +
+          '<span class="dgc-terminal-prompt">diagnosis:</span>' +
+          '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="what\'s wrong here?">' +
+          '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
+        '</div>';
+      wireEnterAndSubmit(function () {
+        var val = $('dgcModeInput').value;
+        if (testPatterns(q.acceptableDiagnosesPatterns, val)) {
+          state.readTheRoomStep = 'fix';
+          renderReadTheRoomStep(q);
+          startTimer(q.followUpFix.timeAllotted || 45);
+        } else {
+          resolveAnswer('wrong');
+        }
+      });
+    } else {
+      area.innerHTML =
+        '<div class="dgc-outputblock"><pre>' + outHtml + '</pre></div>' +
+        '<div class="found-p" style="color:#3fb950;font-size:11px;margin-bottom:8px;">✓ Diagnosis confirmed. ' + escapeHtml(q.followUpFix.prompt) + '</div>' +
+        '<div class="dgc-terminal">' +
+          '<span class="dgc-terminal-prompt">fix:</span>' +
+          '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="type the fix command...">' +
+          '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
+        '</div>';
+      wireEnterAndSubmit(function () {
+        var val = $('dgcModeInput').value;
+        var tier = 'wrong';
+        if (testPatterns(q.followUpFix.optimalPatterns, val)) tier = 'optimal';
+        else if (testPatterns(q.followUpFix.acceptablePatterns, val)) tier = 'correct';
+        resolveAnswer(tier);
+      });
+      $('dgcModeInput') && $('dgcModeInput').focus();
+    }
+  }
+
+  function renderPipelineSequencer(q) {
+    var area = $('dgcModeArea');
+    if (!state.seqPool) state.seqPool = shuffle(q.steps.map(function (s, i) { return { label: s, origIdx: i }; }));
+    renderSeq();
+    function renderSeq() {
+      var poolHtml = state.seqPool.map(function (item, i) {
+        return '<div class="dgc-seq-chip" data-pool-idx="' + i + '">' + escapeHtml(item.label) + '</div>';
+      }).join('');
+      var chosenHtml = state.seqChosen.map(function (item, i) {
+        return '<div class="dgc-seq-chip"><span class="dgc-seq-num">' + (i + 1) + '.</span>' + escapeHtml(item.label) + '</div>';
+      }).join('');
+      area.innerHTML =
+        '<div style="font-size:10.5px;color:#64748b;margin-bottom:6px;">Click the steps below in the correct order:</div>' +
+        '<div class="dgc-seq-pool" id="dgcSeqPool">' + (poolHtml || '<span style="color:#475569;font-size:10.5px;">(all steps placed)</span>') + '</div>' +
+        '<div style="font-size:10.5px;color:#64748b;margin-bottom:6px;">Your sequence:</div>' +
+        '<div class="dgc-seq-chosen" id="dgcSeqChosen">' + (chosenHtml || '<span style="color:#475569;font-size:10.5px;">(nothing chosen yet)</span>') + '</div>' +
+        '<button class="dgc-btn dgc-btn-primary" id="dgcSeqSubmit" ' + (state.seqPool.length ? 'disabled' : '') + '>Submit Sequence</button>';
+      area.querySelectorAll('#dgcSeqPool .dgc-seq-chip').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var idx = parseInt(el.getAttribute('data-pool-idx'), 10);
+          state.seqChosen.push(state.seqPool[idx]);
+          state.seqPool.splice(idx, 1);
+          renderSeq();
+        });
+      });
+      var submitBtn = $('dgcSeqSubmit');
+      if (submitBtn) submitBtn.addEventListener('click', function () {
+        var tier = validatePipeline(q, state.seqChosen);
+        state.seqPool = null;
+        resolveAnswer(tier);
+      });
+    }
+  }
+
+  /* ============================================================
+     VALIDATION (per mode) — shared engine, data-driven
+     ============================================================ */
+  function validateTerminal(q, input) {
+    if (!normalize(input)) return 'wrong';
+    if (testPatterns(q.optimalPatterns, input)) return 'optimal';
+    if (testPatterns(q.acceptablePatterns, input) || testPatterns(q.optimalPatterns, input)) return 'correct';
+    // optimalPatterns already implies acceptable; also fold acceptable-but-not-optimal:
+    return 'wrong';
+  }
+
+  function validateSpotTheBug(q, fixInput) {
+    if (state.selectedLine !== q.buggyLineId) return 'wrong';
+    if (!normalize(fixInput)) return 'correct'; // found the line, no fix typed — small credit as "correct" not "wrong"
+    if (testPatterns(q.correctFixPatterns, fixInput)) return 'optimal';
+    return 'correct';
+  }
+
+  function validateTriageCall(q, justification) {
+    if (!state.selectedOption) return 'wrong';
+    var opt = q.options.filter(function (o) { return o.id === state.selectedOption; })[0];
+    if (!opt || opt.tier === 'wrong') return 'wrong';
+    var justOk = testPatterns(q.justificationPatterns, justification);
+    if (opt.tier === 'best' && justOk) return 'optimal';
+    if (opt.tier === 'best' || opt.tier === 'defensible') return 'correct';
+    return 'wrong';
+  }
+
+  function validatePipeline(q, chosen) {
+    var labels = chosen.map(function (c) { return c.label; });
+    var exact = q.steps.every(function (s, i) { return labels[i] === s; });
+    if (exact) return 'optimal';
+    var correctPositions = q.steps.filter(function (s, i) { return labels[i] === s; }).length;
+    if (correctPositions >= Math.ceil(q.steps.length / 2)) return 'correct';
+    return 'wrong';
+  }
+
+  /* ============================================================
+     RESOLVE ANSWER → APPLY DAMAGE, COMBO, COINS, FX
+     ============================================================ */
+  function resolveAnswer(tier, isTimeout) {
+    clearInterval(state.timer);
+    var q = state.currentQuestion;
+    var hintFullUsed = state.hintFullUsedThisQ;
+    state.hintFullUsedThisQ = false;
+
+    if (tier === 'wrong') {
+      var dmg = Math.round((q.damageIfCorrect || 15) * 0.6 * enrageFactor());
+      state.heroHp = Math.max(0, state.heroHp - dmg);
+      state.combo = 1;
+      updateTopbar();
+      spawnDamageNumber('hero', dmg, false);
+      shakeArena(dmg > 20 ? 'lg' : 'md');
+      flashSprite('dgcHeroSprite');
+      sudoReact(dmg > 20 ? 'wince' : 'wince');
+      updateHpBars();
+      if (state.heroHp <= 0) { guardedTimeout(triggerDefeat, 550); return; }
+      guardedTimeout(advanceAfterAnswer, 700);
+      return;
+    }
+
+    var isOptimal = tier === 'optimal' && !hintFullUsed;
+    var dmgToBoss = isOptimal ? q.damageIfOptimal : Math.round((hintFullUsed ? q.damageIfCorrect * 0.5 : q.damageIfCorrect));
+    state.bossHp = Math.max(0, state.bossHp - dmgToBoss);
+
+    if (isOptimal) {
+      state.combo = Math.min(3, state.combo === 1 ? 1.5 : state.combo === 1.5 ? 2 : 3);
+      spawnCritStamp();
+      sudoReact('cheer');
+    } else {
+      sudoReact('cheer');
+      if (hintFullUsed) { state.combo = 1; }
+    }
+    var coinsEarned = Math.round((isOptimal ? 14 : 8) * state.combo * (hintFullUsed ? 0.4 : 1));
+    save.coins += coinsEarned;
+    save.xp += isOptimal ? 6 : 3;
+    state.runCoins += coinsEarned;
+    if (state.combo > save.bestCombo) save.bestCombo = state.combo;
+    persist();
+
+    spawnDamageNumber('boss', dmgToBoss, isOptimal);
+    spawnCoinBurst(coinsEarned);
+    shakeArena(isOptimal ? 'lg' : 'sm');
+    flashSprite('dgcBossSprite');
+    pulseCombo(true);
+    updateTopbar();
+    updateHpBars();
+
+    if (state.bossHp <= 0) { guardedTimeout(handlePhaseCleared, 650); return; }
+    guardedTimeout(advanceAfterAnswer, 700);
+  }
+
+  function advanceAfterAnswer() {
+    // Occasionally, once per fight, trigger the boss special attack after phase 1 clears (handled in handlePhaseCleared).
+    // Rapid Recon can trigger randomly between questions within phase 2, low probability, once per fight.
+    if (!state.reconDone && state.phaseIdx === 1 && Math.random() < 0.18) {
+      state.reconDone = true;
+      startRapidRecon();
+      return;
+    }
+    nextQuestion();
+  }
+
+  /* ============================================================
+     PHASE / BOSS PROGRESSION
+     ============================================================ */
+  function handlePhaseCleared() {
+    if (!state.specialAttackDone && state.phaseIdx === 0) {
+      state.specialAttackDone = true;
+      startSpecialAttack();
+      return;
+    }
+    if (state.phaseIdx < state.boss.phases.length - 1) {
+      state.phaseIdx++;
+      state.bossHpMax = state.boss.phaseHp[state.phaseIdx];
+      state.bossHp = state.bossHpMax;
+      state.questionOrder = shuffle(currentPhaseQuestions().map(function (_, i) { return i; }));
+      state.orderPos = 0;
+      updatePhaseTag();
+      updateHpBars();
+      nextQuestion();
+    } else {
+      triggerVictory();
+    }
+  }
+
+  function startSpecialAttack() {
+    var sa = state.boss.specialAttack;
+    $('dgcPrompt').innerHTML = sa.prompt;
+    var fakeQ = { mode: 'build_the_pipeline', steps: sa.steps };
+    state.currentQuestion = fakeQ;
+    var area = $('dgcModeArea');
+    area.innerHTML = '';
+    state.seqPool = shuffle(sa.steps.map(function (s, i) { return { label: s, origIdx: i }; }));
+    state.seqChosen = [];
+    renderSpecialSeq();
+    $('dgcHintNudge').disabled = true;
+    $('dgcHintPartial').disabled = true;
+    $('dgcHintFull').disabled = true;
+    // Custom timeout handler: a special attack that runs out the clock must
+    // resolve through resolveSpecialAttack (using whatever sequence the
+    // player had chosen so far), never through the generic resolveAnswer —
+    // the generic path expects damageIfCorrect/damageIfOptimal fields that
+    // this ad-hoc pipeline question doesn't carry.
+    startTimer(40, function () { resolveSpecialAttack(); });
+
+    function renderSpecialSeq() {
+      var poolHtml = state.seqPool.map(function (item, i) {
+        return '<div class="dgc-seq-chip" data-pool-idx="' + i + '">' + escapeHtml(item.label) + '</div>';
+      }).join('');
+      var chosenHtml = state.seqChosen.map(function (item, i) {
+        return '<div class="dgc-seq-chip"><span class="dgc-seq-num">' + (i + 1) + '.</span>' + escapeHtml(item.label) + '</div>';
+      }).join('');
+      area.innerHTML =
+        '<div style="font-size:10.5px;color:#c084fc;margin-bottom:6px;">⚡ BOSS SPECIAL ATTACK — sequence it correctly to counter!</div>' +
+        '<div class="dgc-seq-pool" id="dgcSeqPool">' + (poolHtml || '') + '</div>' +
+        '<div class="dgc-seq-chosen" id="dgcSeqChosen">' + (chosenHtml || '<span style="color:#475569;font-size:10.5px;">(nothing chosen yet)</span>') + '</div>' +
+        '<button class="dgc-btn dgc-btn-primary" id="dgcSeqSubmit" ' + (state.seqPool.length ? 'disabled' : '') + '>Submit Sequence</button>';
+      area.querySelectorAll('#dgcSeqPool .dgc-seq-chip').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var idx = parseInt(el.getAttribute('data-pool-idx'), 10);
+          state.seqChosen.push(state.seqPool[idx]);
+          state.seqPool.splice(idx, 1);
+          renderSpecialSeq();
+        });
+      });
+      var submitBtn = $('dgcSeqSubmit');
+      if (submitBtn) submitBtn.addEventListener('click', resolveSpecialAttack);
+    }
+
+    function resolveSpecialAttack() {
+      clearInterval(state.timer);
+      var tier = validatePipeline(sa, state.seqChosen);
+      $('dgcHintNudge').disabled = false;
+      $('dgcHintPartial').disabled = false;
+      $('dgcHintFull').disabled = false;
+      if (tier === 'wrong') {
+        state.heroHp = Math.max(0, state.heroHp - sa.damageToHeroIfWrong);
+        state.combo = 1;
+        spawnDamageNumber('hero', sa.damageToHeroIfWrong, false);
+        shakeArena('lg'); flashSprite('dgcHeroSprite'); sudoReact('wince');
+        updateHpBars(); updateTopbar();
+        if (state.heroHp <= 0) { guardedTimeout(triggerDefeat, 550); return; }
+      } else {
+        state.bossHp = Math.max(0, state.bossHp - sa.damageIfCorrect);
+        var bonusCoins = 25;
+        save.coins += bonusCoins; state.runCoins += bonusCoins; persist();
+        spawnDamageNumber('boss', sa.damageIfCorrect, true);
+        spawnCritStamp();
+        spawnCoinBurst(bonusCoins);
+        shakeArena('lg'); flashSprite('dgcBossSprite'); sudoReact('cheer');
+        updateHpBars(); updateTopbar();
+      }
+      guardedTimeout(function () {
+        if (state.bossHp <= 0) { handlePhaseCleared(); return; }
+        state.phaseIdx = 1;
+        state.bossHpMax = state.boss.phaseHp[1];
+        if (state.bossHp > state.bossHpMax) state.bossHp = state.bossHpMax;
+        state.questionOrder = shuffle(currentPhaseQuestions().map(function (_, i) { return i; }));
+        state.orderPos = 0;
+        updatePhaseTag();
+        nextQuestion();
+      }, 700);
+    }
+  }
+
+  /* ============================================================
+     RAPID RECON — burst sub-event
+     ============================================================ */
+  function startRapidRecon() {
+    clearInterval(state.timer);
+    var overlay = $('dgcReconOverlay');
+    overlay.hidden = false;
+    var burst = shuffle(RAPID_RECON_POOL).slice(0, 5);
+    var idx = 0, correctCount = 0;
+    runOne();
+
+    function runOne() {
+      if (idx >= burst.length) { finish(); return; }
+      var sq = burst[idx];
+      overlay.innerHTML =
+        '<div class="dgc-recon-title">⚡ RAPID RECON ⚡</div>' +
+        '<div class="dgc-recon-sub">Fast one-liners — no hints. Go!</div>' +
+        '<div class="dgc-recon-progress">Question ' + (idx + 1) + '/' + burst.length + '</div>' +
+        '<div class="dgc-prompt" style="max-width:420px;">' + escapeHtml(sq.prompt) + '</div>' +
+        '<div class="dgc-terminal" style="max-width:360px;">' +
+          '<span class="dgc-terminal-prompt">$</span>' +
+          '<input type="text" class="dgc-terminal-input" id="dgcReconInput" autocomplete="off" spellcheck="false">' +
+          '<button class="dgc-btn dgc-terminal-submit" id="dgcReconSubmit">⏎</button>' +
+        '</div>';
+      var input = $('dgcReconInput');
+      var btn = $('dgcReconSubmit');
+      var t = setTimeout(function () { submit(); }, 8000);
+      function submit() {
+        clearTimeout(t);
+        var ok = testPatterns(sq.patterns, input.value);
+        if (ok) correctCount++;
+        idx++;
+        runOne();
+      }
+      btn.addEventListener('click', submit);
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+      input.focus();
+    }
+
+    function finish() {
+      var perfect = correctCount === burst.length;
+      var bonus = correctCount * 5 + (perfect ? 30 : 0);
+      save.coins += bonus; state.runCoins += bonus; persist();
+      overlay.innerHTML =
+        '<div class="dgc-recon-title">' + (perfect ? '🌟 PERFECT RECON!' : 'Recon complete') + '</div>' +
+        '<div class="dgc-recon-sub">' + correctCount + '/' + burst.length + ' correct — +' + bonus + ' bonus coins</div>';
+      updateTopbar();
+      guardedTimeout(function () { overlay.hidden = true; nextQuestion(); }, 1400);
+    }
+  }
+
+  /* ============================================================
+     HINT SYSTEM
+     ============================================================ */
+  function useHint(tier) {
+    var q = state.currentQuestion;
+    if (!q) return;
+    var cost = tier === 'nudge' ? 5 : tier === 'partial' ? 15 : 30;
+    if (save.coins < cost) {
+      flashHintDisplay('Not enough coins for that hint.');
+      return;
+    }
+    save.coins -= cost;
+    persist();
+    updateTopbar();
+    var text = tier === 'nudge' ? q.hintNudge : tier === 'partial' ? q.hintPartial : q.hintFull;
+    flashHintDisplay(text);
+    if (tier === 'full') {
+      state.hintFullUsedThisQ = true;
+      $('dgcHintNudge').disabled = true;
+      $('dgcHintPartial').disabled = true;
+      $('dgcHintFull').disabled = true;
+    }
+  }
+  function flashHintDisplay(text) {
+    var el = $('dgcHintDisplay');
+    el.hidden = false;
+    el.textContent = text;
+  }
+
+  /* ============================================================
+     VISUAL FX
+     ============================================================ */
+  function spawnDamageNumber(who, amount, crit) {
+    var layer = $('dgcFxLayer');
+    var el = document.createElement('div');
+    el.className = 'dgc-dmg-num ' + (who === 'hero' ? 'dgc-dmg-hero' : 'dgc-dmg-boss') + (crit ? ' dgc-dmg-crit' : '');
+    el.textContent = '-' + amount;
+    el.style.left = who === 'hero' ? (18 + rand(-4, 4)) + '%' : '';
+    el.style.right = who === 'boss' ? (18 + rand(-4, 4)) + '%' : '';
+    layer.appendChild(el);
+    setTimeout(function () { el.remove(); }, 1050);
+  }
+
+  function spawnCritStamp() {
+    var layer = $('dgcFxLayer');
+    var el = document.createElement('div');
+    el.className = 'dgc-crit-stamp';
+    el.textContent = 'CRITICAL!';
+    layer.appendChild(el);
+    setTimeout(function () { el.remove(); }, 750);
+  }
+
+  function spawnCoinBurst(amount) {
+    var layer = $('dgcFxLayer');
+    var count = Math.min(6, Math.max(2, Math.round(amount / 8)));
+    for (var i = 0; i < count; i++) {
+      (function (i) {
+        var el = document.createElement('div');
+        el.className = 'dgc-coin';
+        el.textContent = '🪙';
+        el.style.left = (46 + rand(-8, 8)) + '%';
+        el.style.top = '46%';
+        el.style.setProperty('--dgc-cx', rand(-30, 120) + 'px');
+        el.style.setProperty('--dgc-cy', rand(-140, -90) + 'px');
+        el.style.animationDelay = (i * 0.05) + 's';
+        layer.appendChild(el);
+        setTimeout(function () { el.remove(); }, 1000 + i * 50);
+      })(i);
+    }
+  }
+
+  function shakeArena(size) {
+    var arena = $('dgcArena');
+    arena.classList.remove('dgc-shake-sm', 'dgc-shake-md', 'dgc-shake-lg');
+    void arena.offsetWidth;
+    arena.classList.add('dgc-shake-' + size);
+  }
+
+  function flashSprite(id) {
+    var el = $(id);
+    el.classList.remove('dgc-hit-flash');
+    void el.offsetWidth;
+    el.classList.add('dgc-hit-flash');
+  }
+
+  function pulseCombo(good) {
+    var el = $('dgcCombo');
+    el.classList.remove('dgc-combo-pulse', 'dgc-combo-break');
+    void el.offsetWidth;
+    el.classList.add(good ? 'dgc-combo-pulse' : 'dgc-combo-break');
+  }
+
+  function sudoReact(kind) {
+    var el = $('dgcSudo');
+    el.classList.remove('dgc-sudo-cheer', 'dgc-sudo-wince', 'dgc-sudo-hide');
+    var bubble = $('dgcSudoBubble');
+    var lines = { cheer: ['nice!', 'clean hit!', 'that\'s it!'], wince: ['ouch...', 'ooh, rough.', 'shake it off.'] };
+    if (kind === 'cheer' || kind === 'wince') {
+      el.classList.add(kind === 'cheer' ? 'dgc-sudo-cheer' : 'dgc-sudo-wince');
+      bubble.textContent = pick(lines[kind]);
+      bubble.classList.add('dgc-show');
+      setTimeout(function () { bubble.classList.remove('dgc-show'); }, 1200);
+    }
+  }
+
+  /* ============================================================
+     VICTORY / DEFEAT
+     ============================================================ */
+  function triggerVictory() {
+    flashSprite('dgcBossSprite');
+    var sprite = $('dgcBossSprite');
+    guardedTimeout(function () {
+      sprite.classList.add('dgc-dissolve');
+      shakeArena('lg');
+    }, 200);
+    guardedTimeout(function () {
+      if (save.bossesDefeated.indexOf(state.bossId) === -1) {
+        save.bossesDefeated.push(state.bossId);
+      }
+      save.xp += state.boss.xpReward;
+      if (state.runCoins > save.highScore) save.highScore = state.runCoins;
+      persist();
+
+      $('dgcVictoryBossName').textContent = state.boss.name + ' — Cleared!';
+      $('dgcVictoryCoins').textContent = state.runCoins;
+      $('dgcVictoryXp').textContent = state.boss.xpReward;
+      $('dgcVictoryCombo').textContent = save.bestCombo;
+      showScreen('victory');
+    }, 1100);
+  }
+
+  function triggerDefeat() {
+    var sprite = $('dgcHeroSprite');
+    sprite.classList.add('dgc-knockdown');
+    guardedTimeout(function () {
+      showScreen('defeat');
+    }, 500);
+  }
+
+  function retryPhase() {
+    state.heroHp = state.heroHpMax;
+    state.bossHp = state.bossHpMax;
+    $('dgcHeroSprite').className = 'dgc-sprite';
+    $('dgcBossSprite').className = 'dgc-sprite';
+    updateHpBars();
+    updateTopbar();
+    showScreen('combat');
+    nextQuestion();
+  }
+
+  /* ============================================================
+     WIRE UP STATIC BUTTONS
+     ============================================================ */
+  $('dgcFightBtn').addEventListener('click', function () { startFight('terminalGolem'); });
+  $('dgcQuitBtn').addEventListener('click', function () {
+    clearInterval(state && state.timer);
+    refreshStartScreen();
+    showScreen('start');
+  });
+  $('dgcVictoryContinueBtn').addEventListener('click', function () {
+    refreshStartScreen();
+    showScreen('start');
+  });
+  $('dgcRetryBtn').addEventListener('click', retryPhase);
+  $('dgcDefeatQuitBtn').addEventListener('click', function () {
+    refreshStartScreen();
+    showScreen('start');
+  });
+  $('dgcHintNudge').addEventListener('click', function () { useHint('nudge'); });
+  $('dgcHintPartial').addEventListener('click', function () { useHint('partial'); });
+  $('dgcHintFull').addEventListener('click', function () { useHint('full'); });
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  refreshStartScreen();
+  showScreen('start');
+
+})();
+</script>
+
 </div><!-- /tab-game -->
 
 
