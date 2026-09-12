@@ -25375,6 +25375,549 @@ $ git stash pop
         damageIfCorrect: 40,
         damageToHeroIfWrong: 26
       }
+    },
+
+    /* ================================================================
+       BOSS 8 — THE STATEKEEPER (Terraform / IaC)
+       ================================================================ */
+    statekeeper: {
+      id: 'statekeeper',
+      name: 'The Statekeeper',
+      topic: 'Terraform',
+      icon: '🗿',
+      chibiKind: 'statekeeper',
+      phaseHp: [122, 132, 152],
+      phaseNames: ['Blocks — State Management', 'Fracture — Idempotency', 'Drift — Real Incident'],
+      xpReward: 168,
+      coinBaseReward: 98,
+      phases: [
+        /* -------- PHASE 1: State Management -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'A block grinds into place: <strong>"Initialize this directory as a Terraform working directory."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'The very first command you run in any new Terraform directory.',
+            hintPartial: 'terraform i___',
+            hintFull: 'terraform init',
+            acceptablePatterns: [/^terraform\s+init\s+-upgrade$/i],
+            optimalPatterns: [/^terraform\s+init$/i],
+            baseCmds: ['terraform']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Light spills through a crack: <strong>"Show what changes Terraform WOULD make, without applying anything."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'The preview command — never touches real infrastructure.',
+            hintPartial: 'terraform p___',
+            hintFull: 'terraform plan',
+            acceptablePatterns: [/^terraform\s+plan\s+-out=tfplan$/i],
+            optimalPatterns: [/^terraform\s+plan$/i],
+            baseCmds: ['terraform']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A geometric hum: <strong>"List every resource currently tracked in this state."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The state subcommand, then its list action.',
+            hintPartial: 'terraform state l___',
+            hintFull: 'terraform state list',
+            acceptablePatterns: [/^terraform\s+show$/i],
+            optimalPatterns: [/^terraform\s+state\s+list$/i],
+            baseCmds: ['terraform']
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'Two blocks strain against each other: <strong>"Two engineers could run terraform apply on the same state at the same time. What\'s the right setup?"</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'You need a technical safeguard, not a social one like "just ask in chat first."',
+            hintPartial: 'A remote backend that actually locks the state while it\'s in use.',
+            hintFull: 'Best: a remote state backend with locking (e.g. S3+DynamoDB, or Terraform Cloud) — a real technical guarantee, not a process someone can forget.',
+            options: [
+              { id: 'a', label: 'Remote state backend with locking', tier: 'best', why: 'An actual technical guarantee — a second apply is blocked while the first holds the lock.' },
+              { id: 'b', label: 'Local state file shared over a network drive', tier: 'wrong', why: 'No real locking mechanism — two applies can still race and corrupt the state.' },
+              { id: 'c', label: 'Ask the team to coordinate manually in chat', tier: 'wrong', why: 'Relies on humans never forgetting — exactly the kind of thing a locking mechanism exists to remove.' }
+            ],
+            justificationPatterns: [/lock|remote\s*(state|backend)|race/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'One block already exists, unmanaged: <strong>"Bring an existing EC2 instance (<code>i-1234567890abcdef0</code>) under Terraform management as <code>aws_instance.example</code>."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'The subcommand for adopting a resource that already exists in the cloud.',
+            hintPartial: 'terraform i_____ aws_instance.example i-...',
+            hintFull: 'terraform import aws_instance.example i-1234567890abcdef0',
+            acceptablePatterns: [/^terraform\s+import\s+aws_instance\.example\s+i-1234567890abcdef0\s*$/i],
+            optimalPatterns: [/^terraform\s+import\s+aws_instance\.example\s+i-1234567890abcdef0$/i],
+            baseCmds: ['terraform']
+          }
+        ],
+        /* -------- PHASE 2: Idempotency -------- */
+        [
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A crack of light shows a broken provisioner. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Running this apply twice keeps appending the same line to the file, forever.',
+            hintPartial: 'Write the setting instead of appending it, so re-running gives the same result.',
+            hintFull: 'Fix: echo "setting=true" > config.txt',
+            codeBlock: [
+              'resource "null_resource" "config" {',
+              '  provisioner "local-exec" {',
+              '    command = "echo \\"setting=true\\" >> config.txt"',
+              '  }',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/echo\s+["']setting=true["']\s*>\s*config\.txt/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'Another fracture, another provisioner. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This resource\'s name is different every single apply — Terraform sees that as a reason to replace it.',
+            hintPartial: 'Give it a fixed, stable name instead of a timestamp.',
+            hintFull: 'Fix: name = "server-prod"',
+            codeBlock: [
+              'resource "aws_instance" "web" {',
+              '  ami  = "ami-123456"',
+              '  tags = {',
+              '    Name = "server-${timestamp()}"',
+              '  }',
+              '}'
+            ],
+            buggyLineId: 3,
+            correctFixPatterns: [/^Name\s*=\s*"server-prod"$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A block shudders, cracking. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'The second time this runs, the directory already exists and the command fails.',
+            hintPartial: 'One flag makes "create directory" safe to re-run even if it\'s already there.',
+            hintFull: 'Fix: mkdir -p /data',
+            codeBlock: [
+              'resource "null_resource" "setup" {',
+              '  provisioner "local-exec" {',
+              '    command = "mkdir /data"',
+              '  }',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/mkdir\s+-p\s+\/data/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A fourth block, hardened wrong. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This number is frozen in the code — nobody can safely change it without editing the file itself.',
+            hintPartial: 'Reference a variable instead of a hardcoded number.',
+            hintFull: 'Fix: count = var.instance_count',
+            codeBlock: [
+              'resource "aws_instance" "app" {',
+              '  ami   = "ami-123456"',
+              '  count = 3',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^count\s*=\s*var\.instance_count$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The last fracture before the drift. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This resets to the same fixed number on every apply, undoing any deliberate manual scaling.',
+            hintPartial: 'Drive it from a variable so it can actually be changed on purpose.',
+            hintFull: 'Fix: replicas = var.replica_count',
+            codeBlock: [
+              'resource "kubernetes_deployment" "app" {',
+              '  spec {',
+              '    replicas = 1',
+              '  }',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^replicas\s*=\s*var\.replica_count$/i]
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Bad Apply Needs Reverting -------- */
+        [
+          {
+            mode: 'read_the_room',
+            prompt: 'The Statekeeper\'s cracks flare — a plan is about to do something dangerous. <strong>Diagnose it, then respond safely.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This isn\'t a normal update — the resource is being destroyed AND rebuilt.',
+            hintPartial: 'A forced replacement on the production database means real downtime and data loss.',
+            hintFull: 'Diagnosis: this is a forced replacement that would destroy and recreate the production database. Response: never apply straight from an old plan — regenerate a fresh one to review, e.g. terraform plan -out=tfplan',
+            outputBlock: [
+              '$ terraform plan',
+              '  # aws_db_instance.prod must be replaced',
+              '-/+ resource "aws_db_instance" "prod" {',
+              '      ~ engine_version = "13.4" -> "14.2" # forces replacement',
+              '    }'
+            ],
+            acceptableDiagnosesPatterns: [/(forced\s*)?replac.*database/i, /destroy.*recreate/i, /data\s*loss/i],
+            followUpFix: {
+              prompt: 'Before anyone applies anything, get a clean plan on record to review:',
+              acceptablePatterns: [/^terraform\s+plan$/i],
+              optimalPatterns: [/^terraform\s+plan\s+-out=tfplan$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'Another crack widens. <strong>Diagnose it, then respond safely.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'A rule is about to open up far more than it should.',
+            hintPartial: 'This security group would allow traffic in from the entire internet.',
+            hintFull: 'Diagnosis: the plan would open this security group to 0.0.0.0/0 — the whole internet. Response: stop and get a fresh, reviewable plan before touching anything, e.g. terraform plan -out=tfplan',
+            outputBlock: [
+              '$ terraform plan',
+              '  # aws_security_group_rule.web will be updated',
+              '~ cidr_blocks = ["10.0.0.0/16"] -> ["0.0.0.0/0"]'
+            ],
+            acceptableDiagnosesPatterns: [/open.*(internet|0\.0\.0\.0)/i, /security\s*group.*(too\s*(open|permissive)|world)/i],
+            followUpFix: {
+              prompt: 'Get a clean, reviewable plan before anyone applies this:',
+              acceptablePatterns: [/^terraform\s+plan$/i],
+              optimalPatterns: [/^terraform\s+plan\s+-out=tfplan$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A whole section of the construct groans. <strong>Diagnose it, then respond safely.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Terraform\'s state and the real infrastructure have quietly stopped agreeing with each other.',
+            hintPartial: 'Something changed outside of Terraform — someone edited it directly in the console.',
+            hintFull: 'Diagnosis: state drift — real infrastructure no longer matches what Terraform believes. Response: sync state with reality first, e.g. terraform refresh',
+            outputBlock: [
+              '$ terraform plan',
+              'Note: Objects have changed outside of Terraform',
+              '  # aws_instance.web has changed (edited manually in the console)'
+            ],
+            acceptableDiagnosesPatterns: [/(state\s*)?drift/i, /(changed|edited).*(manually|outside\s*(of\s*)?terraform)/i, /out\s*of\s*sync/i],
+            followUpFix: {
+              prompt: 'Sync Terraform\'s understanding with what\'s actually there:',
+              acceptablePatterns: [/^terraform\s+plan$/i],
+              optimalPatterns: [/^terraform\s+refresh$/i, /^terraform\s+plan\s+-refresh-only$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'Runes along a crack glow far too brightly. <strong>Diagnose it, then respond safely.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This policy is granting access to nearly anything, not something specific.',
+            hintPartial: 'A wildcard action on an IAM policy is about to grant sweeping permissions.',
+            hintFull: 'Diagnosis: the plan grants an overly broad wildcard IAM permission ("Action": "*"). Response: don\'t apply — regenerate a clean plan to review the actual scope needed, e.g. terraform plan -out=tfplan',
+            outputBlock: [
+              '$ terraform plan',
+              '  # aws_iam_policy.app will be updated',
+              '~ policy = jsonencode({ Action = "*", Resource = "*" })'
+            ],
+            acceptableDiagnosesPatterns: [/(overly\s*)?broad\s*(iam\s*)?permission/i, /wildcard/i, /too\s*(much\s*)?access/i],
+            followUpFix: {
+              prompt: 'Get a clean plan to actually review the real scope needed:',
+              acceptablePatterns: [/^terraform\s+plan$/i],
+              optimalPatterns: [/^terraform\s+plan\s+-out=tfplan$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The last crack splits wide. <strong>Diagnose it, then respond safely.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'The number of running instances is about to drop to nothing.',
+            hintPartial: 'A count change from several instances down to zero would take the whole app offline.',
+            hintFull: 'Diagnosis: the plan scales the deployment down to zero instances — likely an accidental variable change. Response: stop and get a clean plan to review before applying, e.g. terraform plan -out=tfplan',
+            outputBlock: [
+              '$ terraform plan',
+              '  # aws_instance.app[0] through [4] will be destroyed',
+              '~ count = 5 -> 0'
+            ],
+            acceptableDiagnosesPatterns: [/scal.*(zero|down\s*to\s*0)/i, /all\s*instances.*(destroy|delet)/i, /accidental/i],
+            followUpFix: {
+              prompt: 'Stop and get a clean, reviewable plan before this goes any further:',
+              acceptablePatterns: [/^terraform\s+plan$/i],
+              optimalPatterns: [/^terraform\s+plan\s+-out=tfplan$/i]
+            }
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'Every block in the Statekeeper realigns at once! <strong>Sequence the correct safe IaC change workflow before it lands.</strong>',
+        steps: [
+          'Write the change',
+          'terraform plan',
+          'Have it reviewed',
+          'terraform apply',
+          'Verify the result'
+        ],
+        damageIfCorrect: 40,
+        damageToHeroIfWrong: 26
+      }
+    },
+
+    /* ================================================================
+       BOSS 9 — THE SCRIPT WRAITH (Bash / Python)
+       ================================================================ */
+    wraith: {
+      id: 'wraith',
+      name: 'The Script Wraith',
+      topic: 'Scripting',
+      icon: '📜',
+      chibiKind: 'wraith',
+      phaseHp: [115, 125, 145],
+      phaseNames: ['Whisper — Scripting Fundamentals', 'Fray — Broken Automation', 'Echo — Real Incident'],
+      xpReward: 158,
+      coinBaseReward: 94,
+      phases: [
+        /* -------- PHASE 1: Scripting Fundamentals -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'The Wraith flickers between lines of code: <strong>"Loop through every .txt file in this directory and print each name."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'A classic bash for-loop over a glob pattern.',
+            hintPartial: 'for f in *.txt; do e___ $f; done',
+            hintFull: 'for f in *.txt; do echo $f; done',
+            acceptablePatterns: [/^for\s+f\s+in\s+\*\.txt;\s*do\s+echo\s+"?\$f"?;\s*done$/i],
+            optimalPatterns: [/^for\s+f\s+in\s+\*\.txt;\s*do\s+echo\s+\$f;\s*done$/i],
+            baseCmds: ['for']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Text scrambles and reforms: <strong>"Store the output of <code>whoami</code> in a variable called <code>USER_NAME</code>."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'Command substitution — capture a command\'s output into a variable.',
+            hintPartial: 'USER_NAME=$(w_____)',
+            hintFull: 'USER_NAME=$(whoami)',
+            acceptablePatterns: [/^USER_NAME=`whoami`$/i],
+            optimalPatterns: [/^USER_NAME=\$\(whoami\)$/i],
+            baseCmds: ['USER_NAME']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A glyph flickers: <strong>"In one line, check if <code>deploy.lock</code> exists and print \'exists\' if it does."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'A bash test for file existence, then && to chain the echo.',
+            hintPartial: '[ -f deploy.lock ] && e___ exists',
+            hintFull: '[ -f deploy.lock ] && echo exists',
+            acceptablePatterns: [/^if\s*\[\s*-f\s+deploy\.lock\s*\];\s*then\s+echo\s+exists;\s*fi$/i],
+            optimalPatterns: [/^\[\s*-f\s+deploy\.lock\s*\]\s*&&\s*echo\s+exists$/i],
+            baseCmds: ['[']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The air hums: <strong>"Run <code>df -h</code> repeatedly, every 5 seconds."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'A tool built exactly for "run this repeatedly."',
+            hintPartial: 'watch -n _ df -h',
+            hintFull: 'watch -n 5 df -h',
+            acceptablePatterns: [/^while\s+true;\s*do\s+df\s+-h;\s*sleep\s+5;\s*done$/i],
+            optimalPatterns: [/^watch\s+-n\s+5\s+df\s+-h$/i],
+            baseCmds: ['watch', 'while']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Last, before the fray: <strong>"Write a crontab line to run <code>/path/to/script.sh</code> every day at 2 AM."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'Five time fields, then the command — minute, hour, day, month, weekday.',
+            hintPartial: '0 2 * * * /path/to/___',
+            hintFull: '0 2 * * * /path/to/script.sh',
+            acceptablePatterns: [/^0\s+2\s+\*\s+\*\s+\*\s+bash\s+\/path\/to\/script\.sh$/i],
+            optimalPatterns: [/^0\s+2\s+\*\s+\*\s+\*\s+\/path\/to\/script\.sh$/i],
+            baseCmds: ['0']
+          }
+        ],
+        /* -------- PHASE 2: Broken Automation -------- */
+        [
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A whisper reveals a broken script. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'If NAME is ever empty or contains a space, this comparison breaks unpredictably.',
+            hintPartial: 'Quote the variable so it\'s always treated as one safe value.',
+            hintFull: 'Fix: if [ "$NAME" == "test" ]',
+            codeBlock: [
+              '#!/bin/bash',
+              'NAME=$1',
+              'if [ $NAME == "test" ]',
+              '  then echo "matched"',
+              'fi'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^if\s*\[\s*"\$NAME"\s*==\s*"test"\s*\]$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'Another whisper, another script. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Without this special first line, the system doesn\'t know which interpreter should run the script.',
+            hintPartial: 'The very first line should declare the shell to use, not just be a comment.',
+            hintFull: 'Fix: #!/bin/bash',
+            codeBlock: [
+              '# my deploy script',
+              'echo "Deploying..."',
+              'cp app.tar.gz /srv/app/'
+            ],
+            buggyLineId: 0,
+            correctFixPatterns: [/^#!\/bin\/bash$/i, /^#!\/usr\/bin\/env\s+bash$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A fraying thread of code. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'If this copy silently fails, the script just carries on as if everything were fine.',
+            hintPartial: 'Make a failed copy stop the script instead of continuing silently.',
+            hintFull: 'Fix: cp important.txt backup/ || exit 1',
+            codeBlock: [
+              '#!/bin/bash',
+              'cp important.txt backup/',
+              'echo "Backup complete"'
+            ],
+            buggyLineId: 1,
+            correctFixPatterns: [/^cp\s+important\.txt\s+backup\/\s*\|\|\s*exit\s+1$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A twisting, looping fragment. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'The < here compares as text, not as a number — this loop never actually ends the way you\'d expect.',
+            hintPartial: 'Use the proper numeric-comparison test operator.',
+            hintFull: 'Fix: while [ $count -lt 10 ]',
+            codeBlock: [
+              '#!/bin/bash',
+              'count=0',
+              'while [ $count < 10 ]',
+              'do',
+              '  count=$((count+1))',
+              'done'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^while\s*\[\s*\$count\s+-lt\s+10\s*\]$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The last whisper before the echo. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This only works if the script happens to be run from one specific directory.',
+            hintPartial: 'Use the absolute path so it works no matter where it\'s run from.',
+            hintFull: 'Fix: cd /var/app/logs && rm *.log',
+            codeBlock: [
+              '#!/bin/bash',
+              '# cron job — cleans old logs',
+              'cd logs && rm *.log'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^cd\s+\/var\/app\/logs\s*&&\s*rm\s+\*\.log$/i]
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Failure Loop -------- */
+        [
+          {
+            mode: 'read_the_room',
+            prompt: 'The Echo chamber replays a failure, again and again. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Read the command name very literally, letter by letter.',
+            hintPartial: 'It\'s misspelled — that\'s the whole problem.',
+            hintFull: 'Diagnosis: a typo in the command name. Fix: run the correctly-spelled command, e.g. python3 script.py',
+            outputBlock: [
+              '$ pyhton script.py',
+              'bash: pyhton: command not found'
+            ],
+            acceptableDiagnosesPatterns: [/typo/i, /misspell/i, /command\s*not\s*found/i],
+            followUpFix: {
+              prompt: 'Run it correctly this time:',
+              acceptablePatterns: [/^python\s+script\.py$/i],
+              optimalPatterns: [/^python3\s+script\.py$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The echo sharpens. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The OS is refusing to run this file at all — that\'s a permissions issue, not a code bug.',
+            hintPartial: 'The script simply isn\'t marked as executable yet.',
+            hintFull: 'Diagnosis: the script isn\'t executable. Fix: chmod +x deploy.sh',
+            outputBlock: [
+              '$ ./deploy.sh',
+              'bash: ./deploy.sh: Permission denied'
+            ],
+            acceptableDiagnosesPatterns: [/not\s*executable/i, /permission/i, /missing\s*execute/i],
+            followUpFix: {
+              prompt: 'Give it execute permission:',
+              acceptablePatterns: [/^chmod\s+755\s+deploy\.sh$/i],
+              optimalPatterns: [/^chmod\s+\+x\s+deploy\.sh$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The chamber crackles with static. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Bash is telling you it hit something it didn\'t expect while parsing the file.',
+            hintPartial: 'Somewhere in the script a bracket or quote isn\'t properly closed.',
+            hintFull: 'Diagnosis: a bash syntax error — an unmatched bracket or quote somewhere in the script. Fix (first step): syntax-check without running it, e.g. bash -n script.sh',
+            outputBlock: [
+              '$ ./script.sh',
+              './script.sh: line 12: syntax error near unexpected token `fi\''
+            ],
+            acceptableDiagnosesPatterns: [/syntax\s*error/i, /unmatched\s*(bracket|quote|token)/i],
+            followUpFix: {
+              prompt: 'Check the script\'s syntax without actually running it:',
+              acceptablePatterns: [/^sh\s+-n\s+script\.sh$/i],
+              optimalPatterns: [/^bash\s+-n\s+script\.sh$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A hollow echo — it worked by hand, but never on schedule. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Cron runs with a much smaller environment than your interactive shell has.',
+            hintPartial: 'A command the script relies on isn\'t on cron\'s minimal PATH.',
+            hintFull: 'Diagnosis: cron\'s environment lacks the PATH/env vars your interactive shell has. Fix: set it explicitly in the script, e.g. export PATH=/usr/local/bin:$PATH',
+            outputBlock: [
+              '$ crontab -l',
+              '0 2 * * * /home/dev/backup.sh',
+              '(runs fine manually, but cron\'s log shows: "aws: command not found")'
+            ],
+            acceptableDiagnosesPatterns: [/(cron\s*)?(environment|path).*(missing|different|minimal)/i, /not\s*(in|on)\s*(cron'?s\s*)?path/i],
+            followUpFix: {
+              prompt: 'Set the PATH explicitly so cron can find the same tools:',
+              acceptablePatterns: [/^PATH=\/usr\/local\/bin:\$PATH$/i],
+              optimalPatterns: [/^export\s+PATH=\/usr\/local\/bin:\$PATH$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The final echo fades into silence. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Python is telling you exactly which package it can\'t find.',
+            hintPartial: 'The "requests" library was never installed in this environment.',
+            hintFull: 'Diagnosis: a required Python package isn\'t installed. Fix: pip install requests',
+            outputBlock: [
+              '$ python3 script.py',
+              'ModuleNotFoundError: No module named \'requests\''
+            ],
+            acceptableDiagnosesPatterns: [/(module|package).*(not\s*installed|missing)/i, /modulenotfounderror/i],
+            followUpFix: {
+              prompt: 'Install the missing package:',
+              acceptablePatterns: [/^pip3\s+install\s+requests$/i],
+              optimalPatterns: [/^pip\s+install\s+requests$/i]
+            }
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'The Wraith unravels into pure code! <strong>Sequence the correct automation workflow before it re-forms.</strong>',
+        steps: [
+          'Write the script',
+          'chmod +x it',
+          'Test it manually',
+          'Add it to crontab'
+        ],
+        damageIfCorrect: 38,
+        damageToHeroIfWrong: 25
+      }
     }
   };
 
