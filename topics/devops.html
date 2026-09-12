@@ -22367,6 +22367,18 @@ $ git stash pop
   }
   @keyframes dgc-enter-prompt-bob { 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(-3px); } }
 
+  /* ---- Section 1B sub-step 2 — placed decorations + placement banner ---- */
+  .dgc-city-placing-banner {
+    position:absolute; left:50%; top:10px; transform:translateX(-50%); z-index:5;
+    background:rgba(var(--dgc-gold-rgb),0.15); border:1px solid var(--dgc-gold); color:var(--dgc-gold);
+    font-family:var(--dgc-font-ui); font-weight:700; font-size:11.5px; padding:6px 14px; border-radius:20px;
+  }
+  .dgc-city-decor { position:absolute; font-size:26px; cursor:pointer; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.4)); transform:translate(-50%,-50%); }
+  .dgc-city-decor:hover { transform:translate(-50%,-50%) scale(1.15); }
+  .dgc-city-decor-animal { animation:dgc-decor-wander 4s ease-in-out infinite; }
+  @keyframes dgc-decor-wander { 0%,100%{ transform:translate(-50%,-50%) translateX(0); } 25%{ transform:translate(-50%,-50%) translateX(10px); } 75%{ transform:translate(-50%,-50%) translateX(-10px); } }
+  .dgc-city-viewport.dgc-city-placing-mode { cursor:crosshair; }
+
   .dgc-city-dpad {
     display:none; grid-template-columns:repeat(3, 44px); grid-template-rows:repeat(2, 44px);
     gap:4px; justify-content:center; margin:10px 0;
@@ -23115,6 +23127,16 @@ $ git stash pop
       </div>
     </div>
 
+    <!-- Section 1B sub-step 2 — General Store: buy decorations, then
+         place/move/remove them out in the town. -->
+    <div class="dgc-modal" id="dgcGeneralStoreModal" hidden>
+      <div class="dgc-modal-header"><span>🌳 GENERAL STORE</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body">
+        <div class="dgc-library-note">Buy decorations, then close this and tap an open patch of ground to place them. Tap a placed decoration to pick it up again.</div>
+        <div class="dgc-shop-list" id="dgcGeneralStoreList"></div>
+      </div>
+    </div>
+
     <div class="dgc-modal dgc-modal-confirm" id="dgcConfirmModal" hidden>
       <div class="dgc-modal-header"><span id="dgcConfirmTitle">⚠ ARE YOU SURE?</span></div>
       <div class="dgc-modal-body">
@@ -23197,6 +23219,7 @@ $ git stash pop
       </div>
 
       <div class="dgc-city-enter-prompt" id="dgcCityEnterPrompt" hidden>⏎ Enter <span id="dgcCityEnterPromptName"></span></div>
+      <div class="dgc-city-placing-banner" id="dgcCityPlacingBanner" hidden></div>
     </div>
 
     <div class="dgc-city-dpad" id="dgcCityDpad" aria-hidden="true">
@@ -23396,7 +23419,14 @@ $ git stash pop
         ownedOutfits: Array.isArray(s.ownedOutfits) ? s.ownedOutfits : ['default'],
         bankInvestedAmount: typeof s.bankInvestedAmount === 'number' ? s.bankInvestedAmount : 0,
         lastBankVisitTimestamp: typeof s.lastBankVisitTimestamp === 'number' ? s.lastBankVisitTimestamp : Date.now(),
-        unlockedLibraryPacks: Array.isArray(s.unlockedLibraryPacks) ? s.unlockedLibraryPacks : []
+        unlockedLibraryPacks: Array.isArray(s.unlockedLibraryPacks) ? s.unlockedLibraryPacks : [],
+        // Section 1B sub-step 2 — General Store decorations. `ownedDecorations`
+        // counts how many of each decoration id have been bought (a placed
+        // instance doesn't reduce this — see townDecorations below; "how many
+        // are free to place right now" is always derived as owned minus
+        // however many of that id currently appear in townDecorations).
+        ownedDecorations: (s.ownedDecorations && typeof s.ownedDecorations === 'object') ? s.ownedDecorations : {},
+        townDecorations: Array.isArray(s.townDecorations) ? s.townDecorations : []
       };
     } catch (e) {
       return {
@@ -23404,7 +23434,8 @@ $ git stash pop
         level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
         stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster',
         ownedWeapons: ['keyboardBlaster'], equippedOutfit: 'default', ownedOutfits: ['default'],
-        bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: []
+        bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
+        ownedDecorations: {}, townDecorations: []
       };
     }
   }
@@ -26618,12 +26649,16 @@ $ git stash pop
   function openModal(modalId) {
     $('dgcModalBackdrop').hidden = false;
     ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcConfirmModal',
-     'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal'].forEach(function (id) {
+     'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal', 'dgcGeneralStoreModal'].forEach(function (id) {
       $(id).hidden = id !== modalId;
     });
   }
   function closeModals() {
     $('dgcModalBackdrop').hidden = true;
+    // A shop modal may have changed coins/level while the City's own
+    // stats-row readout sat underneath, unrefreshed until now — keep it
+    // honest the moment the player can see it again.
+    if (!$('dgcCityScreen').hidden) refreshCityStatsBar();
   }
 
   function showConfirm(title, message, onConfirm) {
@@ -26682,7 +26717,11 @@ $ git stash pop
     { id: 'tailor', name: 'Tailor', x: 260, y: 60 },
     { id: 'bank', name: 'Bank', x: 460, y: 100 },
     { id: 'library', name: 'Library', x: 650, y: 70 },
-    { id: 'trophy', name: 'Trophy Hall', x: 780, y: 130 }
+    { id: 'trophy', name: 'Trophy Hall', x: 780, y: 130 },
+    // Section 1B sub-step 2 — General Store: sells town decorations. A
+    // 6th building rather than folding decorations into an existing one,
+    // per the doc's explicitly offered option.
+    { id: 'store', name: 'General Store', x: 420, y: 380 }
   ];
   var CITY_SUDO_POS = { x: 170, y: 190 }; // a fixed idle "guide post" near the Armory — simpler and just as alive as full follow-AI
   var cityHero = { x: 450, y: 280, facing: 'down', moving: false };
@@ -26784,6 +26823,7 @@ $ git stash pop
     else if (id === 'bank') { renderBank(); openModal('dgcBankModal'); }
     else if (id === 'library') { renderLibrary(); openModal('dgcLibraryModal'); }
     else if (id === 'trophy') { renderTrophyHall(); openModal('dgcTrophyModal'); }
+    else if (id === 'store') { renderGeneralStore(); openModal('dgcGeneralStoreModal'); }
     playSfx('click');
   }
 
@@ -26796,6 +26836,8 @@ $ git stash pop
       if (sudoSprite && !sudoSprite.innerHTML) { sudoSprite.innerHTML = chibiRoot('sudo'); setExpression(sudoSprite, 'happy'); }
     }
     renderCityBuildings();
+    renderCityDecorations();
+    cancelPlacingDecoration(); // a fresh entry is never mid-placement
     refreshHeroTierVisuals(); // also (re)renders #dgcCityHeroSprite + name labels, live off `save`
     refreshCityStatsBar();
     showScreen('city');
@@ -26984,13 +27026,109 @@ $ git stash pop
     renderLibrary();
   }
 
+  /* ============================================================
+     SECTION 1B SUB-STEP 2 — GENERAL STORE + TOWN DECORATIONS. A modest
+     starter catalog (per the doc's own scope-management note), coin-
+     purchasable; owned units get placed/moved/picked-up directly in the
+     town rather than through a separate inventory screen.
+     ============================================================ */
+  var DECORATION_CATALOG = [
+    { id: 'grass', name: 'Grass Tuft', cost: 15, icon: '🌱', kind: 'static', desc: 'A small patch of green.' },
+    { id: 'flowers', name: 'Flower Bed', cost: 30, icon: '🌸', kind: 'static', desc: 'Adds a little color.' },
+    { id: 'tree', name: 'Tree', cost: 60, icon: '🌳', kind: 'static', desc: 'A proper shade tree.' },
+    { id: 'lamppost', name: 'Lamppost', cost: 45, icon: '🏮', kind: 'static', desc: 'Lights up the path.' },
+    { id: 'bench', name: 'Bench', cost: 40, icon: '🪑', kind: 'static', desc: 'Somewhere to sit between fights.' },
+    { id: 'dog', name: 'Town Dog', cost: 90, icon: '🐕', kind: 'animal', desc: 'Wanders a little on its own.' },
+    { id: 'cat', name: 'Town Cat', cost: 90, icon: '🐈', kind: 'animal', desc: 'Wanders a little on its own.' }
+  ];
+  var decorInstanceCounter = 0;
+  function decorOwnedCount(id) { return save.ownedDecorations[id] || 0; }
+  function decorPlacedCount(id) { return save.townDecorations.filter(function (d) { return d.decorId === id; }).length; }
+  function decorAvailableCount(id) { return decorOwnedCount(id) - decorPlacedCount(id); }
+
+  function renderGeneralStore() {
+    $('dgcGeneralStoreList').innerHTML = DECORATION_CATALOG.map(function (d) {
+      var available = decorAvailableCount(d.id);
+      var placeBtn = available > 0
+        ? '<button class="dgc-btn dgc-btn-primary" data-decor-action="place" data-decor-id="' + d.id + '">Place (' + available + ')</button>'
+        : '';
+      return '<div class="dgc-shop-card">' +
+        '<div class="dgc-shop-card-icon">' + d.icon + '</div>' +
+        '<div class="dgc-shop-card-info">' +
+          '<div class="dgc-shop-card-name">' + d.name + '</div>' +
+          '<div class="dgc-shop-card-desc">' + d.desc + (decorOwnedCount(d.id) ? ' — owned ' + decorOwnedCount(d.id) : '') + '</div>' +
+        '</div>' +
+        '<div class="dgc-shop-card-action" style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">' +
+          '<button class="dgc-btn" data-decor-action="buy" data-decor-id="' + d.id + '">Buy — ' + d.cost + '🪙</button>' +
+          placeBtn +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+  function buyDecoration(id) {
+    var d = DECORATION_CATALOG.filter(function (d) { return d.id === id; })[0];
+    if (!d) return;
+    if (save.coins < d.cost) { playSfx('insufficientFunds'); return; }
+    save.coins -= d.cost;
+    save.ownedDecorations[id] = decorOwnedCount(id) + 1;
+    persist();
+    playSfx('purchase');
+    renderGeneralStore();
+  }
+  var cityPlacingDecorId = null;
+  function startPlacingDecoration(id) {
+    if (decorAvailableCount(id) <= 0) return;
+    cityPlacingDecorId = id;
+    closeModals();
+    var banner = $('dgcCityPlacingBanner');
+    if (banner) { banner.hidden = false; banner.textContent = '📍 Tap the ground to place — Esc to cancel'; }
+    var vp = $('dgcCityViewport'); if (vp) vp.classList.add('dgc-city-placing-mode');
+  }
+  function cancelPlacingDecoration() {
+    cityPlacingDecorId = null;
+    var banner = $('dgcCityPlacingBanner');
+    if (banner) banner.hidden = true;
+    var vp = $('dgcCityViewport'); if (vp) vp.classList.remove('dgc-city-placing-mode');
+  }
+  function placeDecorationAt(worldX, worldY) {
+    if (!cityPlacingDecorId) return;
+    decorInstanceCounter++;
+    save.townDecorations.push({ decorId: cityPlacingDecorId, x: worldX, y: worldY, instanceId: 'd' + Date.now() + '_' + decorInstanceCounter });
+    persist();
+    playSfx('equip');
+    renderCityDecorations();
+    // Stay in placement mode if more of the same item are still available
+    // (placing several trees shouldn't require re-opening the store each
+    // time) — otherwise exit placement mode automatically.
+    if (decorAvailableCount(cityPlacingDecorId) <= 0) cancelPlacingDecoration();
+  }
+  function pickUpDecoration(instanceId) {
+    var idx = save.townDecorations.findIndex(function (d) { return d.instanceId === instanceId; });
+    if (idx === -1) return;
+    save.townDecorations.splice(idx, 1);
+    persist();
+    playSfx('click');
+    renderCityDecorations();
+  }
+  function renderCityDecorations() {
+    var layer = $('dgcCityDecorLayer');
+    if (!layer) return;
+    layer.innerHTML = save.townDecorations.map(function (inst) {
+      var d = DECORATION_CATALOG.filter(function (d) { return d.id === inst.decorId; })[0];
+      if (!d) return '';
+      return '<div class="dgc-city-decor dgc-city-decor-' + d.kind + '" data-decor-instance="' + inst.instanceId + '" ' +
+        'style="left:' + inst.x + 'px; top:' + inst.y + 'px;">' + d.icon + '</div>';
+    }).join('');
+  }
+
   function resetAllProgress() {
     save = {
       coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
       level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
       stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster',
       ownedWeapons: ['keyboardBlaster'], equippedOutfit: 'default', ownedOutfits: ['default'],
-      bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: []
+      bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
+      ownedDecorations: {}, townDecorations: []
     };
     persist();
     refreshHeroTierVisuals();
@@ -28592,6 +28730,37 @@ $ git stash pop
   });
   $('dgcBankInvestBtn').addEventListener('click', investInBank);
   $('dgcBankCollectBtn').addEventListener('click', function () { collectBankTrickle(false); });
+  $('dgcGeneralStoreList').addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-decor-action]') : null;
+    if (!btn) return;
+    var id = btn.getAttribute('data-decor-id');
+    if (btn.getAttribute('data-decor-action') === 'buy') buyDecoration(id); else startPlacingDecoration(id);
+  });
+  // Placement mode: clicking the viewport while an item is selected drops
+  // it at that world-space point; clicking an already-placed decoration
+  // OUTSIDE placement mode picks it up (the "move" mechanic — pick up,
+  // then place again elsewhere).
+  $('dgcCityViewport').addEventListener('click', function (e) {
+    // Don't let a building/enter-prompt click (handled by their own
+    // listeners) also register as a world-tile placement/pickup click.
+    if (e.target.closest && (e.target.closest('[data-building]') || e.target.closest('#dgcCityEnterPrompt'))) return;
+    if (cityPlacingDecorId) {
+      var vpRect = $('dgcCityViewport').getBoundingClientRect();
+      var worldStyle = getComputedStyle($('dgcCityWorld')).transform; // matrix(1,0,0,1,-camX,-camY)
+      var camX = 0, camY = 0;
+      var m = worldStyle.match(/matrix\(([^)]+)\)/);
+      if (m) { var parts = m[1].split(',').map(parseFloat); camX = -parts[4]; camY = -parts[5]; }
+      var worldX = Math.round(e.clientX - vpRect.left + camX);
+      var worldY = Math.round(e.clientY - vpRect.top + camY);
+      placeDecorationAt(worldX, worldY);
+      return;
+    }
+    var decorEl = e.target.closest ? e.target.closest('[data-decor-instance]') : null;
+    if (decorEl) pickUpDecoration(decorEl.getAttribute('data-decor-instance'));
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && cityPlacingDecorId) cancelPlacingDecoration();
+  });
 
   /* ---- Modals ---- */
   document.querySelectorAll('[data-close-modal]').forEach(function (el) {
