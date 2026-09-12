@@ -22658,6 +22658,38 @@ $ git stash pop
     text-shadow:0 0 22px rgba(var(--dgc-gold-rgb),0.7); letter-spacing:1px; animation:dgc-crit-pop .6s cubic-bezier(.2,1.4,.4,1);
   }
   .dgc-starter-coins-sub { font-family:var(--dgc-font-ui); font-size:12px; color:var(--dgc-text-dim); margin-top:6px; }
+
+  /* ============================================================
+     RANDOM OUTAGE EVENT — a rare, urgent, red-alert interrupt, visually
+     distinct from every other screen (red = danger/urgency, per the
+     game's own established color language) so it reads as a special,
+     occasional moment rather than just another question.
+     ============================================================ */
+  .dgc-outage-overlay {
+    position:absolute; inset:0; z-index:570; display:flex; flex-direction:column; align-items:center;
+    padding:24px 20px; text-align:center; background:radial-gradient(ellipse at 50% 20%, rgba(var(--dgc-danger-rgb),0.16) 0%, var(--dgc-bg) 70%);
+    animation:dgc-outage-flash-in .4s ease-out;
+  }
+  .dgc-outage-overlay[hidden] { display:none; }
+  @keyframes dgc-outage-flash-in { 0%{ opacity:0; } 100%{ opacity:1; } }
+  .dgc-outage-banner {
+    font-family:var(--dgc-font-display); font-weight:900; font-size:19px; color:var(--dgc-danger);
+    text-shadow:0 0 16px rgba(var(--dgc-danger-rgb),0.7); letter-spacing:1px; animation:dgc-outage-pulse 1s ease-in-out infinite;
+  }
+  @keyframes dgc-outage-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.55; } }
+  .dgc-outage-sub { font-family:var(--dgc-font-ui); font-size:11.5px; color:var(--dgc-text-dim); margin:6px 0 14px; }
+  .dgc-outage-timerbar-track { width:100%; max-width:360px; height:5px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:14px; }
+  .dgc-outage-timerbar-fill { height:100%; width:100%; background:var(--dgc-danger); transition:width 1s linear; }
+  .dgc-outage-area { width:100%; max-width:420px; text-align:left; }
+  .dgc-outage-area .dgc-outputblock { border-color:rgba(var(--dgc-danger-rgb),0.4); }
+  .dgc-outage-area .dgc-outputblock::before { content:'🚨 LIVE INCIDENT'; color:var(--dgc-danger); }
+  .dgc-outage-result { font-family:var(--dgc-font-ui); font-weight:700; font-size:13px; color:var(--dgc-gold); margin-top:14px; }
+  .dgc-outage-result[hidden] { display:none; }
+  .dgc-outage-burst { position:absolute; inset:0; pointer-events:none; overflow:visible; }
+  .dgc-outage-skip {
+    position:absolute; bottom:16px; right:18px; background:rgba(255,255,255,0.05); border:1px solid var(--dgc-border-bright);
+    color:var(--dgc-text-dim); font-size:11px; padding:5px 12px;
+  }
 </style>
 
 <div class="dgc-root">
@@ -22713,6 +22745,22 @@ $ git stash pop
     <div class="dgc-starter-coins-burst" id="dgcStarterCoinsBurst"></div>
     <div class="dgc-starter-coins-text">🪙 +500 COINS</div>
     <div class="dgc-starter-coins-sub">Welcome, new dev — here's a head start.</div>
+  </div>
+
+  <!-- ============ RANDOM OUTAGE EVENT ============
+       A rare, urgent, high-reward diagnostic pop-in shown occasionally
+       when returning to the menu after a fight — see maybeTriggerOutage-
+       Event()/showOutageEvent() in the script. Deliberately its own
+       standalone flow (not the full combat state machine) since there's
+       no boss/hero HP at stake, just a between-fights bonus. -->
+  <div class="dgc-outage-overlay" id="dgcOutageOverlay" hidden>
+    <div class="dgc-outage-banner">🚨 OUTAGE EVENT 🚨</div>
+    <div class="dgc-outage-sub">A real incident, right now — diagnose it fast for a bonus.</div>
+    <div class="dgc-outage-timerbar-track"><div class="dgc-outage-timerbar-fill" id="dgcOutageTimerFill"></div></div>
+    <div class="dgc-outage-area" id="dgcOutageArea"></div>
+    <div class="dgc-outage-result" id="dgcOutageResultText" hidden></div>
+    <div class="dgc-outage-burst" id="dgcOutageBurst"></div>
+    <button class="dgc-btn dgc-outage-skip" id="dgcOutageSkipBtn">Skip ✕</button>
   </div>
 
   <!-- ============ TITLE / OPENING SCREEN ============
@@ -27481,11 +27529,131 @@ $ git stash pop
      ============================================================ */
   function goToStartScreen() {
     if (pendingLevelUps.length > 0) {
-      playPendingLevelUps(function () { refreshStartScreen(); showScreen('start'); });
+      playPendingLevelUps(function () { refreshStartScreen(); showScreen('start'); maybeTriggerOutageEvent(); });
     } else {
       refreshStartScreen();
       showScreen('start');
+      maybeTriggerOutageEvent();
     }
+  }
+
+  /* ============================================================
+     RANDOM OUTAGE EVENTS — a standalone flow (not the combat state
+     machine, since there's no boss/hero HP at stake) that occasionally
+     pops up right when returning to the menu after a fight. Pulls a
+     real read_the_room incident from any ALREADY-CLEARED boss's pool —
+     no new content authored, per the doc's own instruction.
+     ============================================================ */
+  var outageState = null;
+  function eligibleOutageQuestions() {
+    var pool = [];
+    save.bossesDefeated.forEach(function (id) {
+      var boss = BOSSES[id];
+      if (!boss) return;
+      boss.phases.forEach(function (phase) {
+        phase.forEach(function (q) { if (q.mode === 'read_the_room') pool.push(q); });
+      });
+    });
+    return pool;
+  }
+  function maybeTriggerOutageEvent() {
+    if (outageState) return; // one at a time
+    if (Math.random() > 0.15) return; // a modest, occasional chance — never a nag
+    var pool = eligibleOutageQuestions();
+    if (!pool.length) return; // need at least one cleared boss's incident content to draw from
+    showOutageEvent(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  function showOutageEvent(q) {
+    outageState = { q: q, step: 'diagnose', timeLeft: 25 };
+    var overlay = $('dgcOutageOverlay');
+    overlay.hidden = false;
+    playSfx('enrage'); // reuses the existing tense/urgent cue — no new sound needed
+    $('dgcOutageResultText').hidden = true;
+    $('dgcOutageSkipBtn').onclick = function () { clearInterval(outageState.timer); closeOutageEvent(); };
+    renderOutageStep();
+    startOutageTimer();
+  }
+  function renderOutageStep() {
+    var q = outageState.q;
+    var outHtml = q.outputBlock.map(function (l) { return escapeHtml(l); }).join('\n');
+    var area = $('dgcOutageArea');
+    if (outageState.step === 'diagnose') {
+      area.innerHTML =
+        '<div class="dgc-outputblock"><pre>' + outHtml + '</pre></div>' +
+        '<div class="dgc-terminal"><span class="dgc-terminal-prompt">diagnosis:</span>' +
+        '<input type="text" class="dgc-terminal-input" id="dgcOutageInput" autocomplete="off" spellcheck="false" placeholder="what\'s wrong here?">' +
+        '<button class="dgc-btn dgc-terminal-submit" id="dgcOutageSubmit">Enter ⏎</button></div>';
+    } else {
+      area.innerHTML =
+        '<div class="dgc-outputblock"><pre>' + outHtml + '</pre></div>' +
+        '<div style="color:var(--dgc-success);font-size:11px;margin-bottom:8px;">✓ Diagnosis confirmed. ' + escapeHtml(q.followUpFix.prompt) + '</div>' +
+        '<div class="dgc-terminal"><span class="dgc-terminal-prompt">fix:</span>' +
+        '<input type="text" class="dgc-terminal-input" id="dgcOutageInput" autocomplete="off" spellcheck="false">' +
+        '<button class="dgc-btn dgc-terminal-submit" id="dgcOutageSubmit">Enter ⏎</button></div>';
+    }
+    var input = $('dgcOutageInput');
+    var btn = $('dgcOutageSubmit');
+    function submit() {
+      var val = input.value;
+      if (outageState.step === 'diagnose') {
+        if (testPatterns(q.acceptableDiagnosesPatterns, val)) {
+          outageState.step = 'fix';
+          renderOutageStep();
+        } else {
+          resolveOutageEvent(false, false, false);
+        }
+      } else {
+        var optimal = testPatterns(q.followUpFix.optimalPatterns, val);
+        var correct = optimal || testPatterns(q.followUpFix.acceptablePatterns, val);
+        resolveOutageEvent(true, correct, optimal);
+      }
+    }
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+    input.focus();
+  }
+  function startOutageTimer() {
+    var fill = $('dgcOutageTimerFill');
+    fill.style.transition = 'none';
+    fill.style.width = '100%';
+    void fill.offsetWidth;
+    fill.style.transition = 'width 1s linear';
+    outageState.timer = setInterval(function () {
+      outageState.timeLeft--;
+      fill.style.width = Math.max(0, outageState.timeLeft / 25 * 100) + '%';
+      if (outageState.timeLeft <= 0) {
+        clearInterval(outageState.timer);
+        resolveOutageEvent(false, false, false);
+      }
+    }, 1000);
+  }
+  function resolveOutageEvent(diagnosedRight, fixedRight, optimal) {
+    clearInterval(outageState.timer);
+    var bonus = 0, msg = '';
+    if (diagnosedRight && fixedRight) {
+      bonus = optimal ? 90 : 65;
+      msg = optimal ? 'Nailed it — full bonus!' : 'Handled it — solid bonus.';
+    } else if (diagnosedRight) {
+      bonus = 25;
+      msg = 'Diagnosed it right, but the fix didn\'t land. Partial bonus.';
+    } else {
+      msg = 'Missed it this time — no bonus, better luck next outage.';
+    }
+    if (bonus > 0) {
+      save.coins += bonus;
+      persist();
+      playSfx('coin');
+      spawnCoinParticles($('dgcOutageBurst'), bonus);
+    }
+    $('dgcOutageResultText').textContent = msg + (bonus ? ' +' + bonus + ' coins' : '');
+    $('dgcOutageResultText').hidden = false;
+    setTimeout(closeOutageEvent, 1800);
+  }
+  function closeOutageEvent() {
+    $('dgcOutageOverlay').hidden = true;
+    $('dgcOutageResultText').hidden = true;
+    outageState = null;
+    refreshStartScreen(); // reflect the updated coin total
   }
 
   function playPendingLevelUps(onDone) {
