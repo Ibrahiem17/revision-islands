@@ -22974,14 +22974,16 @@ $ git stash pop
   </div>
 
   <!-- ============ STARTER COINS TOAST ============
-       A one-time "+500 coins" moment for a genuinely brand-new player
+       A one-time starter-coin moment for a genuinely brand-new player
        (or after an explicit New Game reset), shown right as the
        world-entry transition finishes — the same coin-burst visual/audio
        language as in-fight coin rewards, not a one-off different effect.
+       The actual amount is set from STARTER_COINS_AMOUNT in the script,
+       not hardcoded here — this text is just the initial placeholder.
        Non-blocking (pointer-events:none) — never traps a click. -->
   <div class="dgc-starter-coins-toast" id="dgcStarterCoinsToast" hidden>
     <div class="dgc-starter-coins-burst" id="dgcStarterCoinsBurst"></div>
-    <div class="dgc-starter-coins-text">🪙 +500 COINS</div>
+    <div class="dgc-starter-coins-text">🪙 +10,000 COINS</div>
     <div class="dgc-starter-coins-sub">Welcome, new dev — here's a head start.</div>
   </div>
 
@@ -23434,7 +23436,7 @@ $ git stash pop
       var bossesDefeated = Array.isArray(s.bossesDefeated) ? s.bossesDefeated : [];
       // A save that already had real progress before this field existed is
       // NOT a new player — backfill the flag as already-granted so it never
-      // retroactively hands out a surprise 500 coins to an existing save.
+      // retroactively hands out a surprise starter-coin windfall to an existing save.
       var alreadyHadProgress = (s.coins || 0) > 0 || (s.xp || 0) > 0 || bossesDefeated.length > 0;
       return {
         coins: s.coins || 0,
@@ -23499,16 +23501,17 @@ $ git stash pop
   }
 
   /* ============================================================
-     STARTER COINS — a one-time 500-coin grant for a genuinely new save
-     (or an explicit "New Game" reset, which is a real fresh start, not a
+     STARTER COINS — a one-time coin grant for a genuinely new save (or
+     an explicit "New Game" reset, which is a real fresh start, not a
      punishment). The DATA is granted immediately here; the VISIBLE toast
      is deferred until the world-entry transition actually finishes (see
      runBootSequence()) so it's never wasted on a hidden tab panel.
      ============================================================ */
+  var STARTER_COINS_AMOUNT = 10000;
   var pendingStarterCoinsToast = false;
   function grantStarterCoinsIfNeeded() {
     if (save.starterCoinsGranted) return;
-    save.coins += 500;
+    save.coins += STARTER_COINS_AMOUNT;
     save.starterCoinsGranted = true;
     persist();
     pendingStarterCoinsToast = true;
@@ -23519,7 +23522,9 @@ $ git stash pop
     var toast = $('dgcStarterCoinsToast');
     if (!toast) return;
     toast.hidden = false;
-    spawnCoinParticles($('dgcStarterCoinsBurst'), 500);
+    var textEl = toast.querySelector('.dgc-starter-coins-text');
+    if (textEl) textEl.textContent = '🪙 +' + STARTER_COINS_AMOUNT.toLocaleString() + ' COINS';
+    spawnCoinParticles($('dgcStarterCoinsBurst'), STARTER_COINS_AMOUNT);
     playSfx('starterCoins');
     setTimeout(function () { toast.hidden = true; }, 2600);
     refreshTitleScreen(); // the coins are already in `save` — reflect them right away
@@ -27306,7 +27311,7 @@ $ git stash pop
     persist();
     refreshHeroTierVisuals();
     // A "New Game" reset is a genuine fresh start, not a punishment —
-    // the 500 starter-coin moment plays again exactly like a real new player.
+    // the starter-coin moment plays again exactly like a real new player.
     grantStarterCoinsIfNeeded();
     refreshTitleScreen();
     refreshStartScreen();
