@@ -21839,8 +21839,17 @@ $ git stash pop
   .dgc-hero-preview { position:relative; display:flex; flex-direction:column; align-items:center; margin-bottom:18px; }
   .dgc-hero-sprite { font-size:64px; filter:drop-shadow(0 0 14px rgba(var(--dgc-secondary-rgb),0.45)); animation:dgc-idle-bob 2.4s ease-in-out infinite; }
   .dgc-hero-name { margin-top:6px; font-family:var(--dgc-font-display); font-weight:700; font-size:13px; color:var(--dgc-text); }
-  .dgc-stats-row { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:26px; }
+  /* Phase 2 — level/XP-progress readout under the hero preview. */
+  .dgc-hero-level-row { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .dgc-hero-level-tag { font-family:var(--dgc-font-display); font-weight:800; font-size:10.5px; color:var(--dgc-gold); letter-spacing:0.5px; white-space:nowrap; }
+  .dgc-xp-bar-track { width:110px; height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .dgc-xp-bar-fill { height:100%; width:0%; background:linear-gradient(90deg, var(--dgc-secondary), var(--dgc-gold)); transition:width .4s ease; }
+  .dgc-hero-level-xp { font-family:var(--dgc-font-mono); font-size:9.5px; color:var(--dgc-text-dimmer); white-space:nowrap; }
+  .dgc-stats-row { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
   .dgc-stat-chip { background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border); border-radius:20px; padding:6px 14px; font-size:11.5px; color:var(--dgc-text); }
+  /* Phase 2 — the 4 growing stats, visibly readable, not just persisted numbers. */
+  .dgc-growth-stats-row { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:26px; }
+  .dgc-growth-stat { background:rgba(var(--dgc-success-rgb),0.06); border:1px solid rgba(var(--dgc-success-rgb),0.25); border-radius:14px; padding:4px 11px; font-size:10.5px; font-family:var(--dgc-font-ui); font-weight:600; color:var(--dgc-success-bright); }
   .dgc-boss-select { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
   .dgc-boss-card { position:relative; width:190px; background:radial-gradient(circle at 50% 0%,rgba(var(--dgc-success-rgb),0.08),rgba(0,0,0,0.3)); border:1px solid var(--dgc-border); border-radius:10px; padding:18px 14px; text-align:center; transition:transform .18s, border-color .18s; }
   .dgc-boss-card:hover { transform:translateY(-3px); border-color:var(--dgc-success); }
@@ -22109,7 +22118,7 @@ $ git stash pop
   .dgc-title-stage { display:flex; align-items:flex-end; justify-content:center; gap:56px; margin:22px 0 18px; min-height:130px; }
   .dgc-title-hero-pose, .dgc-title-sudo-pose { position:relative; display:flex; flex-direction:column; align-items:center; }
   .dgc-hero-sprite-title { font-size:70px; filter:drop-shadow(0 0 16px rgba(var(--dgc-secondary-rgb),0.55)) drop-shadow(0 10px 8px rgba(0,0,0,0.6)); animation:dgc-idle-bob 2.6s ease-in-out infinite, dgc-hero-sway 4.4s ease-in-out infinite; }
-  .dgc-title-hero-tag, .dgc-title-sudo-tag { margin-top:6px; font-family:var(--dgc-font-mono); font-size:9px; letter-spacing:2px; color:var(--dgc-text-dimmer); }
+  .dgc-title-hero-tag, .dgc-title-sudo-tag { margin-top:6px; font-family:var(--dgc-font-mono); font-size:9px; letter-spacing:2px; color:var(--dgc-text-dimmer); text-transform:uppercase; }
   .dgc-sudo-cursor-title { font-size:34px; color:var(--dgc-success); text-shadow:0 0 14px rgba(var(--dgc-success-rgb),0.7); animation:dgc-blink 1s step-end infinite, dgc-idle-bob 2.2s ease-in-out infinite .3s; }
   .dgc-title-sudo-pose .dgc-sudo-bubble { position:static; margin-bottom:8px; opacity:1; }
 
@@ -22221,6 +22230,46 @@ $ git stash pop
   .dgc-chibi-hero .dgc-chibi-face { color:#3a2415; }
   .dgc-chibi-hero .dgc-chibi-grad-hi { stop-color:#fff; stop-opacity:0.5; }
   .dgc-chibi-hero .dgc-chibi-grad-lo { stop-color:#fff; stop-opacity:0; }
+
+  /* ============================================================
+     PHASE 2 — HERO TIERS: each tier gets its own palette (minimum bar)
+     plus cumulatively more accent detail than the last tier (the doc's
+     "growing visual detail" ask) — never just a flat recolor. Accents are
+     drawn once in chibiRoot() and hidden by default; each tier's selector
+     below reveals the ones that tier has earned.
+     ============================================================ */
+  .dgc-chibi-cape, .dgc-chibi-collar-glow, .dgc-chibi-badge, .dgc-chibi-shoulder-aura, .dgc-chibi-tier-sparkle { display:none; }
+  .dgc-chibi-collar-glow { stroke:var(--dgc-secondary); filter:drop-shadow(0 0 3px var(--dgc-secondary)); }
+  .dgc-chibi-badge { fill:var(--dgc-gold); stroke:rgba(0,0,0,0.3); stroke-width:0.6; }
+  .dgc-chibi-shoulder-aura { stroke:var(--dgc-crit-bright); opacity:0.6; }
+  .dgc-chibi-tier-sparkle { fill:var(--dgc-gold); }
+  .dgc-chibi-cape { fill:#241640; opacity:0.92; }
+
+  /* Tier 2 — DevOps Engineer: teal palette + a chest badge. */
+  .dgc-chibi-hero[data-tier="devopsEngineer"] .dgc-chibi-body { fill:#0f4a3f; stroke:var(--dgc-success); }
+  .dgc-chibi-hero[data-tier="devopsEngineer"] .dgc-chibi-badge { display:block; }
+
+  /* Tier 3 — Senior Engineer: indigo palette + badge + a glowing collar. */
+  .dgc-chibi-hero[data-tier="seniorEngineer"] .dgc-chibi-body { fill:#241a4d; stroke:var(--dgc-crit); }
+  .dgc-chibi-hero[data-tier="seniorEngineer"] .dgc-chibi-badge,
+  .dgc-chibi-hero[data-tier="seniorEngineer"] .dgc-chibi-collar-glow { display:block; }
+
+  /* Tier 4 — SRE: amber/gold trim + badge + collar + a shoulder aura ring. */
+  .dgc-chibi-hero[data-tier="sre"] .dgc-chibi-body { fill:#4a3510; stroke:var(--dgc-gold); }
+  .dgc-chibi-hero[data-tier="sre"] .dgc-chibi-hair { fill:#3a2a14; }
+  .dgc-chibi-hero[data-tier="sre"] .dgc-chibi-badge,
+  .dgc-chibi-hero[data-tier="sre"] .dgc-chibi-collar-glow,
+  .dgc-chibi-hero[data-tier="sre"] .dgc-chibi-shoulder-aura { display:block; }
+
+  /* Tier 5 — DevOps Wizard: violet palette + every accent + a real
+     silhouette change (a cape) + sparkle motes. */
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-body { fill:#2a0f45; stroke:var(--dgc-crit-bright); }
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-hair { fill:#1c1030; }
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-badge,
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-collar-glow,
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-shoulder-aura,
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-cape,
+  .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-tier-sparkle { display:block; }
 
   /* ---- Sudo: small robot companion, glowing green screen-face ---- */
   .dgc-chibi-sudo .dgc-chibi-head { fill:#241a3d; stroke:var(--dgc-border-bright); stroke-width:1; }
@@ -22358,6 +22407,35 @@ $ git stash pop
   .dgc-review-answer, .dgc-review-ideal { color:var(--dgc-text-dim); margin-bottom:3px; font-family:var(--dgc-font-mono); font-size:10.5px; }
   .dgc-review-answer strong, .dgc-review-ideal strong { color:var(--dgc-text-dimmer); font-family:var(--dgc-font-ui); }
   .dgc-review-note { color:var(--dgc-text-dimmer); font-size:10.5px; margin-top:4px; font-style:italic; }
+
+  /* ============================================================
+     PHASE 2 — LEVEL-UP OVERLAY. Reuses the existing "CRITICAL!"/victory
+     -banner pop language (dgc-crit-pop, gold + display font) so it reads
+     as part of the same juice system, not a new one-off effect.
+     ============================================================ */
+  .dgc-levelup-overlay {
+    position:absolute; inset:0; z-index:550; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; gap:10px;
+    background:radial-gradient(ellipse at 50% 45%, rgba(var(--dgc-gold-rgb),0.14) 0%, var(--dgc-bg) 72%);
+  }
+  .dgc-levelup-overlay[hidden] { display:none; }
+  .dgc-levelup-burst {
+    position:absolute; top:34%; left:50%; width:220px; height:220px; transform:translate(-50%,-50%);
+    border-radius:50%; background:radial-gradient(circle, rgba(var(--dgc-gold-rgb),0.4), transparent 70%);
+    animation:dgc-levelup-burst-pulse 1.6s ease-out infinite;
+  }
+  @keyframes dgc-levelup-burst-pulse {
+    0% { opacity:0.9; transform:translate(-50%,-50%) scale(0.65); }
+    100% { opacity:0; transform:translate(-50%,-50%) scale(1.5); }
+  }
+  .dgc-levelup-hero-sprite { width:110px; height:138px; z-index:2; filter:drop-shadow(0 0 20px rgba(var(--dgc-gold-rgb),0.55)); }
+  .dgc-levelup-banner { z-index:2; }
+  .dgc-levelup-title { font-family:var(--dgc-font-display); font-weight:900; font-size:22px; color:var(--dgc-gold); text-shadow:0 0 20px rgba(var(--dgc-gold-rgb),0.7); letter-spacing:2px; }
+  .dgc-levelup-pop { animation:dgc-crit-pop .6s cubic-bezier(.2,1.4,.4,1); }
+  .dgc-levelup-level { font-family:var(--dgc-font-ui); font-weight:700; font-size:14px; color:var(--dgc-text); margin-top:4px; }
+  .dgc-levelup-tier { font-family:var(--dgc-font-display); font-weight:800; font-size:13px; color:var(--dgc-crit-bright); text-shadow:0 0 12px rgba(var(--dgc-crit-rgb),0.6); margin-top:8px; letter-spacing:1px; }
+  .dgc-levelup-tier[hidden] { display:none; }
+  .dgc-levelup-stats { font-family:var(--dgc-font-ui); font-weight:600; font-size:12px; color:var(--dgc-success); margin-top:8px; }
 </style>
 
 <div class="dgc-root">
@@ -22386,6 +22464,23 @@ $ git stash pop
     <span id="dgcFullscreenIcon">⛶</span>
   </button>
 
+  <!-- ============ PHASE 2: LEVEL-UP OVERLAY ============
+       Plays right before returning to the start/menu screen (after a
+       fight ends) whenever XP earned during that fight crossed a level
+       threshold — queued so multiple level-ups from one big payout play
+       back-to-back instead of overlapping. See goToStartScreen()/
+       playPendingLevelUps() in the script. -->
+  <div class="dgc-levelup-overlay" id="dgcLevelUpOverlay" hidden>
+    <div class="dgc-levelup-burst" aria-hidden="true"></div>
+    <div class="dgc-sprite dgc-levelup-hero-sprite" id="dgcLevelUpHeroSprite"></div>
+    <div class="dgc-levelup-banner" id="dgcLevelUpBanner">
+      <div class="dgc-levelup-title">⬆ LEVEL UP!</div>
+      <div class="dgc-levelup-level" id="dgcLevelUpLevelText">LEVEL 2</div>
+      <div class="dgc-levelup-tier" id="dgcLevelUpTierText" hidden></div>
+      <div class="dgc-levelup-stats" id="dgcLevelUpStatsText"></div>
+    </div>
+  </div>
+
   <!-- ============ TITLE / OPENING SCREEN ============
        The very first thing shown when the Game tab opens — a proper
        arcade-style title screen with its own menu, not the fight
@@ -22411,7 +22506,7 @@ $ git stash pop
         <div class="dgc-title-hero-pose">
           <div class="dgc-char-aura dgc-char-aura-hero"></div>
           <div class="dgc-sprite dgc-hero-sprite-title" id="dgcTitleHeroSprite"></div>
-          <div class="dgc-title-hero-tag">JUNIOR DEV</div>
+          <div class="dgc-title-hero-tag" id="dgcTitleHeroTag">JUNIOR DEV</div>
         </div>
         <div class="dgc-title-sudo-pose">
           <div class="dgc-sudo-bubble dgc-show" id="dgcTitleSudoBubble">ready when you are.</div>
@@ -22421,6 +22516,7 @@ $ git stash pop
       </div>
 
       <div class="dgc-title-stats-bar" id="dgcTitleStatsBar" hidden>
+        <div class="dgc-title-stat"><span class="dgc-title-stat-label">LEVEL</span><span class="dgc-title-stat-value" id="dgcTitleStatLevel">1</span></div>
         <div class="dgc-title-stat"><span class="dgc-title-stat-label">COINS</span><span class="dgc-title-stat-value" id="dgcTitleStatCoins">0</span></div>
         <div class="dgc-title-stat"><span class="dgc-title-stat-label">XP</span><span class="dgc-title-stat-value" id="dgcTitleStatXp">0</span></div>
         <div class="dgc-title-stat"><span class="dgc-title-stat-label">BOSSES CLEARED</span><span class="dgc-title-stat-value" id="dgcTitleStatCleared">0</span></div>
@@ -22511,13 +22607,24 @@ $ git stash pop
     <div class="dgc-subtitle">Level up your career. Fight topic bosses. Type real commands.</div>
     <div class="dgc-hero-preview">
       <div class="dgc-sprite dgc-hero-sprite-select" id="dgcSelectHeroSprite"></div>
-      <div class="dgc-hero-name">Junior Dev</div>
+      <div class="dgc-hero-name" id="dgcSelectHeroName">Junior Dev</div>
+      <div class="dgc-hero-level-row">
+        <span class="dgc-hero-level-tag" id="dgcSelectLevelTag">LEVEL 1</span>
+        <div class="dgc-xp-bar-track"><div class="dgc-xp-bar-fill" id="dgcSelectXpBarFill"></div></div>
+        <span class="dgc-hero-level-xp" id="dgcSelectXpText">0 / 100 XP</span>
+      </div>
     </div>
     <div class="dgc-stats-row">
       <div class="dgc-stat-chip">🪙 <span id="dgcCoinsDisplay">0</span> coins</div>
       <div class="dgc-stat-chip">⭐ <span id="dgcXpDisplay">0</span> XP</div>
       <div class="dgc-stat-chip">🔥 Best combo x<span id="dgcBestComboDisplay">1</span></div>
       <div class="dgc-stat-chip">🏆 <span id="dgcClearedCountDisplay">0</span> bosses cleared</div>
+    </div>
+    <div class="dgc-growth-stats-row" id="dgcGrowthStatsRow">
+      <div class="dgc-growth-stat">❤ <span id="dgcStatHp">+0</span> HP</div>
+      <div class="dgc-growth-stat">⚔ <span id="dgcStatAttack">+0%</span> ATK</div>
+      <div class="dgc-growth-stat">⏱ <span id="dgcStatFocus">+0.0s</span> Focus</div>
+      <div class="dgc-growth-stat">🍀 <span id="dgcStatLuck">+0%</span> Luck</div>
     </div>
     <div class="dgc-boss-select">
       <div class="dgc-boss-card">
@@ -22544,7 +22651,7 @@ $ git stash pop
       <div class="dgc-ambient-bg"></div>
 
       <div class="dgc-fighter dgc-hero-side">
-        <div class="dgc-fighter-name">Junior Dev</div>
+        <div class="dgc-fighter-name" id="dgcCombatHeroName">Junior Dev</div>
         <div class="dgc-hpbar-track"><div class="dgc-hpbar-fill dgc-hpbar-hero" id="dgcHeroHpFill"></div></div>
         <div class="dgc-hp-text"><span id="dgcHeroHpText">100/100</span></div>
         <div class="dgc-sprite-wrap">
@@ -22633,6 +22740,46 @@ $ git stash pop
   'use strict';
 
   /* ============================================================
+     PHASE 2 — PROGRESSION LAYER: level/XP curve, hero tiers, growing
+     stats. Pure data/derivation helpers, defined before loadSave() so
+     the save-migration below can call them for existing saves that
+     predate this update.
+     ============================================================ */
+  var HERO_TIERS = [
+    { level: 1, id: 'juniorDev', name: 'Junior Dev' },
+    { level: 5, id: 'devopsEngineer', name: 'DevOps Engineer' },
+    { level: 10, id: 'seniorEngineer', name: 'Senior Engineer' },
+    { level: 18, id: 'sre', name: 'SRE' },
+    { level: 28, id: 'devopsWizard', name: 'DevOps Wizard' }
+  ];
+  function tierForLevel(level) {
+    var result = HERO_TIERS[0];
+    for (var i = 0; i < HERO_TIERS.length; i++) {
+      if (level >= HERO_TIERS[i].level) result = HERO_TIERS[i];
+    }
+    return result;
+  }
+  function tierById(id) {
+    for (var i = 0; i < HERO_TIERS.length; i++) { if (HERO_TIERS[i].id === id) return HERO_TIERS[i]; }
+    return HERO_TIERS[0];
+  }
+  // Achievable early (100 XP ~ a handful of correct answers), slows down
+  // later so it doesn't trivialize Phase 3 bosses.
+  function xpToNextLevelForLevel(level) { return 100 + (level - 1) * 50; }
+  // Bonus amounts a level grants, relative to level 1's baseline (0s here
+  // — the actual baseline stats like heroHpMax live where they're used).
+  // hp: flat HP added. attack: fractional dmg-dealt multiplier bonus.
+  // focus: extra seconds per question, capped. luck: fractional coin bonus.
+  function statsForLevel(level) {
+    return {
+      hp: (level - 1) * 4,
+      attack: +((level - 1) * 0.02).toFixed(4),
+      focus: Math.min((level - 1) * 0.5, 15),
+      luck: +((level - 1) * 0.01).toFixed(4)
+    };
+  }
+
+  /* ============================================================
      PERSISTENCE — namespaced localStorage keys (dgc_*) so this
      never collides with anything else this page might store.
      ============================================================ */
@@ -22642,20 +22789,74 @@ $ git stash pop
       var raw = localStorage.getItem(STORE_KEY);
       if (!raw) throw 0;
       var s = JSON.parse(raw);
+      // Phase 2 fields are backfilled for saves written before this update —
+      // `coins`/`xp`/`bossesDefeated`/`bestCombo`/`highScore` are untouched,
+      // so no existing Phase 1 progress is lost or migrated destructively.
+      var level = (typeof s.level === 'number' && s.level >= 1) ? s.level : 1;
       return {
         coins: s.coins || 0,
         xp: s.xp || 0,
         bossesDefeated: Array.isArray(s.bossesDefeated) ? s.bossesDefeated : [],
         bestCombo: s.bestCombo || 1,
-        highScore: s.highScore || 0
+        highScore: s.highScore || 0,
+        level: level,
+        currentXP: typeof s.currentXP === 'number' ? s.currentXP : 0,
+        xpToNextLevel: typeof s.xpToNextLevel === 'number' ? s.xpToNextLevel : xpToNextLevelForLevel(level),
+        heroTier: s.heroTier || tierForLevel(level).id,
+        stats: (s.stats && typeof s.stats === 'object') ? s.stats : statsForLevel(level),
+        starterCoinsGranted: !!s.starterCoinsGranted
       };
     } catch (e) {
-      return { coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0 };
+      return {
+        coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
+        level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
+        stats: statsForLevel(1), starterCoinsGranted: false
+      };
     }
   }
   var save = loadSave();
   function persist() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(save)); } catch (e) { /* storage unavailable — game still works, just won't persist */ }
+  }
+
+  /* ============================================================
+     XP / LEVEL-UP — the single reused hook every XP-award already goes
+     through (per-question XP + boss-clear XP), so leveling never needs
+     its own separate XP source. Level-ups are queued (not shown
+     instantly) so a big XP payout that crosses several levels at once
+     plays its celebrations back-to-back instead of overlapping.
+     ============================================================ */
+  var pendingLevelUps = [];
+  function awardXp(amount) {
+    if (!amount) return;
+    save.xp += amount; // lifetime total — unchanged Phase 1 field, still shown in Trophy Hall
+    save.currentXP += amount;
+    var leveledUp = false;
+    while (save.currentXP >= save.xpToNextLevel) {
+      save.currentXP -= save.xpToNextLevel;
+      save.level++;
+      var oldTierId = save.heroTier;
+      var newTier = tierForLevel(save.level);
+      var tierChanged = newTier.id !== oldTierId;
+      var oldStats = save.stats;
+      var newStats = statsForLevel(save.level);
+      pendingLevelUps.push({
+        level: save.level,
+        tierChanged: tierChanged,
+        tierName: newTier.name,
+        statDeltas: {
+          hp: +(newStats.hp - oldStats.hp).toFixed(2),
+          attack: +(newStats.attack - oldStats.attack).toFixed(4),
+          focus: +(newStats.focus - oldStats.focus).toFixed(2),
+          luck: +(newStats.luck - oldStats.luck).toFixed(4)
+        }
+      });
+      save.heroTier = newTier.id;
+      save.stats = newStats;
+      save.xpToNextLevel = xpToNextLevelForLevel(save.level);
+      leveledUp = true;
+    }
+    if (leveledUp) persist();
   }
 
   /* ============================================================
@@ -22915,9 +23116,19 @@ $ git stash pop
     if (kind === 'hero') {
       body =
         '<ellipse class="dgc-chibi-shadow" cx="50" cy="118" rx="26" ry="6"/>' +
+        // Tier 5 (DevOps Wizard) only — a real silhouette change, not just a
+        // recolor, sitting BEHIND the body. Hidden by default via CSS.
+        '<path class="dgc-chibi-cape" d="M30 88 Q22 105 26 118 L38 108 Q34 96 38 86 Z M70 88 Q78 105 74 118 L62 108 Q66 96 62 86 Z"/>' +
         '<path class="dgc-chibi-body" d="M30 100 Q30 78 50 78 Q70 78 70 100 L70 112 Q50 118 30 112 Z"/>' +
         '<circle class="dgc-chibi-head" cx="50" cy="42" r="27"/>' +
-        '<path class="dgc-chibi-hair" d="M23 38 Q23 12 50 12 Q77 12 77 38 Q70 24 50 24 Q30 24 23 38 Z"/>';
+        '<path class="dgc-chibi-hair" d="M23 38 Q23 12 50 12 Q77 12 77 38 Q70 24 50 24 Q30 24 23 38 Z"/>' +
+        // Tier accents (Phase 2) — each hidden by default, revealed
+        // cumulatively per tier via CSS (see .dgc-chibi-hero[data-tier=...]),
+        // so higher tiers visibly carry more detail than the last.
+        '<path class="dgc-chibi-collar-glow" d="M38 82 Q50 90 62 82" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<circle class="dgc-chibi-badge" cx="50" cy="93" r="4"/>' +
+        '<circle class="dgc-chibi-shoulder-aura" cx="50" cy="88" r="27" fill="none" stroke-width="1.4"/>' +
+        '<g class="dgc-chibi-tier-sparkle"><path d="M16 90 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/><path d="M84 84 l1.1 2.4 2.4 1.1 -2.4 1.1 -1.1 2.4 -1.1 -2.4 -2.4 -1.1 2.4 -1.1 z"/></g>';
     } else if (kind === 'sudo') {
       body =
         '<ellipse class="dgc-chibi-shadow" cx="50" cy="116" rx="22" ry="5.5"/>' +
@@ -22933,7 +23144,11 @@ $ git stash pop
         '<path class="dgc-chibi-head" d="M18 44 Q18 10 50 10 Q82 10 82 44 Q82 70 50 70 Q18 70 18 44 Z"/>' +
         '<path class="dgc-chibi-cracks" d="M30 30 L36 38 M70 28 L64 36 M50 58 L50 66" stroke-width="1.6" fill="none"/>';
     }
-    return '<svg class="dgc-chibi dgc-chibi-' + kind + '" viewBox="0 0 100 130" data-expr="idle">' +
+    // Tier only applies to the hero — reflects whatever save.heroTier IS
+    // right now, so every call site (title/select/combat/level-up overlay)
+    // automatically renders the current tier with no extra plumbing.
+    var tierAttr = kind === 'hero' ? ' data-tier="' + save.heroTier + '"' : '';
+    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
       '<defs>' +
         '<radialGradient id="' + idAttr + 'Grad" cx="38%" cy="28%" r="80%">' +
           '<stop offset="0%" class="dgc-chibi-grad-hi"/>' +
@@ -23262,8 +23477,9 @@ $ git stash pop
       boss: BOSSES[bossId],
       locked: false, // true while a submitted answer is resolving, to block double-submits
       phaseIdx: 0,
-      heroHpMax: 100,
-      heroHp: 100,
+      // HP stat (Phase 2): baseline 100, + a flat bonus per level.
+      heroHpMax: 100 + save.stats.hp,
+      heroHp: 100 + save.stats.hp,
       bossHp: BOSSES[bossId].phaseHp[0],
       bossHpMax: BOSSES[bossId].phaseHp[0],
       combo: 1,
@@ -23318,6 +23534,7 @@ $ git stash pop
     var bar = $('dgcTitleStatsBar');
     if (hasProgress) {
       bar.hidden = false;
+      $('dgcTitleStatLevel').textContent = save.level;
       $('dgcTitleStatCoins').textContent = save.coins;
       $('dgcTitleStatXp').textContent = save.xp;
       $('dgcTitleStatCleared').textContent = save.bossesDefeated.length + ' / ' + Object.keys(BOSSES).length;
@@ -23332,6 +23549,15 @@ $ git stash pop
     $('dgcXpDisplay').textContent = save.xp;
     $('dgcBestComboDisplay').textContent = save.bestCombo;
     $('dgcClearedCountDisplay').textContent = save.bossesDefeated.length;
+    // Phase 2 — level/XP progress + the 4 growing stats, all real, wired
+    // values (see statsForLevel()), not cosmetic-only numbers.
+    $('dgcSelectLevelTag').textContent = 'LEVEL ' + save.level;
+    $('dgcSelectXpText').textContent = save.currentXP + ' / ' + save.xpToNextLevel + ' XP';
+    $('dgcSelectXpBarFill').style.width = Math.min(100, Math.round(save.currentXP / save.xpToNextLevel * 100)) + '%';
+    $('dgcStatHp').textContent = '+' + save.stats.hp;
+    $('dgcStatAttack').textContent = '+' + Math.round(save.stats.attack * 100) + '%';
+    $('dgcStatFocus').textContent = '+' + save.stats.focus.toFixed(1) + 's';
+    $('dgcStatLuck').textContent = '+' + Math.round(save.stats.luck * 100) + '%';
     var statusEl = $('dgcBossStatusTerminalGolem');
     if (save.bossesDefeated.indexOf('terminalGolem') !== -1) {
       statusEl.textContent = '✓ Cleared';
@@ -23371,6 +23597,7 @@ $ git stash pop
   function renderTrophyHall() {
     var grid = $('dgcTrophyStatsGrid');
     grid.innerHTML =
+      '<div class="dgc-trophy-stat-card"><div class="val">' + save.level + '</div><div class="lbl">LEVEL · ' + tierById(save.heroTier).name.toUpperCase() + '</div></div>' +
       '<div class="dgc-trophy-stat-card"><div class="val">' + save.coins + '</div><div class="lbl">COINS</div></div>' +
       '<div class="dgc-trophy-stat-card"><div class="val">' + save.xp + '</div><div class="lbl">TOTAL XP</div></div>' +
       '<div class="dgc-trophy-stat-card"><div class="val">x' + save.bestCombo + '</div><div class="lbl">BEST COMBO</div></div>' +
@@ -23388,8 +23615,16 @@ $ git stash pop
   }
 
   function resetAllProgress() {
-    save = { coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0 };
+    save = {
+      coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
+      level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
+      stats: statsForLevel(1), starterCoinsGranted: false
+    };
     persist();
+    refreshHeroTierVisuals();
+    // A "New Game" reset is a genuine fresh start, not a punishment —
+    // the 500 starter-coin moment plays again exactly like a real new player.
+    grantStarterCoinsIfNeeded();
     refreshTitleScreen();
     refreshStartScreen();
   }
@@ -23516,6 +23751,11 @@ $ git stash pop
      ============================================================ */
   function startTimer(seconds, onTimeout) {
     onTimeout = onTimeout || function () { resolveAnswer('wrong', true); };
+    // Focus stat (Phase 2): a small, level-scaled, already-capped bonus
+    // applied here so every timed moment that goes through startTimer
+    // (every question mode + the boss special attack) benefits uniformly,
+    // without touching each call site individually.
+    seconds = seconds + save.stats.focus;
     state.timeAllotted = seconds;
     state.timeLeft = seconds;
     var fill = $('dgcTimerFill');
@@ -23960,6 +24200,8 @@ $ git stash pop
 
     var isOptimal = tier === 'optimal' && !hintFullUsed;
     var dmgToBoss = isOptimal ? q.damageIfOptimal : Math.round((hintFullUsed ? q.damageIfCorrect * 0.5 : q.damageIfCorrect));
+    // Attack Power stat (Phase 2): scales damage dealt on every landed hit.
+    dmgToBoss = Math.round(dmgToBoss * (1 + save.stats.attack));
     var preCombo = state.combo;
     var wasOnStreak = state.combo >= 2; // boss was already being hit repeatedly before THIS hit lands
     state.bossHp = Math.max(0, state.bossHp - dmgToBoss);
@@ -23973,8 +24215,10 @@ $ git stash pop
       if (hintFullUsed) { state.combo = 1; }
     }
     var coinsEarned = Math.round((isOptimal ? 14 : 8) * state.combo * (hintFullUsed ? 0.4 : 1));
+    // Luck stat (Phase 2): a gradually growing coin bonus on every landed hit.
+    coinsEarned = Math.round(coinsEarned * (1 + save.stats.luck));
     save.coins += coinsEarned;
-    save.xp += isOptimal ? 6 : 3;
+    awardXp(isOptimal ? 6 : 3);
     state.runCoins += coinsEarned;
     if (state.combo > save.bestCombo) save.bestCombo = state.combo;
     persist();
@@ -24374,7 +24618,7 @@ $ git stash pop
       if (save.bossesDefeated.indexOf(state.bossId) === -1) {
         save.bossesDefeated.push(state.bossId);
       }
-      save.xp += state.boss.xpReward;
+      awardXp(state.boss.xpReward);
       if (state.runCoins > save.highScore) save.highScore = state.runCoins;
       persist();
 
@@ -24418,26 +24662,83 @@ $ git stash pop
   }
 
   /* ============================================================
+     PHASE 2 — LEVEL-UP SEQUENCE PLAYBACK. Triggered right before
+     returning to the start/menu screen after a fight ends (retreat,
+     victory-continue, or defeat-quit) — "typically right after a victory
+     screen" per the doc, but checked on every exit from a fight since
+     per-question XP can in principle cross a threshold even in a loss.
+     Queued entries play back-to-back so a big XP payout never overlaps.
+     ============================================================ */
+  function goToStartScreen() {
+    if (pendingLevelUps.length > 0) {
+      playPendingLevelUps(function () { refreshStartScreen(); showScreen('start'); });
+    } else {
+      refreshStartScreen();
+      showScreen('start');
+    }
+  }
+
+  function playPendingLevelUps(onDone) {
+    var overlay = $('dgcLevelUpOverlay');
+    if (!overlay) { pendingLevelUps.length = 0; onDone(); return; }
+    overlay.hidden = false;
+    playSfx('levelup');
+
+    function playNext() {
+      if (!pendingLevelUps.length) {
+        overlay.hidden = true;
+        onDone();
+        return;
+      }
+      var entry = pendingLevelUps.shift();
+      renderOneLevelUp(entry);
+      if (entry.tierChanged) {
+        refreshHeroTierVisuals(); // title/select sprites pick up the new tier immediately
+        playSfx('tierUp');
+      }
+      setTimeout(playNext, entry.tierChanged ? 2600 : 1900);
+    }
+    playNext();
+  }
+
+  function renderOneLevelUp(entry) {
+    var sprite = $('dgcLevelUpHeroSprite');
+    sprite.innerHTML = chibiRoot('hero'); // fresh render — reflects the new tier if this entry changed it
+    setExpression(sprite, 'powerup');
+    $('dgcLevelUpLevelText').textContent = 'LEVEL ' + entry.level;
+    var parts = [];
+    if (entry.statDeltas.hp > 0) parts.push('+' + entry.statDeltas.hp + ' HP');
+    if (entry.statDeltas.attack > 0) parts.push('+' + Math.round(entry.statDeltas.attack * 100) + '% ATK');
+    if (entry.statDeltas.focus > 0) parts.push('+' + entry.statDeltas.focus.toFixed(1) + 's Focus');
+    if (entry.statDeltas.luck > 0) parts.push('+' + Math.round(entry.statDeltas.luck * 100) + '% Luck');
+    $('dgcLevelUpStatsText').textContent = parts.join('   ');
+    var tierEl = $('dgcLevelUpTierText');
+    if (entry.tierChanged) {
+      tierEl.hidden = false;
+      tierEl.textContent = '✦ NEW TIER: ' + entry.tierName + ' ✦';
+    } else {
+      tierEl.hidden = true;
+    }
+    var banner = $('dgcLevelUpBanner');
+    banner.classList.remove('dgc-levelup-pop');
+    void banner.offsetWidth;
+    banner.classList.add('dgc-levelup-pop');
+  }
+
+  /* ============================================================
      WIRE UP STATIC BUTTONS
      ============================================================ */
   $('dgcFightBtn').addEventListener('click', function () { startFight('terminalGolem'); });
   $('dgcQuitBtn').addEventListener('click', function () {
     clearInterval(state && state.timer);
-    refreshStartScreen();
-    showScreen('start');
+    goToStartScreen();
   });
-  $('dgcVictoryContinueBtn').addEventListener('click', function () {
-    refreshStartScreen();
-    showScreen('start');
-  });
+  $('dgcVictoryContinueBtn').addEventListener('click', goToStartScreen);
   $('dgcReviewContinueBtn').addEventListener('click', function () {
     showScreen(pendingPostReviewScreen || 'start');
   });
   $('dgcRetryBtn').addEventListener('click', retryPhase);
-  $('dgcDefeatQuitBtn').addEventListener('click', function () {
-    refreshStartScreen();
-    showScreen('start');
-  });
+  $('dgcDefeatQuitBtn').addEventListener('click', goToStartScreen);
   $('dgcHintNudge').addEventListener('click', function () { useHint('nudge'); });
   $('dgcHintPartial').addEventListener('click', function () { useHint('partial'); });
   $('dgcHintFull').addEventListener('click', function () { useHint('full'); });
@@ -24515,6 +24816,32 @@ $ git stash pop
     setExpression($('dgcTitleSudoSprite'), 'idle');
     setExpression($('dgcSelectHeroSprite'), 'confident');
     setExpression($('dgcSelectBossSprite'), 'idle');
+    refreshHeroNameLabels();
+  }
+
+  /* ============================================================
+     PHASE 2 — tier changes must apply everywhere the hero is shown, not
+     just in-fight. Re-renders every currently-existing hero sprite (title
+     + boss-select) with chibiRoot()'s current save.heroTier, restoring
+     each location's own baseline expression. Combat's own sprite doesn't
+     need this since the level-up sequence only plays after a fight ends.
+     ============================================================ */
+  function refreshHeroTierVisuals() {
+    var titleSprite = $('dgcTitleHeroSprite');
+    if (titleSprite) { titleSprite.innerHTML = chibiRoot('hero'); setExpression(titleSprite, 'happy'); }
+    var selectSprite = $('dgcSelectHeroSprite');
+    if (selectSprite) { selectSprite.innerHTML = chibiRoot('hero'); setExpression(selectSprite, 'confident'); }
+    refreshHeroNameLabels();
+  }
+
+  // The hero's displayed name/tag must say the CURRENT tier's name, not a
+  // hardcoded "Junior Dev", everywhere that label appears.
+  function refreshHeroNameLabels() {
+    var tierName = tierById(save.heroTier).name;
+    [ 'dgcTitleHeroTag', 'dgcSelectHeroName', 'dgcCombatHeroName' ].forEach(function (id) {
+      var el = $(id);
+      if (el) el.textContent = tierName;
+    });
   }
 
   /* ============================================================
