@@ -21884,6 +21884,8 @@ $ git stash pop
   .dgc-btn-fight:hover { background:rgba(var(--dgc-success-rgb),0.22); border-color:var(--dgc-success); color:var(--dgc-success-bright); }
   .dgc-btn-primary { background:rgba(var(--dgc-secondary-rgb),0.14); border-color:var(--dgc-secondary); color:var(--dgc-secondary); }
   .dgc-btn-quit { padding:5px 10px; font-size:10px; }
+  .dgc-btn-text { background:none; border:none; color:var(--dgc-text-dimmer); font-size:11px; padding:6px 10px; text-decoration:underline; }
+  .dgc-btn-text:hover { color:var(--dgc-text-dim); }
 
   /* ---------- COMBAT SCREEN ---------- */
   .dgc-topbar { display:flex; align-items:center; gap:14px; margin-bottom:10px; padding:8px 12px; background:rgba(255,255,255,0.02); border:1px solid var(--dgc-border); border-radius:6px; }
@@ -22238,6 +22240,10 @@ $ git stash pop
   .dgc-menu-danger:hover { border-color:var(--dgc-danger); box-shadow:0 0 16px rgba(var(--dgc-danger-rgb),0.3); background:linear-gradient(90deg, rgba(var(--dgc-danger-rgb),0.1), rgba(var(--dgc-danger-rgb),0.05)); }
 
   .dgc-btn-back { position:absolute; top:12px; left:12px; font-size:10px; padding:6px 12px; z-index:3; }
+  /* Phase 4 — quick City access from boss select, per the doc's "must be
+     easy to reach at all times, not buried" requirement. */
+  .dgc-btn-city-quick { position:absolute; top:12px; right:12px; font-size:10px; padding:6px 12px; z-index:3; border-color:var(--dgc-gold); color:var(--dgc-gold); }
+  .dgc-btn-city-quick:hover { background:rgba(var(--dgc-gold-rgb),0.1); }
   .dgc-select-heading { font-family:var(--dgc-font-display); font-weight:800; font-size:20px; letter-spacing:2px; text-align:center; color:var(--dgc-primary); text-shadow:0 0 16px rgba(var(--dgc-primary-rgb),0.45); margin:6px 0 4px; }
 
   /* ---------- "3D-ish" character staging (ground shadow + rim-light aura) ---------- */
@@ -22303,6 +22309,74 @@ $ git stash pop
   .dgc-trophy-boss-tag.cleared { color:var(--dgc-success); background:rgba(var(--dgc-success-rgb),0.12); border:1px solid rgba(var(--dgc-success-rgb),0.3); }
   .dgc-trophy-boss-tag.locked { color:var(--dgc-text-dimmer); background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border); }
   .dgc-trophy-note { font-size:10px; color:var(--dgc-text-dimmer); font-style:italic; }
+
+  /* ============================================================
+     PHASE 4 — DEVOPS CITY HUB. A stylized town-square: a ground strip,
+     hero + Sudo idle-posed on it, and five distinct building "shops" the
+     player clicks into. Deliberately a warm card-based town row rather
+     than a literal free-walk isometric map (out of reach for a single
+     CSS/SVG panel at this scope) — still reads as a place, not a menu.
+     ============================================================ */
+  .dgc-screen-city { position:relative; padding-top:8px; }
+  .dgc-city-stage {
+    position:relative; display:flex; align-items:flex-end; justify-content:center; gap:70px;
+    min-height:200px; margin:14px 0 20px; border-radius:12px; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 0%, var(--dgc-bg-3) 0%, var(--dgc-bg) 75%);
+    border:1px solid var(--dgc-border);
+  }
+  .dgc-city-ground {
+    position:absolute; left:0; right:0; bottom:0; height:38px;
+    background:linear-gradient(180deg, var(--dgc-secondary-dim), #14260f);
+    border-top:2px solid rgba(var(--dgc-success-rgb),0.4);
+  }
+  .dgc-city-hero-pose, .dgc-city-sudo-pose { position:relative; display:flex; flex-direction:column; align-items:center; z-index:1; padding-bottom:30px; }
+  .dgc-city-hero-sprite { width:120px; height:152px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+  .dgc-city-sudo-sprite { width:84px; height:106px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+  .dgc-city-hero-pose .dgc-hero-name { margin-top:4px; }
+  .dgc-city-sudo-pose .dgc-sudo-bubble { position:static; margin-bottom:6px; }
+
+  .dgc-city-buildings { display:flex; flex-wrap:wrap; justify-content:center; gap:22px; margin-bottom:18px; }
+  .dgc-city-building { width:128px; cursor:pointer; text-align:center; transition:transform .15s; }
+  .dgc-city-building:hover, .dgc-city-building:focus-visible { transform:translateY(-4px); outline:none; }
+  .dgc-city-building-roof {
+    width:0; height:0; margin:0 auto;
+    border-left:64px solid transparent; border-right:64px solid transparent;
+    border-bottom:34px solid var(--dgc-roof, #7a3c14);
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+  }
+  .dgc-city-building-body {
+    background:var(--dgc-wall, #6b4a28); border:2px solid rgba(0,0,0,0.4); border-top:none;
+    border-radius:0 0 8px 8px; padding:14px 8px 12px; box-shadow:0 4px 10px rgba(0,0,0,0.35);
+  }
+  .dgc-city-building-icon { font-size:30px; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+  .dgc-city-building-name { font-family:var(--dgc-font-display); font-weight:700; font-size:12px; color:#fff; margin-top:4px; text-shadow:0 1px 3px rgba(0,0,0,0.6); }
+  .dgc-city-building-armory { --dgc-roof:#5b6270; --dgc-wall:#7a3c14; }
+  .dgc-city-building-tailor { --dgc-roof:#8f2f27; --dgc-wall:#7a5a3c; }
+  .dgc-city-building-bank { --dgc-roof:#c9a13a; --dgc-wall:#6b5a3c; }
+  .dgc-city-building-library { --dgc-roof:#2f6b45; --dgc-wall:#5c4a2e; }
+  .dgc-city-building-trophy { --dgc-roof:#7a5aa8; --dgc-wall:#6b4a28; }
+
+  /* ---- shared shop-modal layout (Armory/Tailor/Bank/Library) ---- */
+  .dgc-shop-preview { display:flex; justify-content:center; margin-bottom:14px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; }
+  .dgc-shop-preview-sprite { width:110px; height:140px; }
+  .dgc-shop-list { display:flex; flex-direction:column; gap:10px; }
+  .dgc-shop-card { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border); border-radius:8px; padding:10px 12px; }
+  .dgc-shop-card.dgc-shop-card-equipped { border-color:var(--dgc-success); background:rgba(var(--dgc-success-rgb),0.06); }
+  .dgc-shop-card-icon { font-size:22px; flex-shrink:0; width:30px; text-align:center; }
+  .dgc-shop-card-info { flex:1; min-width:0; }
+  .dgc-shop-card-name { font-family:var(--dgc-font-display); font-weight:700; font-size:12.5px; color:var(--dgc-text); }
+  .dgc-shop-card-desc { font-size:10.5px; color:var(--dgc-text-dimmer); margin-top:2px; }
+  .dgc-shop-card-effect { font-size:10px; color:var(--dgc-success-bright); margin-top:2px; font-weight:700; }
+  .dgc-shop-card-lock { font-size:10px; color:var(--dgc-warn); margin-top:2px; }
+  .dgc-shop-card-action { flex-shrink:0; }
+  .dgc-shop-card-cost { font-size:11px; color:var(--dgc-gold); font-weight:700; white-space:nowrap; }
+
+  .dgc-bank-balance { font-family:var(--dgc-font-display); font-size:24px; font-weight:800; color:var(--dgc-gold); text-align:center; margin-bottom:10px; }
+  .dgc-bank-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; font-size:12px; }
+  .dgc-bank-trickle-note { color:var(--dgc-success-bright); font-size:11px; font-weight:700; }
+  .dgc-bank-invest-row { display:flex; gap:8px; margin:10px 0; }
+  .dgc-bank-note { font-size:10.5px; color:var(--dgc-text-dimmer); line-height:1.6; margin-top:8px; }
+  .dgc-library-note { font-size:11px; color:var(--dgc-text-dim); margin-bottom:12px; line-height:1.6; }
 
   .dgc-modal-confirm { max-width:340px; }
   .dgc-confirm-message { margin-bottom:16px; }
@@ -22881,6 +22955,9 @@ $ git stash pop
         <button class="dgc-menu-item dgc-menu-danger" id="dgcMenuNewGame" hidden>
           <span class="dgc-menu-item-icon">⟳</span>NEW GAME
         </button>
+        <button class="dgc-menu-item" id="dgcMenuCity">
+          <span class="dgc-menu-item-icon">🏙</span>DEVOPS CITY
+        </button>
         <button class="dgc-menu-item" id="dgcMenuHowToPlay">
           <span class="dgc-menu-item-icon">❔</span>HOW TO PLAY
         </button>
@@ -22938,7 +23015,52 @@ $ git stash pop
         <div class="dgc-trophy-stats-grid" id="dgcTrophyStatsGrid"></div>
         <div class="dgc-trophy-label">BOSSES</div>
         <div class="dgc-trophy-boss-list" id="dgcTrophyBossList"></div>
-        <div class="dgc-trophy-note">The full Trophy Hall — badges, per-boss best times, and more — arrives with the DevOps City hub.</div>
+        <div class="dgc-trophy-note">A living record of every run — nothing here can be bought, only earned.</div>
+      </div>
+    </div>
+
+    <!-- ============ PHASE 4 — CITY BUILDING MODALS ============ -->
+    <div class="dgc-modal" id="dgcArmoryModal" hidden>
+      <div class="dgc-modal-header"><span>⚒️ ARMORY</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body">
+        <div class="dgc-shop-preview"><div class="dgc-sprite dgc-shop-preview-sprite" id="dgcArmoryPreviewSprite"></div></div>
+        <div class="dgc-shop-list" id="dgcArmoryList"></div>
+      </div>
+    </div>
+
+    <div class="dgc-modal" id="dgcTailorModal" hidden>
+      <div class="dgc-modal-header"><span>🧵 TAILOR</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body">
+        <div class="dgc-shop-preview"><div class="dgc-sprite dgc-shop-preview-sprite" id="dgcTailorPreviewSprite"></div></div>
+        <div class="dgc-shop-list" id="dgcTailorList"></div>
+      </div>
+    </div>
+
+    <div class="dgc-modal" id="dgcBankModal" hidden>
+      <div class="dgc-modal-header"><span>🏦 BANK</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body">
+        <div class="dgc-bank-balance">🪙 <span id="dgcBankBalance">0</span> coins</div>
+        <div class="dgc-bank-row">
+          <div>Invested: <strong id="dgcBankInvested">0</strong> coins</div>
+          <div class="dgc-bank-trickle-note" id="dgcBankTrickleNote"></div>
+        </div>
+        <button class="dgc-btn dgc-btn-primary" id="dgcBankCollectBtn" hidden>Collect waiting coins</button>
+        <div class="dgc-bank-invest-row">
+          <div class="dgc-terminal" style="max-width:220px;">
+            <span class="dgc-terminal-prompt">🪙</span>
+            <input type="text" inputmode="numeric" class="dgc-terminal-input" id="dgcBankInvestInput" autocomplete="off" placeholder="amount to invest">
+          </div>
+          <button class="dgc-btn" id="dgcBankInvestBtn">Invest</button>
+        </div>
+        <div class="dgc-bank-note">A modest trickle of coins builds up while you're away, scaled to how much you've invested — capped, and never a substitute for actually fighting.</div>
+      </div>
+    </div>
+
+    <div class="dgc-modal" id="dgcLibraryModal" hidden>
+      <div class="dgc-modal-header"><span>📚 LIBRARY</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body">
+        <div class="dgc-library-note">Advanced Packs add extra real interview questions into a cleared boss's own question pool for future fights.</div>
+        <div class="dgc-shop-list" id="dgcLibraryList"></div>
       </div>
     </div>
 
@@ -22958,6 +23080,7 @@ $ git stash pop
        Reached from the title screen's Start/Continue button. -->
   <div class="dgc-screen dgc-screen-start" id="dgcStartScreen" hidden>
     <button class="dgc-btn dgc-btn-back" id="dgcBackToTitleBtn">← Title</button>
+    <button class="dgc-btn dgc-btn-city-quick" id="dgcVisitCityFromSelectBtn">🏙 DevOps City</button>
     <div class="dgc-select-heading">SELECT YOUR BATTLE</div>
     <div class="dgc-subtitle">Level up your career. Fight topic bosses. Type real commands.</div>
     <div class="dgc-hero-preview">
@@ -22985,6 +23108,58 @@ $ git stash pop
          entry, the Final Boss rendered locked/silhouetted until every
          topic boss is cleared. Replaying a cleared boss stays available. -->
     <div class="dgc-boss-select" id="dgcBossSelectGrid"></div>
+  </div>
+
+  <!-- ============ PHASE 4 — DEVOPS CITY HUB ============
+       Reached from the main menu, from Boss Select's quick-access button,
+       or as the default destination after a victory. A warm town-square
+       hub — five buildings, hero + Sudo idle on screen (the best place in
+       the whole game to show off owned gear), quick nav back to fighting. -->
+  <div class="dgc-screen dgc-screen-city" id="dgcCityScreen" hidden>
+    <button class="dgc-btn dgc-btn-back" id="dgcCityBackBtn">← Boss Select</button>
+    <div class="dgc-select-heading">DEVOPS CITY</div>
+    <div class="dgc-subtitle">Spend what you've earned. Gear up for the next fight.</div>
+
+    <div class="dgc-city-stage">
+      <div class="dgc-city-ground"></div>
+      <div class="dgc-city-hero-pose">
+        <div class="dgc-char-aura dgc-char-aura-hero"></div>
+        <div class="dgc-sprite dgc-city-hero-sprite" id="dgcCityHeroSprite"></div>
+        <div class="dgc-hero-name" id="dgcCityHeroName">Junior Dev</div>
+      </div>
+      <div class="dgc-city-sudo-pose">
+        <div class="dgc-sudo-bubble dgc-show" id="dgcCitySudoBubble">Try the Armory — new gear helps.</div>
+        <div class="dgc-sprite dgc-city-sudo-sprite" id="dgcCitySudoSprite"></div>
+      </div>
+    </div>
+
+    <div class="dgc-city-buildings" id="dgcCityBuildings">
+      <div class="dgc-city-building dgc-city-building-armory" data-building="armory" tabindex="0" role="button">
+        <div class="dgc-city-building-roof"></div>
+        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">⚒️</div><div class="dgc-city-building-name">Armory</div></div>
+      </div>
+      <div class="dgc-city-building dgc-city-building-tailor" data-building="tailor" tabindex="0" role="button">
+        <div class="dgc-city-building-roof"></div>
+        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">🧵</div><div class="dgc-city-building-name">Tailor</div></div>
+      </div>
+      <div class="dgc-city-building dgc-city-building-bank" data-building="bank" tabindex="0" role="button">
+        <div class="dgc-city-building-roof"></div>
+        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">🏦</div><div class="dgc-city-building-name">Bank</div></div>
+      </div>
+      <div class="dgc-city-building dgc-city-building-library" data-building="library" tabindex="0" role="button">
+        <div class="dgc-city-building-roof"></div>
+        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">📚</div><div class="dgc-city-building-name">Library</div></div>
+      </div>
+      <div class="dgc-city-building dgc-city-building-trophy" data-building="trophy" tabindex="0" role="button">
+        <div class="dgc-city-building-roof"></div>
+        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">🏆</div><div class="dgc-city-building-name">Trophy Hall</div></div>
+      </div>
+    </div>
+
+    <div class="dgc-stats-row">
+      <div class="dgc-stat-chip">🪙 <span id="dgcCityCoinsDisplay">0</span> coins</div>
+      <div class="dgc-stat-chip">LEVEL <span id="dgcCityLevelDisplay">1</span></div>
+    </div>
   </div>
 
   <!-- ============ COMBAT SCREEN ============ -->
@@ -23070,7 +23245,8 @@ $ git stash pop
       <div>⭐ +<span id="dgcVictoryXp">0</span> XP earned</div>
       <div>🔥 Best combo: x<span id="dgcVictoryCombo">1</span></div>
     </div>
-    <button class="dgc-btn dgc-btn-primary" id="dgcVictoryContinueBtn">Continue</button>
+    <button class="dgc-btn dgc-btn-primary" id="dgcVictoryContinueBtn">🏙 Visit the City</button>
+    <button class="dgc-btn dgc-btn-text" id="dgcVictorySkipCityBtn">Skip to Boss Select →</button>
   </div>
 
   <!-- ============ DEFEAT SCREEN ============ -->
@@ -26234,6 +26410,7 @@ $ git stash pop
   function showScreen(name) {
     $('dgcTitleScreen').hidden = name !== 'title';
     $('dgcStartScreen').hidden = name !== 'start';
+    $('dgcCityScreen').hidden = name !== 'city';
     $('dgcCombatScreen').hidden = name !== 'combat';
     $('dgcReviewScreen').hidden = name !== 'review';
     $('dgcVictoryScreen').hidden = name !== 'victory';
@@ -26277,6 +26454,55 @@ $ git stash pop
     $('dgcStatLuck').textContent = '+' + Math.round(save.stats.luck * 100) + '%';
     renderBossSelectGrid();
   }
+
+  /* ============================================================
+     PHASE 4 — LIBRARY. Advanced Packs: real, extra questions per topic
+     boss, purchasable once that boss is cleared, that fold into that
+     boss's own no-repeat pool (see currentPhaseQuestions()) rather than
+     needing any separate UI/engine path. Deliberately NOT offered for
+     the Final Boss (pager) — its own pool is already every other boss's
+     content mixed together. Same question schema as every other boss
+     question (see BOSSES above) — nothing special about these entries
+     except where they live.
+     ============================================================ */
+  var LIBRARY_ADVANCED_PACKS = {
+    terminalGolem: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Find out which process is bound to TCP port 8080."</strong>', damageIfCorrect: 18, damageIfOptimal: 30, hintNudge: 'A modern replacement for netstat shows listening sockets with their owning process.', hintPartial: 'sudo ss -tulpn | grep ___', hintFull: 'sudo ss -tulpn | grep 8080', acceptablePatterns: [/^sudo\s+lsof\s+-i\s*:8080$/i, /^sudo\s+netstat\s+-tulpn\s*\|\s*grep\s+8080$/i], optimalPatterns: [/^sudo\s+ss\s+-tulpn\s*\|\s*grep\s+8080$/i], baseCmds: ['ss', 'lsof', 'netstat'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Watch a growing log file live, as new lines are appended."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'One flag on a classic file-viewing command means "keep watching."', hintPartial: 'tail -_ /var/log/app.log', hintFull: 'tail -f /var/log/app.log', acceptablePatterns: [/^tail\s+-F\s+\/var\/log\/app\.log$/i], optimalPatterns: [/^tail\s+-f\s+\/var\/log\/app\.log$/i], baseCmds: ['tail'] }
+    ],
+    kraken: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"One image layer is way too large — show layer-by-layer size history for image myapp."</strong>', damageIfCorrect: 18, damageIfOptimal: 30, hintNudge: 'A docker subcommand shows every layer an image was built from, and their sizes.', hintPartial: 'docker ______ myapp', hintFull: 'docker history myapp', acceptablePatterns: [/^docker\s+image\s+history\s+myapp$/i], optimalPatterns: [/^docker\s+history\s+myapp$/i], baseCmds: ['docker'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Show live CPU/memory usage across every running container."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'It\'s the container-world equivalent of `top`.', hintPartial: 'docker _____', hintFull: 'docker stats', acceptablePatterns: [/^docker\s+stats\s+--no-stream$/i], optimalPatterns: [/^docker\s+stats$/i], baseCmds: ['docker'] }
+    ],
+    hydra: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Undo the last commit, but keep its changes staged so you can redo it properly."</strong>', damageIfCorrect: 18, damageIfOptimal: 30, hintNudge: 'A reset mode that moves HEAD back but leaves your index (staging area) untouched.', hintPartial: 'git reset --____ HEAD~1', hintFull: 'git reset --soft HEAD~1', acceptablePatterns: [/^git\s+reset\s+--soft\s+HEAD\^$/i], optimalPatterns: [/^git\s+reset\s+--soft\s+HEAD~1$/i], baseCmds: ['git'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"See exactly who last changed each line of file.txt, and in which commit."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'A command literally named after assigning responsibility, line by line.', hintPartial: 'git _____ file.txt', hintFull: 'git blame file.txt', acceptablePatterns: [/^git\s+blame\s+-L\s+1,20\s+file\.txt$/i], optimalPatterns: [/^git\s+blame\s+file\.txt$/i], baseCmds: ['git'] }
+    ],
+    orchestrator: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"A pod is stuck in CrashLoopBackOff — check the logs from its PREVIOUS crashed instance, not the current one."</strong>', damageIfCorrect: 20, damageIfOptimal: 32, hintNudge: 'kubectl logs has a flag specifically for the container instance before the current restart.', hintPartial: 'kubectl logs pod-name ________', hintFull: 'kubectl logs pod-name --previous', acceptablePatterns: [/^kubectl\s+logs\s+pod-name\s+-p$/i], optimalPatterns: [/^kubectl\s+logs\s+pod-name\s+--previous$/i], baseCmds: ['kubectl'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"List every pod across ALL namespaces, not just the default one."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'One flag broadens `get pods` from one namespace to the whole cluster.', hintPartial: 'kubectl get pods ______________', hintFull: 'kubectl get pods --all-namespaces', acceptablePatterns: [/^kubectl\s+get\s+pods\s+-A$/i], optimalPatterns: [/^kubectl\s+get\s+pods\s+--all-namespaces$/i], baseCmds: ['kubectl'] }
+    ],
+    phantom: [
+      { mode: 'triage_call', prompt: 'Advanced: <strong>"A pipeline stage fails intermittently, only on the shared runner. What\'s the right first move?"</strong>', damageIfCorrect: 20, damageIfOptimal: 32, hintNudge: 'Intermittent + "only on shared infra" points at the environment, not your code.', hintPartial: 'Look at what else the runner is doing when it fails — resource contention is the classic culprit.', hintFull: 'Investigate the runner\'s environment/resource contention (noisy-neighbor jobs, memory limits) before touching the pipeline code.', options: [ { id: 'a', label: 'Just keep re-running it until it passes', tier: 'wrong', why: 'Masks the problem instead of finding it — it WILL fail again, on someone else\'s watch.' }, { id: 'b', label: 'Investigate the shared runner\'s environment/resource contention', tier: 'best', why: 'Intermittent + shared infra is a strong signal the runner itself is the variable, not your code.' }, { id: 'c', label: 'Delete and recreate the whole pipeline', tier: 'wrong', why: 'Throws away a working pipeline definition over what is very likely an infra issue, not a config issue.' } ], justificationPatterns: [/runner|resource|contention|environment|noisy|shared|infra/i] },
+      { mode: 'triage_call', prompt: 'Advanced: <strong>"Your deploy step needs a secret, and it must never show up in logs. What\'s the right approach?"</strong>', damageIfCorrect: 20, damageIfOptimal: 32, hintNudge: 'The CI platform itself has a purpose-built feature for exactly this.', hintPartial: 'Store it in the platform\'s own encrypted secret store, then reference it by variable name.', hintFull: 'Use the CI platform\'s encrypted secrets store and reference the secret by variable — never hardcode it or echo it.', options: [ { id: 'a', label: 'Hardcode it directly in the pipeline YAML', tier: 'wrong', why: 'Now it\'s sitting in plaintext in version control forever, visible to anyone with repo access.' }, { id: 'b', label: 'Use the CI platform\'s encrypted secret store, reference it by variable', tier: 'best', why: 'The standard, purpose-built mechanism — encrypted at rest, injected at runtime, never printed unless you explicitly echo it.' }, { id: 'c', label: 'Print it once to confirm it\'s right, then remove the print line', tier: 'wrong', why: 'It\'s now in that build\'s log history — "temporary" logging of secrets rarely stays temporary.' } ], justificationPatterns: [/secret\s*store|encrypted|variable|vault|never\s*hardcode/i] }
+    ],
+    reaper: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Test whether a remote host\'s port 443 is reachable, without opening a browser."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'A small utility built specifically for probing whether a TCP/UDP port is open.', hintPartial: 'nc -__ host 443', hintFull: 'nc -zv host 443', acceptablePatterns: [/^telnet\s+host\s+443$/i], optimalPatterns: [/^nc\s+-zv\s+host\s+443$/i], baseCmds: ['nc', 'telnet'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Show this machine\'s current routing table."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'The modern `ip` tool replaced the old `route` command for this.', hintPartial: 'ip _____', hintFull: 'ip route', acceptablePatterns: [/^route\s+-n$/i, /^netstat\s+-rn$/i], optimalPatterns: [/^ip\s+route$/i], baseCmds: ['ip', 'route', 'netstat'] }
+    ],
+    titan: [
+      { mode: 'triage_call', prompt: 'Advanced: <strong>"The monthly cloud bill spiked hard overnight, with no new deploys. What\'s the right first move?"</strong>', damageIfCorrect: 20, damageIfOptimal: 32, hintNudge: 'You need to see WHERE the money went before you can act on it.', hintPartial: 'Check the billing/cost-explorer dashboard, broken down by service, to isolate the anomaly.', hintFull: 'Check the cost-explorer/billing dashboard broken down by service to find exactly what spiked before touching anything.', options: [ { id: 'a', label: 'Immediately shut down all running instances', tier: 'wrong', why: 'Fixes the bill by taking down production — you\'ve traded a cost problem for an outage.' }, { id: 'b', label: 'Check the cost-explorer/billing dashboard by service to find the anomaly', tier: 'best', why: 'You need to know WHAT spiked before you can safely act — a data-runaway, an idle-but-billed resource, a misconfigured autoscaler, all look identical from the total alone.' }, { id: 'c', label: 'Ignore it — cloud bills fluctuate naturally', tier: 'wrong', why: 'A hard spike with zero deploys is a signal, not noise — something changed.' } ], justificationPatterns: [/cost\s*explorer|billing|dashboard|breakdown|by\s*service/i] },
+      { mode: 'triage_call', prompt: 'Advanced: <strong>"A storage bucket is publicly readable and shouldn\'t be. What\'s the right fix?"</strong>', damageIfCorrect: 20, damageIfOptimal: 32, hintNudge: 'Fix the ACCESS, not the container it lives in — and check who already got in.', hintPartial: 'Update the bucket\'s policy/ACL to remove public access, then audit access logs.', hintFull: 'Update the bucket policy/ACL to remove public access and audit access logs for anything that already got read.', options: [ { id: 'a', label: 'Delete the bucket entirely', tier: 'defensible', why: 'Stops the leak but may destroy data you still need — usually more than the situation calls for.' }, { id: 'b', label: 'Fix the bucket policy/ACL to remove public access, then audit access logs', tier: 'best', why: 'Directly fixes the actual problem (the permission) and checks whether the exposure was already exploited.' }, { id: 'c', label: 'Rename the bucket', tier: 'wrong', why: 'The new bucket can be just as public as the old one — renaming does nothing to the actual permissions.' } ], justificationPatterns: [/policy|acl|public\s*access|audit|permission/i] }
+    ],
+    statekeeper: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Preview exactly what Terraform would change, without applying anything."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'The dry-run subcommand every Terraform workflow starts with.', hintPartial: 'terraform ____', hintFull: 'terraform plan', acceptablePatterns: [/^terraform\s+plan\s+-out=plan\.tfplan$/i], optimalPatterns: [/^terraform\s+plan$/i], baseCmds: ['terraform'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Bring an existing, manually-created resource under Terraform management without recreating it."</strong>', damageIfCorrect: 20, damageIfOptimal: 32, hintNudge: 'One subcommand adopts a real-world resource into state by its resource address and its real-world ID.', hintPartial: 'terraform ______ aws_instance.web i-0123456789', hintFull: 'terraform import aws_instance.web i-0123456789', acceptablePatterns: [/^terraform\s+import\s+\S+\s+\S+$/i], optimalPatterns: [/^terraform\s+import\s+aws_instance\.web\s+\S+$/i], baseCmds: ['terraform'] }
+    ],
+    wraith: [
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Count how many lines in access.log match \'ERROR\', without printing the lines themselves."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'grep has a flag that reports a count instead of the matching lines.', hintPartial: 'grep -_ ERROR access.log', hintFull: 'grep -c ERROR access.log', acceptablePatterns: [/^grep\s+ERROR\s+access\.log\s*\|\s*wc\s+-l$/i], optimalPatterns: [/^grep\s+-c\s+ERROR\s+access\.log$/i], baseCmds: ['grep'] },
+      { mode: 'terminal', prompt: 'Advanced: <strong>"Check a Python script\'s syntax without actually executing its logic."</strong>', damageIfCorrect: 18, damageIfOptimal: 28, hintNudge: 'A module built into Python compiles a file without running it.', hintPartial: 'python -m ___________ script.py', hintFull: 'python -m py_compile script.py', acceptablePatterns: [/^python3\s+-m\s+py_compile\s+script\.py$/i], optimalPatterns: [/^python\s+-m\s+py_compile\s+script\.py$/i], baseCmds: ['python'] }
+    ]
+  };
 
   /* ============================================================
      PHASE 3 — BOSS SELECT GRID. One card per boss in BOSS_ORDER, each
@@ -26340,7 +26566,8 @@ $ git stash pop
      ============================================================ */
   function openModal(modalId) {
     $('dgcModalBackdrop').hidden = false;
-    ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcConfirmModal'].forEach(function (id) {
+    ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcConfirmModal',
+     'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal'].forEach(function (id) {
       $(id).hidden = id !== modalId;
     });
   }
@@ -26379,6 +26606,197 @@ $ git stash pop
         '<span class="dgc-trophy-boss-tag ' + (cleared ? 'cleared">✓ Cleared' : 'locked">Not Cleared') + '</span>' +
         '</div>';
     }).join('');
+  }
+
+  /* ============================================================
+     PHASE 4 — DEVOPS CITY HUB: navigation + the five buildings.
+     ============================================================ */
+  function refreshCityStatsBar() {
+    var coinsEl = $('dgcCityCoinsDisplay'); if (coinsEl) coinsEl.textContent = save.coins;
+    var levelEl = $('dgcCityLevelDisplay'); if (levelEl) levelEl.textContent = save.level;
+  }
+  function goToCityScreen() {
+    var sudoSprite = $('dgcCitySudoSprite');
+    if (sudoSprite) { sudoSprite.innerHTML = chibiRoot('sudo'); setExpression(sudoSprite, 'happy'); }
+    refreshHeroTierVisuals(); // also (re)renders #dgcCityHeroSprite + name labels, live off `save`
+    refreshCityStatsBar();
+    showScreen('city');
+  }
+
+  /* ---- 2.1 ARMORY ---- */
+  function renderArmory() {
+    var preview = $('dgcArmoryPreviewSprite');
+    if (preview) { preview.innerHTML = chibiRoot('hero'); setExpression(preview, 'confident'); }
+    $('dgcArmoryList').innerHTML = WEAPON_SHOP.map(function (w) {
+      var owned = save.ownedWeapons.indexOf(w.id) !== -1;
+      var equipped = save.equippedWeapon === w.id;
+      var action = equipped
+        ? '<span class="dgc-shop-card-cost" style="color:var(--dgc-success);">✓ Equipped</span>'
+        : owned
+          ? '<button class="dgc-btn dgc-btn-primary" data-weapon-action="equip" data-weapon-id="' + w.id + '">Equip</button>'
+          : '<button class="dgc-btn" data-weapon-action="buy" data-weapon-id="' + w.id + '">Buy — ' + w.cost + '🪙</button>';
+      return '<div class="dgc-shop-card' + (equipped ? ' dgc-shop-card-equipped' : '') + '">' +
+        '<div class="dgc-shop-card-icon">⚔️</div>' +
+        '<div class="dgc-shop-card-info">' +
+          '<div class="dgc-shop-card-name">' + w.name + '</div>' +
+          '<div class="dgc-shop-card-desc">' + w.desc + '</div>' +
+          (w.effectLabel ? '<div class="dgc-shop-card-effect">' + w.effectLabel + '</div>' : '') +
+        '</div>' +
+        '<div class="dgc-shop-card-action">' + action + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  function buyWeapon(id) {
+    var w = WEAPON_SHOP.filter(function (w) { return w.id === id; })[0];
+    if (!w || save.ownedWeapons.indexOf(id) !== -1) return;
+    if (save.coins < w.cost) { playSfx('insufficientFunds'); return; }
+    save.coins -= w.cost;
+    save.ownedWeapons.push(id);
+    save.equippedWeapon = id; // buying a weapon equips it immediately — you see it right away
+    persist();
+    playSfx('purchase');
+    refreshHeroTierVisuals();
+    renderArmory();
+  }
+  function equipWeapon(id) {
+    if (save.ownedWeapons.indexOf(id) === -1 || save.equippedWeapon === id) return;
+    save.equippedWeapon = id;
+    persist();
+    playSfx('equip');
+    refreshHeroTierVisuals();
+    renderArmory();
+  }
+
+  /* ---- 2.2 TAILOR ---- */
+  function renderTailor() {
+    var preview = $('dgcTailorPreviewSprite');
+    if (preview) { preview.innerHTML = chibiRoot('hero'); setExpression(preview, 'happy'); }
+    $('dgcTailorList').innerHTML = OUTFIT_SHOP.map(function (o) {
+      var owned = save.ownedOutfits.indexOf(o.id) !== -1;
+      var equipped = save.equippedOutfit === o.id;
+      var levelLocked = !owned && save.level < o.minLevel;
+      var action = equipped
+        ? '<span class="dgc-shop-card-cost" style="color:var(--dgc-success);">✓ Equipped</span>'
+        : owned
+          ? '<button class="dgc-btn dgc-btn-primary" data-outfit-action="equip" data-outfit-id="' + o.id + '">Equip</button>'
+          : levelLocked
+            ? '<span class="dgc-shop-card-lock">🔒 Lv ' + o.minLevel + '</span>'
+            : '<button class="dgc-btn" data-outfit-action="buy" data-outfit-id="' + o.id + '">Buy — ' + o.cost + '🪙</button>';
+      return '<div class="dgc-shop-card' + (equipped ? ' dgc-shop-card-equipped' : '') + '">' +
+        '<div class="dgc-shop-card-icon">🧥</div>' +
+        '<div class="dgc-shop-card-info">' +
+          '<div class="dgc-shop-card-name">' + o.name + '</div>' +
+          '<div class="dgc-shop-card-desc">' + o.desc + '</div>' +
+          (o.effectLabel ? '<div class="dgc-shop-card-effect">' + o.effectLabel + '</div>' : '') +
+          (levelLocked ? '<div class="dgc-shop-card-lock">Unlocks at level ' + o.minLevel + '</div>' : '') +
+        '</div>' +
+        '<div class="dgc-shop-card-action">' + action + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  function buyOutfit(id) {
+    var o = OUTFIT_SHOP.filter(function (o) { return o.id === id; })[0];
+    if (!o || save.ownedOutfits.indexOf(id) !== -1 || save.level < o.minLevel) return;
+    if (save.coins < o.cost) { playSfx('insufficientFunds'); return; }
+    save.coins -= o.cost;
+    save.ownedOutfits.push(id);
+    save.equippedOutfit = id;
+    persist();
+    playSfx('purchase');
+    refreshHeroTierVisuals();
+    renderTailor();
+  }
+  function equipOutfit(id) {
+    if (save.ownedOutfits.indexOf(id) === -1 || save.equippedOutfit === id) return;
+    save.equippedOutfit = id;
+    persist();
+    playSfx('equip');
+    refreshHeroTierVisuals();
+    renderTailor();
+  }
+
+  /* ---- 2.3 BANK ---- */
+  // Deliberately conservative: even fully invested (well beyond what's
+  // realistic early-game), the trickle caps out modest per hour, and the
+  // total waiting amount is capped outright — a nice bonus for returning,
+  // never a replacement for actually fighting.
+  var BANK_TRICKLE_CAP = 150;
+  var BANK_COINS_PER_HOUR_PER_100_INVESTED = 4;
+  function computeBankTrickle() {
+    if (save.bankInvestedAmount <= 0) return 0;
+    var hoursElapsed = (Date.now() - save.lastBankVisitTimestamp) / 3600000;
+    var rate = (save.bankInvestedAmount / 100) * BANK_COINS_PER_HOUR_PER_100_INVESTED;
+    return Math.min(BANK_TRICKLE_CAP, Math.floor(hoursElapsed * rate));
+  }
+  function renderBank() {
+    $('dgcBankBalance').textContent = save.coins;
+    $('dgcBankInvested').textContent = save.bankInvestedAmount;
+    var pending = computeBankTrickle();
+    var note = $('dgcBankTrickleNote');
+    var collectBtn = $('dgcBankCollectBtn');
+    if (pending > 0) { note.textContent = '+' + pending + ' coins waiting'; collectBtn.hidden = false; }
+    else { note.textContent = save.bankInvestedAmount > 0 ? 'building up…' : ''; collectBtn.hidden = true; }
+  }
+  function investInBank() {
+    var input = $('dgcBankInvestInput');
+    var amount = parseInt(input.value, 10);
+    if (!amount || amount <= 0) return;
+    if (amount > save.coins) { playSfx('insufficientFunds'); return; }
+    collectBankTrickle(true); // never silently lose pending trickle when the invested amount changes
+    save.coins -= amount;
+    save.bankInvestedAmount += amount;
+    persist();
+    playSfx('purchase');
+    input.value = '';
+    renderBank();
+  }
+  function collectBankTrickle(silent) {
+    var pending = computeBankTrickle();
+    if (pending > 0) {
+      save.coins += pending;
+      if (!silent) playSfx('coin');
+    }
+    save.lastBankVisitTimestamp = Date.now();
+    persist();
+    renderBank();
+  }
+
+  /* ---- 2.4 LIBRARY ---- */
+  var LIBRARY_PACK_COST = 220;
+  function renderLibrary() {
+    var list = $('dgcLibraryList');
+    var clearedWithPacks = BOSS_ORDER.filter(function (id) {
+      return id !== FINAL_BOSS_ID && save.bossesDefeated.indexOf(id) !== -1 && LIBRARY_ADVANCED_PACKS[id];
+    });
+    if (!clearedWithPacks.length) {
+      list.innerHTML = '<div class="dgc-library-note">Clear a topic boss to unlock its Advanced Pack here.</div>';
+      return;
+    }
+    list.innerHTML = clearedWithPacks.map(function (id) {
+      var boss = BOSSES[id];
+      var pack = LIBRARY_ADVANCED_PACKS[id];
+      var unlocked = save.unlockedLibraryPacks.indexOf(id) !== -1;
+      var action = unlocked
+        ? '<span class="dgc-shop-card-cost" style="color:var(--dgc-success);">✓ Unlocked</span>'
+        : '<button class="dgc-btn" data-library-action="buy" data-library-boss-id="' + id + '">Buy — ' + LIBRARY_PACK_COST + '🪙</button>';
+      return '<div class="dgc-shop-card' + (unlocked ? ' dgc-shop-card-equipped' : '') + '">' +
+        '<div class="dgc-shop-card-icon">' + boss.icon + '</div>' +
+        '<div class="dgc-shop-card-info">' +
+          '<div class="dgc-shop-card-name">' + boss.name + ' — Advanced Pack</div>' +
+          '<div class="dgc-shop-card-desc">' + pack.length + ' extra real ' + boss.topic + ' questions, folded into this boss\'s final-phase pool for future fights.</div>' +
+        '</div>' +
+        '<div class="dgc-shop-card-action">' + action + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  function buyLibraryPack(bossId) {
+    if (!bossId || save.unlockedLibraryPacks.indexOf(bossId) !== -1) return;
+    if (save.coins < LIBRARY_PACK_COST) { playSfx('insufficientFunds'); return; }
+    save.coins -= LIBRARY_PACK_COST;
+    save.unlockedLibraryPacks.push(bossId);
+    persist();
+    playSfx('purchase');
+    renderLibrary();
   }
 
   function resetAllProgress() {
@@ -26489,7 +26907,11 @@ $ git stash pop
     cast: function () { tone(500, 0.08, { type: 'square', volume: 0.14, freqEnd: 900 }); },
     worldEntry: function () { tone(120, 0.6, { type: 'sawtooth', volume: 0.13, freqEnd: 380 }); },
     fullscreen: function () { tone(600, 0.09, { type: 'sine', volume: 0.13, freqEnd: 900 }); },
-    starterCoins: function () { [660, 880, 1046, 1318].forEach(function (f, i) { setTimeout(function () { tone(f, 0.1, { type: 'square', volume: 0.15 }); }, i * 70); }); }
+    starterCoins: function () { [660, 880, 1046, 1318].forEach(function (f, i) { setTimeout(function () { tone(f, 0.1, { type: 'square', volume: 0.15 }); }, i * 70); }); },
+    // Phase 4 — Armory/Tailor/Bank/Library interaction cues.
+    purchase: function () { [523, 784, 1046].forEach(function (f, i) { setTimeout(function () { tone(f, 0.12, { type: 'triangle', volume: 0.17 }); }, i * 65); }); },
+    equip: function () { tone(300, 0.06, { type: 'square', volume: 0.15 }); setTimeout(function () { tone(420, 0.08, { type: 'square', volume: 0.15 }); }, 50); },
+    insufficientFunds: function () { tone(180, 0.14, { type: 'square', volume: 0.13, freqEnd: 120 }); }
   };
 
   /* ============================================================
@@ -26580,7 +27002,17 @@ $ git stash pop
 
   function currentPhaseQuestions() {
     if (state.isFinalBoss) return getFinalBossMixedPool();
-    return state.boss.phases[state.phaseIdx];
+    var basePool = state.boss.phases[state.phaseIdx];
+    // Phase 4 — Library Advanced Packs fold into the FINAL phase's pool
+    // only, once purchased (see LIBRARY_ADVANCED_PACKS + the Library
+    // building) — same shared no-repeat picker, no separate UI/engine
+    // path, per the master doc's explicit integration requirement.
+    var isLastPhase = state.phaseIdx === state.boss.phases.length - 1;
+    var pack = LIBRARY_ADVANCED_PACKS[state.boss.id];
+    if (isLastPhase && pack && save.unlockedLibraryPacks.indexOf(state.boss.id) !== -1) {
+      return basePool.concat(pack);
+    }
+    return basePool;
   }
 
   /* ============================================================
@@ -27860,7 +28292,13 @@ $ git stash pop
     clearInterval(state && state.timer);
     goToStartScreen();
   });
-  $('dgcVictoryContinueBtn').addEventListener('click', goToStartScreen);
+  // Phase 4: victory's primary Continue now routes to the City (the
+  // natural moment to spend what was just earned) instead of straight
+  // back to Boss Select; a secondary link skips that for players who
+  // just want to keep fighting. Defeat's flow is intentionally untouched
+  // — no added friction after a loss.
+  $('dgcVictoryContinueBtn').addEventListener('click', goToCityScreen);
+  $('dgcVictorySkipCityBtn').addEventListener('click', goToStartScreen);
   $('dgcReviewContinueBtn').addEventListener('click', function () {
     showScreen(pendingPostReviewScreen || 'start');
   });
@@ -27885,10 +28323,55 @@ $ git stash pop
   $('dgcMenuHowToPlay').addEventListener('click', function () { openModal('dgcHowToPlayModal'); });
   $('dgcMenuSettings').addEventListener('click', function () { applySoundToggleUI(); openModal('dgcSettingsModal'); });
   $('dgcMenuTrophy').addEventListener('click', function () { renderTrophyHall(); openModal('dgcTrophyModal'); });
+  $('dgcMenuCity').addEventListener('click', goToCityScreen);
   $('dgcBackToTitleBtn').addEventListener('click', function () {
     refreshTitleScreen();
     showScreen('title');
   });
+
+  /* ---- Phase 4 — DevOps City hub navigation + buildings ---- */
+  $('dgcVisitCityFromSelectBtn').addEventListener('click', goToCityScreen);
+  $('dgcCityBackBtn').addEventListener('click', function () {
+    refreshStartScreen();
+    showScreen('start');
+  });
+  $('dgcCityBuildings').addEventListener('click', function (e) {
+    var card = e.target.closest ? e.target.closest('[data-building]') : null;
+    if (!card) return;
+    playSfx('click');
+    var b = card.getAttribute('data-building');
+    if (b === 'armory') { renderArmory(); openModal('dgcArmoryModal'); }
+    else if (b === 'tailor') { renderTailor(); openModal('dgcTailorModal'); }
+    else if (b === 'bank') { renderBank(); openModal('dgcBankModal'); }
+    else if (b === 'library') { renderLibrary(); openModal('dgcLibraryModal'); }
+    else if (b === 'trophy') { renderTrophyHall(); openModal('dgcTrophyModal'); }
+  });
+  $('dgcCityBuildings').addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var card = e.target.closest ? e.target.closest('[data-building]') : null;
+    if (!card) return;
+    e.preventDefault();
+    card.click();
+  });
+  $('dgcArmoryList').addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-weapon-action]') : null;
+    if (!btn) return;
+    var id = btn.getAttribute('data-weapon-id');
+    if (btn.getAttribute('data-weapon-action') === 'buy') buyWeapon(id); else equipWeapon(id);
+  });
+  $('dgcTailorList').addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-outfit-action]') : null;
+    if (!btn) return;
+    var id = btn.getAttribute('data-outfit-id');
+    if (btn.getAttribute('data-outfit-action') === 'buy') buyOutfit(id); else equipOutfit(id);
+  });
+  $('dgcLibraryList').addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-library-action]') : null;
+    if (!btn) return;
+    buyLibraryPack(btn.getAttribute('data-library-boss-id'));
+  });
+  $('dgcBankInvestBtn').addEventListener('click', investInBank);
+  $('dgcBankCollectBtn').addEventListener('click', function () { collectBankTrickle(false); });
 
   /* ---- Modals ---- */
   document.querySelectorAll('[data-close-modal]').forEach(function (el) {
@@ -27965,6 +28448,11 @@ $ git stash pop
     if (titleSprite) { titleSprite.innerHTML = chibiRoot('hero'); setExpression(titleSprite, 'happy'); }
     var selectSprite = $('dgcSelectHeroSprite');
     if (selectSprite) { selectSprite.innerHTML = chibiRoot('hero'); setExpression(selectSprite, 'confident'); }
+    // Phase 4 — the City hub is the one screen designed specifically to
+    // show off owned gear, so it goes through this exact same refresh
+    // hook (called after every level-up AND every Armory/Tailor equip).
+    var citySprite = $('dgcCityHeroSprite');
+    if (citySprite) { citySprite.innerHTML = chibiRoot('hero'); setExpression(citySprite, 'happy'); }
     refreshHeroNameLabels();
   }
 
@@ -27972,7 +28460,7 @@ $ git stash pop
   // hardcoded "Junior Dev", everywhere that label appears.
   function refreshHeroNameLabels() {
     var tierName = tierById(save.heroTier).name;
-    [ 'dgcTitleHeroTag', 'dgcSelectHeroName', 'dgcCombatHeroName' ].forEach(function (id) {
+    [ 'dgcTitleHeroTag', 'dgcSelectHeroName', 'dgcCombatHeroName', 'dgcCityHeroName' ].forEach(function (id) {
       var el = $(id);
       if (el) el.textContent = tierName;
     });
