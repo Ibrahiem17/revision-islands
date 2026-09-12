@@ -21778,54 +21778,57 @@ $ git stash pop
      DevOps Terminal Combat — all styles prefixed .dgc- to guarantee
      zero collision with any existing class on the page.
 
-     THEME: this game deliberately does NOT reuse the parent site's
-     fonts (JetBrains Mono body text + Syne headers) or its blue/green/
-     amber "documentation" palette. It has its own neon cyberpunk-arcade
-     identity — violet-black backdrop, magenta chrome, electric cyan,
-     acid green, and a bold geometric display font — so it reads as a
-     standalone game module dropped into the page, not a continuation
-     of the site's article styling. Every color and font below is a
-     CSS custom property on .dgc-root specifically so future bosses
-     (Phase 3) and the City hub (Phase 4) inherit the exact same art
-     direction automatically instead of re-deriving it.
+     THEME (Phase 4 art-direction pass): playtesting feedback said the
+     original neon cyberpunk-hologram identity read as "computerized" /
+     tech-dashboard rather than an actual game world. Retired in favor of
+     a warm, illustrated, Pokemon-Emerald-style retro-RPG palette — warm
+     browns/golds, forest green, brick red, dusk sky — with a classic
+     fantasy-game-logo display font. Every color and font is still a CSS
+     custom property on .dgc-root, so this ONE swap re-themes every
+     existing screen (fight, menus, boss select, all Phase 1-3 bosses)
+     retroactively with no per-screen rework, and the City hub inherits
+     it automatically too.
      ============================================================ */
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
 
   .dgc-root {
-    /* backdrop */
-    --dgc-bg: #0a0612;
-    --dgc-bg-2: #150c26;
-    --dgc-bg-3: #1f1238;
-    --dgc-border: #3d2a5c;
-    --dgc-border-bright: #6b4a99;
-    /* text */
-    --dgc-text: #f1e9ff;
-    --dgc-text-dim: #b6a3d6;
-    --dgc-text-dimmer: #7c6a9c;
-    /* game chrome */
-    --dgc-primary: #ff2e9a;
-    --dgc-primary-dim: #7a1552;
-    --dgc-primary-rgb: 255,46,154;
-    --dgc-secondary: #00e5ff;
-    --dgc-secondary-dim: #0a6b78;
-    --dgc-secondary-rgb: 0,229,255;
+    /* backdrop — warm dusk/wood tones instead of violet-black void */
+    --dgc-bg: #1c1409;
+    --dgc-bg-2: #2c2011;
+    --dgc-bg-3: #3d2d16;
+    --dgc-border: #6b4a28;
+    --dgc-border-bright: #a67c3f;
+    /* text — parchment cream instead of cold white-violet */
+    --dgc-text: #f6ecd9;
+    --dgc-text-dim: #cdb98e;
+    --dgc-text-dimmer: #8f7c5a;
+    /* game chrome — warm amber + forest green instead of magenta/cyan neon */
+    --dgc-primary: #e0722c;
+    --dgc-primary-dim: #7a3c14;
+    --dgc-primary-rgb: 224,114,44;
+    --dgc-secondary: #3f8f5c;
+    --dgc-secondary-dim: #1f4a30;
+    --dgc-secondary-rgb: 63,143,92;
     /* combat feedback */
-    --dgc-success: #39ff88;
-    --dgc-success-bright: #7effc0;
-    --dgc-success-rgb: 57,255,136;
-    --dgc-danger: #ff2d55;
-    --dgc-danger-dark: #7a0f28;
-    --dgc-danger-rgb: 255,45,85;
-    --dgc-gold: #ffc93c;
-    --dgc-gold-rgb: 255,201,60;
-    --dgc-crit: #b967ff;
-    --dgc-crit-bright: #d9a6ff;
-    --dgc-crit-rgb: 185,103,255;
-    --dgc-warn: #ff9f1c;
-    /* type */
-    --dgc-font-display: 'Orbitron', sans-serif; /* logo, banners, damage numbers, crit stamp */
-    --dgc-font-ui: 'Rajdhani', sans-serif;       /* menus, buttons, body copy, labels */
-    --dgc-font-mono: 'JetBrains Mono', monospace; /* the actual terminal input + code/output blocks only */
+    --dgc-success: #5fbf6a;
+    --dgc-success-bright: #8fe89a;
+    --dgc-success-rgb: 95,191,106;
+    --dgc-danger: #c94f3d;
+    --dgc-danger-dark: #6e2318;
+    --dgc-danger-rgb: 201,79,61;
+    --dgc-gold: #f2c14e;
+    --dgc-gold-rgb: 242,193,78;
+    --dgc-crit: #a8639e;
+    --dgc-crit-bright: #d99bd0;
+    --dgc-crit-rgb: 168,99,158;
+    --dgc-warn: #e0932c;
+    /* type — a classic fantasy game-logo serif for display, a warm
+       rounded UI font for body copy, monospace kept ONLY for actual
+       typed-command/code text (now framed as spellbook runes, not a
+       hologram console — see .dgc-terminal below). */
+    --dgc-font-display: 'Cinzel', serif; /* logo, banners, damage numbers, crit stamp */
+    --dgc-font-ui: 'Nunito', sans-serif;  /* menus, buttons, body copy, labels */
+    --dgc-font-mono: 'JetBrains Mono', monospace; /* the actual typed input + code/output blocks only */
 
     font-family:var(--dgc-font-ui); color:var(--dgc-text); position:relative; min-height:520px;
   }
@@ -21889,7 +21892,14 @@ $ git stash pop
   .dgc-combo.dgc-combo-pulse { animation:dgc-combo-pulse .35s ease; }
   .dgc-combo.dgc-combo-break { animation:dgc-combo-break .3s ease; }
 
-  .dgc-arena { position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; background:var(--dgc-bg); border:1px solid var(--dgc-border); border-radius:10px; padding:22px 18px 16px; margin-bottom:10px; overflow:hidden; min-height:230px; }
+  /* Phase 4 character-visibility fix: playtesting couldn't actually see
+     expressions during real fights — the sprites were correctly wired
+     but rendered too small (88x112 in an 88px-tall wrap) relative to the
+     surrounding UI. Arena/wrap/sprite are all enlarged below so hero and
+     boss are the dominant, unobstructed focal point on screen; HP bar +
+     name stay ABOVE the sprite (unchanged position) so nothing overlaps
+     the character itself. */
+  .dgc-arena { position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; background:var(--dgc-bg); border:1px solid var(--dgc-border); border-radius:10px; padding:22px 18px 16px; margin-bottom:10px; overflow:hidden; min-height:380px; }
   .dgc-ambient-bg { position:absolute; inset:0; background:
       repeating-linear-gradient(180deg, rgba(var(--dgc-success-rgb),0.035) 0px, rgba(var(--dgc-success-rgb),0.035) 1px, transparent 1px, transparent 3px),
       radial-gradient(circle at 20% 20%, rgba(var(--dgc-secondary-rgb),0.06), transparent 55%),
@@ -21904,11 +21914,11 @@ $ git stash pop
   .dgc-hpbar-boss { background:linear-gradient(90deg,var(--dgc-danger),var(--dgc-danger)); box-shadow:0 0 10px rgba(var(--dgc-danger-rgb),0.5); }
   .dgc-hpbar-fill.dgc-hp-low { background:linear-gradient(90deg,var(--dgc-danger-dark),var(--dgc-danger-dark)); animation:dgc-hp-low-pulse 1s ease-in-out infinite; }
   .dgc-hp-text { font-size:9.5px; color:var(--dgc-text-dimmer); margin-bottom:10px; }
-  .dgc-sprite-wrap { position:relative; height:88px; display:flex; align-items:center; justify-content:center; }
+  .dgc-sprite-wrap { position:relative; height:230px; display:flex; align-items:center; justify-content:center; }
   .dgc-sprite { font-size:56px; transition:transform .12s, filter .12s; animation:dgc-idle-bob 2.2s ease-in-out infinite; }
   .dgc-boss-side .dgc-sprite { animation-delay:.4s; }
   .dgc-boss-glyphs { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:8.5px; color:rgba(var(--dgc-success-rgb),0.28); line-height:1.3; overflow:hidden; letter-spacing:1px; white-space:pre-wrap; padding:4px; text-align:center; pointer-events:none; }
-  .dgc-vs { align-self:center; font-family:var(--dgc-font-display); font-weight:800; font-size:15px; color:var(--dgc-border-bright); padding-top:60px; }
+  .dgc-vs { align-self:center; font-family:var(--dgc-font-display); font-weight:800; font-size:15px; color:var(--dgc-border-bright); padding-top:150px; }
   .dgc-phase-tag { margin-top:8px; font-size:9.5px; color:var(--dgc-crit); background:rgba(var(--dgc-crit-rgb),0.08); border:1px solid rgba(var(--dgc-crit-rgb),0.25); border-radius:12px; padding:3px 10px; display:inline-block; }
 
   .dgc-fx-layer { position:absolute; inset:0; pointer-events:none; z-index:5; overflow:visible; }
@@ -21981,32 +21991,36 @@ $ git stash pop
      this game's world, never a plain UI panel/form control.
      ============================================================ */
 
-  /* ---- TERMINAL: the "hacking console" — a glowing in-world device,
-     not a generic OS terminal-window. Corner HUD brackets + a scanning
-     sweep give it a housing distinct from the parent site's own command
-     boxes. Keypress feedback (.dgc-terminal-keypulse) and the cast/fire
-     bolt on submit both key off this same object. ---- */
+  /* ---- TERMINAL: reframed under the Phase 4 art-direction pass as the
+     hero's SPELLBOOK — a warm, glowing tome the hero reads real commands
+     from, not a hologram console. Same exact mechanic (type a real
+     command/fix/justification) — only the housing changed: a parchment-
+     gradient panel with soft dog-eared page corners instead of hard neon
+     HUD brackets. Keypress feedback (.dgc-terminal-keypulse) and the
+     cast/fire bolt on submit both key off this same object unchanged. ---- */
   .dgc-terminal {
-    position:relative; background:linear-gradient(180deg, var(--dgc-bg-2), var(--dgc-bg));
-    border:1px solid var(--dgc-border); border-radius:4px; padding:11px 14px 11px 16px;
+    position:relative; background:linear-gradient(180deg, var(--dgc-bg-3), var(--dgc-bg-2));
+    border:1px solid var(--dgc-border-bright); border-radius:8px 8px 8px 2px; padding:11px 14px 11px 16px;
     display:flex; align-items:center; gap:7px; font-family:var(--dgc-font-mono);
-    box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.08), 0 0 24px rgba(var(--dgc-success-rgb),0.1) inset;
+    box-shadow:0 0 0 1px rgba(var(--dgc-gold-rgb),0.1), 0 0 22px rgba(var(--dgc-gold-rgb),0.08) inset;
     overflow:hidden;
   }
-  .dgc-terminal::before, .dgc-terminal::after {
-    content:''; position:absolute; width:9px; height:9px; border-color:var(--dgc-success); opacity:0.7;
+  .dgc-terminal::before {
+    content:'📖'; position:absolute; top:2px; left:4px; font-size:10px; opacity:0.55;
   }
-  .dgc-terminal::before { top:3px; left:3px; border-top:2px solid; border-left:2px solid; }
-  .dgc-terminal::after { bottom:3px; right:3px; border-bottom:2px solid; border-right:2px solid; }
-  .dgc-terminal:focus-within { border-color:var(--dgc-success); box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.35), 0 0 26px rgba(var(--dgc-success-rgb),0.2) inset; }
-  .dgc-terminal-prompt { color:var(--dgc-success); font-size:12.5px; white-space:nowrap; text-shadow:0 0 6px rgba(var(--dgc-success-rgb),0.6); }
-  .dgc-terminal-input { flex:1; background:transparent; border:none; outline:none; color:var(--dgc-text); font-family:var(--dgc-font-mono); font-size:12.5px; caret-color:var(--dgc-success); }
+  .dgc-terminal::after {
+    content:''; position:absolute; bottom:0; right:0; width:0; height:0;
+    border-style:solid; border-width:0 0 12px 12px; border-color:transparent transparent rgba(var(--dgc-gold-rgb),0.25) transparent;
+  }
+  .dgc-terminal:focus-within { border-color:var(--dgc-gold); box-shadow:0 0 0 1px rgba(var(--dgc-gold-rgb),0.35), 0 0 24px rgba(var(--dgc-gold-rgb),0.18) inset; }
+  .dgc-terminal-prompt { color:var(--dgc-gold); font-size:12.5px; white-space:nowrap; text-shadow:0 0 6px rgba(var(--dgc-gold-rgb),0.6); }
+  .dgc-terminal-input { flex:1; background:transparent; border:none; outline:none; color:var(--dgc-text); font-family:var(--dgc-font-mono); font-size:12.5px; caret-color:var(--dgc-gold); }
   .dgc-terminal-submit { flex-shrink:0; }
   /* keystroke micro-feedback: a quick glow pulse, retriggered per keydown */
   .dgc-terminal-keypulse { animation:dgc-key-pulse .22s ease-out; }
   @keyframes dgc-key-pulse {
-    0% { box-shadow:0 0 0 2px rgba(var(--dgc-success-rgb),0.55), 0 0 30px rgba(var(--dgc-success-rgb),0.4) inset; }
-    100% { box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.08), 0 0 24px rgba(var(--dgc-success-rgb),0.1) inset; }
+    0% { box-shadow:0 0 0 2px rgba(var(--dgc-gold-rgb),0.55), 0 0 30px rgba(var(--dgc-gold-rgb),0.4) inset; }
+    100% { box-shadow:0 0 0 1px rgba(var(--dgc-gold-rgb),0.1), 0 0 22px rgba(var(--dgc-gold-rgb),0.08) inset; }
   }
   /* the "cast" bolt: the typed command visually launches toward the boss */
   .dgc-cast-bolt {
@@ -22021,40 +22035,45 @@ $ git stash pop
     100% { left:76%; top:36%; opacity:0; transform:scale(1.5) rotate(200deg); }
   }
 
-  /* ---- SPOT-THE-BUG code block → "corrupted data fragment": jagged
-     clipped corners + a red-tinted glitch pulse instead of a clean panel. ---- */
+  /* ---- SPOT-THE-BUG code block → reframed as a "cursed scroll": a
+     torn/singed page with a warm ember-glow pulse instead of a clean
+     sci-fi glitch panel. Same jagged clipped-corner silhouette (still
+     reads as "something's wrong here"), warm palette instead of neon. ---- */
   .dgc-codeblock {
-    position:relative; background:linear-gradient(135deg, var(--dgc-bg-2) 0%, #1a0f14 100%);
+    position:relative; background:linear-gradient(135deg, var(--dgc-bg-2) 0%, #241208 100%);
     border:1px solid rgba(var(--dgc-danger-rgb),0.35); border-radius:2px; padding:12px 14px;
     font-family:var(--dgc-font-mono); font-size:11.5px; line-height:1.8; overflow-x:auto; margin-bottom:10px;
     clip-path:polygon(0 6px, 6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
     box-shadow:0 0 18px rgba(var(--dgc-danger-rgb),0.12) inset;
   }
   .dgc-codeblock::before {
-    content:'⚠ CORRUPTED FRAGMENT'; position:absolute; top:-1px; right:8px; font-family:var(--dgc-font-ui);
+    content:'⚠ CURSED SCROLL'; position:absolute; top:-1px; right:8px; font-family:var(--dgc-font-ui);
     font-size:8.5px; letter-spacing:1px; color:var(--dgc-danger); opacity:0.75;
   }
   .dgc-code-line { display:block; padding:1px 6px; border-radius:2px; cursor:pointer; white-space:pre; color:var(--dgc-text-dim); }
   .dgc-code-line:hover { background:rgba(var(--dgc-secondary-rgb),0.08); color:var(--dgc-text); }
   .dgc-code-line.dgc-line-selected { background:rgba(var(--dgc-gold-rgb),0.15); color:var(--dgc-gold); box-shadow:0 0 10px rgba(var(--dgc-gold-rgb),0.2) inset; }
 
-  /* ---- READ-THE-ROOM output block → "vision crystal": a faceted,
-     angular shard the hero peers into, not a plain <pre> panel. ---- */
+  /* ---- READ-THE-ROOM output block → reframed as a "scrying page": a
+     softly-glowing page the hero peers into to read the situation, not a
+     hologram "vision crystal". Same faceted silhouette, warm forest-green
+     glow instead of cold cyan. ---- */
   .dgc-outputblock {
-    position:relative; background:linear-gradient(160deg, rgba(var(--dgc-secondary-rgb),0.08), var(--dgc-bg-2) 60%);
+    position:relative; background:linear-gradient(160deg, rgba(var(--dgc-secondary-rgb),0.1), var(--dgc-bg-2) 60%);
     border:1px solid rgba(var(--dgc-secondary-rgb),0.4); border-radius:2px; padding:14px 16px 12px;
     font-family:var(--dgc-font-mono); font-size:11.5px; line-height:1.8; overflow-x:auto; margin-bottom:10px;
     clip-path:polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
     box-shadow:0 0 20px rgba(var(--dgc-secondary-rgb),0.12) inset, 0 0 14px rgba(var(--dgc-secondary-rgb),0.1);
   }
   .dgc-outputblock::before {
-    content:'◈ VISION CRYSTAL'; position:absolute; top:-1px; left:12px; font-family:var(--dgc-font-ui);
+    content:'🔮 SCRYING PAGE'; position:absolute; top:-1px; left:12px; font-family:var(--dgc-font-ui);
     font-size:8.5px; letter-spacing:1px; color:var(--dgc-secondary); opacity:0.8;
   }
   .dgc-outputblock pre { margin:0; white-space:pre-wrap; color:var(--dgc-text-dim); }
 
-  /* ---- TRIAGE CALL option cards → "strategy orbs": rounded, glowing,
-     lift-on-hover — feel like tactical picks, not a radio-button list. ---- */
+  /* ---- TRIAGE CALL option cards → reframed as "counsel stones": rounded,
+     warm-glowing, lift-on-hover — feel like tactical picks, not a
+     radio-button list. ---- */
   .dgc-option-cards { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
   .dgc-option-card {
     flex:1; min-width:150px; background:radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.06), rgba(255,255,255,0.02) 60%);
@@ -22211,7 +22230,7 @@ $ git stash pop
   /* ---------- "3D-ish" character staging (ground shadow + rim-light aura) ---------- */
   .dgc-char-ground-shadow { position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:78px; height:16px; border-radius:50%; background:radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 70%); filter:blur(1px); }
   .dgc-char-ground-shadow-sm { width:46px; height:9px; bottom:-4px; }
-  .dgc-char-aura { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); width:110px; height:110px; border-radius:50%; filter:blur(6px); opacity:.55; animation:dgc-aura-pulse 3s ease-in-out infinite; pointer-events:none; }
+  .dgc-char-aura { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); width:170px; height:170px; border-radius:50%; filter:blur(6px); opacity:.55; animation:dgc-aura-pulse 3s ease-in-out infinite; pointer-events:none; }
   .dgc-char-aura-hero { background:radial-gradient(circle, rgba(var(--dgc-secondary-rgb),0.5), transparent 68%); }
   .dgc-char-aura-boss { background:radial-gradient(circle, rgba(var(--dgc-danger-rgb),0.45), transparent 68%); }
 
@@ -22317,6 +22336,17 @@ $ git stash pop
   .dgc-weapon-body { fill:#1a1a24; stroke:var(--dgc-secondary); stroke-width:1; }
   .dgc-weapon-key { fill:var(--dgc-secondary); opacity:0.85; }
   .dgc-weapon-muzzle { fill:var(--dgc-gold); filter:drop-shadow(0 0 3px var(--dgc-gold)); }
+  /* Phase 4 — Armory-purchasable weapons. Same "shape fn + swappable
+     anchor" pattern as the starter weapon; palette warms/intensifies with
+     tier so a pricier weapon visibly reads as pricier. */
+  .dgc-weapon-wrench-handle { fill:#8a5a2b; stroke:#4a2f14; stroke-width:0.8; }
+  .dgc-weapon-wrench-head { fill:#b9812f; stroke:#4a2f14; stroke-width:0.8; }
+  .dgc-weapon-blade-edge { fill:#dfe6ea; stroke:#7c8a91; stroke-width:0.6; filter:drop-shadow(0 0 3px rgba(200,220,255,0.6)); }
+  .dgc-weapon-blade-hilt { fill:#6b4a28; stroke:#3a2814; stroke-width:0.6; }
+  .dgc-weapon-hammer-handle { fill:#6b4a28; }
+  .dgc-weapon-hammer-head { fill:#5b6270; stroke:#2c2f36; stroke-width:0.8; filter:drop-shadow(0 0 4px rgba(180,190,255,0.5)); }
+  .dgc-weapon-gauntlet-fist { fill:#c94f3d; stroke:#6e2318; stroke-width:1; filter:drop-shadow(0 0 6px rgba(var(--dgc-danger-rgb),0.7)); }
+  .dgc-weapon-gauntlet-core { fill:var(--dgc-gold); filter:drop-shadow(0 0 5px var(--dgc-gold)); animation:dgc-pager-pulse 1.4s ease-in-out infinite; }
 
   /* ============================================================
      PHASE 2 — HERO TIERS: each tier gets its own palette (minimum bar)
@@ -22357,6 +22387,32 @@ $ git stash pop
   .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-shoulder-aura,
   .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-cape,
   .dgc-chibi-hero[data-tier="devopsWizard"] .dgc-chibi-tier-sparkle { display:block; }
+
+  /* ============================================================
+     PHASE 4 — TAILOR OUTFITS. Each outfit is a body recolor (overrides
+     whatever the current tier's palette set — same specificity, later in
+     source order wins) + an optional accessory shape revealed from the
+     hidden-by-default set drawn in chibiRoot(). Deliberately tier-
+     agnostic recolors/accessories (rather than per-tier art) so any
+     outfit looks correct on any hero tier with zero extra authoring. ---- */
+  .dgc-chibi-outfit-scarf, .dgc-chibi-outfit-cloak, .dgc-chibi-outfit-visor { display:none; }
+  .dgc-chibi-outfit-scarf { fill:#c94f3d; stroke:#6e2318; stroke-width:0.8; }
+  .dgc-chibi-outfit-cloak { fill:#1f4a30; opacity:0.9; }
+  .dgc-chibi-outfit-visor { fill:var(--dgc-secondary); opacity:0.85; filter:drop-shadow(0 0 3px var(--dgc-secondary)); }
+
+  /* Flannel Dev — a warm plaid-toned recolor + a scarf. Coins only. */
+  .dgc-chibi-hero[data-outfit="flannelDev"] .dgc-chibi-body { fill:#7a3c1e; stroke:#3f1d0d; }
+  .dgc-chibi-hero[data-outfit="flannelDev"] .dgc-chibi-outfit-scarf { display:block; }
+
+  /* Cloud Cloak — a sky/forest cloak, unlocked at level 8. */
+  .dgc-chibi-hero[data-outfit="cloudCloak"] .dgc-chibi-body { fill:#16324a; stroke:#3f8f5c; }
+  .dgc-chibi-hero[data-outfit="cloudCloak"] .dgc-chibi-outfit-cloak { display:block; }
+
+  /* Faster Shell — the one intentional stat-bearing outfit (+5s question
+     timer, wired via outfitFocusBonus()); a sleek racing visor to make
+     that "speed" read visually, unlocked at level 12. */
+  .dgc-chibi-hero[data-outfit="fasterShell"] .dgc-chibi-body { fill:#0f3b45; stroke:var(--dgc-secondary); }
+  .dgc-chibi-hero[data-outfit="fasterShell"] .dgc-chibi-outfit-visor { display:block; }
 
   /* ---- Sudo: small robot companion, glowing green screen-face ---- */
   .dgc-chibi-sudo .dgc-chibi-head { fill:#241a3d; stroke:var(--dgc-border-bright); stroke-width:1; }
@@ -22502,7 +22558,7 @@ $ git stash pop
   .dgc-hero-sprite-title, .dgc-sudo-sprite-title { width:96px; height:120px; }
   .dgc-hero-sprite-select { width:80px; height:100px; margin:0 auto; }
   .dgc-boss-card-sprite { width:78px; height:98px; margin:0 auto 4px; }
-  #dgcHeroSprite, #dgcBossSprite { width:88px; height:112px; }
+  #dgcHeroSprite, #dgcBossSprite { width:170px; height:216px; }
   .dgc-sudo-sprite-combat { width:56px; height:70px; }
 
   /* ============================================================
@@ -23090,16 +23146,25 @@ $ git stash pop
         heroTier: s.heroTier || tierForLevel(level).id,
         stats: (s.stats && typeof s.stats === 'object') ? s.stats : statsForLevel(level),
         starterCoinsGranted: !!s.starterCoinsGranted || alreadyHadProgress,
-        // Phase 4's Armory will let this change; for now it's always the
-        // one starter weapon, but the field + the rendering layer both
-        // already support swapping to a different id later.
-        equippedWeapon: s.equippedWeapon || 'keyboardBlaster'
+        // Phase 4 (City hub) fields below — non-destructive migration, same
+        // pattern as every prior field: a save written before Phase 4 simply
+        // gets the sane defaults a brand-new save would have (the starter
+        // weapon owned+equipped, nothing else owned/invested/unlocked yet).
+        equippedWeapon: s.equippedWeapon || 'keyboardBlaster',
+        ownedWeapons: Array.isArray(s.ownedWeapons) ? s.ownedWeapons : ['keyboardBlaster'],
+        equippedOutfit: s.equippedOutfit || 'default',
+        ownedOutfits: Array.isArray(s.ownedOutfits) ? s.ownedOutfits : ['default'],
+        bankInvestedAmount: typeof s.bankInvestedAmount === 'number' ? s.bankInvestedAmount : 0,
+        lastBankVisitTimestamp: typeof s.lastBankVisitTimestamp === 'number' ? s.lastBankVisitTimestamp : Date.now(),
+        unlockedLibraryPacks: Array.isArray(s.unlockedLibraryPacks) ? s.unlockedLibraryPacks : []
       };
     } catch (e) {
       return {
         coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
         level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
-        stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster'
+        stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster',
+        ownedWeapons: ['keyboardBlaster'], equippedOutfit: 'default', ownedOutfits: ['default'],
+        bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: []
       };
     }
   }
@@ -23432,8 +23497,61 @@ $ git stash pop
       return '<rect x="-2" y="-5" width="20" height="10" rx="2" class="dgc-weapon-body"/>' +
         '<circle cx="2" cy="0" r="1" class="dgc-weapon-key"/><circle cx="6" cy="0" r="1" class="dgc-weapon-key"/><circle cx="10" cy="0" r="1" class="dgc-weapon-key"/>' +
         '<rect x="16" y="-2" width="4" height="4" rx="1" class="dgc-weapon-muzzle"/>';
+    },
+    // Phase 4 — Armory-purchasable weapons. See WEAPON_SHOP for cost/
+    // stat-effect metadata; these are purely the shape functions, same
+    // "shape fn on the swappable anchor" pattern as the starter weapon.
+    debugWrench: function () {
+      return '<rect x="-2" y="-3" width="24" height="6" rx="2" class="dgc-weapon-wrench-handle"/>' +
+        '<path d="M18 -7 Q29 -7 29 0 Q29 7 18 7 Q23 0 18 -7 Z" class="dgc-weapon-wrench-head"/>';
+    },
+    compilerBlade: function () {
+      return '<rect x="-6" y="-2.5" width="7" height="5" rx="1" class="dgc-weapon-blade-hilt"/>' +
+        '<path d="M0 0 L24 -3.5 L32 0 L24 3.5 Z" class="dgc-weapon-blade-edge"/>';
+    },
+    kernelHammer: function () {
+      return '<rect x="-2" y="-2" width="22" height="4" rx="1" class="dgc-weapon-hammer-handle"/>' +
+        '<rect x="18" y="-9" width="15" height="18" rx="2" class="dgc-weapon-hammer-head"/>';
+    },
+    rootAccessGauntlet: function () {
+      return '<circle cx="18" cy="0" r="11" class="dgc-weapon-gauntlet-fist"/>' +
+        '<circle cx="18" cy="0" r="4.5" class="dgc-weapon-gauntlet-core"/>';
     }
   };
+  // Phase 4 — ARMORY shop metadata. `atkBonus` is a fractional multiplier
+  // added directly alongside save.stats.attack wherever damage is
+  // computed (see weaponAttackBonus() + its one call site in
+  // resolveAnswer()), so every purchase is a REAL combat effect, not
+  // cosmetic-only — per the master doc's explicit ask.
+  var WEAPON_SHOP = [
+    { id: 'keyboardBlaster', name: 'Keyboard Blaster', cost: 0, atkBonus: 0, desc: 'The trusty starter rig. Every hero begins here.' },
+    { id: 'debugWrench', name: 'Debug Wrench', cost: 150, atkBonus: 0.03, desc: 'A stout wrench for beating bugs into submission.', effectLabel: '+3% ATK' },
+    { id: 'compilerBlade', name: 'Compiler Blade', cost: 400, atkBonus: 0.06, desc: 'Forged from optimized bytecode. Cuts clean.', effectLabel: '+6% ATK' },
+    { id: 'kernelHammer', name: 'Kernel Hammer', cost: 800, atkBonus: 0.10, desc: 'Strikes straight through ring 0.', effectLabel: '+10% ATK' },
+    { id: 'rootAccessGauntlet', name: 'The Root Access Gauntlet', cost: 2000, atkBonus: 0.18, desc: 'Total control, total damage. The long-term goal.', effectLabel: '+18% ATK' }
+  ];
+  function weaponAttackBonus() {
+    var w = WEAPON_SHOP.filter(function (w) { return w.id === save.equippedWeapon; })[0];
+    return w ? w.atkBonus : 0;
+  }
+
+  /* ============================================================
+     PHASE 4 — TAILOR shop metadata. Outfits are cosmetic by design
+     (see chibiRoot()'s outfit-CSS block for the actual recolor/
+     accessory), with ONE deliberate exception per the master doc:
+     "Faster Shell" grants +5s on every question timer — see
+     outfitFocusBonus() and its one call site in startTimer().
+     ============================================================ */
+  var OUTFIT_SHOP = [
+    { id: 'default', name: 'Starter Fit', cost: 0, minLevel: 1, focusBonus: 0, desc: 'Whatever the current hero tier wears by default.' },
+    { id: 'flannelDev', name: 'Flannel Dev', cost: 200, minLevel: 1, focusBonus: 0, desc: 'A warm, well-worn flannel. Purely a look.' },
+    { id: 'cloudCloak', name: 'Cloud Cloak', cost: 500, minLevel: 8, focusBonus: 0, desc: 'A sky-and-forest cloak. Purely a look — a milestone reward for reaching level 8.' },
+    { id: 'fasterShell', name: 'Faster Shell', cost: 650, minLevel: 12, focusBonus: 5, desc: 'A sleek, aerodynamic fit.', effectLabel: '+5s per question' }
+  ];
+  function outfitFocusBonus() {
+    var o = OUTFIT_SHOP.filter(function (o) { return o.id === save.equippedOutfit; })[0];
+    return o ? o.focusBonus : 0;
+  }
   function heroWeaponSVG() {
     var id = save.equippedWeapon || 'keyboardBlaster';
     var shapesFn = HERO_WEAPONS[id] || HERO_WEAPONS.keyboardBlaster;
@@ -23570,6 +23688,14 @@ $ git stash pop
         '<circle class="dgc-chibi-badge" cx="50" cy="93" r="4"/>' +
         '<circle class="dgc-chibi-shoulder-aura" cx="50" cy="88" r="27" fill="none" stroke-width="1.4"/>' +
         '<g class="dgc-chibi-tier-sparkle"><path d="M16 90 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/><path d="M84 84 l1.1 2.4 2.4 1.1 -2.4 1.1 -1.1 2.4 -1.1 -2.4 -2.4 -1.1 2.4 -1.1 z"/></g>' +
+        // Phase 4 — Tailor outfit accessories: drawn once, hidden by
+        // default, revealed per-outfit via CSS (.dgc-chibi-hero[data-
+        // outfit=...]) exactly like the tier-accent pattern above, so an
+        // outfit works layered on top of ANY tier's look without needing
+        // per-tier outfit art.
+        '<path class="dgc-chibi-outfit-scarf" d="M36 84 Q50 92 64 84 L61 96 Q50 100 39 96 Z"/>' +
+        '<path class="dgc-chibi-outfit-cloak" d="M28 90 Q20 106 25 118 L36 110 Q32 98 36 88 Z M72 90 Q80 106 75 118 L64 110 Q68 98 64 88 Z"/>' +
+        '<path class="dgc-chibi-outfit-visor" d="M27 36 Q50 30 73 36 L73 42 Q50 37 27 42 Z"/>' +
         // Weapon: always visibly held, part of the silhouette — not an
         // abstract inventory concept. See heroWeaponSVG()/HERO_WEAPONS.
         heroWeaponSVG();
@@ -23597,7 +23723,11 @@ $ git stash pop
     // right now, so every call site (title/select/combat/level-up overlay)
     // automatically renders the current tier with no extra plumbing.
     var tierAttr = kind === 'hero' ? ' data-tier="' + save.heroTier + '"' : '';
-    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
+    // Phase 4 — equipped outfit, same "reads live off save" pattern as
+    // tier: every render site (City, Armory/Tailor preview, boss select,
+    // combat) automatically shows whatever's currently equipped.
+    var outfitAttr = kind === 'hero' ? ' data-outfit="' + (save.equippedOutfit || 'default') + '"' : '';
+    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + outfitAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
       '<defs>' +
         '<radialGradient id="' + idAttr + 'Grad" cx="38%" cy="28%" r="80%">' +
           '<stop offset="0%" class="dgc-chibi-grad-hi"/>' +
@@ -26242,7 +26372,9 @@ $ git stash pop
     save = {
       coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
       level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
-      stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster'
+      stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster',
+      ownedWeapons: ['keyboardBlaster'], equippedOutfit: 'default', ownedOutfits: ['default'],
+      bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: []
     };
     persist();
     refreshHeroTierVisuals();
@@ -26506,7 +26638,7 @@ $ git stash pop
     // applied here so every timed moment that goes through startTimer
     // (every question mode + the boss special attack) benefits uniformly,
     // without touching each call site individually.
-    seconds = seconds + save.stats.focus;
+    seconds = seconds + save.stats.focus + outfitFocusBonus();
     state.timeAllotted = seconds;
     state.timeLeft = seconds;
     var fill = $('dgcTimerFill');
@@ -27023,7 +27155,7 @@ $ git stash pop
     var isOptimal = tier === 'optimal' && !hintFullUsed;
     var dmgToBoss = isOptimal ? q.damageIfOptimal : Math.round((hintFullUsed ? q.damageIfCorrect * 0.5 : q.damageIfCorrect));
     // Attack Power stat (Phase 2): scales damage dealt on every landed hit.
-    dmgToBoss = Math.round(dmgToBoss * (1 + save.stats.attack));
+    dmgToBoss = Math.round(dmgToBoss * (1 + save.stats.attack + weaponAttackBonus()));
     var preCombo = state.combo;
     var wasOnStreak = state.combo >= 2; // boss was already being hit repeatedly before THIS hit lands
     state.bossHp = Math.max(0, state.bossHp - dmgToBoss);
