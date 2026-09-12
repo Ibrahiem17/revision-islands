@@ -21912,6 +21912,35 @@ $ git stash pop
   .dgc-sprite.dgc-knockdown { animation:dgc-knockdown .6s ease forwards; }
   .dgc-sprite.dgc-dissolve { animation:dgc-dissolve 1s ease forwards; }
 
+  /* Hero action poses — the hero is an active participant, not a static
+     HP bar. Overrides .dgc-sprite's own idle-bob animation for the brief
+     duration of the pose (later source order wins on an equal-specificity
+     tie), then idle-bob resumes automatically once the class is removed. */
+  .dgc-sprite.dgc-chibi-attacking { animation:dgc-hero-attack-lunge .4s ease-out; }
+  @keyframes dgc-hero-attack-lunge {
+    0% { transform:translateX(0) rotate(0deg); }
+    35% { transform:translateX(5px) rotate(-6deg); }
+    60% { transform:translateX(11px) rotate(9deg); }
+    100% { transform:translateX(0) rotate(0deg); }
+  }
+  .dgc-sprite.dgc-chibi-defending { animation:dgc-hero-defend-flinch .45s ease-out; }
+  @keyframes dgc-hero-defend-flinch {
+    0% { transform:translateX(0) rotate(0deg); }
+    25% { transform:translateX(-7px) rotate(-5deg); }
+    55% { transform:translateX(3px) rotate(3deg); }
+    100% { transform:translateX(0) rotate(0deg); }
+  }
+  /* The weapon gets its own extra flourish layered on top of the body
+     lunge — animating the INNER group (see heroWeaponSVG()) so this CSS
+     transform composes with the outer group's static positioning instead
+     of replacing it. */
+  .dgc-chibi-attacking .dgc-chibi-weapon { transform-origin:0 0; animation:dgc-weapon-swing .35s ease-out; }
+  @keyframes dgc-weapon-swing {
+    0% { transform:rotate(0deg) scale(1); }
+    50% { transform:rotate(-58deg) scale(1.18); }
+    100% { transform:rotate(0deg) scale(1); }
+  }
+
   .dgc-sudo { position:absolute; right:-6px; top:0; display:flex; flex-direction:column; align-items:center; z-index:4; }
   .dgc-sudo-cursor { font-size:20px; color:var(--dgc-success); text-shadow:0 0 10px rgba(var(--dgc-success-rgb),0.7); animation:dgc-blink 1s step-end infinite, dgc-idle-bob 2.6s ease-in-out infinite; }
   .dgc-sudo.dgc-sudo-cheer .dgc-sudo-cursor { animation:dgc-sudo-cheer .5s ease; color:var(--dgc-gold); }
@@ -22247,6 +22276,12 @@ $ git stash pop
   .dgc-chibi-hero .dgc-chibi-face { color:#3a2415; }
   .dgc-chibi-hero .dgc-chibi-grad-hi { stop-color:#fff; stop-opacity:0.5; }
   .dgc-chibi-hero .dgc-chibi-grad-lo { stop-color:#fff; stop-opacity:0; }
+  /* Starter weapon — a swappable layer (see heroWeaponSVG()), always
+     visibly held so a future Phase-4 weapon swap is something the player
+     actually sees, not just an inventory-menu concept. */
+  .dgc-weapon-body { fill:#1a1a24; stroke:var(--dgc-secondary); stroke-width:1; }
+  .dgc-weapon-key { fill:var(--dgc-secondary); opacity:0.85; }
+  .dgc-weapon-muzzle { fill:var(--dgc-gold); filter:drop-shadow(0 0 3px var(--dgc-gold)); }
 
   /* ============================================================
      PHASE 2 — HERO TIERS: each tier gets its own palette (minimum bar)
@@ -22862,13 +22897,17 @@ $ git stash pop
         xpToNextLevel: typeof s.xpToNextLevel === 'number' ? s.xpToNextLevel : xpToNextLevelForLevel(level),
         heroTier: s.heroTier || tierForLevel(level).id,
         stats: (s.stats && typeof s.stats === 'object') ? s.stats : statsForLevel(level),
-        starterCoinsGranted: !!s.starterCoinsGranted || alreadyHadProgress
+        starterCoinsGranted: !!s.starterCoinsGranted || alreadyHadProgress,
+        // Phase 4's Armory will let this change; for now it's always the
+        // one starter weapon, but the field + the rendering layer both
+        // already support swapping to a different id later.
+        equippedWeapon: s.equippedWeapon || 'keyboardBlaster'
       };
     } catch (e) {
       return {
         coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
         level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
-        stats: statsForLevel(1), starterCoinsGranted: false
+        stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster'
       };
     }
   }
@@ -23189,6 +23228,32 @@ $ git stash pop
     });
   }
 
+  /* ============================================================
+     WEAPON LAYER — a swappable layer, not baked into one fixed
+     animation: the attack-swing CSS (.dgc-chibi-attacking .dgc-chibi-
+     weapon) targets the WRAPPER class, not any one weapon's shapes, so
+     a future Phase-4 Armory purchase only needs to add a new entry here
+     and set save.equippedWeapon — no animation work required.
+     ============================================================ */
+  var HERO_WEAPONS = {
+    keyboardBlaster: function () {
+      return '<rect x="-2" y="-5" width="20" height="10" rx="2" class="dgc-weapon-body"/>' +
+        '<circle cx="2" cy="0" r="1" class="dgc-weapon-key"/><circle cx="6" cy="0" r="1" class="dgc-weapon-key"/><circle cx="10" cy="0" r="1" class="dgc-weapon-key"/>' +
+        '<rect x="16" y="-2" width="4" height="4" rx="1" class="dgc-weapon-muzzle"/>';
+    }
+  };
+  function heroWeaponSVG() {
+    var id = save.equippedWeapon || 'keyboardBlaster';
+    var shapesFn = HERO_WEAPONS[id] || HERO_WEAPONS.keyboardBlaster;
+    // Two nested groups: the outer carries the static hand position/angle
+    // (an SVG attribute), the inner is what the attack-swing CSS animates
+    // — animating the inner only means the CSS `transform` never has to
+    // fight with (and silently replace) the outer's positioning attribute.
+    return '<g class="dgc-chibi-weapon-anchor" transform="translate(74,92) rotate(14)">' +
+      '<g class="dgc-chibi-weapon dgc-weapon-' + id + '">' + shapesFn() + '</g>' +
+    '</g>';
+  }
+
   var chibiIdCounter = 0;
   function chibiRoot(kind) {
     // kind: 'hero' | 'sudo' | 'golem' — selects body/head silhouette + palette.
@@ -23213,7 +23278,10 @@ $ git stash pop
         '<path class="dgc-chibi-collar-glow" d="M38 82 Q50 90 62 82" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
         '<circle class="dgc-chibi-badge" cx="50" cy="93" r="4"/>' +
         '<circle class="dgc-chibi-shoulder-aura" cx="50" cy="88" r="27" fill="none" stroke-width="1.4"/>' +
-        '<g class="dgc-chibi-tier-sparkle"><path d="M16 90 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/><path d="M84 84 l1.1 2.4 2.4 1.1 -2.4 1.1 -1.1 2.4 -1.1 -2.4 -2.4 -1.1 2.4 -1.1 z"/></g>';
+        '<g class="dgc-chibi-tier-sparkle"><path d="M16 90 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/><path d="M84 84 l1.1 2.4 2.4 1.1 -2.4 1.1 -1.1 2.4 -1.1 -2.4 -2.4 -1.1 2.4 -1.1 z"/></g>' +
+        // Weapon: always visibly held, part of the silhouette — not an
+        // abstract inventory concept. See heroWeaponSVG()/HERO_WEAPONS.
+        heroWeaponSVG();
     } else if (kind === 'sudo') {
       body =
         '<ellipse class="dgc-chibi-shadow" cx="50" cy="116" rx="22" ry="5.5"/>' +
@@ -23703,7 +23771,7 @@ $ git stash pop
     save = {
       coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
       level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
-      stats: statsForLevel(1), starterCoinsGranted: false
+      stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster'
     };
     persist();
     refreshHeroTierVisuals();
@@ -24372,6 +24440,7 @@ $ git stash pop
       spawnDamageNumber('hero', dmg, false);
       shakeArena(dmg > 20 ? 'lg' : 'md');
       flashSprite('dgcHeroSprite');
+      flashHeroDefendPose();
       sudoReact('wince');
       playSfx('wrong');
       if (comboBeforeReset > 1) playSfx('comboBreak');
@@ -24436,6 +24505,7 @@ $ git stash pop
     spawnCoinBurst(coinsEarned);
     shakeArena(isOptimal ? 'lg' : 'sm');
     flashSprite('dgcBossSprite');
+    flashHeroAttackPose();
     pulseCombo(true);
     updateTopbar();
 
@@ -24570,7 +24640,7 @@ $ git stash pop
         state.heroHp = Math.max(0, state.heroHp - sa.damageToHeroIfWrong);
         state.combo = 1;
         spawnDamageNumber('hero', sa.damageToHeroIfWrong, false);
-        shakeArena('lg'); flashSprite('dgcHeroSprite'); sudoReact('wince');
+        shakeArena('lg'); flashSprite('dgcHeroSprite'); flashHeroDefendPose(); sudoReact('wince');
         playSfx('wrong');
         flashExpression('hero', 'hurtHeavy', 1400);
         flashExpression('boss', 'excited', 1300);
@@ -24584,7 +24654,7 @@ $ git stash pop
         spawnDamageNumber('boss', sa.damageIfCorrect, true);
         spawnCritStamp();
         spawnCoinBurst(bonusCoins);
-        shakeArena('lg'); flashSprite('dgcBossSprite'); sudoReact('cheer');
+        shakeArena('lg'); flashSprite('dgcBossSprite'); flashHeroAttackPose(); sudoReact('cheer');
         playSfx('crit');
         // Countering the special attack is the hero's biggest power-surge
         // moment so far — stands in for the real Phase-2 level-up trigger
@@ -24759,6 +24829,26 @@ $ git stash pop
     el.classList.remove('dgc-hit-flash');
     void el.offsetWidth;
     el.classList.add('dgc-hit-flash');
+  }
+
+  // Hero action poses — fired at the exact same moment as the existing
+  // hit-flash/damage-number FX, so the hero visibly IS the one performing
+  // the action rather than standing still while numbers appear.
+  function flashHeroAttackPose() {
+    var el = $('dgcHeroSprite');
+    if (!el) return;
+    el.classList.remove('dgc-chibi-attacking');
+    void el.offsetWidth;
+    el.classList.add('dgc-chibi-attacking');
+    setTimeout(function () { el.classList.remove('dgc-chibi-attacking'); }, 420);
+  }
+  function flashHeroDefendPose() {
+    var el = $('dgcHeroSprite');
+    if (!el) return;
+    el.classList.remove('dgc-chibi-defending');
+    void el.offsetWidth;
+    el.classList.add('dgc-chibi-defending');
+    setTimeout(function () { el.classList.remove('dgc-chibi-defending'); }, 470);
   }
 
   function pulseCombo(good) {
