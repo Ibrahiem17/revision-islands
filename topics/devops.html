@@ -24336,6 +24336,551 @@ $ git stash pop
         damageIfCorrect: 36,
         damageToHeroIfWrong: 24
       }
+    },
+
+    /* ================================================================
+       BOSS 4 — THE ORCHESTRATOR (Kubernetes)
+       ================================================================ */
+    orchestrator: {
+      id: 'orchestrator',
+      name: 'The Orchestrator',
+      topic: 'Kubernetes',
+      icon: '🎭',
+      chibiKind: 'orchestrator',
+      phaseHp: [120, 130, 150],
+      phaseNames: ['Strings — Pods', 'Stage — Services', 'Curtain — Real Incident'],
+      xpReward: 165,
+      coinBaseReward: 98,
+      phases: [
+        /* -------- PHASE 1: Pods -------- */
+        [
+          {
+            mode: 'read_the_room',
+            prompt: 'A puppet twitches, stuck. <strong>Diagnose the pod from this output, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The status name literally describes the problem — it can\'t get the container image.',
+            hintPartial: 'The image name or tag being requested doesn\'t actually exist where it\'s looking.',
+            hintFull: 'Diagnosis: ImagePullBackOff — the image/tag doesn\'t exist or isn\'t reachable. Fix: point the deployment at a real image, e.g. kubectl set image deployment/myapp app=myrepo/app:v2',
+            outputBlock: [
+              '$ kubectl describe pod myapp-7d8f',
+              'Status: Pending',
+              'Warning  Failed  kubelet  Failed to pull image "myrepo/app:v9": not found',
+              'Warning  BackOff kubelet  Back-off pulling image, ImagePullBackOff'
+            ],
+            acceptableDiagnosesPatterns: [/image.?pull.?back.?off/i, /(image|tag).*(not\s*found|doesn'?t\s*exist|wrong)/i],
+            followUpFix: {
+              prompt: 'Point the deployment at an image that actually exists:',
+              acceptablePatterns: [/^kubectl\s+edit\s+deployment\s+myapp$/i],
+              optimalPatterns: [/^kubectl\s+set\s+image\s+deployment\/myapp\s+app=myrepo\/app:v2$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A puppet jerks and collapses, over and over. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'It\'s not failing to start — it starts, then dies, then restarts, forever.',
+            hintPartial: 'The logs point at a missing file the app needs at startup.',
+            hintFull: 'Diagnosis: CrashLoopBackOff — the app exits immediately because config.yaml is missing. Fix: mount the config in, e.g. kubectl create configmap app-config --from-file=config.yaml',
+            outputBlock: [
+              '$ kubectl logs myapp-7d8f',
+              'Error: cannot read config.yaml: no such file or directory',
+              '$ kubectl get pod myapp-7d8f',
+              'STATUS: CrashLoopBackOff'
+            ],
+            acceptableDiagnosesPatterns: [/crash.?loop.?back.?off/i, /missing\s*config/i, /config\.?yaml.*(missing|not\s*found)/i],
+            followUpFix: {
+              prompt: 'Give the pod the config file it\'s missing:',
+              acceptablePatterns: [/^kubectl\s+cp\s+config\.yaml\s+myapp-7d8f:\/config\.yaml$/i],
+              optimalPatterns: [/^kubectl\s+create\s+configmap\s+app-config\s+--from-file=config\.yaml$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A puppet dangles, never taking the stage. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The scheduler is explaining exactly why it can\'t place this pod anywhere.',
+            hintPartial: 'Every node it checked came up short on one specific resource.',
+            hintFull: 'Diagnosis: no node has enough memory to schedule this pod — resource requests are too high for the cluster. Fix: scale down or reduce requests, e.g. kubectl scale deployment myapp --replicas=1',
+            outputBlock: [
+              '$ kubectl describe pod myapp-7d8f',
+              'Status: Pending',
+              'Warning  FailedScheduling  0/3 nodes are available: 3 Insufficient memory.'
+            ],
+            acceptableDiagnosesPatterns: [/insufficient\s*memory/i, /not\s*enough\s*(cluster\s*)?resources/i, /resource\s*requests?\s*too\s*high/i],
+            followUpFix: {
+              prompt: 'Bring the resource demand back within what the cluster actually has:',
+              acceptablePatterns: [/^kubectl\s+edit\s+deployment\s+myapp$/i],
+              optimalPatterns: [/^kubectl\s+scale\s+deployment\s+myapp\s+--replicas=1$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A puppet is up on stage, but the lights won\'t turn on it. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The pod is Running — it\'s the readiness gate that\'s rejecting it.',
+            hintPartial: 'The app itself is answering the health check with an error status.',
+            hintFull: 'Diagnosis: the readiness probe is failing because the app\'s health endpoint is returning 500s. Fix (immediate): restart the pod once the app is actually healthy, e.g. kubectl delete pod myapp-7d8f',
+            outputBlock: [
+              '$ kubectl describe pod myapp-7d8f',
+              'Status: Running (0/1 Ready)',
+              'Warning  Unhealthy  kubelet  Readiness probe failed: HTTP probe failed with statuscode: 500'
+            ],
+            acceptableDiagnosesPatterns: [/readiness\s*probe.*(fail|500)/i, /not\s*(actually\s*)?healthy/i, /health\s*(check|endpoint).*(fail|error|500)/i],
+            followUpFix: {
+              prompt: 'Force it to restart cleanly once the underlying issue is fixed:',
+              acceptablePatterns: [/^kubectl\s+rollout\s+restart\s+deployment\/myapp$/i],
+              optimalPatterns: [/^kubectl\s+delete\s+pod\s+myapp-7d8f$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A puppet\'s strings snap without warning. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Same shape as the OOM problem you may have seen before — just in Kubernetes\' own words this time.',
+            hintPartial: 'The last-state termination reason spells it out directly.',
+            hintFull: 'Diagnosis: the pod exceeded its memory limit and was OOMKilled. Fix: raise the memory limit, e.g. kubectl set resources deployment myapp --limits=memory=512Mi',
+            outputBlock: [
+              '$ kubectl describe pod myapp-7d8f',
+              'Last State:  Terminated',
+              'Reason:      OOMKilled',
+              'Exit Code:   137'
+            ],
+            acceptableDiagnosesPatterns: [/oom.?killed/i, /exceeded.*memory\s*limit/i, /ran\s*out\s*of\s*memory/i],
+            followUpFix: {
+              prompt: 'Give it enough memory headroom this time:',
+              acceptablePatterns: [/^kubectl\s+edit\s+deployment\s+myapp$/i],
+              optimalPatterns: [/^kubectl\s+set\s+resources\s+deployment\s+myapp\s+--limits=memory=512Mi$/i]
+            }
+          }
+        ],
+        /* -------- PHASE 2: Services -------- */
+        [
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A puppet strains against a mismatched string. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'A Service finds its pods by matching labels EXACTLY — check the spelling closely.',
+            hintPartial: 'The selector says "myap", but the pod\'s actual label is spelled differently.',
+            hintFull: 'Fix: app: myapp',
+            codeBlock: [
+              'apiVersion: v1',
+              'kind: Service',
+              'metadata:',
+              '  name: myapp-svc',
+              'spec:',
+              '  selector:',
+              '    app: myap',
+              '  ports:',
+              '    - port: 80'
+            ],
+            buggyLineId: 6,
+            correctFixPatterns: [/^app:\s*myapp$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'Another string, pulling the wrong way. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Check what port the container itself actually listens on.',
+            hintPartial: 'The Service is forwarding to port 8080, but the app listens on 3000.',
+            hintFull: 'Fix: targetPort: 3000',
+            codeBlock: [
+              'apiVersion: v1',
+              'kind: Service',
+              'spec:',
+              '  selector:',
+              '    app: myapp',
+              '  ports:',
+              '    - port: 80',
+              '      targetPort: 8080',
+              '# container actually listens on 3000'
+            ],
+            buggyLineId: 7,
+            correctFixPatterns: [/^targetPort:\s*3000$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A puppet can\'t be seen from beyond the stage. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This service needs to be reachable from OUTSIDE the cluster.',
+            hintPartial: 'ClusterIP is internal-only by design — a different Service type reaches the outside world.',
+            hintFull: 'Fix: type: LoadBalancer',
+            codeBlock: [
+              'apiVersion: v1',
+              'kind: Service',
+              'metadata:',
+              '  name: myapp-svc',
+              'spec:',
+              '  type: ClusterIP',
+              '  selector:',
+              '    app: myapp'
+            ],
+            buggyLineId: 5,
+            correctFixPatterns: [/^type:\s*(LoadBalancer|NodePort)$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A whole troupe of puppets stands frozen, none performing. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Check how many copies of this pod the Deployment is actually asking for.',
+            hintPartial: 'It\'s set to run zero replicas — nothing is scheduled at all.',
+            hintFull: 'Fix: replicas: 3',
+            codeBlock: [
+              'apiVersion: apps/v1',
+              'kind: Deployment',
+              'metadata:',
+              '  name: myapp',
+              'spec:',
+              '  replicas: 0',
+              '  selector:',
+              '    matchLabels:',
+              '      app: myapp'
+            ],
+            buggyLineId: 5,
+            correctFixPatterns: [/^replicas:\s*[1-9]\d*$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'One more puppet, wired to the wrong socket. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This time check the CONTAINER\'s own declared port, not the Service.',
+            hintPartial: 'The container declares port 8080, but the app inside actually listens on 80.',
+            hintFull: 'Fix: containerPort: 80',
+            codeBlock: [
+              'apiVersion: apps/v1',
+              'kind: Deployment',
+              'spec:',
+              '  template:',
+              '    spec:',
+              '      containers:',
+              '        - name: myapp',
+              '          ports:',
+              '            - containerPort: 8080',
+              '# app actually listens on 80'
+            ],
+            buggyLineId: 8,
+            correctFixPatterns: [/^containerPort:\s*80$/i]
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Zero-Downtime Deployment -------- */
+        [
+          {
+            mode: 'triage_call',
+            prompt: 'The stage lights shift: <strong>"Routine, low-risk backend patch — the whole team is confident in it. How do you ship it?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Don\'t reach for extra machinery a simple, well-tested change doesn\'t need.',
+            hintPartial: 'Kubernetes\' own default zero-downtime strategy already covers this case.',
+            hintFull: 'Best: a standard rolling update — simplest zero-downtime option, no need for extra infrastructure or a gradual traffic split on a routine, well-tested change.',
+            options: [
+              { id: 'a', label: 'Standard rolling update', tier: 'best', why: 'The simplest zero-downtime option — exactly right for a routine, well-tested, low-risk change.' },
+              { id: 'b', label: 'Blue-green deployment', tier: 'defensible', why: 'Works, but doubles infrastructure temporarily for a change that didn\'t need that safety margin.' },
+              { id: 'c', label: 'Canary release', tier: 'wrong', why: 'Adds a gradual-traffic-split process for a change the team already has full confidence in — unnecessary overhead.' }
+            ],
+            justificationPatterns: [/rolling|simple|routine|default/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"A major, risky version bump — you want to test it on a small slice of real traffic before going further. What now?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'You specifically want SOME real users on it before ALL of them.',
+            hintPartial: 'The strategy built around gradually increasing exposure to real traffic.',
+            hintFull: 'Best: a canary release — route a small percentage of real traffic to the new version before a full rollout.',
+            options: [
+              { id: 'a', label: 'Canary release to a small percentage of traffic', tier: 'best', why: 'Purpose-built for exactly this: real traffic, limited blast radius, before committing further.' },
+              { id: 'b', label: 'Standard rolling update to everyone at once', tier: 'wrong', why: 'A risky major change reaches 100% of users immediately — no early warning before full exposure.' },
+              { id: 'c', label: 'Blue-green, switch all traffic over at once', tier: 'wrong', why: 'Still all-or-nothing for every user the moment you switch — no gradual real-traffic signal first.' }
+            ],
+            justificationPatterns: [/canary|small|percentage|gradual|slice/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"A risky frontend redesign — you need an INSTANT full rollback if metrics look bad, cost isn\'t a concern. What now?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'You want a switch you can instantly flip back, not a gradual process to unwind.',
+            hintPartial: 'Two full environments, one already proven-good, so you can point traffic back instantly.',
+            hintFull: 'Best: blue-green — keep the old environment fully live, switch traffic over, and flip back instantly if needed.',
+            options: [
+              { id: 'a', label: 'Blue-green deployment', tier: 'best', why: 'The only option with a truly instant rollback — the old environment stays fully live and ready.' },
+              { id: 'b', label: 'Canary release', tier: 'defensible', why: 'Limits exposure but rollback still means unwinding a gradual rollout, not one instant switch.' },
+              { id: 'c', label: 'Rolling update', tier: 'wrong', why: 'Rollback means rolling every already-updated pod back one at a time — not instant.' }
+            ],
+            justificationPatterns: [/blue.?green|instant|switch|rollback/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"This deploy also ships a breaking database schema change. What\'s the safe approach?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'The deployment strategy itself doesn\'t fix an incompatible schema — the schema change needs its own safe order.',
+            hintPartial: 'Ship a backward-compatible schema change FIRST, separately, before the app that depends on it.',
+            hintFull: 'Best: deploy the schema migration in a backward-compatible way first, then roll out the app change — no deployment strategy alone fixes a breaking schema change.',
+            options: [
+              { id: 'a', label: 'Roll out the breaking schema change and the app together', tier: 'wrong', why: 'Any pod still on the old app version breaks the instant the incompatible schema lands.' },
+              { id: 'b', label: 'Deploy a backward-compatible schema change first, then the app', tier: 'best', why: 'Old and new app versions both keep working during the rollout — the actual safe pattern for schema changes.' },
+              { id: 'c', label: 'Blue-green switch without changing the migration approach', tier: 'wrong', why: 'Still doesn\'t solve schema compatibility — the switch itself isn\'t what breaks, the incompatible schema is.' }
+            ],
+            justificationPatterns: [/backward.?compatible|migration|schema|expand/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"Budget only covers running ONE full environment\'s worth of infrastructure. What deployment approach fits?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'One option needs a full second environment running in parallel — that\'s off the table here.',
+            hintPartial: 'The option that updates the SAME fleet gradually, never needing double capacity.',
+            hintFull: 'Best: a rolling update — updates the existing fleet in place, never requiring double the infrastructure.',
+            options: [
+              { id: 'a', label: 'Rolling update', tier: 'best', why: 'Works entirely within existing capacity — never needs a second full environment.' },
+              { id: 'b', label: 'Blue-green deployment', tier: 'wrong', why: 'Requires a full second environment running in parallel — exactly the budget constraint here.' },
+              { id: 'c', label: 'Canary release', tier: 'defensible', why: 'Needs a little extra capacity for the canary slice, but nowhere near a full second environment.' }
+            ],
+            justificationPatterns: [/rolling|budget|capacity|existing/i]
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'Every string pulls taut at once! <strong>Sequence the correct safe rollout procedure before it lands.</strong>',
+        steps: [
+          'Update the Deployment\'s image',
+          'kubectl apply the change',
+          'Watch the rollout status',
+          'Verify new pods are Ready'
+        ],
+        damageIfCorrect: 38,
+        damageToHeroIfWrong: 25
+      }
+    },
+
+    /* ================================================================
+       BOSS 5 — PIPELINE PHANTOM (CI/CD)
+       ================================================================ */
+    phantom: {
+      id: 'phantom',
+      name: 'Pipeline Phantom',
+      topic: 'CI/CD',
+      icon: '👻',
+      chibiKind: 'phantom',
+      phaseHp: [115, 125, 145],
+      phaseNames: ['Flicker — Pipeline Stages', 'Fade — Rollout Judgment', 'Materialize — Real Incident'],
+      xpReward: 160,
+      coinBaseReward: 95,
+      phases: [
+        /* -------- PHASE 1: Pipeline Stages -------- */
+        [
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'The Phantom flickers into view: <strong>"Sequence a standard CI/CD pipeline, start to finish."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'Code has to prove itself before it\'s packaged, and packaged before it moves anywhere.',
+            hintPartial: 'Build, test, then package it up — promotion and deploy come after that.',
+            hintFull: 'Order: Build → Test → Package artifact → Promote → Deploy',
+            steps: ['Build', 'Test', 'Package artifact', 'Promote', 'Deploy']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'It glitches sideways: <strong>"Sequence the checks that should run on a pull request."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'Cheapest, fastest checks should fail loudly before anything expensive runs.',
+            hintPartial: 'Lint first, then the fast unit tests, before you even bother building.',
+            hintFull: 'Order: Lint → Unit test → Build → Integration test',
+            steps: ['Lint', 'Unit test', 'Build', 'Integration test']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'A translucent hand gestures: <strong>"Sequence a release pipeline for a tagged version."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'You need a version identity before you can build something labeled with it.',
+            hintPartial: 'Tag it, build the artifact, prove it works, THEN publish it.',
+            hintFull: 'Order: Tag the version → Build the release artifact → Run smoke tests → Publish to the registry',
+            steps: ['Tag the version', 'Build the release artifact', 'Run smoke tests', 'Publish to the registry']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'It shudders like static: <strong>"A deploy just failed. Sequence the correct rollback response."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'Stop the bleeding before you start telling people about it.',
+            hintPartial: 'Notice it, stop it from spreading, undo it — communication comes after the fire\'s out.',
+            hintFull: 'Order: Detect the failure → Halt further deploys → Roll back to the previous artifact → Notify the team',
+            steps: ['Detect the failure', 'Halt further deploys', 'Roll back to the previous artifact', 'Notify the team']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'It solidifies just enough to speak: <strong>"Sequence a security-gated pipeline."</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'You need something built before you can scan it — code, then the container around it.',
+            hintPartial: 'Build first, scan the code itself, then scan the packaged image, only THEN deploy.',
+            hintFull: 'Order: Build → Run a static analysis (SAST) scan → Run a container image scan → Deploy',
+            steps: ['Build', 'Run a static analysis (SAST) scan', 'Run a container image scan', 'Deploy']
+          }
+        ],
+        /* -------- PHASE 2: Rollout Judgment -------- */
+        [
+          {
+            mode: 'triage_call',
+            prompt: 'A ghostly voice asks: <strong>"You want to test a new feature on a SUBSET of users before full release. What now?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'You specifically want partial, real exposure before committing further.',
+            hintPartial: 'The strategy built around gradually increasing exposure.',
+            hintFull: 'Best: a canary release to a subset of users first.',
+            options: [
+              { id: 'a', label: 'Canary release to a subset of users', tier: 'best', why: 'Exactly matches the ask — limited real exposure before a full rollout.' },
+              { id: 'b', label: 'Ship it to everyone at once', tier: 'wrong', why: 'Skips the very subset-testing step that was asked for.' },
+              { id: 'c', label: 'Blue-green, full switch when ready', tier: 'wrong', why: 'Still all-or-nothing for every user at the moment of the switch.' }
+            ],
+            justificationPatterns: [/canary|subset|gradual|partial/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"A low-risk backend patch, whole team confident. What\'s the simplest safe ship?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Reach for the default zero-downtime option, not extra machinery.',
+            hintPartial: 'The most standard, simplest strategy already covers this.',
+            hintFull: 'Best: a standard rolling update — simplest option for a routine, low-risk change.',
+            options: [
+              { id: 'a', label: 'Standard rolling update', tier: 'best', why: 'Simplest zero-downtime option — right-sized for a routine, well-tested change.' },
+              { id: 'b', label: 'Full blue-green environment swap', tier: 'defensible', why: 'Works, but doubles infrastructure temporarily for a change that didn\'t need it.' },
+              { id: 'c', label: 'Canary release', tier: 'wrong', why: 'Adds a gradual-exposure process the team\'s confidence didn\'t call for here.' }
+            ],
+            justificationPatterns: [/rolling|simple|routine/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"A risky redesign — you need an INSTANT full rollback if it goes bad. What now?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'You want a switch, not a gradual unwind.',
+            hintPartial: 'Two full environments, one proven-good, ready to flip back to instantly.',
+            hintFull: 'Best: blue-green — instant rollback by switching traffic back to the untouched old environment.',
+            options: [
+              { id: 'a', label: 'Blue-green deployment', tier: 'best', why: 'The only truly instant rollback — the old environment is still fully live.' },
+              { id: 'b', label: 'Rolling update', tier: 'wrong', why: 'Rollback means reverting every already-updated instance one at a time.' },
+              { id: 'c', label: 'Canary release', tier: 'defensible', why: 'Limits exposure but still isn\'t an instant full-fleet switch.' }
+            ],
+            justificationPatterns: [/blue.?green|instant|switch/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"Feature flags already gate this code path — deploying just enables it later. What deployment strategy fits?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The gradual-exposure work is already being done by the flags themselves.',
+            hintPartial: 'Don\'t duplicate what the feature flag system is already handling.',
+            hintFull: 'Best: a standard rolling update — the flags already provide gradual exposure, so a canary/blue-green here is redundant effort.',
+            options: [
+              { id: 'a', label: 'Standard rolling update', tier: 'best', why: 'The flags already handle gradual exposure — the deployment itself can be the simple default.' },
+              { id: 'b', label: 'Canary release', tier: 'defensible', why: 'Not wrong, just redundant — you\'d be gating exposure twice, once by flag and once by traffic split.' },
+              { id: 'c', label: 'Blue-green swap', tier: 'wrong', why: 'Unnecessary infrastructure cost when the flag system already controls exposure.' }
+            ],
+            justificationPatterns: [/flag|redundant|rolling|already/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"A critical security patch needs to reach 100% of users as fast as possible. What now?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Speed of full coverage matters more than a gradual traffic split here.',
+            hintPartial: 'The fastest path to everyone, without unnecessary extra environments.',
+            hintFull: 'Best: a fast full rolling update — speed to 100% coverage matters most for an urgent security fix.',
+            options: [
+              { id: 'a', label: 'Fast full rolling update to everyone', tier: 'best', why: 'Gets the fix out to all users fastest — exactly what an urgent security patch needs.' },
+              { id: 'b', label: 'Canary release, gradually increasing', tier: 'wrong', why: 'Deliberately slows down reaching 100% coverage on a fix that\'s urgent by nature.' },
+              { id: 'c', label: 'Blue-green, stand up a parallel environment first', tier: 'wrong', why: 'Adds setup time and cost the situation doesn\'t have room for.' }
+            ],
+            justificationPatterns: [/fast|urgent|speed|full|rolling/i]
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Pipeline Security Failure -------- */
+        [
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Phantom materializes over a corrupted pipeline file. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'A real credential is sitting in plain text, committed to the pipeline config.',
+            hintPartial: 'Reference it from the pipeline\'s secrets store instead of writing it out.',
+            hintFull: 'Fix: - run: curl -H "Authorization: Bearer ${{ secrets.API_TOKEN }}"',
+            codeBlock: [
+              'steps:',
+              '  - checkout',
+              '  - run: curl -H "Authorization: Bearer sk_live_abc123xyz"',
+              '  - run: npm test'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^-\s*run:\s*curl\s+-H\s+["']Authorization:\s*Bearer\s+\$\{\{\s*secrets\.API_TOKEN\s*\}\}["']$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'Another corrupted stage. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This scan step is allowed to fail silently and the pipeline just moves on anyway.',
+            hintPartial: 'Make real vulnerabilities actually stop the build instead of being swallowed.',
+            hintFull: 'Fix: - run: npm audit --audit-level=high',
+            codeBlock: [
+              'steps:',
+              '  - checkout',
+              '  - run: npm audit || true',
+              '  - run: npm run deploy'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^-\s*run:\s*npm\s+audit\s+--audit-level=high$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A third glitch in the machine. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This CI runner has far more access than any single job actually needs.',
+            hintPartial: 'Narrow it down to only what\'s required — usually just read access to repo contents.',
+            hintFull: 'Fix: permissions: contents: read',
+            codeBlock: [
+              'name: deploy',
+              'permissions: write-all',
+              'jobs:',
+              '  build:',
+              '    steps:',
+              '      - checkout'
+            ],
+            buggyLineId: 1,
+            correctFixPatterns: [/^permissions:\s*contents:\s*read$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Phantom shudders violently. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Verbose/debug output can print sensitive variable values straight into the build log.',
+            hintPartial: 'Drop the debug flag — a secret value doesn\'t need to be echoed anywhere.',
+            hintFull: 'Fix: - run: terraform apply -auto-approve -var="db_password=$DB_PASS"',
+            codeBlock: [
+              'steps:',
+              '  - checkout',
+              '  - run: terraform apply -auto-approve -var="db_password=$DB_PASS" --debug'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^-\s*run:\s*terraform\s+apply\s+-auto-approve\s+-var="db_password=\$DB_PASS"$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'One last flicker before the incident clears. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'This third-party action floats on a branch that can change under you at any time.',
+            hintPartial: 'Pin it to an exact version tag instead of a moving branch reference.',
+            hintFull: 'Fix: - uses: some-action@v2.1.0',
+            codeBlock: [
+              'steps:',
+              '  - checkout',
+              '  - uses: some-action@master',
+              '  - run: npm run build'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^-\s*uses:\s*some-action@v2\.1\.0$/i]
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'The Phantom shrieks and glitches across every stage at once! <strong>Sequence the correct failure-triage response before it fades back in.</strong>',
+        steps: [
+          'Identify which stage actually failed from the log',
+          'Roll back the bad deploy',
+          'Notify the team',
+          'Re-run from the last good stage'
+        ],
+        damageIfCorrect: 38,
+        damageToHeroIfWrong: 25
+      }
     }
   };
 
