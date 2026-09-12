@@ -21922,28 +21922,110 @@ $ git stash pop
   .dgc-mode-area { margin-bottom:12px; }
 
   /* terminal input widget */
-  .dgc-terminal { background:var(--dgc-bg-2); border:1px solid var(--dgc-border); border-radius:6px; padding:10px 12px; display:flex; align-items:center; gap:6px; font-family:var(--dgc-font-mono); box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.06), 0 0 22px rgba(var(--dgc-success-rgb),0.08) inset; }
-  .dgc-terminal:focus-within { border-color:var(--dgc-success); box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.3), 0 0 22px rgba(var(--dgc-success-rgb),0.18) inset; }
-  .dgc-terminal-prompt { color:var(--dgc-success); font-size:12.5px; white-space:nowrap; }
+  /* ============================================================
+     INPUT MODES AS IN-WORLD OBJECTS (Section 6A) — every surface the
+     player types/clicks into is reframed as something that belongs to
+     this game's world, never a plain UI panel/form control.
+     ============================================================ */
+
+  /* ---- TERMINAL: the "hacking console" — a glowing in-world device,
+     not a generic OS terminal-window. Corner HUD brackets + a scanning
+     sweep give it a housing distinct from the parent site's own command
+     boxes. Keypress feedback (.dgc-terminal-keypulse) and the cast/fire
+     bolt on submit both key off this same object. ---- */
+  .dgc-terminal {
+    position:relative; background:linear-gradient(180deg, var(--dgc-bg-2), var(--dgc-bg));
+    border:1px solid var(--dgc-border); border-radius:4px; padding:11px 14px 11px 16px;
+    display:flex; align-items:center; gap:7px; font-family:var(--dgc-font-mono);
+    box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.08), 0 0 24px rgba(var(--dgc-success-rgb),0.1) inset;
+    overflow:hidden;
+  }
+  .dgc-terminal::before, .dgc-terminal::after {
+    content:''; position:absolute; width:9px; height:9px; border-color:var(--dgc-success); opacity:0.7;
+  }
+  .dgc-terminal::before { top:3px; left:3px; border-top:2px solid; border-left:2px solid; }
+  .dgc-terminal::after { bottom:3px; right:3px; border-bottom:2px solid; border-right:2px solid; }
+  .dgc-terminal:focus-within { border-color:var(--dgc-success); box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.35), 0 0 26px rgba(var(--dgc-success-rgb),0.2) inset; }
+  .dgc-terminal-prompt { color:var(--dgc-success); font-size:12.5px; white-space:nowrap; text-shadow:0 0 6px rgba(var(--dgc-success-rgb),0.6); }
   .dgc-terminal-input { flex:1; background:transparent; border:none; outline:none; color:var(--dgc-text); font-family:var(--dgc-font-mono); font-size:12.5px; caret-color:var(--dgc-success); }
   .dgc-terminal-submit { flex-shrink:0; }
+  /* keystroke micro-feedback: a quick glow pulse, retriggered per keydown */
+  .dgc-terminal-keypulse { animation:dgc-key-pulse .22s ease-out; }
+  @keyframes dgc-key-pulse {
+    0% { box-shadow:0 0 0 2px rgba(var(--dgc-success-rgb),0.55), 0 0 30px rgba(var(--dgc-success-rgb),0.4) inset; }
+    100% { box-shadow:0 0 0 1px rgba(var(--dgc-success-rgb),0.08), 0 0 24px rgba(var(--dgc-success-rgb),0.1) inset; }
+  }
+  /* the "cast" bolt: the typed command visually launches toward the boss */
+  .dgc-cast-bolt {
+    position:absolute; left:16%; top:88%; width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle, #fff 0%, var(--dgc-secondary) 45%, transparent 75%);
+    box-shadow:0 0 10px 3px var(--dgc-secondary), 0 0 22px 7px rgba(var(--dgc-secondary-rgb),0.5);
+    pointer-events:none; z-index:50; animation:dgc-cast-fly .5s cubic-bezier(.25,.6,.3,1) forwards;
+  }
+  @keyframes dgc-cast-fly {
+    0% { left:16%; top:88%; opacity:1; transform:scale(0.6) rotate(0deg); }
+    65% { opacity:1; }
+    100% { left:76%; top:36%; opacity:0; transform:scale(1.5) rotate(200deg); }
+  }
 
-  .dgc-codeblock, .dgc-outputblock { background:var(--dgc-bg-2); border:1px solid var(--dgc-border); border-radius:6px; padding:10px 12px; font-family:var(--dgc-font-mono); font-size:11.5px; line-height:1.8; overflow-x:auto; margin-bottom:10px; }
-  .dgc-code-line { display:block; padding:1px 6px; border-radius:3px; cursor:pointer; white-space:pre; color:var(--dgc-text-dim); }
+  /* ---- SPOT-THE-BUG code block → "corrupted data fragment": jagged
+     clipped corners + a red-tinted glitch pulse instead of a clean panel. ---- */
+  .dgc-codeblock {
+    position:relative; background:linear-gradient(135deg, var(--dgc-bg-2) 0%, #1a0f14 100%);
+    border:1px solid rgba(var(--dgc-danger-rgb),0.35); border-radius:2px; padding:12px 14px;
+    font-family:var(--dgc-font-mono); font-size:11.5px; line-height:1.8; overflow-x:auto; margin-bottom:10px;
+    clip-path:polygon(0 6px, 6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+    box-shadow:0 0 18px rgba(var(--dgc-danger-rgb),0.12) inset;
+  }
+  .dgc-codeblock::before {
+    content:'⚠ CORRUPTED FRAGMENT'; position:absolute; top:-1px; right:8px; font-family:var(--dgc-font-ui);
+    font-size:8.5px; letter-spacing:1px; color:var(--dgc-danger); opacity:0.75;
+  }
+  .dgc-code-line { display:block; padding:1px 6px; border-radius:2px; cursor:pointer; white-space:pre; color:var(--dgc-text-dim); }
   .dgc-code-line:hover { background:rgba(var(--dgc-secondary-rgb),0.08); color:var(--dgc-text); }
-  .dgc-code-line.dgc-line-selected { background:rgba(var(--dgc-gold-rgb),0.15); color:var(--dgc-gold); }
+  .dgc-code-line.dgc-line-selected { background:rgba(var(--dgc-gold-rgb),0.15); color:var(--dgc-gold); box-shadow:0 0 10px rgba(var(--dgc-gold-rgb),0.2) inset; }
+
+  /* ---- READ-THE-ROOM output block → "vision crystal": a faceted,
+     angular shard the hero peers into, not a plain <pre> panel. ---- */
+  .dgc-outputblock {
+    position:relative; background:linear-gradient(160deg, rgba(var(--dgc-secondary-rgb),0.08), var(--dgc-bg-2) 60%);
+    border:1px solid rgba(var(--dgc-secondary-rgb),0.4); border-radius:2px; padding:14px 16px 12px;
+    font-family:var(--dgc-font-mono); font-size:11.5px; line-height:1.8; overflow-x:auto; margin-bottom:10px;
+    clip-path:polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    box-shadow:0 0 20px rgba(var(--dgc-secondary-rgb),0.12) inset, 0 0 14px rgba(var(--dgc-secondary-rgb),0.1);
+  }
+  .dgc-outputblock::before {
+    content:'◈ VISION CRYSTAL'; position:absolute; top:-1px; left:12px; font-family:var(--dgc-font-ui);
+    font-size:8.5px; letter-spacing:1px; color:var(--dgc-secondary); opacity:0.8;
+  }
   .dgc-outputblock pre { margin:0; white-space:pre-wrap; color:var(--dgc-text-dim); }
 
-  .dgc-option-cards { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
-  .dgc-option-card { flex:1; min-width:150px; background:rgba(255,255,255,0.02); border:1px solid var(--dgc-border); border-radius:6px; padding:10px 12px; font-size:11.5px; color:var(--dgc-text-dim); cursor:pointer; transition:all .15s; }
-  .dgc-option-card:hover { border-color:var(--dgc-secondary); color:var(--dgc-text); }
-  .dgc-option-card.dgc-option-selected { border-color:var(--dgc-crit); background:rgba(var(--dgc-crit-rgb),0.1); color:var(--dgc-text); }
+  /* ---- TRIAGE CALL option cards → "strategy orbs": rounded, glowing,
+     lift-on-hover — feel like tactical picks, not a radio-button list. ---- */
+  .dgc-option-cards { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .dgc-option-card {
+    flex:1; min-width:150px; background:radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.06), rgba(255,255,255,0.02) 60%);
+    border:1px solid var(--dgc-border-bright); border-radius:16px; padding:11px 14px; font-size:11.5px;
+    color:var(--dgc-text-dim); cursor:pointer; transition:all .18s; box-shadow:0 2px 0 rgba(0,0,0,0.3);
+  }
+  .dgc-option-card:hover { border-color:var(--dgc-secondary); color:var(--dgc-text); transform:translateY(-2px); box-shadow:0 4px 14px rgba(var(--dgc-secondary-rgb),0.25); }
+  .dgc-option-card.dgc-option-selected {
+    border-color:var(--dgc-crit); background:radial-gradient(ellipse at 30% 20%, rgba(var(--dgc-crit-rgb),0.25), rgba(var(--dgc-crit-rgb),0.08) 70%);
+    color:var(--dgc-text); box-shadow:0 0 16px rgba(var(--dgc-crit-rgb),0.35), 0 4px 14px rgba(var(--dgc-crit-rgb),0.2);
+  }
 
-  .dgc-seq-pool, .dgc-seq-chosen { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; min-height:34px; }
-  .dgc-seq-chip { background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border-bright); border-radius:5px; padding:6px 10px; font-size:11px; color:var(--dgc-text); cursor:pointer; }
-  .dgc-seq-chip:hover { border-color:var(--dgc-secondary); }
-  .dgc-seq-chosen { border:1px dashed var(--dgc-border); border-radius:6px; padding:6px; }
-  .dgc-seq-chosen .dgc-seq-chip { background:rgba(var(--dgc-crit-rgb),0.12); border-color:rgba(var(--dgc-crit-rgb),0.4); cursor:default; }
+  /* ---- BUILD-THE-PIPELINE steps → "memory shards": angular chip
+     fragments you slot into sequence, not plain drag-list pills. ---- */
+  .dgc-seq-pool, .dgc-seq-chosen { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:8px; min-height:34px; }
+  .dgc-seq-chip {
+    background:linear-gradient(135deg, rgba(var(--dgc-crit-rgb),0.14), rgba(255,255,255,0.03));
+    border:1px solid var(--dgc-border-bright); border-radius:3px; padding:6px 11px; font-size:11px; color:var(--dgc-text);
+    cursor:pointer; clip-path:polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    transition:all .15s;
+  }
+  .dgc-seq-chip:hover { border-color:var(--dgc-secondary); box-shadow:0 0 10px rgba(var(--dgc-secondary-rgb),0.25); transform:translateY(-1px); }
+  .dgc-seq-chosen { border:1px dashed var(--dgc-border-bright); border-radius:6px; padding:6px; background:rgba(var(--dgc-crit-rgb),0.04); }
+  .dgc-seq-chosen .dgc-seq-chip { background:rgba(var(--dgc-crit-rgb),0.16); border-color:rgba(var(--dgc-crit-rgb),0.5); cursor:default; box-shadow:0 0 10px rgba(var(--dgc-crit-rgb),0.2); }
   .dgc-seq-num { color:var(--dgc-crit); font-weight:700; margin-right:5px; }
 
   .dgc-hint-row { display:flex; gap:8px; flex-wrap:wrap; }
@@ -22171,9 +22253,95 @@ $ git stash pop
   .dgc-boss-card-sprite { width:78px; height:98px; margin:0 auto 4px; }
   #dgcHeroSprite, #dgcBossSprite { width:88px; height:112px; }
   .dgc-sudo-sprite-combat { width:56px; height:70px; }
+
+  /* ============================================================
+     ENTRY TRANSITION — "crossing the threshold" boot/portal overlay
+     ============================================================ */
+  .dgc-boot-overlay {
+    position:absolute; inset:0; z-index:500; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 40%, var(--dgc-bg-3) 0%, var(--dgc-bg) 70%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:20px; text-align:center;
+    animation:dgc-boot-warp-in .5s ease-out;
+  }
+  .dgc-boot-overlay.dgc-boot-exit { animation:dgc-boot-warp-out .45s ease-in forwards; pointer-events:none; }
+  @keyframes dgc-boot-warp-in {
+    0% { opacity:0; filter:brightness(3) saturate(0); clip-path:circle(0% at 50% 50%); }
+    100% { opacity:1; filter:brightness(1) saturate(1); clip-path:circle(150% at 50% 50%); }
+  }
+  @keyframes dgc-boot-warp-out {
+    0% { opacity:1; clip-path:circle(150% at 50% 50%); }
+    100% { opacity:0; clip-path:circle(0% at 50% 50%); }
+  }
+  .dgc-boot-scanlines {
+    position:absolute; inset:0; pointer-events:none; opacity:0.5;
+    background:repeating-linear-gradient(0deg, rgba(0,229,255,0.05) 0px, rgba(0,229,255,0.05) 1px, transparent 1px, transparent 3px);
+  }
+  .dgc-boot-log {
+    font-family:var(--dgc-font-mono); font-size:11.5px; line-height:1.9; color:var(--dgc-success);
+    text-align:left; max-width:480px; width:100%; text-shadow:0 0 6px rgba(var(--dgc-success-rgb),0.5);
+    max-height:65%; overflow:hidden;
+  }
+  .dgc-boot-log-line { opacity:0; animation:dgc-boot-line-in .25s ease-out forwards; white-space:pre-wrap; }
+  @keyframes dgc-boot-line-in { from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);} }
+  .dgc-boot-fs-prompt { margin-top:22px; display:flex; flex-direction:column; align-items:center; gap:10px; animation:dgc-boot-line-in .3s ease-out; }
+  .dgc-boot-fs-text { font-family:var(--dgc-font-ui); font-size:14px; font-weight:600; color:var(--dgc-text); }
+  .dgc-boot-fs-btns { display:flex; gap:10px; }
+  .dgc-boot-skip {
+    position:absolute; bottom:16px; right:18px; background:rgba(255,255,255,0.05); border:1px solid var(--dgc-border-bright);
+    color:var(--dgc-text-dim); font-family:var(--dgc-font-ui); font-weight:600; font-size:11.5px; letter-spacing:0.5px;
+    padding:6px 14px; border-radius:4px; cursor:pointer; transition:all .15s;
+  }
+  .dgc-boot-skip:hover { color:var(--dgc-text); border-color:var(--dgc-secondary); background:rgba(var(--dgc-secondary-rgb),0.1); }
+
+  /* ============================================================
+     PERSISTENT FULLSCREEN TOGGLE — real Fullscreen API, in-world button
+     ============================================================ */
+  .dgc-fullscreen-toggle {
+    position:absolute; top:8px; right:8px; z-index:600; width:34px; height:34px; border-radius:8px;
+    background:rgba(var(--dgc-secondary-rgb),0.1); border:1px solid var(--dgc-secondary); color:var(--dgc-secondary);
+    font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 10px rgba(var(--dgc-secondary-rgb),0.35); transition:all .15s;
+  }
+  .dgc-fullscreen-toggle:hover { background:rgba(var(--dgc-secondary-rgb),0.22); box-shadow:0 0 16px rgba(var(--dgc-secondary-rgb),0.6); transform:scale(1.06); }
+  .dgc-fullscreen-toggle.dgc-fs-active { color:var(--dgc-gold); border-color:var(--dgc-gold); background:rgba(var(--dgc-gold-rgb),0.12); box-shadow:0 0 10px rgba(var(--dgc-gold-rgb),0.4); }
+
+  /* When the Fullscreen API is actually engaged on .dgc-root, let the module
+     breathe into the full viewport instead of staying clamped to its normal
+     embedded max-width — scales cleanly across common aspect ratios. */
+  .dgc-root:fullscreen, .dgc-root:-webkit-full-screen {
+    width:100vw; height:100vh; max-width:none; min-height:0;
+    display:flex; flex-direction:column; justify-content:center; background:var(--dgc-bg);
+    padding:2vh 2vw;
+  }
+  .dgc-root:fullscreen .dgc-screen, .dgc-root:-webkit-full-screen .dgc-screen { max-width:900px; margin:0 auto; width:100%; }
 </style>
 
 <div class="dgc-root">
+
+  <!-- ============ ENTRY TRANSITION: "crossing the threshold" ============
+       Covers the whole module the instant the Game tab becomes visible.
+       First visit this browser session = full boot log + flavor text;
+       every later entry = a fast, still-real (never instant) wipe. Always
+       skippable. See wireGameTabEntry()/runBootSequence() in the script. -->
+  <div class="dgc-boot-overlay" id="dgcBootOverlay" hidden>
+    <div class="dgc-boot-scanlines" aria-hidden="true"></div>
+    <div class="dgc-boot-log" id="dgcBootLog"></div>
+    <div class="dgc-boot-fs-prompt" id="dgcBootFsPrompt" hidden>
+      <div class="dgc-boot-fs-text">⛶ Enter fullscreen for the full experience?</div>
+      <div class="dgc-boot-fs-btns">
+        <button class="dgc-btn dgc-btn-primary" id="dgcBootFsYes">Yes, go fullscreen</button>
+        <button class="dgc-btn" id="dgcBootFsNo">No thanks</button>
+      </div>
+    </div>
+    <button class="dgc-boot-skip" id="dgcBootSkip">Skip ▶▶</button>
+  </div>
+
+  <!-- Persistent in-world fullscreen toggle — always reachable, on every
+       screen (title, boss-select, combat, victory, defeat), not just Settings. -->
+  <button class="dgc-fullscreen-toggle" id="dgcFullscreenToggle" title="Toggle fullscreen" aria-label="Toggle fullscreen">
+    <span id="dgcFullscreenIcon">⛶</span>
+  </button>
 
   <!-- ============ TITLE / OPENING SCREEN ============
        The very first thing shown when the Game tab opens — a proper
@@ -22258,6 +22426,10 @@ $ git stash pop
         <div class="dgc-setting-row">
           <div><strong>Sound Effects</strong><div class="dgc-setting-sub">Hit / crit / victory / coin cues (Phase 5)</div></div>
           <button class="dgc-toggle" id="dgcSoundToggle" data-on="false"><span class="dgc-toggle-knob"></span></button>
+        </div>
+        <div class="dgc-setting-row">
+          <div><strong>Fullscreen</strong><div class="dgc-setting-sub">Real browser fullscreen — hides all browser chrome</div></div>
+          <button class="dgc-btn" id="dgcSettingsFsBtn">⛶ Enter Fullscreen</button>
         </div>
         <div class="dgc-setting-row">
           <div><strong>Reset All Progress</strong><div class="dgc-setting-sub">Wipes coins, XP, cleared bosses — cannot be undone</div></div>
@@ -22743,7 +22915,8 @@ $ git stash pop
             hintPartial: 'chmod u___ script.sh',
             hintFull: 'chmod u+x script.sh',
             acceptablePatterns: [/^chmod\s+7[45]4\s+script\.sh$/i, /^chmod\s+u\+x,?\s*script\.sh$/i],
-            optimalPatterns: [/^chmod\s+u\+x\s+script\.sh$/i]
+            optimalPatterns: [/^chmod\s+u\+x\s+script\.sh$/i],
+            baseCmds: ['chmod'] // real backing data for the "how close was I?" readout
           },
           {
             mode: 'terminal',
@@ -22753,7 +22926,8 @@ $ git stash pop
             hintPartial: 'find . -mtime ___',
             hintFull: 'find . -mtime -1',
             acceptablePatterns: [/^find\s+\.\s+-newermt\s+["']?24\s*hours?\s*ago["']?$/i, /^find\s+\.\s+-mtime\s+-1\s+-type\s+f$/i],
-            optimalPatterns: [/^find\s+\.\s+-mtime\s+-1$/i]
+            optimalPatterns: [/^find\s+\.\s+-mtime\s+-1$/i],
+            baseCmds: ['find']
           },
           {
             mode: 'terminal',
@@ -22763,7 +22937,8 @@ $ git stash pop
             hintPartial: 'du -h --max-depth=___',
             hintFull: 'du -h --max-depth=1',
             acceptablePatterns: [/^du\s+-h$/i, /^du\s+-sh\s+\*$/i],
-            optimalPatterns: [/^du\s+-h\s+(--max-depth=1|-d\s*1)$/i, /^du\s+-sh\s+--max-depth=1$/i]
+            optimalPatterns: [/^du\s+-h\s+(--max-depth=1|-d\s*1)$/i, /^du\s+-sh\s+--max-depth=1$/i],
+            baseCmds: ['du']
           },
           {
             mode: 'spot_the_bug',
@@ -22789,7 +22964,8 @@ $ git stash pop
             hintPartial: 'ls -l_',
             hintFull: 'ls -la',
             acceptablePatterns: [/^ls\s+-a\s+-l$/i, /^ls\s+-al$/i],
-            optimalPatterns: [/^ls\s+-la$/i, /^ls\s+-lah?$/i]
+            optimalPatterns: [/^ls\s+-la$/i, /^ls\s+-lah?$/i],
+            baseCmds: ['ls']
           }
         ],
         /* -------- PHASE 2: Chest — Process & System -------- */
@@ -22802,7 +22978,8 @@ $ git stash pop
             hintPartial: 'ps aux --sort=___',
             hintFull: 'ps aux --sort=-%mem | head',
             acceptablePatterns: [/^top$/i, /^htop$/i, /^ps\s+aux$/i],
-            optimalPatterns: [/^ps\s+aux\s+--sort=-%mem(\s*\|\s*head)?$/i]
+            optimalPatterns: [/^ps\s+aux\s+--sort=-%mem(\s*\|\s*head)?$/i],
+            baseCmds: ['ps', 'top', 'htop']
           },
           {
             mode: 'terminal',
@@ -22812,7 +22989,8 @@ $ git stash pop
             hintPartial: 'lsof -i :___',
             hintFull: 'lsof -i :8080',
             acceptablePatterns: [/^(sudo\s+)?netstat\s+-tulpn\s*\|\s*grep\s+8080$/i, /^(sudo\s+)?ss\s+-tulpn\s*\|\s*grep\s+8080$/i],
-            optimalPatterns: [/^(sudo\s+)?lsof\s+-i\s*:8080$/i]
+            optimalPatterns: [/^(sudo\s+)?lsof\s+-i\s*:8080$/i],
+            baseCmds: ['lsof', 'netstat', 'ss']
           },
           {
             mode: 'triage_call',
@@ -22822,9 +23000,9 @@ $ git stash pop
             hintPartial: 'The best option sends a polite signal first, and only escalates if that fails.',
             hintFull: 'Best: kill PID (SIGTERM) first, then escalate to kill -9 only if it doesn\'t respond within a few seconds.',
             options: [
-              { id: 'a', label: 'kill -9 PID immediately', tier: 'wrong' },
-              { id: 'b', label: 'kill PID first, escalate to kill -9 only if it ignores it', tier: 'best' },
-              { id: 'c', label: 'Reboot the whole server', tier: 'defensible' }
+              { id: 'a', label: 'kill -9 PID immediately', tier: 'wrong', why: 'SIGKILL gives the process zero chance to flush data or clean up — you skipped straight past the graceful option.' },
+              { id: 'b', label: 'kill PID first, escalate to kill -9 only if it ignores it', tier: 'best', why: 'Tries a clean shutdown (SIGTERM) first, only forces it if that fails — the standard, safest order.' },
+              { id: 'c', label: 'Reboot the whole server', tier: 'defensible', why: 'It technically ends the process, but takes down every other service on the box to do it — massive overkill for one stuck process.' }
             ],
             justificationPatterns: [/graceful|sigterm|clean\s*up|chance|finish|cleanly|escalate/i]
           },
@@ -22836,7 +23014,8 @@ $ git stash pop
             hintPartial: 't__',
             hintFull: 'top',
             acceptablePatterns: [/^ps\s+aux$/i],
-            optimalPatterns: [/^top$/i, /^htop$/i]
+            optimalPatterns: [/^top$/i, /^htop$/i],
+            baseCmds: ['top', 'htop', 'ps']
           },
           {
             mode: 'terminal',
@@ -22846,7 +23025,8 @@ $ git stash pop
             hintPartial: 'pk__ processname',
             hintFull: 'pkill processname',
             acceptablePatterns: [/^kill\s+\$\(pgrep\s+\w+\)$/i],
-            optimalPatterns: [/^pkill\s+(-15\s+)?\w+$/i, /^killall\s+\w+$/i]
+            optimalPatterns: [/^pkill\s+(-15\s+)?\w+$/i, /^killall\s+\w+$/i],
+            baseCmds: ['pkill', 'killall', 'kill', 'pgrep']
           }
         ],
         /* -------- PHASE 3: Core — Real Incident (read_the_room, diagnose -> fix) --------
@@ -23030,7 +23210,9 @@ $ git stash pop
       combo: 1,
       comboCountThisTier: 0,
       questionPoolIdx: 0,
-      questionOrder: shuffle(BOSSES[bossId].phases[0].map(function (_, i) { return i; })),
+      // No-repeat pool state, lazily (re)shuffled by pickNextPoolIndex() —
+      // null forces a fresh shuffle the first time this phase's pool is drawn from.
+      questionOrder: null,
       orderPos: 0,
       currentQuestion: null,
       readTheRoomStep: 'diagnose', // for chained read_the_room questions
@@ -23049,7 +23231,8 @@ $ git stash pop
       bossEnraged: false, // set by startTimer()'s own danger-zone tick (existing enrage-timer mechanic)
       lastQuestionMode: null, // detects a real mode switch → "confused" reaction
       hintUsedThisQ: false, // any hint tier used this question → suppresses Sudo's "smug"
-      heroLowHpAlertShown: false // one-shot: first time hero HP crosses the 25% line this fight
+      heroLowHpAlertShown: false, // one-shot: first time hero HP crosses the 25% line this fight
+      fightLog: [] // every question asked this fight, for the end-of-fight review screen
     };
   }
 
@@ -23220,6 +23403,34 @@ $ git stash pop
     return state.boss.phases[state.phaseIdx];
   }
 
+  /* ============================================================
+     SHARED UTILITY: no-repeat-until-exhausted question picker.
+     Every phase of every boss — current and every Phase-3 boss to come —
+     must draw its next question through THIS one function, not a bespoke
+     shuffle of its own. Hands out a phase's question pool in random order
+     with zero repeats, reshuffles ONLY once the pool is exhausted, and
+     guards the one edge a naive reshuffle misses: the reshuffle's first
+     pick is never allowed to be the exact question that was just asked.
+     Call resetPoolOrder() whenever a fight moves to a genuinely new pool
+     (a phase transition) so the new phase starts its own fresh shuffle.
+     ============================================================ */
+  function pickNextPoolIndex(pool) {
+    if (!state.questionOrder || state.orderPos >= state.questionOrder.length) {
+      var lastIdx = (state.questionOrder && state.orderPos > 0) ? state.questionOrder[state.orderPos - 1] : null;
+      var order = shuffle(pool.map(function (_, i) { return i; }));
+      if (order.length > 1 && lastIdx !== null && order[0] === lastIdx) {
+        var swapWith = 1 + Math.floor(Math.random() * (order.length - 1));
+        var tmp = order[0]; order[0] = order[swapWith]; order[swapWith] = tmp;
+      }
+      state.questionOrder = order;
+      state.orderPos = 0;
+    }
+    var idx = state.questionOrder[state.orderPos];
+    state.orderPos++;
+    return idx;
+  }
+  function resetPoolOrder() { state.questionOrder = null; state.orderPos = 0; }
+
   function nextQuestion() {
     clearInterval(state.timer);
     $('dgcHintDisplay').hidden = true;
@@ -23233,12 +23444,7 @@ $ git stash pop
     state.seqChosen = [];
 
     var pool = currentPhaseQuestions();
-    if (state.orderPos >= state.questionOrder.length) {
-      state.questionOrder = shuffle(pool.map(function (_, i) { return i; }));
-      state.orderPos = 0;
-    }
-    var q = pool[state.questionOrder[state.orderPos]];
-    state.orderPos++;
+    var q = pool[pickNextPoolIndex(pool)];
     state.currentQuestion = q;
     renderQuestion(q);
     startTimer(q.timeAllotted || 50);
@@ -23381,8 +23587,44 @@ $ git stash pop
   function wireEnterAndSubmit(handler) {
     var input = $('dgcModeInput');
     var btn = $('dgcModeSubmit');
-    if (btn) btn.addEventListener('click', handler);
-    if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') handler(); });
+    // Submitting is an ACTION, not a form post: the typed command visually
+    // launches from the console toward the boss every time, across every
+    // mode that funnels through here (terminal / spot_the_bug / triage_call
+    // / read_the_room) — ties typing directly into the existing hit FX.
+    function fireAndSubmit() { spawnCastProjectile(); playSfx('cast'); handler(); }
+    if (btn) btn.addEventListener('click', fireAndSubmit);
+    if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') fireAndSubmit(); });
+  }
+
+  // Phase-5 sound hook: no audio assets exist yet, so this is a deliberate
+  // no-op stub — every place a sound SHOULD play already calls it, so wiring
+  // in real audio later touches only this one function.
+  function playSfx(name) { if (!soundEnabled) return; /* no audio assets yet — Phase 5 */ }
+
+  function spawnCastProjectile() {
+    var layer = $('dgcFxLayer');
+    if (!layer) return;
+    var el = document.createElement('div');
+    el.className = 'dgc-cast-bolt';
+    layer.appendChild(el);
+    setTimeout(function () { el.remove(); }, 550);
+  }
+
+  // Keystroke micro-feedback: a quick glow pulse on the console housing
+  // itself, delegated on the stable #dgcModeArea container since the actual
+  // .dgc-terminal-input element is re-created fresh per question.
+  function wireTerminalKeyFeedback() {
+    var area = $('dgcModeArea');
+    if (!area) return;
+    area.addEventListener('keydown', function (e) {
+      if (!e.target || !e.target.classList || !e.target.classList.contains('dgc-terminal-input')) return;
+      var box = e.target.closest('.dgc-terminal');
+      if (!box) return;
+      box.classList.remove('dgc-terminal-keypulse');
+      void box.offsetWidth;
+      box.classList.add('dgc-terminal-keypulse');
+      playSfx('keypress');
+    });
   }
 
   function renderReadTheRoomStep(q) {
@@ -23453,6 +23695,7 @@ $ git stash pop
       });
       var submitBtn = $('dgcSeqSubmit');
       if (submitBtn) submitBtn.addEventListener('click', function () {
+        spawnCastProjectile(); playSfx('cast');
         var tier = validatePipeline(q, state.seqChosen);
         state.seqPool = null;
         resolveAnswer(tier);
@@ -23630,8 +23873,7 @@ $ git stash pop
       state.phaseIdx++;
       state.bossHpMax = state.boss.phaseHp[state.phaseIdx];
       state.bossHp = state.bossHpMax;
-      state.questionOrder = shuffle(currentPhaseQuestions().map(function (_, i) { return i; }));
-      state.orderPos = 0;
+      resetPoolOrder(); // new phase = a fresh pool = its own fresh shuffle
       updatePhaseTag();
       updateHpBars();
       // Phase-transition face (expression #15 repurposed per the doc's own
@@ -23695,7 +23937,7 @@ $ git stash pop
         });
       });
       var submitBtn = $('dgcSeqSubmit');
-      if (submitBtn) submitBtn.addEventListener('click', resolveSpecialAttack);
+      if (submitBtn) submitBtn.addEventListener('click', function () { spawnCastProjectile(); playSfx('cast'); resolveSpecialAttack(); });
     }
 
     function resolveSpecialAttack() {
@@ -23737,8 +23979,7 @@ $ git stash pop
         state.phaseIdx = 1;
         state.bossHpMax = state.boss.phaseHp[1];
         if (state.bossHp > state.bossHpMax) state.bossHp = state.bossHpMax;
-        state.questionOrder = shuffle(currentPhaseQuestions().map(function (_, i) { return i; }));
-        state.orderPos = 0;
+        resetPoolOrder(); // new phase = a fresh pool = its own fresh shuffle
         updatePhaseTag();
         nextQuestion();
       }, 700);
@@ -24073,6 +24314,122 @@ $ git stash pop
   }
 
   /* ============================================================
+     ENTRY TRANSITION — "crossing the threshold" (Section 5). Clicking the
+     Game tab's own nav button must never be an instant swap into the title
+     screen. We deliberately do NOT touch that button's existing inline
+     onclick="showTab('game',this)" (every other tab must stay untouched) —
+     instead we attach an ADDITIONAL listener to the same element, which
+     fires right after the site's own tab-switch already made this panel
+     visible, and covers it with a boot/portal overlay before letting the
+     title screen actually be seen.
+     ============================================================ */
+  var DGC_BOOT_LINES = [
+    '> booting terminal_combat.sys ...',
+    '> loading world: DEVOPS ARCHIPELAGO ...',
+    '> calibrating golem containment wards ... OK',
+    '> sudo daemon: awake, caffeinated, judgmental',
+    '> mounting /dev/hero ...',
+    '> WARNING: boss signature detected nearby',
+    '> entering arena_'
+  ];
+
+  function runBootSequence(fast) {
+    var overlay = $('dgcBootOverlay');
+    var log = $('dgcBootLog');
+    var fsPrompt = $('dgcBootFsPrompt');
+    if (!overlay || !log) return;
+    overlay.hidden = false;
+    overlay.classList.remove('dgc-boot-exit');
+    log.innerHTML = '';
+    fsPrompt.hidden = true;
+    var lines = fast ? DGC_BOOT_LINES.slice(-2) : DGC_BOOT_LINES;
+    var lineDelayMs = fast ? 90 : 220;
+    var finished = false;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      overlay.classList.add('dgc-boot-exit');
+      setTimeout(function () {
+        overlay.hidden = true;
+        overlay.classList.remove('dgc-boot-exit');
+      }, 480);
+    }
+    lines.forEach(function (text, i) {
+      var el = document.createElement('div');
+      el.className = 'dgc-boot-log-line';
+      el.textContent = text;
+      el.style.animationDelay = (i * lineDelayMs / 1000) + 's';
+      log.appendChild(el);
+    });
+    $('dgcBootSkip').onclick = finish;
+    var totalMs = lines.length * lineDelayMs + (fast ? 250 : 550);
+    setTimeout(function () {
+      // Offer the fullscreen prompt right at this threshold moment — but
+      // only once per session, only on the full (first-visit) sequence, and
+      // only if fullscreen is actually available and not already engaged.
+      var alreadyAsked = false;
+      try { alreadyAsked = !!sessionStorage.getItem('dgc_fs_asked_session'); } catch (e) { alreadyAsked = true; }
+      if (!fast && !alreadyAsked && document.fullscreenEnabled && !document.fullscreenElement) {
+        try { sessionStorage.setItem('dgc_fs_asked_session', '1'); } catch (e) {}
+        fsPrompt.hidden = false;
+        $('dgcBootFsYes').onclick = function () { requestGameFullscreen(); finish(); };
+        $('dgcBootFsNo').onclick = finish;
+      } else {
+        finish();
+      }
+    }, totalMs);
+  }
+
+  function wireGameTabEntry() {
+    var navBtn = document.querySelector('.tab[onclick*="showTab(\'game\'"]');
+    if (!navBtn) return;
+    navBtn.addEventListener('click', function () {
+      var firstThisSession = true;
+      try { firstThisSession = !sessionStorage.getItem('dgc_boot_seen_session'); sessionStorage.setItem('dgc_boot_seen_session', '1'); } catch (e) {}
+      runBootSequence(!firstThisSession);
+    });
+  }
+
+  /* ============================================================
+     FULLSCREEN MODE — the real Fullscreen API (requestFullscreen /
+     exitFullscreen), not a CSS-only oversized-div fake. Fullscreens the
+     game's own root element so browser chrome genuinely disappears.
+     ============================================================ */
+  function requestGameFullscreen() {
+    var root = document.querySelector('#tab-game .dgc-root');
+    if (!root) return;
+    var req = root.requestFullscreen || root.webkitRequestFullscreen || root.msRequestFullscreen;
+    if (req) req.call(root);
+  }
+  function exitGameFullscreen() {
+    var exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (exit) exit.call(document);
+  }
+  function toggleGameFullscreen() {
+    var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (isFs) exitGameFullscreen(); else requestGameFullscreen();
+  }
+  function updateFullscreenUI() {
+    var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    var btn = $('dgcFullscreenToggle');
+    var icon = $('dgcFullscreenIcon');
+    if (btn) { btn.classList.toggle('dgc-fs-active', isFs); btn.title = isFs ? 'Exit fullscreen' : 'Enter fullscreen'; }
+    if (icon) icon.textContent = isFs ? '⤫' : '⛶';
+    var settingsBtn = $('dgcSettingsFsBtn');
+    if (settingsBtn) settingsBtn.textContent = isFs ? '⤫ Exit Fullscreen' : '⛶ Enter Fullscreen';
+  }
+  function wireFullscreenControls() {
+    var toggleBtn = $('dgcFullscreenToggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleGameFullscreen);
+    var settingsBtn = $('dgcSettingsFsBtn');
+    if (settingsBtn) settingsBtn.addEventListener('click', toggleGameFullscreen);
+    ['fullscreenchange', 'webkitfullscreenchange', 'MSFullscreenChange'].forEach(function (evt) {
+      document.addEventListener(evt, updateFullscreenUI);
+    });
+    updateFullscreenUI();
+  }
+
+  /* ============================================================
      INIT — the title screen is the true first thing a player sees,
      never the fight screen or even the boss-select screen directly.
      ============================================================ */
@@ -24080,6 +24437,9 @@ $ git stash pop
   refreshTitleScreen();
   refreshStartScreen();
   spawnTitleParticles();
+  wireGameTabEntry();
+  wireFullscreenControls();
+  wireTerminalKeyFeedback();
   showScreen('title');
 
 })();
