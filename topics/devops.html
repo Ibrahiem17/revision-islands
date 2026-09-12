@@ -22311,32 +22311,82 @@ $ git stash pop
   .dgc-trophy-note { font-size:10px; color:var(--dgc-text-dimmer); font-style:italic; }
 
   /* ============================================================
-     PHASE 4 — DEVOPS CITY HUB. A stylized town-square: a ground strip,
-     hero + Sudo idle-posed on it, and five distinct building "shops" the
-     player clicks into. Deliberately a warm card-based town row rather
-     than a literal free-walk isometric map (out of reach for a single
-     CSS/SVG panel at this scope) — still reads as a place, not a menu.
+     PHASE 4 SECTION 1B — DEVOPS CITY: EXPLORABLE TOWN. A viewport
+     (fixed size, overflow hidden) shows a slice of a larger WORLD; the
+     hero token is a screen-fixed sibling of the world (always centered
+     in the viewport) and the world itself translates opposite the
+     hero's world-space position — the standard "camera follows the
+     player by moving the world, not the camera" trick, which is far
+     simpler to keep correct than scrolling+clamping a viewport on two
+     axes independently. Buildings are physical structures placed at
+     fixed world coordinates (see CITY_BUILDINGS in the script) that the
+     hero walks up to; a proximity check shows an Enter prompt.
      ============================================================ */
   .dgc-screen-city { position:relative; padding-top:8px; }
-  .dgc-city-stage {
-    position:relative; display:flex; align-items:flex-end; justify-content:center; gap:70px;
-    min-height:200px; margin:14px 0 20px; border-radius:12px; overflow:hidden;
-    background:radial-gradient(ellipse at 50% 0%, var(--dgc-bg-3) 0%, var(--dgc-bg) 75%);
-    border:1px solid var(--dgc-border);
+  .dgc-city-viewport {
+    position:relative; height:300px; margin:14px 0 6px; border-radius:12px; overflow:hidden;
+    background:var(--dgc-bg); border:1px solid var(--dgc-border);
   }
-  .dgc-city-ground {
-    position:absolute; left:0; right:0; bottom:0; height:38px;
-    background:linear-gradient(180deg, var(--dgc-secondary-dim), #14260f);
-    border-top:2px solid rgba(var(--dgc-success-rgb),0.4);
+  .dgc-city-world {
+    position:absolute; top:0; left:0; width:900px; height:560px;
+    background:radial-gradient(ellipse at 50% 0%, var(--dgc-bg-3) 0%, var(--dgc-bg) 70%);
   }
-  .dgc-city-hero-pose, .dgc-city-sudo-pose { position:relative; display:flex; flex-direction:column; align-items:center; z-index:1; padding-bottom:30px; }
-  .dgc-city-hero-sprite { width:120px; height:152px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
-  .dgc-city-sudo-sprite { width:84px; height:106px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
-  .dgc-city-hero-pose .dgc-hero-name { margin-top:4px; }
-  .dgc-city-sudo-pose .dgc-sudo-bubble { position:static; margin-bottom:6px; }
+  .dgc-city-world-ground {
+    position:absolute; left:0; right:0; bottom:0; height:100%;
+    background:
+      radial-gradient(circle at 15% 30%, rgba(var(--dgc-success-rgb),0.06), transparent 22%),
+      radial-gradient(circle at 70% 60%, rgba(var(--dgc-success-rgb),0.05), transparent 25%),
+      linear-gradient(180deg, transparent 0%, transparent 60%, var(--dgc-secondary-dim) 60%, #14260f 100%);
+  }
+  .dgc-city-buildings-layer { position:absolute; inset:0; }
+  .dgc-city-hero-token {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; z-index:3; pointer-events:none;
+  }
+  .dgc-city-sudo-token { position:absolute; display:flex; flex-direction:column; align-items:center; z-index:2; }
+  .dgc-city-hero-sprite { width:100px; height:128px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+  .dgc-city-sudo-sprite { width:74px; height:94px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+  .dgc-city-hero-token .dgc-hero-name { margin-top:2px; font-size:11px; }
+  .dgc-city-sudo-token .dgc-sudo-bubble { position:static; margin-bottom:4px; }
+  /* Walk-cycle: a faster, more pronounced bob than idle (overrides the
+     base .dgc-sprite idle-bob by source-order + specificity while
+     walking), plus a step-lean for a real "in motion" read. Facing
+     left/right is a SEPARATE wrapper (.dgc-city-hero-facing) so the
+     scaleX() flip never fights with this element's own transform
+     animation — same "outer position, inner animation" split used by
+     the hero's weapon-anchor layer. */
+  .dgc-city-hero-token.dgc-city-walking .dgc-city-hero-sprite { animation:dgc-city-walk-bob .32s ease-in-out infinite; }
+  @keyframes dgc-city-walk-bob { 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-5px) rotate(-3deg); } }
+  .dgc-city-hero-facing { transition:transform .08s linear; }
 
-  .dgc-city-buildings { display:flex; flex-wrap:wrap; justify-content:center; gap:22px; margin-bottom:18px; }
-  .dgc-city-building { width:128px; cursor:pointer; text-align:center; transition:transform .15s; }
+  .dgc-city-enter-prompt {
+    position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:4;
+    background:rgba(0,0,0,0.75); border:1px solid var(--dgc-gold); color:var(--dgc-gold);
+    font-family:var(--dgc-font-ui); font-weight:700; font-size:12px; padding:6px 14px; border-radius:20px;
+    animation:dgc-enter-prompt-bob 1s ease-in-out infinite;
+  }
+  @keyframes dgc-enter-prompt-bob { 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(-3px); } }
+
+  .dgc-city-dpad {
+    display:none; grid-template-columns:repeat(3, 44px); grid-template-rows:repeat(2, 44px);
+    gap:4px; justify-content:center; margin:10px 0;
+  }
+  .dgc-city-dpad-btn {
+    font-size:16px; color:var(--dgc-text); background:rgba(255,255,255,0.06); border:1px solid var(--dgc-border-bright);
+    border-radius:8px; cursor:pointer; touch-action:none; user-select:none;
+  }
+  .dgc-city-dpad-btn:active { background:rgba(var(--dgc-secondary-rgb),0.25); }
+  .dgc-city-dpad-up { grid-column:2; grid-row:1; }
+  .dgc-city-dpad-left { grid-column:1; grid-row:2; }
+  .dgc-city-dpad-down { grid-column:2; grid-row:2; }
+  .dgc-city-dpad-right { grid-column:3; grid-row:2; }
+  .dgc-city-move-hint { font-size:10px; color:var(--dgc-text-dimmer); }
+  @media (pointer: coarse) {
+    .dgc-city-dpad { display:grid; }
+    .dgc-city-move-hint { display:none; }
+  }
+
+  .dgc-city-building { position:absolute; width:128px; cursor:pointer; text-align:center; transition:transform .15s; }
   .dgc-city-building:hover, .dgc-city-building:focus-visible { transform:translateY(-4px); outline:none; }
   .dgc-city-building-roof {
     width:0; height:0; margin:0 auto;
@@ -22355,6 +22405,7 @@ $ git stash pop
   .dgc-city-building-bank { --dgc-roof:#c9a13a; --dgc-wall:#6b5a3c; }
   .dgc-city-building-library { --dgc-roof:#2f6b45; --dgc-wall:#5c4a2e; }
   .dgc-city-building-trophy { --dgc-roof:#7a5aa8; --dgc-wall:#6b4a28; }
+  .dgc-city-building-store { --dgc-roof:#3f6b8f; --dgc-wall:#5c6b4a; }
 
   /* ---- shared shop-modal layout (Armory/Tailor/Bank/Library) ---- */
   .dgc-shop-preview { display:flex; justify-content:center; margin-bottom:14px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; }
@@ -23110,55 +23161,55 @@ $ git stash pop
     <div class="dgc-boss-select" id="dgcBossSelectGrid"></div>
   </div>
 
-  <!-- ============ PHASE 4 — DEVOPS CITY HUB ============
+  <!-- ============ PHASE 4 SECTION 1B — DEVOPS CITY: EXPLORABLE TOWN ============
        Reached from the main menu, from Boss Select's quick-access button,
-       or as the default destination after a victory. A warm town-square
-       hub — five buildings, hero + Sudo idle on screen (the best place in
-       the whole game to show off owned gear), quick nav back to fighting. -->
+       or as the default destination after a victory. Replaces the earlier
+       static clickable-icon hub with a real walkable town: the hero walks
+       around with arrow keys/WASD (or the on-screen d-pad on touch), the
+       camera follows (the WORLD moves under a screen-fixed hero token),
+       and buildings are physical structures entered by walking up to them
+       (a click/tap fallback is kept too, for accessibility). -->
   <div class="dgc-screen dgc-screen-city" id="dgcCityScreen" hidden>
     <button class="dgc-btn dgc-btn-back" id="dgcCityBackBtn">← Boss Select</button>
     <div class="dgc-select-heading">DEVOPS CITY</div>
-    <div class="dgc-subtitle">Spend what you've earned. Gear up for the next fight.</div>
+    <div class="dgc-subtitle">Walk around. Spend what you've earned. Gear up for the next fight.</div>
 
-    <div class="dgc-city-stage">
-      <div class="dgc-city-ground"></div>
-      <div class="dgc-city-hero-pose">
+    <div class="dgc-city-viewport" id="dgcCityViewport">
+      <div class="dgc-city-world" id="dgcCityWorld">
+        <div class="dgc-city-world-ground"></div>
+        <div class="dgc-city-decor-layer" id="dgcCityDecorLayer"></div>
+        <div class="dgc-city-buildings-layer" id="dgcCityBuildingsLayer"><!-- populated by renderCityBuildings() from CITY_BUILDINGS --></div>
+        <div class="dgc-city-sudo-token" id="dgcCitySudoToken">
+          <div class="dgc-sudo-bubble dgc-show" id="dgcCitySudoBubble">Try the Armory — new gear helps.</div>
+          <div class="dgc-sprite dgc-city-sudo-sprite" id="dgcCitySudoSprite"></div>
+        </div>
+      </div>
+
+      <!-- The hero token is a SIBLING of the world, not a child — it stays
+           visually centered in the viewport at all times; only the world
+           translates under it. This is the whole "camera follow" trick. -->
+      <div class="dgc-city-hero-token" id="dgcCityHeroToken">
         <div class="dgc-char-aura dgc-char-aura-hero"></div>
-        <div class="dgc-sprite dgc-city-hero-sprite" id="dgcCityHeroSprite"></div>
+        <div class="dgc-city-hero-facing" id="dgcCityHeroFacing">
+          <div class="dgc-sprite dgc-city-hero-sprite" id="dgcCityHeroSprite"></div>
+        </div>
         <div class="dgc-hero-name" id="dgcCityHeroName">Junior Dev</div>
       </div>
-      <div class="dgc-city-sudo-pose">
-        <div class="dgc-sudo-bubble dgc-show" id="dgcCitySudoBubble">Try the Armory — new gear helps.</div>
-        <div class="dgc-sprite dgc-city-sudo-sprite" id="dgcCitySudoSprite"></div>
-      </div>
+
+      <div class="dgc-city-enter-prompt" id="dgcCityEnterPrompt" hidden>⏎ Enter <span id="dgcCityEnterPromptName"></span></div>
     </div>
 
-    <div class="dgc-city-buildings" id="dgcCityBuildings">
-      <div class="dgc-city-building dgc-city-building-armory" data-building="armory" tabindex="0" role="button">
-        <div class="dgc-city-building-roof"></div>
-        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">⚒️</div><div class="dgc-city-building-name">Armory</div></div>
-      </div>
-      <div class="dgc-city-building dgc-city-building-tailor" data-building="tailor" tabindex="0" role="button">
-        <div class="dgc-city-building-roof"></div>
-        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">🧵</div><div class="dgc-city-building-name">Tailor</div></div>
-      </div>
-      <div class="dgc-city-building dgc-city-building-bank" data-building="bank" tabindex="0" role="button">
-        <div class="dgc-city-building-roof"></div>
-        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">🏦</div><div class="dgc-city-building-name">Bank</div></div>
-      </div>
-      <div class="dgc-city-building dgc-city-building-library" data-building="library" tabindex="0" role="button">
-        <div class="dgc-city-building-roof"></div>
-        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">📚</div><div class="dgc-city-building-name">Library</div></div>
-      </div>
-      <div class="dgc-city-building dgc-city-building-trophy" data-building="trophy" tabindex="0" role="button">
-        <div class="dgc-city-building-roof"></div>
-        <div class="dgc-city-building-body"><div class="dgc-city-building-icon">🏆</div><div class="dgc-city-building-name">Trophy Hall</div></div>
-      </div>
+    <div class="dgc-city-dpad" id="dgcCityDpad" aria-hidden="true">
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-up" data-dir="up">▲</button>
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-left" data-dir="left">◀</button>
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-down" data-dir="down">▼</button>
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-right" data-dir="right">▶</button>
     </div>
 
     <div class="dgc-stats-row">
       <div class="dgc-stat-chip">🪙 <span id="dgcCityCoinsDisplay">0</span> coins</div>
       <div class="dgc-stat-chip">LEVEL <span id="dgcCityLevelDisplay">1</span></div>
+      <div class="dgc-stat-chip dgc-city-move-hint">Arrow keys / WASD to walk, Enter to go in — or just tap a building</div>
     </div>
   </div>
 
@@ -26609,18 +26660,152 @@ $ git stash pop
   }
 
   /* ============================================================
-     PHASE 4 — DEVOPS CITY HUB: navigation + the five buildings.
+     PHASE 4 — DEVOPS CITY: navigation + the five (now six, once
+     Section 1B's decoration sub-step lands) buildings.
      ============================================================ */
   function refreshCityStatsBar() {
     var coinsEl = $('dgcCityCoinsDisplay'); if (coinsEl) coinsEl.textContent = save.coins;
     var levelEl = $('dgcCityLevelDisplay'); if (levelEl) levelEl.textContent = save.level;
   }
+
+  /* ============================================================
+     PHASE 4 SECTION 1B — CITY EXPLORATION ENGINE. World-space
+     coordinates; the hero token stays screen-fixed at the viewport
+     center and #dgcCityWorld translates opposite the hero's world
+     position (clamped to the world's edges) — the whole "camera" is
+     just that one transform, recomputed every animation frame while
+     the City screen is open.
+     ============================================================ */
+  var CITY_WORLD_W = 900, CITY_WORLD_H = 560;
+  var CITY_BUILDINGS = [
+    { id: 'armory', name: 'Armory', x: 70, y: 90 },
+    { id: 'tailor', name: 'Tailor', x: 260, y: 60 },
+    { id: 'bank', name: 'Bank', x: 460, y: 100 },
+    { id: 'library', name: 'Library', x: 650, y: 70 },
+    { id: 'trophy', name: 'Trophy Hall', x: 780, y: 130 }
+  ];
+  var CITY_SUDO_POS = { x: 170, y: 190 }; // a fixed idle "guide post" near the Armory — simpler and just as alive as full follow-AI
+  var cityHero = { x: 450, y: 280, facing: 'down', moving: false };
+  var cityKeys = { up: false, down: false, left: false, right: false };
+  var cityRafHandle = null;
+  var cityNearBuildingId = null;
+
+  function renderCityBuildings() {
+    var layer = $('dgcCityBuildingsLayer');
+    if (!layer) return;
+    layer.innerHTML = CITY_BUILDINGS.map(function (b) {
+      return '<div class="dgc-city-building dgc-city-building-' + b.id + '" data-building="' + b.id + '" ' +
+        'style="left:' + b.x + 'px; top:' + b.y + 'px;" tabindex="0" role="button">' +
+        '<div class="dgc-city-building-roof"></div>' +
+        '<div class="dgc-city-building-body"><div class="dgc-city-building-icon">' + CITY_BUILDING_ICONS[b.id] + '</div><div class="dgc-city-building-name">' + b.name + '</div></div>' +
+      '</div>';
+    }).join('');
+  }
+  var CITY_BUILDING_ICONS = { armory: '⚒️', tailor: '🧵', bank: '🏦', library: '📚', trophy: '🏆', store: '🌳' };
+
+  function cityBuildingCenter(b) { return { x: b.x + 64, y: b.y + 68 }; } // ~center of the roof+body card
+
+  function updateCityCamera() {
+    var vp = $('dgcCityViewport');
+    if (!vp) return;
+    var vw = vp.clientWidth, vh = vp.clientHeight;
+    var camX = Math.max(0, Math.min(CITY_WORLD_W - vw, cityHero.x - vw / 2));
+    var camY = Math.max(0, Math.min(CITY_WORLD_H - vh, cityHero.y - vh / 2));
+    $('dgcCityWorld').style.transform = 'translate(' + (-camX) + 'px,' + (-camY) + 'px)';
+  }
+
+  function checkCityBuildingProximity() {
+    var nearest = null, nearestDist = 999999;
+    CITY_BUILDINGS.forEach(function (b) {
+      var c = cityBuildingCenter(b);
+      var dist = Math.hypot(cityHero.x - c.x, cityHero.y - c.y);
+      if (dist < 62 && dist < nearestDist) { nearest = b; nearestDist = dist; }
+    });
+    cityNearBuildingId = nearest ? nearest.id : null;
+    var prompt = $('dgcCityEnterPrompt');
+    if (nearest) {
+      $('dgcCityEnterPromptName').textContent = nearest.name;
+      prompt.hidden = false;
+    } else if (prompt) {
+      prompt.hidden = true;
+    }
+  }
+
+  function cityMoveTick() {
+    // Self-stopping safety net: if the player switches to a different
+    // site tab entirely (this page's own nav, not this game's), this
+    // panel stops being rendered but nothing here would otherwise know
+    // to stop — without this check the loop would run forever in the
+    // background. Checked via actual rendered visibility (offsetParent),
+    // not a specific class name, so it doesn't depend on assumptions
+    // about the site's own tab-switch mechanism (never touch other tabs'
+    // behavior/code — this only READS visibility).
+    var panel = document.getElementById('tab-game');
+    if (!panel || panel.offsetParent === null) { stopCityLoop(); return; }
+    // Pause movement while any modal is open on top of the City (the
+    // player may have released a key mid-click, or be reading a shop) —
+    // still keep the loop alive so re-closing the modal resumes instantly.
+    var modalOpen = !$('dgcModalBackdrop').hidden;
+    if (!modalOpen) {
+      var speed = 3.2;
+      var dx = 0, dy = 0;
+      if (cityKeys.up) dy -= 1;
+      if (cityKeys.down) dy += 1;
+      if (cityKeys.left) dx -= 1;
+      if (cityKeys.right) dx += 1;
+      var moving = dx !== 0 || dy !== 0;
+      if (moving) {
+        var len = Math.hypot(dx, dy);
+        dx = dx / len * speed; dy = dy / len * speed;
+        cityHero.x = Math.max(20, Math.min(CITY_WORLD_W - 20, cityHero.x + dx));
+        cityHero.y = Math.max(20, Math.min(CITY_WORLD_H - 20, cityHero.y + dy));
+        if (dx > 0) cityHero.facing = 'right';
+        else if (dx < 0) cityHero.facing = 'left';
+        else if (dy > 0) cityHero.facing = 'down';
+        else if (dy < 0) cityHero.facing = 'up';
+      }
+      if (moving !== cityHero.moving) {
+        cityHero.moving = moving;
+        $('dgcCityHeroToken').classList.toggle('dgc-city-walking', moving);
+      }
+      var facingEl = $('dgcCityHeroFacing');
+      if (facingEl) facingEl.style.transform = cityHero.facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)';
+      updateCityCamera();
+      checkCityBuildingProximity();
+    }
+  }
+  function stopCityLoop() {
+    if (cityRafHandle) { clearInterval(cityRafHandle); cityRafHandle = null; }
+    cityKeys = { up: false, down: false, left: false, right: false };
+  }
+  function enterCityBuilding(id) {
+    if (id === 'armory') { renderArmory(); openModal('dgcArmoryModal'); }
+    else if (id === 'tailor') { renderTailor(); openModal('dgcTailorModal'); }
+    else if (id === 'bank') { renderBank(); openModal('dgcBankModal'); }
+    else if (id === 'library') { renderLibrary(); openModal('dgcLibraryModal'); }
+    else if (id === 'trophy') { renderTrophyHall(); openModal('dgcTrophyModal'); }
+    playSfx('click');
+  }
+
   function goToCityScreen() {
-    var sudoSprite = $('dgcCitySudoSprite');
-    if (sudoSprite) { sudoSprite.innerHTML = chibiRoot('sudo'); setExpression(sudoSprite, 'happy'); }
+    var sudoToken = $('dgcCitySudoToken');
+    if (sudoToken) {
+      sudoToken.style.left = CITY_SUDO_POS.x + 'px';
+      sudoToken.style.top = CITY_SUDO_POS.y + 'px';
+      var sudoSprite = $('dgcCitySudoSprite');
+      if (sudoSprite && !sudoSprite.innerHTML) { sudoSprite.innerHTML = chibiRoot('sudo'); setExpression(sudoSprite, 'happy'); }
+    }
+    renderCityBuildings();
     refreshHeroTierVisuals(); // also (re)renders #dgcCityHeroSprite + name labels, live off `save`
     refreshCityStatsBar();
     showScreen('city');
+    stopCityLoop();
+    updateCityCamera();
+    checkCityBuildingProximity();
+    // setInterval rather than requestAnimationFrame — matches the timer-
+    // driven pattern already used elsewhere in this file (startTimer()),
+    // and doesn't depend on this panel's compositor-visible paint timing.
+    cityRafHandle = setInterval(cityMoveTick, 16);
   }
 
   /* ---- 2.1 ARMORY ---- */
@@ -28329,29 +28514,64 @@ $ git stash pop
     showScreen('title');
   });
 
-  /* ---- Phase 4 — DevOps City hub navigation + buildings ---- */
+  /* ---- Phase 4 Section 1B — DevOps City: exploration + buildings ---- */
   $('dgcVisitCityFromSelectBtn').addEventListener('click', goToCityScreen);
   $('dgcCityBackBtn').addEventListener('click', function () {
+    stopCityLoop();
     refreshStartScreen();
     showScreen('start');
   });
-  $('dgcCityBuildings').addEventListener('click', function (e) {
+  // Walking up to a building (the primary interaction) shows the Enter
+  // prompt via checkCityBuildingProximity(); clicking/tapping a building
+  // directly is kept as an always-available fallback (accessibility,
+  // and just faster for anyone who'd rather not walk over).
+  $('dgcCityBuildingsLayer').addEventListener('click', function (e) {
     var card = e.target.closest ? e.target.closest('[data-building]') : null;
     if (!card) return;
-    playSfx('click');
-    var b = card.getAttribute('data-building');
-    if (b === 'armory') { renderArmory(); openModal('dgcArmoryModal'); }
-    else if (b === 'tailor') { renderTailor(); openModal('dgcTailorModal'); }
-    else if (b === 'bank') { renderBank(); openModal('dgcBankModal'); }
-    else if (b === 'library') { renderLibrary(); openModal('dgcLibraryModal'); }
-    else if (b === 'trophy') { renderTrophyHall(); openModal('dgcTrophyModal'); }
+    enterCityBuilding(card.getAttribute('data-building'));
   });
-  $('dgcCityBuildings').addEventListener('keydown', function (e) {
+  $('dgcCityBuildingsLayer').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     var card = e.target.closest ? e.target.closest('[data-building]') : null;
     if (!card) return;
     e.preventDefault();
-    card.click();
+    enterCityBuilding(card.getAttribute('data-building'));
+  });
+  $('dgcCityEnterPrompt').addEventListener('click', function () {
+    if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId);
+  });
+  // Movement: arrow keys / WASD, only while the City screen is actually
+  // showing and no modal is layered on top of it (avoids scrolling the
+  // page on arrow-key presses, and avoids hijacking input elsewhere).
+  function cityScreenIsLive() { return !$('dgcCityScreen').hidden && $('dgcModalBackdrop').hidden; }
+  document.addEventListener('keydown', function (e) {
+    if (!cityScreenIsLive()) return;
+    var k = e.key.toLowerCase();
+    if (k === 'arrowup' || k === 'w') { cityKeys.up = true; e.preventDefault(); }
+    else if (k === 'arrowdown' || k === 's') { cityKeys.down = true; e.preventDefault(); }
+    else if (k === 'arrowleft' || k === 'a') { cityKeys.left = true; e.preventDefault(); }
+    else if (k === 'arrowright' || k === 'd') { cityKeys.right = true; e.preventDefault(); }
+    else if (k === 'enter' || k === ' ') { if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId); }
+  });
+  document.addEventListener('keyup', function (e) {
+    var k = e.key.toLowerCase();
+    if (k === 'arrowup' || k === 'w') cityKeys.up = false;
+    else if (k === 'arrowdown' || k === 's') cityKeys.down = false;
+    else if (k === 'arrowleft' || k === 'a') cityKeys.left = false;
+    else if (k === 'arrowright' || k === 'd') cityKeys.right = false;
+  });
+  // On-screen d-pad (shown on coarse/touch pointers via CSS) drives the
+  // exact same cityKeys state the keyboard path uses — one movement
+  // implementation, two input methods.
+  ['up', 'down', 'left', 'right'].forEach(function (dir) {
+    var btn = document.querySelector('.dgc-city-dpad-btn[data-dir="' + dir + '"]');
+    if (!btn) return;
+    var press = function (e) { e.preventDefault(); cityKeys[dir] = true; };
+    var release = function () { cityKeys[dir] = false; };
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointerleave', release);
+    btn.addEventListener('pointercancel', release);
   });
   $('dgcArmoryList').addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('[data-weapon-action]') : null;
