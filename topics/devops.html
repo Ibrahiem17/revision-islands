@@ -24053,10 +24053,17 @@ $ git stash pop
         '<ellipse class="dgc-chibi-shadow" cx="50" cy="118" rx="26" ry="6"/>' +
         // Tier 5 (DevOps Wizard) only — a real silhouette change, not just a
         // recolor, sitting BEHIND the body. Hidden by default via CSS.
-        '<path class="dgc-chibi-cape" d="M30 88 Q22 105 26 118 L38 108 Q34 96 38 86 Z M70 88 Q78 105 74 118 L62 108 Q66 96 62 86 Z"/>' +
-        '<path class="dgc-chibi-body" d="M30 100 Q30 78 50 78 Q70 78 70 100 L70 112 Q50 118 30 112 Z"/>' +
-        '<circle class="dgc-chibi-head" cx="50" cy="42" r="27"/>' +
-        '<path class="dgc-chibi-hair" d="M23 38 Q23 12 50 12 Q77 12 77 38 Q70 24 50 24 Q30 24 23 38 Z"/>' +
+        '<path class="dgc-chibi-cape" d="M28 84 Q20 105 25 118 L37 108 Q33 94 37 82 Z M72 84 Q80 105 75 118 L63 108 Q67 94 63 82 Z"/>' +
+        // Art-direction update — proportions moved away from exaggerated
+        // chibi scale toward the reference's more normal head-to-shoulders
+        // ratio: head shrunk (r 27->23) and the body enlarged/widened to
+        // compensate, rather than a big head on a tiny frame. Every other
+        // coordinate-dependent shape below (collar/badge/aura/sparkle/
+        // outfit accents/accessories) was re-derived to match this new
+        // head/body geometry — see each shape's own adjusted coordinates.
+        '<path class="dgc-chibi-body" d="M28 98 Q28 74 50 74 Q72 74 72 98 L72 112 Q50 118 28 112 Z"/>' +
+        '<circle class="dgc-chibi-head" cx="50" cy="42" r="23"/>' +
+        '<path class="dgc-chibi-hair" d="M25 38 Q25 16 50 16 Q75 16 75 38 Q68 26 50 26 Q32 26 25 38 Z"/>' +
         // Art-direction update — soft blush/cheek marks, drawn once and
         // always visible (not part of the expression-swap system: the
         // reference style keeps these present across nearly every
@@ -24067,17 +24074,17 @@ $ git stash pop
         // Tier accents (Phase 2) — each hidden by default, revealed
         // cumulatively per tier via CSS (see .dgc-chibi-hero[data-tier=...]),
         // so higher tiers visibly carry more detail than the last.
-        '<path class="dgc-chibi-collar-glow" d="M38 82 Q50 90 62 82" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
-        '<circle class="dgc-chibi-badge" cx="50" cy="93" r="4"/>' +
-        '<circle class="dgc-chibi-shoulder-aura" cx="50" cy="88" r="27" fill="none" stroke-width="1.4"/>' +
-        '<g class="dgc-chibi-tier-sparkle"><path d="M16 90 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/><path d="M84 84 l1.1 2.4 2.4 1.1 -2.4 1.1 -1.1 2.4 -1.1 -2.4 -2.4 -1.1 2.4 -1.1 z"/></g>' +
+        '<path class="dgc-chibi-collar-glow" d="M36 78 Q50 86 64 78" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<circle class="dgc-chibi-badge" cx="50" cy="90" r="4"/>' +
+        '<circle class="dgc-chibi-shoulder-aura" cx="50" cy="84" r="23" fill="none" stroke-width="1.4"/>' +
+        '<g class="dgc-chibi-tier-sparkle"><path d="M20 86 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/><path d="M80 80 l1.1 2.4 2.4 1.1 -2.4 1.1 -1.1 2.4 -1.1 -2.4 -2.4 -1.1 2.4 -1.1 z"/></g>' +
         // Phase 4 — Tailor outfit accessories: drawn once, hidden by
         // default, revealed per-outfit via CSS (.dgc-chibi-hero[data-
         // outfit=...]) exactly like the tier-accent pattern above, so an
         // outfit works layered on top of ANY tier's look without needing
         // per-tier outfit art.
-        '<path class="dgc-chibi-outfit-scarf" d="M36 84 Q50 92 64 84 L61 96 Q50 100 39 96 Z"/>' +
-        '<path class="dgc-chibi-outfit-cloak" d="M28 90 Q20 106 25 118 L36 110 Q32 98 36 88 Z M72 90 Q80 106 75 118 L64 110 Q68 98 64 88 Z"/>' +
+        '<path class="dgc-chibi-outfit-scarf" d="M36 80 Q50 88 64 80 L61 92 Q50 96 39 92 Z"/>' +
+        '<path class="dgc-chibi-outfit-cloak" d="M28 86 Q20 106 25 118 L36 110 Q32 96 36 84 Z M72 86 Q80 106 75 118 L64 110 Q68 96 64 84 Z"/>' +
         '<path class="dgc-chibi-outfit-visor" d="M27 36 Q50 30 73 36 L73 42 Q50 37 27 42 Z"/>' +
         // Section 1C — shoes: always drawn (everyone wears SOME shoes),
         // recolored per save.equippedShoes via CSS.
@@ -24086,8 +24093,8 @@ $ git stash pop
         // Section 1C — head accessories: all drawn ABOVE the hairline,
         // hidden by default, revealed per data-accessory via CSS — kept
         // clear of the face group on purpose (see ACCESSORY_SHOP comment).
-        '<path class="dgc-chibi-acc-headband" d="M22 33 Q50 24 78 33 L78 38 Q50 30 22 38 Z"/>' +
-        '<path class="dgc-chibi-acc-cap" d="M18 20 Q50 -4 82 20 L82 27 Q50 12 18 27 Z"/>' +
+        '<path class="dgc-chibi-acc-headband" d="M25 33 Q50 24 75 33 L75 38 Q50 30 25 38 Z"/>' +
+        '<path class="dgc-chibi-acc-cap" d="M21 20 Q50 -4 79 20 L79 27 Q50 12 21 27 Z"/>' +
         '<path class="dgc-chibi-acc-wizardhat" d="M50 -34 L36 20 Q50 13 64 20 Z"/>' +
         // Weapon: always visibly held, part of the silhouette — not an
         // abstract inventory concept. See heroWeaponSVG()/HERO_WEAPONS.
