@@ -22127,7 +22127,15 @@ $ git stash pop
   .dgc-hint-cost { color:var(--dgc-gold); margin-left:3px; }
   .dgc-hint-display { margin-top:10px; font-size:11px; color:var(--dgc-text-dim); background:rgba(var(--dgc-gold-rgb),0.05); border:1px solid rgba(var(--dgc-gold-rgb),0.2); border-left:3px solid var(--dgc-gold); border-radius:4px; padding:8px 12px; }
 
+  /* Phase 4 character-visibility audit caught a real, pre-existing bug
+     here: this rule's own `display:flex` is an author style, which beats
+     the browser's built-in `[hidden]{display:none}` UA rule even while
+     the `hidden` attribute is set — so this near-opaque overlay was
+     covering the ENTIRE arena (hero, boss, HP bars, names) during every
+     single fight, not just real Rapid Recon moments. The explicit
+     `[hidden]` override below restores real hidden-by-default behavior. */
   .dgc-recon-overlay { position:absolute; inset:0; background:rgba(10,6,18,0.96); border-radius:10px; z-index:8; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; }
+  .dgc-recon-overlay[hidden] { display:none; }
   .dgc-recon-title { font-family:var(--dgc-font-display); font-weight:800; font-size:16px; color:var(--dgc-secondary); margin-bottom:4px; text-shadow:0 0 14px rgba(var(--dgc-secondary-rgb),0.5); }
   .dgc-recon-sub { font-size:10.5px; color:var(--dgc-text-dimmer); margin-bottom:14px; }
   .dgc-recon-progress { font-size:10px; color:var(--dgc-crit); margin-bottom:10px; }
@@ -22206,6 +22214,11 @@ $ git stash pop
   .dgc-title-sudo-pose .dgc-sudo-bubble { position:static; margin-bottom:8px; opacity:1; }
 
   .dgc-title-stats-bar { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border); border-radius:10px; padding:10px 20px; margin-bottom:20px; }
+  /* Same class of bug fixed above for .dgc-recon-overlay: an author
+     `display:flex` here silently beat the `hidden` attribute for a
+     brand-new player (refreshTitleScreen() sets bar.hidden=true, but
+     without this override it showed a stray all-zero stats bar anyway). */
+  .dgc-title-stats-bar[hidden] { display:none; }
   .dgc-title-stat { display:flex; flex-direction:column; align-items:center; gap:2px; }
   .dgc-title-stat-label { font-family:var(--dgc-font-mono); font-size:8.5px; letter-spacing:1.5px; color:var(--dgc-text-dimmer); }
   .dgc-title-stat-value { font-family:var(--dgc-font-display); font-size:15px; font-weight:800; color:var(--dgc-gold); }
