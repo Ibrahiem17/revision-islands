@@ -22173,6 +22173,23 @@ $ git stash pop
   .dgc-toggle[data-on="true"] { background:rgba(var(--dgc-success-rgb),0.25); border-color:var(--dgc-success); }
   .dgc-toggle-knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--dgc-text-dimmer); transition:transform .18s ease, background .15s; }
   .dgc-toggle[data-on="true"] .dgc-toggle-knob { transform:translateX(20px); background:var(--dgc-success); box-shadow:0 0 8px rgba(var(--dgc-success-rgb),0.7); }
+
+  /* Master volume slider — styled to match the toggle/game chrome, not a
+     default OS range input. */
+  .dgc-volume-slider {
+    -webkit-appearance:none; appearance:none; width:110px; height:5px; border-radius:3px;
+    background:linear-gradient(90deg, var(--dgc-secondary) var(--dgc-vol-pct,70%), rgba(255,255,255,0.1) var(--dgc-vol-pct,70%));
+    cursor:pointer; flex-shrink:0;
+  }
+  .dgc-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--dgc-secondary); box-shadow:0 0 8px rgba(var(--dgc-secondary-rgb),0.7); border:none; cursor:pointer;
+  }
+  .dgc-volume-slider::-moz-range-thumb {
+    width:14px; height:14px; border-radius:50%; background:var(--dgc-secondary);
+    box-shadow:0 0 8px rgba(var(--dgc-secondary-rgb),0.7); border:none; cursor:pointer;
+  }
+  .dgc-volume-slider::-moz-range-track { height:5px; border-radius:3px; background:rgba(255,255,255,0.1); }
   .dgc-btn-danger-outline { border-color:rgba(var(--dgc-danger-rgb),0.5); color:var(--dgc-danger); }
   .dgc-btn-danger-outline:hover { border-color:var(--dgc-danger); background:rgba(var(--dgc-danger-rgb),0.1); color:var(--dgc-danger); }
 
@@ -22436,6 +22453,26 @@ $ git stash pop
   .dgc-levelup-tier { font-family:var(--dgc-font-display); font-weight:800; font-size:13px; color:var(--dgc-crit-bright); text-shadow:0 0 12px rgba(var(--dgc-crit-rgb),0.6); margin-top:8px; letter-spacing:1px; }
   .dgc-levelup-tier[hidden] { display:none; }
   .dgc-levelup-stats { font-family:var(--dgc-font-ui); font-weight:600; font-size:12px; color:var(--dgc-success); margin-top:8px; }
+
+  /* ============================================================
+     STARTER COINS TOAST — reuses the exact .dgc-coin particle (see
+     spawnCoinParticles()) so this is the same visual language as
+     in-fight coin rewards, not a bespoke one-off effect.
+     ============================================================ */
+  .dgc-starter-coins-toast {
+    position:absolute; inset:0; z-index:540; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; text-align:center; pointer-events:none; animation:dgc-starter-coins-fade 2.6s ease forwards;
+  }
+  .dgc-starter-coins-toast[hidden] { display:none; }
+  @keyframes dgc-starter-coins-fade {
+    0% { opacity:0; } 10% { opacity:1; } 78% { opacity:1; } 100% { opacity:0; }
+  }
+  .dgc-starter-coins-burst { position:absolute; inset:0; overflow:visible; }
+  .dgc-starter-coins-text {
+    font-family:var(--dgc-font-display); font-weight:900; font-size:26px; color:var(--dgc-gold);
+    text-shadow:0 0 22px rgba(var(--dgc-gold-rgb),0.7); letter-spacing:1px; animation:dgc-crit-pop .6s cubic-bezier(.2,1.4,.4,1);
+  }
+  .dgc-starter-coins-sub { font-family:var(--dgc-font-ui); font-size:12px; color:var(--dgc-text-dim); margin-top:6px; }
 </style>
 
 <div class="dgc-root">
@@ -22479,6 +22516,18 @@ $ git stash pop
       <div class="dgc-levelup-tier" id="dgcLevelUpTierText" hidden></div>
       <div class="dgc-levelup-stats" id="dgcLevelUpStatsText"></div>
     </div>
+  </div>
+
+  <!-- ============ STARTER COINS TOAST ============
+       A one-time "+500 coins" moment for a genuinely brand-new player
+       (or after an explicit New Game reset), shown right as the
+       world-entry transition finishes — the same coin-burst visual/audio
+       language as in-fight coin rewards, not a one-off different effect.
+       Non-blocking (pointer-events:none) — never traps a click. -->
+  <div class="dgc-starter-coins-toast" id="dgcStarterCoinsToast" hidden>
+    <div class="dgc-starter-coins-burst" id="dgcStarterCoinsBurst"></div>
+    <div class="dgc-starter-coins-text">🪙 +500 COINS</div>
+    <div class="dgc-starter-coins-sub">Welcome, new dev — here's a head start.</div>
   </div>
 
   <!-- ============ TITLE / OPENING SCREEN ============
@@ -22563,8 +22612,12 @@ $ git stash pop
       <div class="dgc-modal-header"><span>⚙ SETTINGS</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
       <div class="dgc-modal-body">
         <div class="dgc-setting-row">
-          <div><strong>Sound Effects</strong><div class="dgc-setting-sub">Hit / crit / victory / coin cues (Phase 5)</div></div>
+          <div><strong>Sound Effects</strong><div class="dgc-setting-sub">Hit / crit / victory / coin / level-up cues</div></div>
           <button class="dgc-toggle" id="dgcSoundToggle" data-on="false"><span class="dgc-toggle-knob"></span></button>
+        </div>
+        <div class="dgc-setting-row dgc-setting-row-volume">
+          <div><strong>Master Volume</strong><div class="dgc-setting-sub">Applies to every sound cue</div></div>
+          <input type="range" class="dgc-volume-slider" id="dgcVolumeSlider" min="0" max="100" value="70" aria-label="Master volume">
         </div>
         <div class="dgc-setting-row">
           <div><strong>Fullscreen</strong><div class="dgc-setting-sub">Real browser fullscreen — hides all browser chrome</div></div>
@@ -22793,10 +22846,15 @@ $ git stash pop
       // `coins`/`xp`/`bossesDefeated`/`bestCombo`/`highScore` are untouched,
       // so no existing Phase 1 progress is lost or migrated destructively.
       var level = (typeof s.level === 'number' && s.level >= 1) ? s.level : 1;
+      var bossesDefeated = Array.isArray(s.bossesDefeated) ? s.bossesDefeated : [];
+      // A save that already had real progress before this field existed is
+      // NOT a new player — backfill the flag as already-granted so it never
+      // retroactively hands out a surprise 500 coins to an existing save.
+      var alreadyHadProgress = (s.coins || 0) > 0 || (s.xp || 0) > 0 || bossesDefeated.length > 0;
       return {
         coins: s.coins || 0,
         xp: s.xp || 0,
-        bossesDefeated: Array.isArray(s.bossesDefeated) ? s.bossesDefeated : [],
+        bossesDefeated: bossesDefeated,
         bestCombo: s.bestCombo || 1,
         highScore: s.highScore || 0,
         level: level,
@@ -22804,7 +22862,7 @@ $ git stash pop
         xpToNextLevel: typeof s.xpToNextLevel === 'number' ? s.xpToNextLevel : xpToNextLevelForLevel(level),
         heroTier: s.heroTier || tierForLevel(level).id,
         stats: (s.stats && typeof s.stats === 'object') ? s.stats : statsForLevel(level),
-        starterCoinsGranted: !!s.starterCoinsGranted
+        starterCoinsGranted: !!s.starterCoinsGranted || alreadyHadProgress
       };
     } catch (e) {
       return {
@@ -22817,6 +22875,33 @@ $ git stash pop
   var save = loadSave();
   function persist() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(save)); } catch (e) { /* storage unavailable — game still works, just won't persist */ }
+  }
+
+  /* ============================================================
+     STARTER COINS — a one-time 500-coin grant for a genuinely new save
+     (or an explicit "New Game" reset, which is a real fresh start, not a
+     punishment). The DATA is granted immediately here; the VISIBLE toast
+     is deferred until the world-entry transition actually finishes (see
+     runBootSequence()) so it's never wasted on a hidden tab panel.
+     ============================================================ */
+  var pendingStarterCoinsToast = false;
+  function grantStarterCoinsIfNeeded() {
+    if (save.starterCoinsGranted) return;
+    save.coins += 500;
+    save.starterCoinsGranted = true;
+    persist();
+    pendingStarterCoinsToast = true;
+  }
+  function showStarterCoinsToastIfPending() {
+    if (!pendingStarterCoinsToast) return;
+    pendingStarterCoinsToast = false;
+    var toast = $('dgcStarterCoinsToast');
+    if (!toast) return;
+    toast.hidden = false;
+    spawnCoinParticles($('dgcStarterCoinsBurst'), 500);
+    playSfx('starterCoins');
+    setTimeout(function () { toast.hidden = true; }, 2600);
+    refreshTitleScreen(); // the coins are already in `save` — reflect them right away
   }
 
   /* ============================================================
@@ -23629,13 +23714,99 @@ $ git stash pop
     refreshStartScreen();
   }
 
-  var soundEnabled = false;
+  /* ============================================================
+     SOUND SETTINGS — mute + master volume, both functional and
+     persisted (dgc_sound_v1), independent of the dgc_save_v1 game-
+     progress key so muting never touches coins/XP/level state.
+     ============================================================ */
+  var soundEnabled = false; // derived: !muted — kept as its own var since playSfx() already reads it directly
+  var masterVolume = 0.7;
   (function loadSoundSetting() {
-    try { soundEnabled = localStorage.getItem('dgc_sound_v1') === 'true'; } catch (e) { soundEnabled = false; }
+    try {
+      var raw = localStorage.getItem('dgc_sound_v1');
+      if (raw == null) throw 0;
+      var parsed = JSON.parse(raw);
+      if (typeof parsed === 'boolean') {
+        // legacy format from before the volume slider existed: a bare "true"/"false" meant "sound on"
+        soundEnabled = parsed;
+        masterVolume = 0.7;
+      } else if (parsed && typeof parsed === 'object') {
+        soundEnabled = !parsed.muted;
+        masterVolume = (typeof parsed.volume === 'number') ? parsed.volume : 0.7;
+      }
+    } catch (e) { soundEnabled = false; masterVolume = 0.7; }
   })();
+  function persistSoundSetting() {
+    try { localStorage.setItem('dgc_sound_v1', JSON.stringify({ muted: !soundEnabled, volume: masterVolume })); } catch (e) { /* storage unavailable */ }
+  }
   function applySoundToggleUI() {
     $('dgcSoundToggle').setAttribute('data-on', soundEnabled ? 'true' : 'false');
+    var slider = $('dgcVolumeSlider');
+    if (slider) {
+      slider.value = Math.round(masterVolume * 100);
+      slider.style.setProperty('--dgc-vol-pct', Math.round(masterVolume * 100) + '%');
+    }
   }
+
+  /* ============================================================
+     SFX ENGINE — every cue is synthesized live via the Web Audio API
+     (oscillator + gain envelope), not a loaded asset file: zero extra
+     bytes, nothing to fetch, so it can never slow down load or the
+     world-entry transition. The AudioContext is created lazily, only
+     inside a real playSfx() call — which itself only ever fires from a
+     genuine click/game-event handler — so this never attempts to
+     autoplay on page load, respecting browser autoplay policy.
+     ============================================================ */
+  var audioCtx = null;
+  function getAudioCtx() {
+    if (audioCtx) return audioCtx;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; }
+    return audioCtx;
+  }
+  function tone(freq, duration, opts) {
+    opts = opts || {};
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') { ctx.resume().catch(function () {}); }
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = opts.type || 'sine';
+    var t0 = ctx.currentTime;
+    osc.frequency.setValueAtTime(Math.max(1, freq), t0);
+    if (opts.freqEnd) osc.frequency.exponentialRampToValueAtTime(Math.max(1, opts.freqEnd), t0 + duration);
+    var vol = Math.max(0.0001, (opts.volume != null ? opts.volume : 0.2) * masterVolume);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.03);
+  }
+  // Each cue: a short, cheap sequence of tone() calls tuned to the doc's
+  // own description (bigger/distinct for crit, descending for
+  // break/defeat, rising for combo-up/level-up, a tense low pulse for
+  // enrage, etc.) — reused unchanged everywhere that moment happens.
+  var SFX = {
+    hit: function () { tone(220, 0.11, { type: 'square', volume: 0.16 }); },
+    crit: function () { tone(520, 0.08, { type: 'square', volume: 0.2 }); setTimeout(function () { tone(780, 0.14, { type: 'square', volume: 0.2, freqEnd: 1000 }); }, 55); },
+    wrong: function () { tone(170, 0.18, { type: 'sawtooth', volume: 0.14, freqEnd: 90 }); },
+    comboUp: function () { tone(520, 0.09, { type: 'sine', volume: 0.14, freqEnd: 820 }); },
+    comboBreak: function () { tone(420, 0.16, { type: 'sine', volume: 0.14, freqEnd: 180 }); },
+    coin: function () { tone(880, 0.06, { type: 'square', volume: 0.14 }); setTimeout(function () { tone(1318, 0.08, { type: 'square', volume: 0.14 }); }, 55); },
+    victory: function () { [523, 659, 784, 1046].forEach(function (f, i) { setTimeout(function () { tone(f, 0.22, { type: 'triangle', volume: 0.2 }); }, i * 110); }); },
+    defeat: function () { tone(220, 0.32, { type: 'sine', volume: 0.15, freqEnd: 100 }); },
+    levelup: function () { tone(440, 0.14, { type: 'sine', volume: 0.18, freqEnd: 700 }); setTimeout(function () { tone(660, 0.22, { type: 'triangle', volume: 0.2, freqEnd: 1100 }); }, 120); },
+    tierUp: function () { [660, 880, 1100, 1400].forEach(function (f, i) { setTimeout(function () { tone(f, 0.16, { type: 'triangle', volume: 0.18 }); }, i * 85); }); },
+    hint: function () { tone(950, 0.07, { type: 'sine', volume: 0.12 }); },
+    enrage: function () { tone(140, 0.32, { type: 'sawtooth', volume: 0.12, freqEnd: 95 }); },
+    keypress: function () { tone(1200, 0.02, { type: 'square', volume: 0.045 }); },
+    click: function () { tone(700, 0.035, { type: 'square', volume: 0.09 }); },
+    hover: function () { tone(1000, 0.02, { type: 'sine', volume: 0.045 }); },
+    cast: function () { tone(500, 0.08, { type: 'square', volume: 0.14, freqEnd: 900 }); },
+    worldEntry: function () { tone(120, 0.6, { type: 'sawtooth', volume: 0.13, freqEnd: 380 }); },
+    fullscreen: function () { tone(600, 0.09, { type: 'sine', volume: 0.13, freqEnd: 900 }); },
+    starterCoins: function () { [660, 880, 1046, 1318].forEach(function (f, i) { setTimeout(function () { tone(f, 0.1, { type: 'square', volume: 0.15 }); }, i * 70); }); }
+  };
 
   /* ============================================================
      COMBAT: START / RENDER
@@ -23780,7 +23951,9 @@ $ git stash pop
       // The clock hitting the danger zone doubles as this boss's "enrage
       // timer" — the exact mechanic the Angry/Enraged expression is
       // supposed to reuse, not a separate system.
+      var wasEnraged = state.bossEnraged;
       state.bossEnraged = pct <= 20;
+      if (state.bossEnraged && !wasEnraged) playSfx('enrage'); // fire once on the flip, not every tick
       applyPersistentExpressions();
       if (state.timeLeft <= 0) {
         clearInterval(intervalId);
@@ -23900,7 +24073,13 @@ $ git stash pop
   // Phase-5 sound hook: no audio assets exist yet, so this is a deliberate
   // no-op stub — every place a sound SHOULD play already calls it, so wiring
   // in real audio later touches only this one function.
-  function playSfx(name) { if (!soundEnabled) return; /* no audio assets yet — Phase 5 */ }
+  // The one function every event hook already calls — real audio now,
+  // reusing the exact same call sites (no parallel sound-event system).
+  function playSfx(name) {
+    if (!soundEnabled) return;
+    var fn = SFX[name];
+    if (fn) { try { fn(); } catch (e) { /* audio unsupported/blocked — game still works silently */ } }
+  }
 
   function spawnCastProjectile() {
     var layer = $('dgcFxLayer');
@@ -23926,6 +24105,30 @@ $ git stash pop
       box.classList.add('dgc-terminal-keypulse');
       playSfx('keypress');
     });
+  }
+
+  // Generic delegated click/hover feedback for every interactive surface —
+  // menus, buttons, the reskinned option/seq/code-line objects — one
+  // listener instead of wiring a sound call into every individual handler.
+  // The terminal submit button is excluded since it already gets the
+  // richer "cast" sound at the moment it fires.
+  var DGC_UI_SOUND_SELECTOR = '.dgc-btn, .dgc-menu-item, .dgc-option-card, .dgc-seq-chip, .dgc-code-line, .dgc-hint-btn, .dgc-toggle, .dgc-boss-card, .dgc-fullscreen-toggle, button';
+  function wireUiSounds() {
+    var root = document.querySelector('#tab-game .dgc-root');
+    if (!root) return;
+    root.addEventListener('click', function (e) {
+      var el = e.target.closest(DGC_UI_SOUND_SELECTOR);
+      if (!el || el.classList.contains('dgc-terminal-submit') || el.classList.contains('dgc-fullscreen-toggle')) return;
+      playSfx('click');
+    }, true);
+    var lastHoverEl = null;
+    root.addEventListener('mouseover', function (e) {
+      var el = e.target.closest(DGC_UI_SOUND_SELECTOR);
+      if (!el || el === lastHoverEl) return;
+      lastHoverEl = el;
+      playSfx('hover');
+    });
+    root.addEventListener('mouseleave', function () { lastHoverEl = null; });
   }
 
   function renderReadTheRoomStep(q) {
@@ -24162,6 +24365,7 @@ $ git stash pop
     if (tier === 'wrong') {
       var wasLow = state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25;
       var dmg = Math.round((q.damageIfCorrect || 15) * 0.6 * enrageFactor());
+      var comboBeforeReset = state.combo;
       state.heroHp = Math.max(0, state.heroHp - dmg);
       state.combo = 1;
       updateTopbar();
@@ -24169,6 +24373,8 @@ $ git stash pop
       shakeArena(dmg > 20 ? 'lg' : 'md');
       flashSprite('dgcHeroSprite');
       sudoReact('wince');
+      playSfx('wrong');
+      if (comboBeforeReset > 1) playSfx('comboBreak');
 
       // Hero's face: a timeout reads as "didn't get there in time" (confused),
       // not pain — a real, distinct wrong-answer path from a heavy/light hit.
@@ -24214,6 +24420,9 @@ $ git stash pop
       sudoReact('cheer');
       if (hintFullUsed) { state.combo = 1; }
     }
+    playSfx(isOptimal ? 'crit' : 'hit');
+    if (state.combo > preCombo) playSfx('comboUp');
+    else if (state.combo < preCombo) playSfx('comboBreak'); // the hintFullUsed reset-to-1 case
     var coinsEarned = Math.round((isOptimal ? 14 : 8) * state.combo * (hintFullUsed ? 0.4 : 1));
     // Luck stat (Phase 2): a gradually growing coin bonus on every landed hit.
     coinsEarned = Math.round(coinsEarned * (1 + save.stats.luck));
@@ -24362,6 +24571,7 @@ $ git stash pop
         state.combo = 1;
         spawnDamageNumber('hero', sa.damageToHeroIfWrong, false);
         shakeArena('lg'); flashSprite('dgcHeroSprite'); sudoReact('wince');
+        playSfx('wrong');
         flashExpression('hero', 'hurtHeavy', 1400);
         flashExpression('boss', 'excited', 1300);
         flashExpression('sudo', 'sympathetic', 1400);
@@ -24375,6 +24585,7 @@ $ git stash pop
         spawnCritStamp();
         spawnCoinBurst(bonusCoins);
         shakeArena('lg'); flashSprite('dgcBossSprite'); sudoReact('cheer');
+        playSfx('crit');
         // Countering the special attack is the hero's biggest power-surge
         // moment so far — stands in for the real Phase-2 level-up trigger
         // until hero tiers/leveling exist.
@@ -24463,6 +24674,7 @@ $ git stash pop
     save.coins -= cost;
     persist();
     updateTopbar();
+    playSfx('hint');
     state.hintUsedThisQ = true; // any hint tier disqualifies Sudo's "smug" for this question
     var text = tier === 'nudge' ? q.hintNudge : tier === 'partial' ? q.hintPartial : q.hintFull;
     // Sudo's own two-beat reaction: briefly "thinking" it over (the doc's
@@ -24509,9 +24721,12 @@ $ git stash pop
     setTimeout(function () { el.remove(); }, 750);
   }
 
-  function spawnCoinBurst(amount) {
-    var layer = $('dgcFxLayer');
-    var count = Math.min(6, Math.max(2, Math.round(amount / 8)));
+  // Shared by every coin reward moment (in-fight bursts AND the starter-
+  // coins toast) so "the same coin-burst treatment" is literal code reuse,
+  // not just a visually-similar copy.
+  function spawnCoinParticles(container, amount) {
+    if (!container) return;
+    var count = Math.min(10, Math.max(2, Math.round(amount / 8)));
     for (var i = 0; i < count; i++) {
       (function (i) {
         var el = document.createElement('div');
@@ -24522,10 +24737,14 @@ $ git stash pop
         el.style.setProperty('--dgc-cx', rand(-30, 120) + 'px');
         el.style.setProperty('--dgc-cy', rand(-140, -90) + 'px');
         el.style.animationDelay = (i * 0.05) + 's';
-        layer.appendChild(el);
+        container.appendChild(el);
         setTimeout(function () { el.remove(); }, 1000 + i * 50);
       })(i);
     }
+  }
+  function spawnCoinBurst(amount) {
+    playSfx('coin');
+    spawnCoinParticles($('dgcFxLayer'), amount);
   }
 
   function shakeArena(size) {
@@ -24603,6 +24822,7 @@ $ git stash pop
 
   function triggerVictory() {
     flashSprite('dgcBossSprite');
+    playSfx('victory');
     // Fight-end payoff faces — bigger/distinct from the in-combat happy/excited.
     // Locked (not flashed): the killing blow itself may have just scheduled
     // its own reaction's revert timer, which must not overwrite this pose.
@@ -24633,6 +24853,7 @@ $ git stash pop
   function triggerDefeat() {
     var sprite = $('dgcHeroSprite');
     sprite.classList.add('dgc-knockdown');
+    playSfx('defeat');
     lockExpression('hero', 'defeated');
     lockExpression('boss', 'victorious');
     lockExpression('sudo', 'defeated');
@@ -24773,9 +24994,16 @@ $ git stash pop
   $('dgcConfirmCancel').addEventListener('click', closeModals);
   $('dgcSoundToggle').addEventListener('click', function () {
     soundEnabled = !soundEnabled;
-    try { localStorage.setItem('dgc_sound_v1', soundEnabled ? 'true' : 'false'); } catch (e) { /* storage unavailable */ }
+    persistSoundSetting();
     applySoundToggleUI();
+    if (soundEnabled) playSfx('click'); // immediate confirmation that sound just turned on
   });
+  $('dgcVolumeSlider').addEventListener('input', function (e) {
+    masterVolume = Math.max(0, Math.min(100, +e.target.value)) / 100;
+    e.target.style.setProperty('--dgc-vol-pct', e.target.value + '%');
+    persistSoundSetting();
+  });
+  $('dgcVolumeSlider').addEventListener('change', function () { playSfx('click'); }); // preview the new level once released
   $('dgcSettingsResetBtn').addEventListener('click', function () {
     showConfirm(
       '⚠ RESET ALL PROGRESS?',
@@ -24871,6 +25099,7 @@ $ git stash pop
     if (!overlay || !log) return;
     overlay.hidden = false;
     overlay.classList.remove('dgc-boot-exit');
+    playSfx('worldEntry'); // this click (into the Game tab) is the genuine user gesture that unlocks audio
     log.innerHTML = '';
     fsPrompt.hidden = true;
     var lines = fast ? DGC_BOOT_LINES.slice(-2) : DGC_BOOT_LINES;
@@ -24883,6 +25112,7 @@ $ git stash pop
       setTimeout(function () {
         overlay.hidden = true;
         overlay.classList.remove('dgc-boot-exit');
+        showStarterCoinsToastIfPending(); // the "crossing the threshold" moment — exactly where a new player should see it
       }, 480);
     }
     lines.forEach(function (text, i) {
@@ -24947,6 +25177,7 @@ $ git stash pop
     if (exit) exit.call(document);
   }
   function toggleGameFullscreen() {
+    playSfx('fullscreen');
     var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
     if (isFs) exitGameFullscreen(); else requestGameFullscreen();
   }
@@ -24974,6 +25205,7 @@ $ git stash pop
      INIT — the title screen is the true first thing a player sees,
      never the fight screen or even the boss-select screen directly.
      ============================================================ */
+  grantStarterCoinsIfNeeded(); // data grant happens immediately; the visible toast waits for world-entry
   initChibis();
   refreshTitleScreen();
   refreshStartScreen();
@@ -24981,6 +25213,8 @@ $ git stash pop
   wireGameTabEntry();
   wireFullscreenControls();
   wireTerminalKeyFeedback();
+  wireUiSounds();
+  applySoundToggleUI();
   showScreen('title');
 
 })();
