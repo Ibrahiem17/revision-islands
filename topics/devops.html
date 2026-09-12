@@ -22081,6 +22081,26 @@ $ git stash pop
   .dgc-seq-chosen .dgc-seq-chip { background:rgba(var(--dgc-crit-rgb),0.16); border-color:rgba(var(--dgc-crit-rgb),0.5); cursor:default; box-shadow:0 0 10px rgba(var(--dgc-crit-rgb),0.2); }
   .dgc-seq-num { color:var(--dgc-crit); font-weight:700; margin-right:5px; }
 
+  /* ---- Final Boss's closing STAR question → an in-world "final report"
+     object, not a plain textarea dropped on the screen. ---- */
+  .dgc-star-panel {
+    position:relative; background:linear-gradient(160deg, rgba(var(--dgc-gold-rgb),0.08), var(--dgc-bg-2) 60%);
+    border:1px solid rgba(var(--dgc-gold-rgb),0.4); border-radius:4px; padding:16px 16px 12px;
+    box-shadow:0 0 22px rgba(var(--dgc-gold-rgb),0.14) inset;
+  }
+  .dgc-star-panel::before {
+    content:'⏰ FINAL REPORT'; position:absolute; top:-1px; left:12px; font-family:var(--dgc-font-ui);
+    font-size:8.5px; letter-spacing:1px; color:var(--dgc-gold); opacity:0.85;
+  }
+  .dgc-star-legend { font-family:var(--dgc-font-ui); font-size:11px; color:var(--dgc-text-dim); margin-bottom:10px; letter-spacing:0.5px; }
+  .dgc-star-legend b { color:var(--dgc-gold); }
+  .dgc-star-textarea {
+    width:100%; background:rgba(0,0,0,0.25); border:1px solid var(--dgc-border-bright); border-radius:4px;
+    color:var(--dgc-text); font-family:var(--dgc-font-ui); font-size:12.5px; padding:10px 12px; resize:vertical;
+    outline:none; margin-bottom:10px;
+  }
+  .dgc-star-textarea:focus { border-color:var(--dgc-gold); box-shadow:0 0 0 1px rgba(var(--dgc-gold-rgb),0.3); }
+
   .dgc-hint-row { display:flex; gap:8px; flex-wrap:wrap; }
   .dgc-hint-btn { font-family:var(--dgc-font-ui); font-size:10.5px; color:var(--dgc-text-dim); background:rgba(255,255,255,0.02); border:1px solid var(--dgc-border); border-radius:5px; padding:6px 10px; cursor:pointer; }
   .dgc-hint-btn:hover { border-color:var(--dgc-gold); color:var(--dgc-gold); }
@@ -25918,6 +25938,29 @@ $ git stash pop
         damageIfCorrect: 38,
         damageToHeroIfWrong: 25
       }
+    },
+
+    /* ================================================================
+       FINAL BOSS — "3AM PAGER"
+       Not the standard 3-phase format — see isFinalBoss handling in
+       newRunState()/startFight()/currentPhaseQuestions()/nextQuestion().
+       `phases: [[]]` is a deliberate 1-element placeholder: its LENGTH is
+       what handlePhaseCleared() checks to decide "no more phases ->
+       victory", while its actual (empty) content is never read — real
+       questions come from getFinalBossMixedPool() instead. Gated behind
+       all 9 topic bosses via isFinalBossUnlocked()/BOSS_ORDER.
+       ================================================================ */
+    pager: {
+      id: 'pager',
+      name: '3AM Pager',
+      topic: 'Final Exam',
+      icon: '📟',
+      chibiKind: 'pager',
+      phaseHp: [220],
+      phaseNames: ['3AM — Everything At Once'],
+      xpReward: 320,
+      coinBaseReward: 220,
+      phases: [[]]
     }
   };
 
@@ -25929,6 +25972,19 @@ $ git stash pop
     { prompt: 'Clear the terminal screen.', patterns: [/^clear$/i] },
     { prompt: 'Show the current git branch (quick check).', patterns: [/^git\s+branch$/i, /^git\s+status$/i] }
   ];
+
+  // Final Boss's one-time closing question — free-text STAR format,
+  // graded leniently for the real shape (stabilize -> communicate ->
+  // root-cause) rather than exact wording. See validateStarNarrative().
+  var FINAL_BOSS_STAR_QUESTION = {
+    mode: 'star_narrative',
+    prompt: 'The Pager shrieks one last time, 3AM sharp: <strong>"Production just started returning 500 errors for 10% of users, 20 minutes after a deploy. Walk through how you\'d actually handle it — Situation, Task, Action, Result."</strong>',
+    damageIfCorrect: 60, damageIfOptimal: 90,
+    timeAllotted: 90,
+    hintNudge: 'Interviewers are grading the SHAPE of your answer, not perfect prose.',
+    hintPartial: 'Keep Situation/Task brief; spend real detail on Action (what you\'d actually do, in order) and Result (how you\'d confirm it\'s fixed).',
+    hintFull: 'A strong shape: Situation (500s for 10% of users right after a deploy) → Task (restore service fast, minimize impact) → Action (roll back the deploy immediately, confirm errors stop, notify stakeholders, THEN investigate root cause) → Result (error rate back to normal, postmortem scheduled).'
+  };
 
   /* ============================================================
      RUNTIME STATE
@@ -25961,8 +26017,14 @@ $ git stash pop
       timer: null,
       timeLeft: 50,
       timeAllotted: 50,
-      specialAttackDone: false,
-      reconDone: false,
+      // Final Boss "3AM Pager" has no phases/special-attack in the normal
+      // sense — its own structure (rapid_recon opener, a mixed pool drawn
+      // from every cleared boss, then a closing STAR question) is driven
+      // by these flags rather than the standard phase machinery.
+      isFinalBoss: bossId === 'pager',
+      specialAttackDone: bossId === 'pager' ? true : false, // final boss skips the standard special-attack trigger entirely
+      starAsked: false,
+      reconDone: bossId === 'pager' ? true : false, // final boss's OWN rapid_recon already opens the fight — never re-trigger the normal random one
       runCoins: 0,
       runXp: 0,
       // --- expression-system tracking (reuses existing events, no parallel system) ---
@@ -26267,7 +26329,14 @@ $ git stash pop
     updateHpBars(true);
     updatePhaseTag();
     showScreen('combat');
-    nextQuestion();
+    if (state.isFinalBoss) {
+      // "Opens with a rapid_recon burst round" — reuses the exact existing
+      // Rapid Recon mechanic unchanged; its own finish() calls nextQuestion()
+      // for us, which is where the mixed-pool special-case takes over.
+      startRapidRecon();
+    } else {
+      nextQuestion();
+    }
   }
 
   function updateTopbar() {
@@ -26291,10 +26360,33 @@ $ git stash pop
   }
 
   function updatePhaseTag() {
+    if (state.isFinalBoss) {
+      $('dgcPhaseTag').textContent = '⏰ FINAL EXAM — Everything At Once';
+      return;
+    }
     $('dgcPhaseTag').textContent = 'Phase ' + (state.phaseIdx + 1) + '/3 — ' + state.boss.phaseNames[state.phaseIdx];
   }
 
+  var finalBossMixedPoolCache = null;
+  // "Moves through a mixed sequence... randomly drawn from the cleared
+  // bosses' question pools (reuse existing content, don't author an
+  // entirely separate bank)" — flattens every OTHER boss's 3 phases into
+  // one big pool, built once and reused for the rest of the session.
+  // Rides the exact same pickNextPoolIndex()/no-repeat machinery as every
+  // normal boss phase — nothing new needed there.
+  function getFinalBossMixedPool() {
+    if (finalBossMixedPoolCache) return finalBossMixedPoolCache;
+    var pool = [];
+    Object.keys(BOSSES).forEach(function (id) {
+      if (id === 'pager') return;
+      BOSSES[id].phases.forEach(function (phase) { pool = pool.concat(phase); });
+    });
+    finalBossMixedPoolCache = pool;
+    return pool;
+  }
+
   function currentPhaseQuestions() {
+    if (state.isFinalBoss) return getFinalBossMixedPool();
     return state.boss.phases[state.phaseIdx];
   }
 
@@ -26338,6 +26430,17 @@ $ git stash pop
     state.selectedOption = null;
     state.selectedLine = null;
     state.seqChosen = [];
+
+    // "Closes with one full read_the_room-style incident NARRATIVE
+    // question" — triggered once, based on remaining HP (per the doc's own
+    // suggestion), overriding the normal pool pick for exactly one question.
+    if (state.isFinalBoss && !state.starAsked && state.bossHpMax && (state.bossHp / state.bossHpMax) <= 0.15) {
+      state.starAsked = true;
+      state.currentQuestion = FINAL_BOSS_STAR_QUESTION;
+      renderQuestion(FINAL_BOSS_STAR_QUESTION);
+      startTimer(FINAL_BOSS_STAR_QUESTION.timeAllotted || 90);
+      return;
+    }
 
     var pool = currentPhaseQuestions();
     var q = pool[pickNextPoolIndex(pool)];
@@ -26484,6 +26587,20 @@ $ git stash pop
 
     } else if (q.mode === 'build_the_pipeline') {
       renderPipelineSequencer(q);
+
+    } else if (q.mode === 'star_narrative') {
+      area.innerHTML =
+        '<div class="dgc-star-panel">' +
+          '<div class="dgc-star-legend"><b>S</b>ituation · <b>T</b>ask · <b>A</b>ction · <b>R</b>esult</div>' +
+          '<textarea class="dgc-star-textarea" id="dgcModeInput" placeholder="Walk through it in your own words — a few sentences is plenty..." rows="5"></textarea>' +
+          '<button class="dgc-btn dgc-btn-primary dgc-star-submit" id="dgcModeSubmit">Submit Answer ⏎</button>' +
+        '</div>';
+      $('dgcModeSubmit').addEventListener('click', function () {
+        spawnCastProjectile(); playSfx('cast');
+        var tier = validateStarNarrative(q, $('dgcModeInput').value);
+        resolveAnswer(tier);
+      });
+      $('dgcModeInput').focus();
     }
   }
 
@@ -26673,6 +26790,21 @@ $ git stash pop
     return 'wrong';
   }
 
+  // The Final Boss's closing STAR question — graded leniently for the real
+  // INCIDENT-RESPONSE SHAPE (stabilize first, communicate, then root-cause),
+  // per the master doc's own research, not for exact wording or syntax.
+  function validateStarNarrative(q, text) {
+    var t = normalize(text).toLowerCase();
+    if (!t || t.length < 15) return 'wrong';
+    var stabilize = /(roll\s*back|rollback|revert|stabiliz|mitigat|stop\s*the\s*bleeding|restore\s*service)/i.test(t);
+    var communicate = /(notify|communicat|alert|inform|stakeholder|status\s*update|let\s*(the\s*)?team\s*know)/i.test(t);
+    var rootCause = /(root\s*cause|investigat|post.?mortem|diagnos|debug|figure\s*out\s*why)/i.test(t);
+    var hits = [stabilize, communicate, rootCause].filter(Boolean).length;
+    if (hits >= 3) return 'optimal';
+    if (hits >= 1) return 'correct';
+    return 'wrong';
+  }
+
   /* ============================================================
      "HOW CLOSE WAS I?" + END-OF-FIGHT REVIEW — driven by the EXISTING
      validation schema (patterns / option tiers / step order / the new
@@ -26719,6 +26851,12 @@ $ git stash pop
       }
       var wrongPositions = steps.filter(function (s, i2) { return labels[i2] !== s; }).length;
       return wrongPositions + ' step' + (wrongPositions === 1 ? '' : 's') + ' out of place.';
+    }
+    if (q.mode === 'star_narrative') {
+      var input2 = $('dgcModeInput');
+      var v2 = normalize(input2 ? input2.value : '');
+      if (!v2 || v2.length < 15) return 'Too short — walk through what you\'d actually DO, step by step.';
+      return 'Right idea forming, but missing the real shape interviewers listen for: stabilize first, communicate, then dig into root cause.';
     }
     return 'Not quite — check the prompt again.';
   }
