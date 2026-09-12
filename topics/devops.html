@@ -22117,6 +22117,60 @@ $ git stash pop
     .dgc-title-stage { gap:28px; }
     .dgc-logo-line-b { font-size:26px; }
   }
+
+  /* ============================================================
+     CHIBI CHARACTER RIG — shared shell for hero/Sudo/boss.
+     Body/head silhouette + palette differ per .dgc-chibi-KIND; the
+     face-part library (eyes/mouth/brow/accessory) is 100% identical
+     markup across all three, so this ruleset — not new per-part CSS —
+     is what a Phase 3 boss needs to reuse the whole expression system.
+     ============================================================ */
+  .dgc-chibi { width:100%; height:100%; overflow:visible; }
+  .dgc-face-part { display:none; }
+  .dgc-chibi-face { transform-box:fill-box; transform-origin:50% 46%; }
+  .dgc-chibi-face.dgc-face-pop { animation:dgc-face-pop .28s cubic-bezier(.3,1.6,.4,1); }
+  .dgc-chibi-shadow { fill:rgba(0,0,0,0.5); filter:blur(1.5px); }
+  .dgc-chibi-sheen { pointer-events:none; mix-blend-mode:soft-light; opacity:0.9; }
+
+  /* ---- Hero: warm-toned chibi dev, cyan hoodie (matches hero's aura) ---- */
+  .dgc-chibi-hero .dgc-chibi-head { fill:#f0b988; }
+  .dgc-chibi-hero .dgc-chibi-hair { fill:#4a2f1c; }
+  .dgc-chibi-hero .dgc-chibi-body { fill:#0f3b45; stroke:var(--dgc-secondary); stroke-width:1.2; }
+  .dgc-chibi-hero .dgc-chibi-face { color:#3a2415; }
+  .dgc-chibi-hero .dgc-chibi-grad-hi { stop-color:#fff; stop-opacity:0.5; }
+  .dgc-chibi-hero .dgc-chibi-grad-lo { stop-color:#fff; stop-opacity:0; }
+
+  /* ---- Sudo: small robot companion, glowing green screen-face ---- */
+  .dgc-chibi-sudo .dgc-chibi-head { fill:#241a3d; stroke:var(--dgc-border-bright); stroke-width:1; }
+  .dgc-chibi-sudo .dgc-chibi-body { fill:#1a1230; stroke:var(--dgc-border-bright); stroke-width:1; }
+  .dgc-chibi-sudo .dgc-chibi-visor { fill:#050308; stroke:var(--dgc-success); stroke-width:1.4; filter:drop-shadow(0 0 5px rgba(var(--dgc-success-rgb),0.55)); }
+  .dgc-chibi-sudo .dgc-chibi-antenna { stroke:var(--dgc-border-bright); }
+  .dgc-chibi-sudo .dgc-chibi-antenna-tip { fill:var(--dgc-success); filter:drop-shadow(0 0 4px var(--dgc-success)); }
+  .dgc-chibi-sudo .dgc-chibi-face { color:var(--dgc-success); }
+  .dgc-chibi-sudo .dgc-chibi-grad-hi { stop-color:var(--dgc-secondary); stop-opacity:0.35; }
+  .dgc-chibi-sudo .dgc-chibi-grad-lo { stop-color:var(--dgc-secondary); stop-opacity:0; }
+  /* Sudo's face sits on a flat visor, not a rounded head — nudge it down slightly */
+  .dgc-chibi-sudo .dgc-chibi-face { transform:translateY(1px); }
+
+  /* ---- Terminal Golem: chunky stone head, glowing terminal-green eyes ---- */
+  .dgc-chibi-golem .dgc-chibi-head { fill:#4c5a4d; stroke:#2c362d; stroke-width:1.5; }
+  .dgc-chibi-golem .dgc-chibi-body { fill:#3d483e; stroke:#2c362d; stroke-width:1.5; }
+  .dgc-chibi-golem .dgc-chibi-cracks { stroke:#232b23; }
+  .dgc-chibi-golem .dgc-chibi-face { color:var(--dgc-success); }
+  .dgc-chibi-golem .dgc-eyes-neutral, .dgc-chibi-golem .dgc-eyes-determined, .dgc-chibi-golem .dgc-eyes-happy,
+  .dgc-chibi-golem .dgc-eyes-sparkle, .dgc-chibi-golem .dgc-eyes-worried, .dgc-chibi-golem .dgc-eyes-angry,
+  .dgc-chibi-golem .dgc-eyes-smirk, .dgc-chibi-golem .dgc-eyes-tired { filter:drop-shadow(0 0 4px var(--dgc-success)); }
+  .dgc-chibi-golem .dgc-chibi-grad-hi { stop-color:var(--dgc-success); stop-opacity:0.3; }
+  .dgc-chibi-golem .dgc-chibi-grad-lo { stop-color:var(--dgc-success); stop-opacity:0; }
+
+  @keyframes dgc-face-pop { 0%{ transform:scale(0.82); } 55%{ transform:scale(1.08); } 100%{ transform:scale(1); } }
+
+  /* ---- sizing per placement context ---- */
+  .dgc-hero-sprite-title, .dgc-sudo-sprite-title { width:96px; height:120px; }
+  .dgc-hero-sprite-select { width:80px; height:100px; margin:0 auto; }
+  .dgc-boss-card-sprite { width:78px; height:98px; margin:0 auto 4px; }
+  #dgcHeroSprite, #dgcBossSprite { width:88px; height:112px; }
+  .dgc-sudo-sprite-combat { width:56px; height:70px; }
 </style>
 
 <div class="dgc-root">
@@ -22144,14 +22198,13 @@ $ git stash pop
 
       <div class="dgc-title-stage">
         <div class="dgc-title-hero-pose">
-          <div class="dgc-char-ground-shadow"></div>
           <div class="dgc-char-aura dgc-char-aura-hero"></div>
-          <div class="dgc-sprite dgc-hero-sprite-title" id="dgcTitleHeroSprite">🧑‍💻</div>
+          <div class="dgc-sprite dgc-hero-sprite-title" id="dgcTitleHeroSprite"></div>
           <div class="dgc-title-hero-tag">JUNIOR DEV</div>
         </div>
         <div class="dgc-title-sudo-pose">
           <div class="dgc-sudo-bubble dgc-show" id="dgcTitleSudoBubble">ready when you are.</div>
-          <div class="dgc-sudo-cursor dgc-sudo-cursor-title">▍</div>
+          <div class="dgc-sprite dgc-sudo-sprite-title" id="dgcTitleSudoSprite"></div>
           <div class="dgc-title-sudo-tag">SUDO</div>
         </div>
       </div>
@@ -22242,8 +22295,7 @@ $ git stash pop
     <div class="dgc-select-heading">SELECT YOUR BATTLE</div>
     <div class="dgc-subtitle">Level up your career. Fight topic bosses. Type real commands.</div>
     <div class="dgc-hero-preview">
-      <div class="dgc-char-ground-shadow dgc-char-ground-shadow-sm"></div>
-      <div class="dgc-hero-sprite">🧑‍💻</div>
+      <div class="dgc-sprite dgc-hero-sprite-select" id="dgcSelectHeroSprite"></div>
       <div class="dgc-hero-name">Junior Dev</div>
     </div>
     <div class="dgc-stats-row">
@@ -22254,8 +22306,7 @@ $ git stash pop
     </div>
     <div class="dgc-boss-select">
       <div class="dgc-boss-card">
-        <div class="dgc-char-ground-shadow dgc-char-ground-shadow-sm"></div>
-        <div class="dgc-boss-card-icon">🗿</div>
+        <div class="dgc-sprite dgc-boss-card-sprite" id="dgcSelectBossSprite"></div>
         <div class="dgc-boss-card-name">The Terminal Golem</div>
         <div class="dgc-boss-card-topic">Linux</div>
         <div class="dgc-boss-card-status" id="dgcBossStatusTerminalGolem">Not Cleared</div>
@@ -22282,12 +22333,11 @@ $ git stash pop
         <div class="dgc-hpbar-track"><div class="dgc-hpbar-fill dgc-hpbar-hero" id="dgcHeroHpFill"></div></div>
         <div class="dgc-hp-text"><span id="dgcHeroHpText">100/100</span></div>
         <div class="dgc-sprite-wrap">
-          <div class="dgc-char-ground-shadow dgc-char-ground-shadow-sm"></div>
           <div class="dgc-char-aura dgc-char-aura-hero"></div>
-          <div class="dgc-sprite" id="dgcHeroSprite">🧑‍💻</div>
+          <div class="dgc-sprite" id="dgcHeroSprite"></div>
         </div>
         <div class="dgc-sudo" id="dgcSudo">
-          <div class="dgc-sudo-cursor">▍</div>
+          <div class="dgc-sprite dgc-sudo-sprite-combat" id="dgcSudoSprite"></div>
           <div class="dgc-sudo-bubble" id="dgcSudoBubble"></div>
         </div>
       </div>
@@ -22299,10 +22349,9 @@ $ git stash pop
         <div class="dgc-hpbar-track"><div class="dgc-hpbar-fill dgc-hpbar-boss" id="dgcBossHpFill"></div></div>
         <div class="dgc-hp-text"><span id="dgcBossHpText">100/100</span></div>
         <div class="dgc-sprite-wrap">
-          <div class="dgc-char-ground-shadow dgc-char-ground-shadow-sm"></div>
           <div class="dgc-char-aura dgc-char-aura-boss"></div>
           <div class="dgc-boss-glyphs">sudo&#10;chmod&#10;grep -rn&#10;#!/bin/sh&#10;0x1F&#10;rm -rf</div>
-          <div class="dgc-sprite" id="dgcBossSprite">🗿</div>
+          <div class="dgc-sprite" id="dgcBossSprite"></div>
         </div>
         <div class="dgc-phase-tag" id="dgcPhaseTag">Phase 1/3 — Arms</div>
       </div>
@@ -22422,6 +22471,253 @@ $ git stash pop
   }
 
   /* ============================================================
+     CHIBI RIG + EXPRESSION SYSTEM
+     One shared face-part library (eyes/mouth/brow/accessory), reused
+     unchanged across all three characters (hero, Sudo, boss) — only
+     the surrounding body/head silhouette and color differ per
+     character. This is what makes adding Phase 3 bosses fast: give
+     the new boss a body shape + palette, get the full 18-expression
+     face system for free.
+     ============================================================ */
+
+  // Every expression a character can wear, as a combination of shared
+  // face-part variants. 15 required core expressions (idle through
+  // powerup/phase-transition) + 3 Sudo-only extras = 18 named states.
+  var EXPRESSIONS = {
+    idle:        { eyes:'neutral',   mouth:'neutral',    brow:'neutral',   acc:'none' },
+    determined:  { eyes:'determined',mouth:'neutral',    brow:'furrowed', acc:'none' },
+    happy:       { eyes:'happy',     mouth:'smile',      brow:'neutral',  acc:'none' },
+    excited:     { eyes:'sparkle',   mouth:'biggrin',    brow:'raised',   acc:'sparkles' },
+    hurtLight:   { eyes:'wince',     mouth:'wince',      brow:'worried',  acc:'sweat' },
+    hurtHeavy:   { eyes:'pained',    mouth:'painful',    brow:'furrowed', acc:'sweat' },
+    worried:     { eyes:'worried',   mouth:'worried',    brow:'worried',  acc:'sweat' },
+    defeated:    { eyes:'spiral',    mouth:'ko',         brow:'drooping', acc:'starsswirl' },
+    victorious:  { eyes:'happy',     mouth:'triumphant', brow:'raised',   acc:'sparkles' },
+    angry:       { eyes:'angry',     mouth:'enraged',    brow:'furrowed', acc:'vein' },
+    surprised:   { eyes:'surprised', mouth:'surprised',  brow:'raised',   acc:'exclaim' },
+    confident:   { eyes:'smirk',     mouth:'smirk',      brow:'oneraised',acc:'none' },
+    confused:    { eyes:'confused',  mouth:'confused',   brow:'oneraised',acc:'none' },
+    tired:       { eyes:'tired',     mouth:'tired',      brow:'drooping', acc:'sweat' },
+    powerup:     { eyes:'sparkle',   mouth:'poweringup', brow:'raised',   acc:'glow' },
+    // Sudo-only
+    thinking:    { eyes:'worried',   mouth:'neutral',    brow:'oneraised',acc:'thought' },
+    smug:        { eyes:'smirk',     mouth:'smirk',      brow:'neutral',  acc:'none' },
+    sympathetic: { eyes:'worried',   mouth:'worried',    brow:'worried',  acc:'none' }
+  };
+
+  // ---- shared face-part shape library (authored once, in head-local
+  // coordinates centered on (50,42)), reused verbatim by every character.
+  function facePartsSVG() {
+    return ''
+      // EYES (13 variants)
+      + '<g class="dgc-face-part dgc-eyes-neutral"><ellipse cx="41" cy="40" rx="3" ry="4"/><ellipse cx="59" cy="40" rx="3" ry="4"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-determined"><ellipse cx="41" cy="40" rx="2.4" ry="3"/><ellipse cx="59" cy="40" rx="2.4" ry="3"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-happy" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M37 41 Q41 36 45 41"/><path d="M55 41 Q59 36 63 41"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-sparkle"><circle cx="41" cy="40" r="4"/><circle cx="59" cy="40" r="4"/><circle cx="42.3" cy="38.3" r="1.3" fill="#fff"/><circle cx="60.3" cy="38.3" r="1.3" fill="#fff"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-wince" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M37 40 L45 40"/><path d="M55 40 L63 40"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-pained" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M37 37 L45 43"/><path d="M45 37 L37 43"/><path d="M55 37 L63 43"/><path d="M63 37 L55 43"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-worried"><ellipse cx="42" cy="41" rx="2.2" ry="3.2"/><ellipse cx="58" cy="41" rx="2.2" ry="3.2"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-spiral" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="41" cy="40" r="3.6"/><circle cx="41" cy="40" r="1.4"/><circle cx="59" cy="40" r="3.6"/><circle cx="59" cy="40" r="1.4"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-angry" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M37 37 L45 41"/><path d="M63 37 L55 41"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-surprised" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="41" cy="40" r="4.6"/><circle cx="59" cy="40" r="4.6"/><circle cx="41" cy="40" r="1.6" fill="currentColor"/><circle cx="59" cy="40" r="1.6" fill="currentColor"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-smirk"><ellipse cx="41" cy="41" rx="3" ry="3.6"/><path d="M55 41 Q59 38 63 41" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-confused"><circle cx="40" cy="40" r="4.4"/><circle cx="59" cy="41" r="2"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-tired" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M37 41 Q41 43 45 41"/><path d="M55 41 Q59 43 63 41"/></g>'
+      // MOUTH (14 variants)
+      + '<g class="dgc-face-part dgc-mouth-neutral" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M46 53 Q50 55 54 53" fill="none"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-smile" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M44 52 Q50 58 56 52"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-biggrin"><path d="M41 51 Q50 62 59 51 Q50 57 41 51 Z"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-wince" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M45 54 L48 52 L51 54 L54 52" fill="none"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-painful"><ellipse cx="50" cy="54" rx="4.5" ry="3.2"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-worried" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M45 55 Q50 52 55 55" fill="none"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-ko" stroke="currentColor" stroke-width="2" ><ellipse cx="50" cy="54" rx="5" ry="2.4" fill="none"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-triumphant"><path d="M39 50 Q50 64 61 50 Q50 58 39 50 Z"/><path d="M42 51 L58 51 L56 54 L44 54 Z" fill="#fff" opacity="0.85"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-enraged"><path d="M40 51 L60 51 L57 58 L53 52 L50 58 L47 52 L43 58 Z"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-surprised"><circle cx="50" cy="54" r="3.4"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-smirk" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M46 53 Q52 58 57 51"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-confused" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"><path d="M44 53 Q47 50 50 53 Q53 56 56 53"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-tired" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"><path d="M45 54 L55 54"/></g>'
+      + '<g class="dgc-face-part dgc-mouth-poweringup"><ellipse cx="50" cy="55" rx="6" ry="6"/></g>'
+      // BROW (6 variants)
+      + '<g class="dgc-face-part dgc-brow-neutral" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M37 33 L45 32"/><path d="M55 32 L63 33"/></g>'
+      + '<g class="dgc-face-part dgc-brow-furrowed" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M37 31 L45 34"/><path d="M55 34 L63 31"/></g>'
+      + '<g class="dgc-face-part dgc-brow-raised" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M37 30 Q41 27 45 30"/><path d="M55 30 Q59 27 63 30"/></g>'
+      + '<g class="dgc-face-part dgc-brow-worried" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M38 32 L45 35"/><path d="M55 35 L62 32"/></g>'
+      + '<g class="dgc-face-part dgc-brow-oneraised" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M37 33 L45 32"/><path d="M55 30 Q59 27 63 30"/></g>'
+      + '<g class="dgc-face-part dgc-brow-drooping" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M37 30 L45 33"/><path d="M55 33 L63 30"/></g>'
+      // ACCESSORY (7 variants; "none" simply never rendered/looked up)
+      + '<g class="dgc-face-part dgc-acc-sparkles" fill="var(--dgc-gold)"><path d="M24 24 l1.6 3.4 3.4 1.6 -3.4 1.6 -1.6 3.4 -1.6 -3.4 -3.4 -1.6 3.4 -1.6 z"/><path d="M76 30 l1.2 2.6 2.6 1.2 -2.6 1.2 -1.2 2.6 -1.2 -2.6 -2.6 -1.2 2.6 -1.2 z"/></g>'
+      + '<g class="dgc-face-part dgc-acc-sweat" fill="var(--dgc-secondary)" opacity="0.85"><path d="M70 30 q3 4 0 7 q-3 -3 0 -7 z"/></g>'
+      + '<g class="dgc-face-part dgc-acc-starsswirl" fill="var(--dgc-crit-bright)"><circle cx="22" cy="34" r="1.6"/><circle cx="26" cy="26" r="1.2"/><circle cx="78" cy="32" r="1.6"/><circle cx="74" cy="24" r="1.2"/></g>'
+      + '<g class="dgc-face-part dgc-acc-vein" stroke="var(--dgc-danger)" stroke-width="1.8" stroke-linecap="round"><path d="M70 22 l3 3 m-3 0 l3 -3 m-1.5 -3 l0 9"/></g>'
+      + '<g class="dgc-face-part dgc-acc-exclaim" fill="var(--dgc-gold)"><rect x="72" y="14" width="3" height="11" rx="1.5"/><circle cx="73.5" cy="29" r="1.8"/></g>'
+      + '<g class="dgc-face-part dgc-acc-glow" fill="none" stroke="var(--dgc-gold)" stroke-width="1.4" opacity="0.8"><circle cx="50" cy="40" r="30"/></g>'
+      + '<g class="dgc-face-part dgc-acc-thought" fill="currentColor" opacity="0.85"><circle cx="70" cy="26" r="1.6"/><circle cx="75" cy="21" r="1.2"/><circle cx="79" cy="17" r="0.9"/></g>';
+  }
+
+  // Applies a named expression to one character's rig root element by
+  // toggling which face-part groups are visible — no per-character
+  // rebuilding, just show/hide, so transitions can be a quick fade.
+  // rootEl = the OUTER container (e.g. the existing #dgcHeroSprite div);
+  // the actual <svg class="dgc-chibi"> and its face group live inside it.
+  function setExpression(rootEl, exprName) {
+    if (!rootEl) return;
+    var parts = EXPRESSIONS[exprName] || EXPRESSIONS.idle;
+    var chibi = rootEl.querySelector('.dgc-chibi');
+    var face = rootEl.querySelector('.dgc-chibi-face');
+    if (!face) return;
+    face.querySelectorAll('.dgc-face-part').forEach(function (el) { el.style.display = 'none'; });
+    ['eyes', 'mouth', 'brow', 'acc'].forEach(function (cat) {
+      var variant = parts[cat];
+      if (!variant || variant === 'none') return;
+      var el = face.querySelector('.dgc-' + cat + '-' + variant);
+      if (el) el.style.display = '';
+    });
+    if (chibi) chibi.setAttribute('data-expr', exprName);
+    face.classList.remove('dgc-face-pop');
+    void face.getBBox && face.getBBox(); // force reflow on the SVG group (offsetWidth doesn't reflow SVG children reliably)
+    face.classList.add('dgc-face-pop'); // quick bounce, not a hard cut
+  }
+
+  // Maps the 3 characters that exist in combat to their sprite-container
+  // ids, so every expression call site can say "hero"/"boss"/"sudo" instead
+  // of repeating $('dgcHeroSprite') everywhere (title/select-screen chibis
+  // set their one-off expression directly via setExpression()).
+  var CHIBI_SPRITE_IDS = { hero: 'dgcHeroSprite', boss: 'dgcBossSprite', sudo: 'dgcSudoSprite' };
+  function chibiEl(who) { return $(CHIBI_SPRITE_IDS[who]); }
+
+  // The persistent "resting" expression a character should be wearing right
+  // now when nothing transient is playing — driven entirely by real, already
+  // -tracked combat state (HP%, the existing enrage-timer flag, phase index
+  // + elapsed fight time), never a separate parallel state machine. This is
+  // what flashExpression() reverts TO instead of a hardcoded 'idle'.
+  function personaBaseExpression(who) {
+    if (!state) return 'idle';
+    var lateFight = state.phaseIdx === state.boss.phases.length - 1 &&
+                    (Date.now() - state.fightStartTime) > 60000;
+    if (who === 'hero') {
+      if (state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25) return 'worried';
+      if (lateFight) return 'tired';
+      return 'determined';
+    }
+    if (who === 'boss') {
+      if (state.bossEnraged) return 'angry'; // existing enrage-timer mechanic (danger-zone tick in startTimer)
+      if (state.bossHpMax && state.bossHp / state.bossHpMax <= 0.25) return 'worried';
+      if (lateFight) return 'tired';
+      return 'idle';
+    }
+    if (who === 'sudo') {
+      // Sudo shares the party's tension: reacts to the same boss-enrage /
+      // hero-HP conditions rather than tracking its own separate ones.
+      if (state.bossEnraged) return 'angry';
+      if (state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25) return 'worried';
+      if (lateFight) return 'tired';
+      return 'idle';
+    }
+    return 'idle';
+  }
+
+  // Auto-revert timers + a "don't stomp a reaction mid-flight" guard, per
+  // character. HP-based (worried) / enrage-based (angry) / pacing-based
+  // (tired) states are persistent baselines, re-asserted by
+  // applyPersistentExpressions() — flashExpression()'s revert target is
+  // WHATEVER that baseline currently is, not a hardcoded 'idle'.
+  var exprTimers = {};
+  var transientUntil = {};
+  var baseExprCache = {};
+  function flashExpression(who, exprName, ms) {
+    var el = chibiEl(who);
+    if (!el) return;
+    var duration = ms || 1400;
+    setExpression(el, exprName);
+    transientUntil[who] = Date.now() + duration;
+    clearTimeout(exprTimers[who]);
+    exprTimers[who] = setTimeout(function () {
+      delete transientUntil[who];
+      var target = personaBaseExpression(who);
+      baseExprCache[who] = target;
+      setExpression(el, target);
+    }, duration);
+  }
+
+  // Permanently pins a character's face to exprName — clearing any PENDING
+  // flash-revert timer from an earlier reaction first. Without this, a hit
+  // that both kills the hero AND was itself a flashed reaction (e.g. the
+  // killing blow's own hurtHeavy) would have its revert timer fire ~1s
+  // later and silently overwrite the "defeated"/"victorious" end-of-fight
+  // pose with whatever the ordinary baseline is. Use for fight-ending faces
+  // only — everything mid-fight should keep using flashExpression().
+  function lockExpression(who, exprName) {
+    clearTimeout(exprTimers[who]);
+    delete exprTimers[who];
+    delete transientUntil[who];
+    baseExprCache[who] = exprName;
+    var el = chibiEl(who);
+    if (el) setExpression(el, exprName);
+  }
+
+  // Re-asserts each character's persistent baseline wherever it may have
+  // changed (HP crossed a threshold, enrage flag flipped, fight dragged on)
+  // — called from updateHpBars() and the per-second combat timer tick, i.e.
+  // reusing those two existing update points rather than polling on its own.
+  function applyPersistentExpressions() {
+    if (!state) return;
+    ['hero', 'boss', 'sudo'].forEach(function (who) {
+      if (transientUntil[who] && Date.now() < transientUntil[who]) return; // a reaction is mid-flight — don't stomp it
+      var target = personaBaseExpression(who);
+      if (baseExprCache[who] !== target) {
+        baseExprCache[who] = target;
+        setExpression(chibiEl(who), target);
+      }
+    });
+  }
+
+  var chibiIdCounter = 0;
+  function chibiRoot(kind) {
+    // kind: 'hero' | 'sudo' | 'golem' — selects body/head silhouette + palette.
+    // Auto-generates a unique gradient id per call since the same
+    // character can appear more than once in the DOM at a time (e.g.
+    // the hero on both the title screen and the boss-select screen).
+    chibiIdCounter++;
+    var idAttr = 'dgcChibi' + chibiIdCounter;
+    var body = '';
+    if (kind === 'hero') {
+      body =
+        '<ellipse class="dgc-chibi-shadow" cx="50" cy="118" rx="26" ry="6"/>' +
+        '<path class="dgc-chibi-body" d="M30 100 Q30 78 50 78 Q70 78 70 100 L70 112 Q50 118 30 112 Z"/>' +
+        '<circle class="dgc-chibi-head" cx="50" cy="42" r="27"/>' +
+        '<path class="dgc-chibi-hair" d="M23 38 Q23 12 50 12 Q77 12 77 38 Q70 24 50 24 Q30 24 23 38 Z"/>';
+    } else if (kind === 'sudo') {
+      body =
+        '<ellipse class="dgc-chibi-shadow" cx="50" cy="116" rx="22" ry="5.5"/>' +
+        '<rect class="dgc-chibi-body" x="34" y="80" width="32" height="30" rx="10"/>' +
+        '<rect class="dgc-chibi-head" x="21" y="16" width="58" height="52" rx="18"/>' +
+        '<rect class="dgc-chibi-visor" x="29" y="28" width="42" height="28" rx="10"/>' +
+        '<line class="dgc-chibi-antenna" x1="50" y1="16" x2="50" y2="4" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle class="dgc-chibi-antenna-tip" cx="50" cy="4" r="4"/>';
+    } else { // golem
+      body =
+        '<ellipse class="dgc-chibi-shadow" cx="50" cy="120" rx="28" ry="6"/>' +
+        '<path class="dgc-chibi-body" d="M28 102 L28 82 Q28 74 50 74 Q72 74 72 82 L72 102 Q50 110 28 102 Z"/>' +
+        '<path class="dgc-chibi-head" d="M18 44 Q18 10 50 10 Q82 10 82 44 Q82 70 50 70 Q18 70 18 44 Z"/>' +
+        '<path class="dgc-chibi-cracks" d="M30 30 L36 38 M70 28 L64 36 M50 58 L50 66" stroke-width="1.6" fill="none"/>';
+    }
+    return '<svg class="dgc-chibi dgc-chibi-' + kind + '" viewBox="0 0 100 130" data-expr="idle">' +
+      '<defs>' +
+        '<radialGradient id="' + idAttr + 'Grad" cx="38%" cy="28%" r="80%">' +
+          '<stop offset="0%" class="dgc-chibi-grad-hi"/>' +
+          '<stop offset="100%" class="dgc-chibi-grad-lo"/>' +
+        '</radialGradient>' +
+      '</defs>' +
+      body +
+      // soft "3D chibi" highlight wash over the head, using the gradient —
+      // this is the cheap stand-in for real rim-lighting/shading.
+      '<ellipse class="dgc-chibi-sheen" fill="url(#' + idAttr + 'Grad)" cx="50" cy="40" rx="30" ry="32"/>' +
+      '<g class="dgc-chibi-face">' + facePartsSVG() + '</g>' +
+    '</svg>';
+  }
+
+  /* ============================================================
      QUESTION BANK — fully data-driven, per the shared schema.
      mode: 'terminal' | 'spot_the_bug' | 'triage_call' | 'read_the_room' | 'build_the_pipeline' | 'rapid_recon'
      ============================================================ */
@@ -22431,6 +22727,7 @@ $ git stash pop
       name: 'The Terminal Golem',
       topic: 'Linux',
       icon: '🗿',
+      chibiKind: 'golem', // which chibi rig body/palette to render for this boss
       phaseHp: [100, 110, 130],
       phaseNames: ['Arms — File & Permissions', 'Chest — Process & System', 'Core — Real Incident'],
       xpReward: 120,
@@ -22746,7 +23043,13 @@ $ git stash pop
       specialAttackDone: false,
       reconDone: false,
       runCoins: 0,
-      runXp: 0
+      runXp: 0,
+      // --- expression-system tracking (reuses existing events, no parallel system) ---
+      fightStartTime: Date.now(), // drives the pacing-based "tired" state
+      bossEnraged: false, // set by startTimer()'s own danger-zone tick (existing enrage-timer mechanic)
+      lastQuestionMode: null, // detects a real mode switch → "confused" reaction
+      hintUsedThisQ: false, // any hint tier used this question → suppresses Sudo's "smug"
+      heroLowHpAlertShown: false // one-shot: first time hero HP crosses the 25% line this fight
     };
   }
 
@@ -22862,12 +23165,25 @@ $ git stash pop
   function startFight(bossId) {
     if (state && state.timer) clearInterval(state.timer); // defensive: kill any timer from a fight the player abandoned
     state = newRunState(bossId);
+    // Fresh fight = fresh expression bookkeeping, so a stale cached baseline
+    // or a still-ticking revert timer from the PREVIOUS fight can never
+    // leak into this one (same defensive spirit as the state.timer guard above).
+    Object.keys(exprTimers).forEach(function (k) { clearTimeout(exprTimers[k]); });
+    exprTimers = {}; transientUntil = {}; baseExprCache = {};
     $('dgcBossName').textContent = state.boss.name;
-    $('dgcHeroSprite').textContent = '🧑‍💻';
+    $('dgcHeroSprite').innerHTML = chibiRoot('hero');
     $('dgcHeroSprite').className = 'dgc-sprite';
-    $('dgcBossSprite').textContent = state.boss.icon;
+    $('dgcBossSprite').innerHTML = chibiRoot(state.boss.chibiKind || 'golem');
     $('dgcBossSprite').className = 'dgc-sprite';
+    $('dgcSudoSprite').innerHTML = chibiRoot('sudo');
     $('dgcSudo').className = 'dgc-sudo';
+    setExpression($('dgcHeroSprite'), 'determined');
+    setExpression($('dgcBossSprite'), 'idle');
+    setExpression($('dgcSudoSprite'), 'idle');
+    baseExprCache = { hero: 'determined', boss: 'idle', sudo: 'idle' };
+    // Opening-bell beat: hero readies up, Sudo's confident in the hero — a
+    // real "fight begins" event, not a standalone idle animation.
+    flashExpression('sudo', 'confident', 1600);
     $('dgcFxLayer').innerHTML = '';
     updateTopbar();
     updateHpBars(true);
@@ -22893,6 +23209,7 @@ $ git stash pop
     bossFill.classList.toggle('dgc-hp-low', bossPct <= 25);
     $('dgcHeroHpText').textContent = Math.max(0, Math.round(state.heroHp)) + '/' + state.heroHpMax;
     $('dgcBossHpText').textContent = Math.max(0, Math.round(state.bossHp)) + '/' + state.bossHpMax;
+    applyPersistentExpressions(); // HP just changed — re-check worried/tired/angry baselines
   }
 
   function updatePhaseTag() {
@@ -22953,6 +23270,11 @@ $ git stash pop
       fill.style.width = pct + '%';
       if (pct <= 50 && pct > 20) fill.classList.add('dgc-timer-warn');
       if (pct <= 20) { fill.classList.remove('dgc-timer-warn'); fill.classList.add('dgc-timer-danger'); }
+      // The clock hitting the danger zone doubles as this boss's "enrage
+      // timer" — the exact mechanic the Angry/Enraged expression is
+      // supposed to reuse, not a separate system.
+      state.bossEnraged = pct <= 20;
+      applyPersistentExpressions();
       if (state.timeLeft <= 0) {
         clearInterval(intervalId);
         onTimeout();
@@ -22973,6 +23295,15 @@ $ git stash pop
      ============================================================ */
   function renderQuestion(q) {
     state.locked = false; // a fresh question is interactable again
+    state.hintUsedThisQ = false; // fresh question → Sudo's "smug" is back in play
+    // A genuine mode switch mid-fight (e.g. terminal → spot_the_bug) catches
+    // the boss and Sudo off guard — reuses this exact dispatch point, no
+    // separate tracking system.
+    if (state.lastQuestionMode && state.lastQuestionMode !== q.mode) {
+      flashExpression('boss', 'confused', 1300);
+      flashExpression('sudo', 'confused', 1300);
+    }
+    state.lastQuestionMode = q.mode;
     $('dgcPrompt').innerHTML = q.prompt;
     var area = $('dgcModeArea');
     area.innerHTML = '';
@@ -23183,6 +23514,7 @@ $ git stash pop
     state.hintFullUsedThisQ = false;
 
     if (tier === 'wrong') {
+      var wasLow = state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25;
       var dmg = Math.round((q.damageIfCorrect || 15) * 0.6 * enrageFactor());
       state.heroHp = Math.max(0, state.heroHp - dmg);
       state.combo = 1;
@@ -23190,7 +23522,30 @@ $ git stash pop
       spawnDamageNumber('hero', dmg, false);
       shakeArena(dmg > 20 ? 'lg' : 'md');
       flashSprite('dgcHeroSprite');
-      sudoReact(dmg > 20 ? 'wince' : 'wince');
+      sudoReact('wince');
+
+      // Hero's face: a timeout reads as "didn't get there in time" (confused),
+      // not pain — a real, distinct wrong-answer path from a heavy/light hit.
+      flashExpression('hero', isTimeout ? 'confused' : (dmg > 20 ? 'hurtHeavy' : 'hurtLight'), 1300);
+      // Boss is pleased it landed a hit — bigger tell on a bigger hit.
+      flashExpression('boss', dmg > 20 ? 'excited' : 'happy', 1200);
+      // Sudo: a heavy hit gets sympathy (distinct from Sudo's own hurt faces,
+      // since Sudo isn't the one being damaged); a light hit gets Sudo's own
+      // light wince. The FIRST time the hero's HP crosses into the danger
+      // zone this fight, that one-shot moment overrides with a sharper face.
+      var nowLow = state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25;
+      if (nowLow && !wasLow && !state.heroLowHpAlertShown) {
+        state.heroLowHpAlertShown = true;
+        flashExpression('sudo', 'hurtHeavy', 1500);
+      } else {
+        flashExpression('sudo', dmg > 20 ? 'sympathetic' : 'hurtLight', 1300);
+      }
+      // Near-miss survival: hero barely lives through this hit — a defiant
+      // angry beat before settling into the (already-triggered) worried baseline.
+      if (state.heroHp > 0 && nowLow && state.heroHp / state.heroHpMax <= 0.12) {
+        guardedTimeout(function () { flashExpression('hero', 'angry', 1400); }, 1350);
+      }
+
       updateHpBars();
       if (state.heroHp <= 0) { guardedTimeout(triggerDefeat, 550); return; }
       guardedTimeout(advanceAfterAnswer, 700);
@@ -23199,6 +23554,8 @@ $ git stash pop
 
     var isOptimal = tier === 'optimal' && !hintFullUsed;
     var dmgToBoss = isOptimal ? q.damageIfOptimal : Math.round((hintFullUsed ? q.damageIfCorrect * 0.5 : q.damageIfCorrect));
+    var preCombo = state.combo;
+    var wasOnStreak = state.combo >= 2; // boss was already being hit repeatedly before THIS hit lands
     state.bossHp = Math.max(0, state.bossHp - dmgToBoss);
 
     if (isOptimal) {
@@ -23222,6 +23579,27 @@ $ git stash pop
     flashSprite('dgcBossSprite');
     pulseCombo(true);
     updateTopbar();
+
+    // Hero's face: tier-based happy/excited, UNLESS this hit just crossed the
+    // hero into a high-combo streak (x2/x3) — that milestone gets its own
+    // required Confident/Smirk beat instead of the usual Excited.
+    var comboMilestone = preCombo < 2 && state.combo >= 2;
+    flashExpression('hero', comboMilestone ? 'confident' : (isOptimal ? 'excited' : 'happy'), 1200);
+
+    // Boss's face: hurt reaction scaled to tier, with a "surprised" beat
+    // inserted first if the player is already mid-streak landing ANOTHER
+    // crit — the boss didn't expect back-to-back optimal hits.
+    if (isOptimal && wasOnStreak) {
+      flashExpression('boss', 'surprised', 500);
+      guardedTimeout(function () { flashExpression('boss', 'hurtHeavy', 1100); }, 550);
+    } else {
+      flashExpression('boss', isOptimal ? 'hurtHeavy' : 'hurtLight', 1200);
+    }
+
+    // Sudo: proud-but-smug if the player solved this without touching a
+    // hint at all; otherwise the usual happy/excited cheer.
+    flashExpression('sudo', !state.hintUsedThisQ ? 'smug' : (isOptimal ? 'excited' : 'happy'), 1300);
+
     updateHpBars();
 
     if (state.bossHp <= 0) { guardedTimeout(handlePhaseCleared, 650); return; }
@@ -23256,6 +23634,16 @@ $ git stash pop
       state.orderPos = 0;
       updatePhaseTag();
       updateHpBars();
+      // Phase-transition face (expression #15 repurposed per the doc's own
+      // instruction — e.g. Terminal Golem's Arms→Chest→Core). A powerup
+      // flash, then a follow-up beat: "confident" if this transition just
+      // opened the FINAL phase (the doc's explicit trigger for Confident),
+      // otherwise a plain "determined" readiness beat.
+      var enteringFinalPhase = state.phaseIdx === state.boss.phases.length - 1;
+      flashExpression('boss', 'powerup', 1400);
+      guardedTimeout(function () {
+        flashExpression('boss', enteringFinalPhase ? 'confident' : 'determined', 1300);
+      }, 1450);
       nextQuestion();
     } else {
       triggerVictory();
@@ -23264,6 +23652,9 @@ $ git stash pop
 
   function startSpecialAttack() {
     state.locked = false; // fresh interactable moment, same as renderQuestion()
+    // The boss ambushing with a special attack is a genuine shock beat.
+    flashExpression('hero', 'surprised', 1400);
+    flashExpression('sudo', 'surprised', 1400);
     var sa = state.boss.specialAttack;
     $('dgcPrompt').innerHTML = sa.prompt;
     var fakeQ = { mode: 'build_the_pipeline', steps: sa.steps };
@@ -23320,6 +23711,9 @@ $ git stash pop
         state.combo = 1;
         spawnDamageNumber('hero', sa.damageToHeroIfWrong, false);
         shakeArena('lg'); flashSprite('dgcHeroSprite'); sudoReact('wince');
+        flashExpression('hero', 'hurtHeavy', 1400);
+        flashExpression('boss', 'excited', 1300);
+        flashExpression('sudo', 'sympathetic', 1400);
         updateHpBars(); updateTopbar();
         if (state.heroHp <= 0) { guardedTimeout(triggerDefeat, 550); return; }
       } else {
@@ -23330,6 +23724,12 @@ $ git stash pop
         spawnCritStamp();
         spawnCoinBurst(bonusCoins);
         shakeArena('lg'); flashSprite('dgcBossSprite'); sudoReact('cheer');
+        // Countering the special attack is the hero's biggest power-surge
+        // moment so far — stands in for the real Phase-2 level-up trigger
+        // until hero tiers/leveling exist.
+        flashExpression('hero', 'powerup', 1500);
+        flashExpression('boss', 'hurtHeavy', 1300);
+        flashExpression('sudo', !state.hintUsedThisQ ? 'smug' : 'excited', 1400);
         updateHpBars(); updateTopbar();
       }
       guardedTimeout(function () {
@@ -23350,6 +23750,9 @@ $ git stash pop
      ============================================================ */
   function startRapidRecon() {
     clearInterval(state.timer);
+    // Doc's own named example trigger for Surprised/Shocked.
+    flashExpression('hero', 'surprised', 1400);
+    flashExpression('sudo', 'surprised', 1400);
     var overlay = $('dgcReconOverlay');
     overlay.hidden = false;
     var burst = shuffle(RAPID_RECON_POOL).slice(0, 5);
@@ -23410,13 +23813,21 @@ $ git stash pop
     save.coins -= cost;
     persist();
     updateTopbar();
+    state.hintUsedThisQ = true; // any hint tier disqualifies Sudo's "smug" for this question
     var text = tier === 'nudge' ? q.hintNudge : tier === 'partial' ? q.hintPartial : q.hintFull;
+    // Sudo's own two-beat reaction: briefly "thinking" it over (the doc's
+    // "hint menu opened, before tier chosen" moment), then settling into
+    // "sympathetic" once the actual suggestion lands.
+    flashExpression('sudo', 'thinking', 650);
+    guardedTimeout(function () { flashExpression('sudo', 'sympathetic', 1300); }, 700);
     flashHintDisplay(text);
     if (tier === 'full') {
       state.hintFullUsedThisQ = true;
       $('dgcHintNudge').disabled = true;
       $('dgcHintPartial').disabled = true;
       $('dgcHintFull').disabled = true;
+      // Full-hint-reveal frustration — the hero's own Angry/Enraged trigger.
+      flashExpression('hero', 'angry', 1600);
     }
   }
   function flashHintDisplay(text) {
@@ -23506,6 +23917,12 @@ $ git stash pop
      ============================================================ */
   function triggerVictory() {
     flashSprite('dgcBossSprite');
+    // Fight-end payoff faces — bigger/distinct from the in-combat happy/excited.
+    // Locked (not flashed): the killing blow itself may have just scheduled
+    // its own reaction's revert timer, which must not overwrite this pose.
+    lockExpression('hero', 'victorious');
+    lockExpression('boss', 'defeated');
+    lockExpression('sudo', 'victorious');
     var sprite = $('dgcBossSprite');
     guardedTimeout(function () {
       sprite.classList.add('dgc-dissolve');
@@ -23530,6 +23947,9 @@ $ git stash pop
   function triggerDefeat() {
     var sprite = $('dgcHeroSprite');
     sprite.classList.add('dgc-knockdown');
+    lockExpression('hero', 'defeated');
+    lockExpression('boss', 'victorious');
+    lockExpression('sudo', 'defeated');
     guardedTimeout(function () {
       showScreen('defeat');
     }, 500);
@@ -23538,8 +23958,17 @@ $ git stash pop
   function retryPhase() {
     state.heroHp = state.heroHpMax;
     state.bossHp = state.bossHpMax;
+    state.heroLowHpAlertShown = false;
+    state.fightStartTime = Date.now(); // resets the pacing-based "tired" clock for the retry
+    state.bossEnraged = false;
     $('dgcHeroSprite').className = 'dgc-sprite';
     $('dgcBossSprite').className = 'dgc-sprite';
+    Object.keys(exprTimers).forEach(function (k) { clearTimeout(exprTimers[k]); });
+    exprTimers = {}; transientUntil = {}; baseExprCache = {};
+    setExpression($('dgcHeroSprite'), 'determined');
+    setExpression($('dgcBossSprite'), 'idle');
+    setExpression($('dgcSudoSprite'), 'idle');
+    baseExprCache = { hero: 'determined', boss: 'idle', sudo: 'idle' };
     updateHpBars();
     updateTopbar();
     showScreen('combat');
@@ -23631,10 +24060,23 @@ $ git stash pop
     }
   }
 
+  /* ---- inject the static (non-combat) chibi instances once ---- */
+  function initChibis() {
+    $('dgcTitleHeroSprite').innerHTML = chibiRoot('hero');
+    $('dgcTitleSudoSprite').innerHTML = chibiRoot('sudo');
+    $('dgcSelectHeroSprite').innerHTML = chibiRoot('hero');
+    $('dgcSelectBossSprite').innerHTML = chibiRoot('golem');
+    setExpression($('dgcTitleHeroSprite'), 'happy');
+    setExpression($('dgcTitleSudoSprite'), 'idle');
+    setExpression($('dgcSelectHeroSprite'), 'confident');
+    setExpression($('dgcSelectBossSprite'), 'idle');
+  }
+
   /* ============================================================
      INIT — the title screen is the true first thing a player sees,
      never the fight screen or even the boss-select screen directly.
      ============================================================ */
+  initChibis();
   refreshTitleScreen();
   refreshStartScreen();
   spawnTitleParticles();
@@ -23642,6 +24084,7 @@ $ git stash pop
 
 })();
 </script>
+
 
 </div><!-- /tab-game -->
 
