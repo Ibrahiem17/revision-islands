@@ -22246,6 +22246,17 @@ $ git stash pop
   .dgc-btn-city-quick:hover { background:rgba(var(--dgc-gold-rgb),0.1); }
   .dgc-select-heading { font-family:var(--dgc-font-display); font-weight:800; font-size:20px; letter-spacing:2px; text-align:center; color:var(--dgc-primary); text-shadow:0 0 16px rgba(var(--dgc-primary-rgb),0.45); margin:6px 0 4px; }
 
+  /* ---- Section 3A — character select screen ---- */
+  .dgc-charselect-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:18px; margin-top:20px; }
+  .dgc-charselect-card {
+    width:160px; text-align:center; background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border);
+    border-radius:12px; padding:16px 12px; transition:transform .15s, border-color .15s;
+  }
+  .dgc-charselect-card:hover { transform:translateY(-4px); border-color:var(--dgc-secondary); }
+  .dgc-charselect-sprite { width:88px; height:112px; margin:0 auto 8px; }
+  .dgc-charselect-name { font-family:var(--dgc-font-display); font-weight:700; font-size:14px; color:var(--dgc-text); }
+  .dgc-charselect-tagline { font-size:10.5px; color:var(--dgc-text-dimmer); margin:4px 0 12px; min-height:26px; }
+
   /* ---------- "3D-ish" character staging (ground shadow + rim-light aura) ---------- */
   .dgc-char-ground-shadow { position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:78px; height:16px; border-radius:50%; background:radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 70%); filter:blur(1px); }
   .dgc-char-ground-shadow-sm { width:46px; height:9px; bottom:-4px; }
@@ -22486,6 +22497,12 @@ $ git stash pop
   .dgc-chibi-hero .dgc-chibi-body { fill:#f8f1e2; stroke:#9c7a52; stroke-width:1.4; }
   .dgc-chibi-hero .dgc-chibi-face { color:#3a2415; }
   .dgc-chibi-blush { fill:#f2a6a6; opacity:0.65; }
+  /* Section 3A — each character's one small signature detail (Byte's ear
+     stud, Nova's ponytail-tie, Sage's collar clip), a distinct accent
+     color per character so it reads as an intentional detail. */
+  .dgc-chibi-signature { fill:var(--dgc-gold); stroke:rgba(0,0,0,0.25); stroke-width:0.5; }
+  .dgc-chibi-hero[data-character="nova"] .dgc-chibi-signature { fill:#c94f3d; }
+  .dgc-chibi-hero[data-character="sage"] .dgc-chibi-signature { fill:#3f8f5c; }
   .dgc-chibi-hero .dgc-chibi-grad-hi { stop-color:#fff; stop-opacity:0.5; }
   .dgc-chibi-hero .dgc-chibi-grad-lo { stop-color:#fff; stop-opacity:0; }
   /* Starter weapon — a swappable layer (see heroWeaponSVG()), always
@@ -23016,6 +23033,19 @@ $ git stash pop
     <button class="dgc-btn dgc-outage-skip" id="dgcOutageSkipBtn">Skip ✕</button>
   </div>
 
+  <!-- ============ SECTION 3A — CHARACTER SELECT SCREEN ============
+       Shown before the title screen on a genuinely fresh save (no
+       selectedCharacterId yet) or after an explicit New Game reset; also
+       reachable later via Settings -> Change Character (in which case
+       the back button shows, since there's already a valid choice to
+       return to). ============ -->
+  <div class="dgc-screen dgc-screen-charselect" id="dgcCharacterSelectScreen" hidden>
+    <button class="dgc-btn dgc-btn-back" id="dgcCharSelectBackBtn" hidden>← Back</button>
+    <div class="dgc-select-heading">CHOOSE YOUR HERO</div>
+    <div class="dgc-subtitle">Same leveling, same gear, same fights — just your look and your vibe.</div>
+    <div class="dgc-charselect-grid" id="dgcCharSelectGrid"><!-- populated by renderCharacterSelectGrid() --></div>
+  </div>
+
   <!-- ============ TITLE / OPENING SCREEN ============
        The very first thing shown when the Game tab opens — a proper
        arcade-style title screen with its own menu, not the fight
@@ -23111,6 +23141,10 @@ $ git stash pop
         <div class="dgc-setting-row">
           <div><strong>Fullscreen</strong><div class="dgc-setting-sub">Real browser fullscreen — hides all browser chrome</div></div>
           <button class="dgc-btn" id="dgcSettingsFsBtn">⛶ Enter Fullscreen</button>
+        </div>
+        <div class="dgc-setting-row">
+          <div><strong>Hero Character</strong><div class="dgc-setting-sub">Switch between the 3 heroes — your level/gear/progress carry over</div></div>
+          <button class="dgc-btn" id="dgcSettingsChangeCharBtn">Change</button>
         </div>
         <div class="dgc-setting-row">
           <div><strong>Reset All Progress</strong><div class="dgc-setting-sub">Wipes coins, XP, cleared bosses — cannot be undone</div></div>
@@ -23493,7 +23527,16 @@ $ git stash pop
         equippedShoes: s.equippedShoes || 'default',
         ownedShoes: Array.isArray(s.ownedShoes) ? s.ownedShoes : ['default'],
         equippedAccessory: s.equippedAccessory || 'none',
-        ownedAccessories: Array.isArray(s.ownedAccessories) ? s.ownedAccessories : ['none']
+        ownedAccessories: Array.isArray(s.ownedAccessories) ? s.ownedAccessories : ['none'],
+        // Section 3A — character selection. A save that already had real
+        // progress before this field existed picked its look implicitly
+        // (the only hero that ever existed) — backfill it as 'byte' (the
+        // original look) rather than retroactively interrupting an
+        // established save with a selection prompt. A genuinely fresh
+        // save gets `null` here on purpose: that's exactly what the boot
+        // flow checks to decide whether to show the character-select
+        // screen before the title screen.
+        selectedCharacterId: typeof s.selectedCharacterId === 'string' ? s.selectedCharacterId : (alreadyHadProgress ? 'byte' : null)
       };
     } catch (e) {
       return {
@@ -23504,7 +23547,7 @@ $ git stash pop
         bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
         ownedDecorations: {}, townDecorations: [],
         equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
-        equippedAccessory: 'none', ownedAccessories: ['none']
+        equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null
       };
     }
   }
@@ -24039,6 +24082,49 @@ $ git stash pop
     }
   };
 
+  /* ============================================================
+     SECTION 3A — CHARACTER SELECTION. 3 distinct heroes sharing the
+     exact same rig/proportions/tier/outfit/weapon/customization/combat
+     systems — they differ through hair STYLE (a real silhouette, not
+     just a color swap; hair COLOR stays the independent Section-1C
+     customization slot and layers on top of whichever shape is picked
+     here), one small signature detail kept well clear of the face and
+     of the equippable accessory slot's headspace, and a default
+     personality expression used on non-combat/menu screens only (combat
+     logic itself is identical for all 3 — see personaBaseExpression()).
+     ============================================================ */
+  var HERO_CHARACTERS = {
+    byte: { id: 'byte', name: 'Byte', tagline: 'Confident. A little smug about it.', menuExpr: 'confident' },
+    nova: { id: 'nova', name: 'Nova', tagline: 'Earnest. Wide-eyed. All in.', menuExpr: 'happy' },
+    sage: { id: 'sage', name: 'Sage', tagline: 'Calm, cool, unbothered.', menuExpr: 'idle' }
+  };
+  var HERO_CHARACTER_ORDER = ['byte', 'nova', 'sage'];
+  function currentCharacterId() { return (save.selectedCharacterId && HERO_CHARACTERS[save.selectedCharacterId]) ? save.selectedCharacterId : 'byte'; }
+  // Hair shapes + each character's one small signature detail, all drawn
+  // in the SAME head-local coordinate space as the (now-corrected)
+  // hero proportions above (head cx=50 cy=42 r=23).
+  var HERO_HAIR_SHAPES = {
+    // Byte — a spiky, confident silhouette + a small ear stud (kept low,
+    // well clear of both the face and the equippable-accessory headspace).
+    byte: function () {
+      return '<path class="dgc-chibi-hair" d="M25 40 L21 20 L30 30 L34 14 L42 27 L50 12 L58 27 L66 14 L70 30 L79 20 L75 40 Q68 26 50 26 Q32 26 25 40 Z"/>' +
+        '<circle class="dgc-chibi-signature" cx="26" cy="45" r="1.8"/>';
+    },
+    // Nova — rounded top + a side ponytail swept out and tied off (the
+    // "tie" IS the signature detail, built right into the hair shape).
+    nova: function () {
+      return '<path class="dgc-chibi-hair" d="M25 38 Q25 16 50 16 Q75 16 75 38 Q68 26 50 26 Q32 26 25 38 Z"/>' +
+        '<path class="dgc-chibi-hair" d="M71 28 Q89 32 87 52 Q82 57 79 46 Q76 34 67 29 Z"/>' +
+        '<circle class="dgc-chibi-signature" cx="80" cy="40" r="2.2"/>';
+    },
+    // Sage — an asymmetric, swept-side, unbothered look + a small collar
+    // clip (near the collar, nowhere near the face).
+    sage: function () {
+      return '<path class="dgc-chibi-hair" d="M25 40 Q22 17 50 15 Q73 16 76 34 Q60 19 44 22 Q29 25 25 40 Z"/>' +
+        '<rect class="dgc-chibi-signature" x="47" y="76" width="6" height="3" rx="1"/>';
+    }
+  };
+
   var chibiIdCounter = 0;
   function chibiRoot(kind) {
     // kind: 'hero' | 'sudo' | 'golem' — selects body/head silhouette + palette.
@@ -24063,7 +24149,10 @@ $ git stash pop
         // head/body geometry — see each shape's own adjusted coordinates.
         '<path class="dgc-chibi-body" d="M28 98 Q28 74 50 74 Q72 74 72 98 L72 112 Q50 118 28 112 Z"/>' +
         '<circle class="dgc-chibi-head" cx="50" cy="42" r="23"/>' +
-        '<path class="dgc-chibi-hair" d="M25 38 Q25 16 50 16 Q75 16 75 38 Q68 26 50 26 Q32 26 25 38 Z"/>' +
+        // Section 3A — hair shape (+ signature detail) now depends on the
+        // selected character; color still comes from the independent
+        // Section-1C hair-color customization slot via [data-hair=...].
+        (HERO_HAIR_SHAPES[currentCharacterId()] || HERO_HAIR_SHAPES.byte)() +
         // Art-direction update — soft blush/cheek marks, drawn once and
         // always visible (not part of the expression-swap system: the
         // reference style keeps these present across nearly every
@@ -24132,6 +24221,7 @@ $ git stash pop
     var hairAttr = kind === 'hero' ? ' data-hair="' + (save.equippedHair || 'brown') + '"' : '';
     var shoesAttr = kind === 'hero' ? ' data-shoes="' + (save.equippedShoes || 'default') + '"' : '';
     var accessoryAttr = kind === 'hero' ? ' data-accessory="' + (save.equippedAccessory || 'none') + '"' : '';
+    var characterAttr = kind === 'hero' ? ' data-character="' + currentCharacterId() + '"' : '';
     // Art-direction update: the previous "3D chibi" gradient sheen (a
     // radialGradient-filled highlight ellipse washed over every head) is
     // REMOVED entirely here — flat, clean line-art per the new style
@@ -24139,7 +24229,7 @@ $ git stash pop
     // per-character .dgc-chibi-grad-hi/-lo CSS color rules are left in
     // place but now unused (harmless dead weight, not worth touching ~11
     // scattered boss-palette declarations to delete for a cosmetic no-op).
-    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + outfitAttr + hairAttr + shoesAttr + accessoryAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
+    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + outfitAttr + hairAttr + shoesAttr + accessoryAttr + characterAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
       body +
       '<g class="dgc-chibi-face">' + facePartsSVG() + '</g>' +
     '</svg>';
@@ -26622,6 +26712,7 @@ $ git stash pop
      UI: SCREEN SWITCHING
      ============================================================ */
   function showScreen(name) {
+    $('dgcCharacterSelectScreen').hidden = name !== 'characterSelect';
     $('dgcTitleScreen').hidden = name !== 'title';
     $('dgcStartScreen').hidden = name !== 'start';
     $('dgcCityScreen').hidden = name !== 'city';
@@ -27331,15 +27422,18 @@ $ git stash pop
       bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
       ownedDecorations: {}, townDecorations: [],
       equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
-      equippedAccessory: 'none', ownedAccessories: ['none']
+      equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null
     };
     persist();
     refreshHeroTierVisuals();
     // A "New Game" reset is a genuine fresh start, not a punishment —
-    // the starter-coin moment plays again exactly like a real new player.
+    // the starter-coin moment plays again exactly like a real new player,
+    // and so does the character choice (selectedCharacterId is null
+    // again above) — showCharacterSelectScreen() picks this screen back
+    // up before the normal title screen.
     grantStarterCoinsIfNeeded();
-    refreshTitleScreen();
     refreshStartScreen();
+    showCharacterSelectScreen(false);
   }
 
   /* ============================================================
@@ -29003,6 +29097,19 @@ $ git stash pop
       function () { closeModals(); resetAllProgress(); }
     );
   });
+  $('dgcSettingsChangeCharBtn').addEventListener('click', function () {
+    closeModals();
+    showCharacterSelectScreen(true);
+  });
+  $('dgcCharSelectGrid').addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-choose-character]') : null;
+    if (!btn) return;
+    chooseCharacter(btn.getAttribute('data-choose-character'));
+  });
+  $('dgcCharSelectBackBtn').addEventListener('click', function () {
+    refreshTitleScreen();
+    showScreen('title');
+  });
 
   /* ---- Ambient title-screen particles (cheap DOM-based float effect) ---- */
   function spawnTitleParticles() {
@@ -29048,7 +29155,12 @@ $ git stash pop
      ============================================================ */
   function refreshHeroTierVisuals() {
     var titleSprite = $('dgcTitleHeroSprite');
-    if (titleSprite) { titleSprite.innerHTML = chibiRoot('hero'); setExpression(titleSprite, 'happy'); }
+    // Section 3A — the title screen is the one spot that shows each
+    // character's own default "personality" expression (Byte confident,
+    // Nova happy, Sage neutral) rather than one fixed expression for
+    // every hero, per the doc's "personality-through-expression-default"
+    // ask. Select/City screens keep their existing fixed defaults.
+    if (titleSprite) { titleSprite.innerHTML = chibiRoot('hero'); setExpression(titleSprite, (HERO_CHARACTERS[currentCharacterId()] || HERO_CHARACTERS.byte).menuExpr); }
     var selectSprite = $('dgcSelectHeroSprite');
     if (selectSprite) { selectSprite.innerHTML = chibiRoot('hero'); setExpression(selectSprite, 'confident'); }
     // Phase 4 — the City hub is the one screen designed specifically to
@@ -29067,6 +29179,55 @@ $ git stash pop
       var el = $(id);
       if (el) el.textContent = tierName;
     });
+  }
+
+  /* ============================================================
+     SECTION 3A — CHARACTER SELECT SCREEN.
+     ============================================================ */
+  function renderCharacterSelectGrid() {
+    var grid = $('dgcCharSelectGrid');
+    if (!grid) return;
+    grid.innerHTML = HERO_CHARACTER_ORDER.map(function (id) {
+      var c = HERO_CHARACTERS[id];
+      return '<div class="dgc-charselect-card">' +
+        '<div class="dgc-sprite dgc-charselect-sprite" id="dgcCharPreview-' + id + '"></div>' +
+        '<div class="dgc-charselect-name">' + c.name + '</div>' +
+        '<div class="dgc-charselect-tagline">' + c.tagline + '</div>' +
+        '<button class="dgc-btn dgc-btn-primary" data-choose-character="' + id + '">Choose</button>' +
+      '</div>';
+    }).join('');
+    // Render each preview AS that character specifically — temporarily
+    // swap save.selectedCharacterId so chibiRoot('hero') (which reads it
+    // internally via currentCharacterId()) renders THIS card's character,
+    // then restore it. Synchronous, so there's no risk of another read
+    // landing mid-swap.
+    var actualSelected = save.selectedCharacterId;
+    HERO_CHARACTER_ORDER.forEach(function (id) {
+      var sprite = $('dgcCharPreview-' + id);
+      if (!sprite) return;
+      save.selectedCharacterId = id;
+      sprite.innerHTML = chibiRoot('hero');
+      setExpression(sprite, HERO_CHARACTERS[id].menuExpr);
+    });
+    save.selectedCharacterId = actualSelected;
+  }
+  function chooseCharacter(id) {
+    if (!HERO_CHARACTERS[id]) return;
+    save.selectedCharacterId = id;
+    persist();
+    playSfx('equip');
+    refreshHeroTierVisuals();
+    refreshTitleScreen();
+    showScreen('title');
+  }
+  // allowBack: true when reached via Settings -> Change Character (a
+  // real choice already exists to return to); false/omitted for the
+  // first-time/new-game flow, where there's nothing to go "back" to yet.
+  function showCharacterSelectScreen(allowBack) {
+    renderCharacterSelectGrid();
+    var backBtn = $('dgcCharSelectBackBtn');
+    if (backBtn) backBtn.hidden = !allowBack;
+    showScreen('characterSelect');
   }
 
   /* ============================================================
@@ -29212,7 +29373,10 @@ $ git stash pop
   wireTerminalKeyFeedback();
   wireUiSounds();
   applySoundToggleUI();
-  showScreen('title');
+  // Section 3A — a genuinely fresh save (selectedCharacterId still null)
+  // sees the character-select screen first; everyone else goes straight
+  // to the title screen exactly as before.
+  if (!save.selectedCharacterId) { showCharacterSelectScreen(false); } else { showScreen('title'); }
 
 })();
 </script>
