@@ -22264,6 +22264,10 @@ $ git stash pop
     padding:20px; text-align:center;
     animation:dgc-boot-warp-in .5s ease-out;
   }
+  /* Author rules beat the UA [hidden] default regardless of specificity —
+     without this override, .dgc-boot-overlay's own `display:flex` above
+     would keep rendering even after JS sets the hidden attribute. */
+  .dgc-boot-overlay[hidden] { display:none; }
   .dgc-boot-overlay.dgc-boot-exit { animation:dgc-boot-warp-out .45s ease-in forwards; pointer-events:none; }
   @keyframes dgc-boot-warp-in {
     0% { opacity:0; filter:brightness(3) saturate(0); clip-path:circle(0% at 50% 50%); }
@@ -22285,6 +22289,7 @@ $ git stash pop
   .dgc-boot-log-line { opacity:0; animation:dgc-boot-line-in .25s ease-out forwards; white-space:pre-wrap; }
   @keyframes dgc-boot-line-in { from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:translateY(0);} }
   .dgc-boot-fs-prompt { margin-top:22px; display:flex; flex-direction:column; align-items:center; gap:10px; animation:dgc-boot-line-in .3s ease-out; }
+  .dgc-boot-fs-prompt[hidden] { display:none; }
   .dgc-boot-fs-text { font-family:var(--dgc-font-ui); font-size:14px; font-weight:600; color:var(--dgc-text); }
   .dgc-boot-fs-btns { display:flex; gap:10px; }
   .dgc-boot-skip {
@@ -22315,6 +22320,44 @@ $ git stash pop
     padding:2vh 2vw;
   }
   .dgc-root:fullscreen .dgc-screen, .dgc-root:-webkit-full-screen .dgc-screen { max-width:900px; margin:0 auto; width:100%; }
+
+  /* ============================================================
+     "HOW CLOSE WAS I?" — a short readout alongside the existing hit/
+     damage feedback, color-tagged by tier. Not a separate slow screen.
+     ============================================================ */
+  .dgc-close-note {
+    margin-top:8px; font-size:11.5px; line-height:1.6; font-family:var(--dgc-font-ui); font-weight:600;
+    padding:7px 12px; border-radius:4px; border-left:3px solid; animation:dgc-close-note-in .2s ease-out;
+  }
+  @keyframes dgc-close-note-in { from{ opacity:0; transform:translateY(-3px);} to{ opacity:1; transform:translateY(0);} }
+  .dgc-close-note-wrong { background:rgba(var(--dgc-danger-rgb),0.08); border-color:var(--dgc-danger); color:var(--dgc-danger); }
+  .dgc-close-note-correct { background:rgba(var(--dgc-secondary-rgb),0.08); border-color:var(--dgc-secondary); color:var(--dgc-secondary); }
+  .dgc-close-note-optimal { background:rgba(var(--dgc-gold-rgb),0.1); border-color:var(--dgc-gold); color:var(--dgc-gold); }
+
+  /* ============================================================
+     REVIEW SCREEN — "mission debrief" battle log, styled consistently
+     with the rest of the in-world UI, not a plain results table.
+     ============================================================ */
+  .dgc-screen-review { display:flex; flex-direction:column; height:100%; max-height:560px; padding:16px; }
+  .dgc-review-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-shrink:0; }
+  .dgc-review-title { font-family:var(--dgc-font-display); font-size:15px; letter-spacing:1px; color:var(--dgc-secondary); text-shadow:0 0 10px rgba(var(--dgc-secondary-rgb),0.4); }
+  .dgc-review-list { overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:4px; }
+  .dgc-review-empty { color:var(--dgc-text-dimmer); font-size:12px; text-align:center; padding:30px 0; }
+  .dgc-review-row {
+    background:linear-gradient(135deg, var(--dgc-bg-2), var(--dgc-bg-3) 120%); border:1px solid var(--dgc-border);
+    border-radius:4px; padding:10px 12px; font-size:11.5px; line-height:1.6;
+  }
+  .dgc-review-row-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+  .dgc-review-num { font-family:var(--dgc-font-display); font-size:10.5px; color:var(--dgc-text-dim); letter-spacing:0.5px; }
+  .dgc-review-tag { font-family:var(--dgc-font-ui); font-weight:700; font-size:9.5px; letter-spacing:1px; padding:2px 8px; border-radius:10px; }
+  .dgc-review-tag-wrong { background:rgba(var(--dgc-danger-rgb),0.18); color:var(--dgc-danger); }
+  .dgc-review-tag-correct { background:rgba(var(--dgc-secondary-rgb),0.18); color:var(--dgc-secondary); }
+  .dgc-review-tag-optimal { background:rgba(var(--dgc-gold-rgb),0.2); color:var(--dgc-gold); }
+  .dgc-review-prompt { color:var(--dgc-text); margin-bottom:6px; }
+  .dgc-review-prompt strong { color:var(--dgc-gold); }
+  .dgc-review-answer, .dgc-review-ideal { color:var(--dgc-text-dim); margin-bottom:3px; font-family:var(--dgc-font-mono); font-size:10.5px; }
+  .dgc-review-answer strong, .dgc-review-ideal strong { color:var(--dgc-text-dimmer); font-family:var(--dgc-font-ui); }
+  .dgc-review-note { color:var(--dgc-text-dimmer); font-size:10.5px; margin-top:4px; font-style:italic; }
 </style>
 
 <div class="dgc-root">
@@ -22537,6 +22580,7 @@ $ git stash pop
     <div class="dgc-question-panel" id="dgcQuestionPanel">
       <div class="dgc-prompt" id="dgcPrompt"></div>
       <div class="dgc-mode-area" id="dgcModeArea"></div>
+      <div class="dgc-close-note" id="dgcCloseNote" hidden></div>
       <div class="dgc-hint-row">
         <button class="dgc-hint-btn" id="dgcHintNudge">💡 Nudge <span class="dgc-hint-cost">5🪙</span></button>
         <button class="dgc-hint-btn" id="dgcHintPartial">🧩 Partial <span class="dgc-hint-cost">15🪙</span></button>
@@ -22544,6 +22588,21 @@ $ git stash pop
       </div>
       <div class="dgc-hint-display" id="dgcHintDisplay" hidden></div>
     </div>
+  </div>
+
+  <!-- ============ REVIEW SCREEN: "mission debrief" ============
+       Shown right after a fight ends (win OR lose), before the victory/
+       defeat screen — a plain, honest record of every question this
+       fight: prompt, what you answered, tier, and the ideal answer, even
+       for questions you got right. Available by default (not opt-in),
+       quickly dismissable. Distinct from (simpler than) the full Phase-5
+       personalized debrief. -->
+  <div class="dgc-screen dgc-screen-review" id="dgcReviewScreen" hidden>
+    <div class="dgc-review-header">
+      <div class="dgc-review-title" id="dgcReviewTitle">📋 MISSION DEBRIEF</div>
+      <button class="dgc-btn dgc-btn-primary" id="dgcReviewContinueBtn">Continue ▶</button>
+    </div>
+    <div class="dgc-review-list" id="dgcReviewList"></div>
   </div>
 
   <!-- ============ VICTORY SCREEN ============ -->
@@ -23243,6 +23302,7 @@ $ git stash pop
     $('dgcTitleScreen').hidden = name !== 'title';
     $('dgcStartScreen').hidden = name !== 'start';
     $('dgcCombatScreen').hidden = name !== 'combat';
+    $('dgcReviewScreen').hidden = name !== 'review';
     $('dgcVictoryScreen').hidden = name !== 'victory';
     $('dgcDefeatScreen').hidden = name !== 'defeat';
   }
@@ -23435,6 +23495,7 @@ $ git stash pop
     clearInterval(state.timer);
     $('dgcHintDisplay').hidden = true;
     $('dgcHintDisplay').textContent = '';
+    $('dgcCloseNote').hidden = true;
     $('dgcHintNudge').disabled = false;
     $('dgcHintPartial').disabled = false;
     $('dgcHintFull').disabled = false;
@@ -23741,6 +23802,102 @@ $ git stash pop
   }
 
   /* ============================================================
+     "HOW CLOSE WAS I?" + END-OF-FIGHT REVIEW — driven by the EXISTING
+     validation schema (patterns / option tiers / step order / the new
+     baseCmds+why fields) rather than free-floating generated text. Reads
+     directly from `state` + the still-live #dgcModeInput at the moment a
+     tier is decided, exactly like validateTerminal()/validateSpotTheBug()
+     etc. already do — no extra params threaded through resolveAnswer.
+     ============================================================ */
+  function closenessNote(q, tier, isTimeout) {
+    if (tier === 'optimal') return pick(['Optimal — nothing faster than this.', 'That\'s the ideal move.', 'Textbook — nothing to add.']);
+    if (tier === 'correct') return pick(['Correct, but there\'s a tighter way to do this.', 'It works — a sharper answer existed.']);
+
+    // tier === 'wrong'
+    if (isTimeout) return 'Too slow — the clock ran out before you answered.';
+
+    if (q.mode === 'terminal') {
+      var input = $('dgcModeInput');
+      var v = normalize(input ? input.value : '');
+      if (!v) return 'Empty — you didn\'t enter a command at all.';
+      var firstWord = v.toLowerCase().split(/\s+/)[0];
+      if (q.baseCmds && q.baseCmds.indexOf(firstWord) !== -1) return 'Close — right command, wrong flag or target.';
+      return 'Not related to this task — wrong command entirely.';
+    }
+    if (q.mode === 'spot_the_bug') {
+      if (state.selectedLine === null || state.selectedLine === undefined) return 'You never selected a line — click the buggy one first.';
+      if (state.selectedLine !== q.buggyLineId) return 'Way off — that\'s not even the buggy line.';
+      return 'Close — right line, but that fix doesn\'t actually resolve it.';
+    }
+    if (q.mode === 'triage_call') {
+      if (!state.selectedOption) return 'You never picked an option.';
+      var opt = (q.options || []).filter(function (o) { return o.id === state.selectedOption; })[0];
+      if (!opt) return 'Not a valid pick.';
+      return opt.why || 'Wrong tradeoff for this situation.';
+    }
+    if (q.mode === 'read_the_room') {
+      if (state.readTheRoomStep === 'diagnose') return 'Right area, wrong conclusion — look again at what the output is telling you.';
+      return 'Diagnosis was right, but that fix doesn\'t actually resolve it.';
+    }
+    if (q.mode === 'build_the_pipeline') {
+      var labels = (state.seqChosen || []).map(function (c) { return c.label; });
+      var steps = q.steps;
+      for (var i = 0; i < steps.length - 1; i++) {
+        if (labels[i] === steps[i + 1] && labels[i + 1] === steps[i]) return 'So close — you just swapped two adjacent steps (' + (i + 1) + ' & ' + (i + 2) + ').';
+      }
+      var wrongPositions = steps.filter(function (s, i2) { return labels[i2] !== s; }).length;
+      return wrongPositions + ' step' + (wrongPositions === 1 ? '' : 's') + ' out of place.';
+    }
+    return 'Not quite — check the prompt again.';
+  }
+
+  function summarizeUserAnswer(q) {
+    var input = $('dgcModeInput');
+    var raw = input ? input.value : '';
+    if (q.mode === 'terminal' || q.mode === 'read_the_room') return raw || '(empty)';
+    if (q.mode === 'spot_the_bug') {
+      var lineTxt = (state.selectedLine !== null && state.selectedLine !== undefined) ? ('line ' + (state.selectedLine + 1) + ': ') : '';
+      return lineTxt + (raw || '(no fix typed)');
+    }
+    if (q.mode === 'triage_call') {
+      var opt = (q.options || []).filter(function (o) { return o.id === state.selectedOption; })[0];
+      return (opt ? opt.label : '(no option picked)') + (raw ? ' — "' + raw + '"' : '');
+    }
+    if (q.mode === 'build_the_pipeline') return (state.seqChosen || []).map(function (c) { return c.label; }).join(' → ') || '(nothing sequenced)';
+    return raw;
+  }
+
+  function idealAnswerText(q) {
+    if (q.mode === 'build_the_pipeline') return q.steps.join('  →  ');
+    return q.hintFull || '(see hint)';
+  }
+
+  // Shows the "how close" readout alongside the existing hit/damage FX —
+  // one line, tier-colored, auto-clearing when the next question renders.
+  function showCloseNote(q, tier, isTimeout) {
+    var el = $('dgcCloseNote');
+    if (!el) return;
+    el.className = 'dgc-close-note dgc-close-note-' + tier;
+    el.textContent = closenessNote(q, tier, isTimeout);
+    el.hidden = false;
+  }
+
+  // Records this question in the fight log for the end-of-fight review
+  // screen — called once per resolved question, right after the tier is
+  // known, while state.selectedLine/selectedOption/seqChosen/readTheRoomStep
+  // and #dgcModeInput are all still exactly as they were at submission time.
+  function logFightQuestion(q, tier, isTimeout) {
+    state.fightLog.push({
+      prompt: q.prompt,
+      mode: q.mode,
+      userAnswer: summarizeUserAnswer(q),
+      tier: tier,
+      note: closenessNote(q, tier, isTimeout),
+      ideal: idealAnswerText(q)
+    });
+  }
+
+  /* ============================================================
      RESOLVE ANSWER → APPLY DAMAGE, COMBO, COINS, FX
      ============================================================ */
   function resolveAnswer(tier, isTimeout) {
@@ -23755,6 +23912,12 @@ $ git stash pop
     var q = state.currentQuestion;
     var hintFullUsed = state.hintFullUsedThisQ;
     state.hintFullUsedThisQ = false;
+
+    // "How close was I?" readout + the fight-log entry for the end-of-fight
+    // review screen — computed once here (before anything below mutates
+    // state) since it's identical for every tier/branch.
+    logFightQuestion(q, tier, isTimeout);
+    showCloseNote(q, tier, isTimeout);
 
     if (tier === 'wrong') {
       var wasLow = state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25;
@@ -23899,7 +24062,7 @@ $ git stash pop
     flashExpression('sudo', 'surprised', 1400);
     var sa = state.boss.specialAttack;
     $('dgcPrompt').innerHTML = sa.prompt;
-    var fakeQ = { mode: 'build_the_pipeline', steps: sa.steps };
+    var fakeQ = { mode: 'build_the_pipeline', steps: sa.steps, prompt: sa.prompt };
     state.currentQuestion = fakeQ;
     var area = $('dgcModeArea');
     area.innerHTML = '';
@@ -23948,6 +24111,8 @@ $ git stash pop
       $('dgcHintNudge').disabled = false;
       $('dgcHintPartial').disabled = false;
       $('dgcHintFull').disabled = false;
+      logFightQuestion(fakeQ, tier, false);
+      showCloseNote(fakeQ, tier, false);
       if (tier === 'wrong') {
         state.heroHp = Math.max(0, state.heroHp - sa.damageToHeroIfWrong);
         state.combo = 1;
@@ -24156,6 +24321,42 @@ $ git stash pop
   /* ============================================================
      VICTORY / DEFEAT
      ============================================================ */
+  /* ============================================================
+     END-OF-FIGHT REVIEW SCREEN — "mission debrief". Shown by default
+     right when a fight ends (win or lose), before the victory/defeat
+     screen; a plain honest record of the fight, quickly dismissable via
+     Continue. Distinct from (simpler than) the full Phase-5 debrief.
+     ============================================================ */
+  function renderReviewScreen(outcome) {
+    $('dgcReviewTitle').textContent = outcome === 'victory' ? '📋 MISSION DEBRIEF — VICTORY' : '📋 MISSION DEBRIEF — DEFEAT';
+    var list = $('dgcReviewList');
+    var log = state.fightLog;
+    if (!log || !log.length) {
+      list.innerHTML = '<div class="dgc-review-empty">No questions recorded this fight.</div>';
+      return;
+    }
+    var tagText = { wrong: 'WRONG', correct: 'CORRECT', optimal: 'OPTIMAL' };
+    list.innerHTML = log.map(function (entry, i) {
+      return '<div class="dgc-review-row">' +
+        '<div class="dgc-review-row-top">' +
+          '<span class="dgc-review-num">Q' + (i + 1) + '</span>' +
+          '<span class="dgc-review-tag dgc-review-tag-' + entry.tier + '">' + tagText[entry.tier] + '</span>' +
+        '</div>' +
+        '<div class="dgc-review-prompt">' + entry.prompt + '</div>' +
+        '<div class="dgc-review-answer"><strong>You:</strong> ' + escapeHtml(entry.userAnswer) + '</div>' +
+        '<div class="dgc-review-ideal"><strong>Ideal:</strong> ' + escapeHtml(entry.ideal) + '</div>' +
+        '<div class="dgc-review-note">' + escapeHtml(entry.note) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  var pendingPostReviewScreen = null;
+  function showReviewThenScreen(nextScreenName) {
+    pendingPostReviewScreen = nextScreenName;
+    renderReviewScreen(nextScreenName);
+    showScreen('review');
+  }
+
   function triggerVictory() {
     flashSprite('dgcBossSprite');
     // Fight-end payoff faces — bigger/distinct from the in-combat happy/excited.
@@ -24181,7 +24382,7 @@ $ git stash pop
       $('dgcVictoryCoins').textContent = state.runCoins;
       $('dgcVictoryXp').textContent = state.boss.xpReward;
       $('dgcVictoryCombo').textContent = save.bestCombo;
-      showScreen('victory');
+      showReviewThenScreen('victory');
     }, 1100);
   }
 
@@ -24192,7 +24393,7 @@ $ git stash pop
     lockExpression('boss', 'victorious');
     lockExpression('sudo', 'defeated');
     guardedTimeout(function () {
-      showScreen('defeat');
+      showReviewThenScreen('defeat');
     }, 500);
   }
 
@@ -24228,6 +24429,9 @@ $ git stash pop
   $('dgcVictoryContinueBtn').addEventListener('click', function () {
     refreshStartScreen();
     showScreen('start');
+  });
+  $('dgcReviewContinueBtn').addEventListener('click', function () {
+    showScreen(pendingPostReviewScreen || 'start');
   });
   $('dgcRetryBtn').addEventListener('click', retryPhase);
   $('dgcDefeatQuitBtn').addEventListener('click', function () {
@@ -24399,7 +24603,17 @@ $ git stash pop
     var root = document.querySelector('#tab-game .dgc-root');
     if (!root) return;
     var req = root.requestFullscreen || root.webkitRequestFullscreen || root.msRequestFullscreen;
-    if (req) req.call(root);
+    if (!req) return;
+    // requestFullscreen() returns a promise that rejects whenever the
+    // browser refuses (no genuine user gesture, an embedding permissions
+    // policy, the user dismissing a permission prompt, etc.) — swallow
+    // that rejection so it never surfaces as an uncaught console error;
+    // updateFullscreenUI() (via the fullscreenchange listener) is what
+    // actually reflects success/failure in the UI either way.
+    try {
+      var result = req.call(root);
+      if (result && typeof result.catch === 'function') result.catch(function () {});
+    } catch (e) { /* some browsers throw synchronously instead of rejecting */ }
   }
   function exitGameFullscreen() {
     var exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
