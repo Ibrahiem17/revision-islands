@@ -22357,6 +22357,25 @@ $ git stash pop
   .dgc-city-sudo-token { position:absolute; display:flex; flex-direction:column; align-items:center; z-index:2; }
   .dgc-city-hero-sprite { width:100px; height:128px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
   .dgc-city-sudo-sprite { width:74px; height:94px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+
+  /* ---- Section 3A — overworld sprite: small, simplified, 3 facing
+     groups (down/up/side; left/right share "side", mirrored). ---- */
+  .dgc-overworld-sprite { width:100%; height:100%; overflow:visible; }
+  .dgc-ow-dir { display:none; }
+  .dgc-overworld-sprite[data-facing="down"] .dgc-ow-down { display:block; }
+  .dgc-overworld-sprite[data-facing="up"] .dgc-ow-up { display:block; }
+  .dgc-overworld-sprite[data-facing="side"] .dgc-ow-side { display:block; }
+  .dgc-overworld-hero .dgc-ow-head { fill:#f0b988; }
+  .dgc-overworld-hero .dgc-ow-body { fill:#f8f1e2; stroke:#9c7a52; stroke-width:1; }
+  .dgc-overworld-hero .dgc-ow-hair { fill:#4a2f1c; }
+  .dgc-overworld-hero .dgc-ow-eye { fill:#3a2415; }
+  .dgc-overworld-hero[data-hair="black"] .dgc-ow-hair { fill:#1c1c1c; }
+  .dgc-overworld-hero[data-hair="blonde"] .dgc-ow-hair { fill:#d4a843; }
+  .dgc-overworld-hero[data-hair="crimson"] .dgc-ow-hair { fill:#8f2f27; }
+  .dgc-overworld-hero[data-hair="teal"] .dgc-ow-hair { fill:#2f8f8a; }
+  .dgc-overworld-sudo .dgc-ow-head { fill:#241a3d; stroke:var(--dgc-border-bright); stroke-width:0.8; }
+  .dgc-overworld-sudo .dgc-ow-body { fill:#1a1230; stroke:var(--dgc-border-bright); stroke-width:0.8; }
+  .dgc-overworld-sudo .dgc-ow-visor { fill:#050308; stroke:var(--dgc-success); stroke-width:1; filter:drop-shadow(0 0 3px rgba(var(--dgc-success-rgb),0.6)); }
   .dgc-city-hero-token .dgc-hero-name { margin-top:2px; font-size:11px; }
   .dgc-city-sudo-token .dgc-sudo-bubble { position:static; margin-bottom:4px; }
   /* Walk-cycle: a faster, more pronounced bob than idle (overrides the
@@ -22429,6 +22448,14 @@ $ git stash pop
   .dgc-city-building-library { --dgc-roof:#2f6b45; --dgc-wall:#5c4a2e; }
   .dgc-city-building-trophy { --dgc-roof:#7a5aa8; --dgc-wall:#6b4a28; }
   .dgc-city-building-store { --dgc-roof:#3f6b8f; --dgc-wall:#5c6b4a; }
+  .dgc-city-building-training { --dgc-roof:#8f2f27; --dgc-wall:#5a4a2e; }
+
+  /* ---- Section 3A — City zoning: static named-location signposts ---- */
+  .dgc-city-zone-label {
+    position:absolute; transform:translateX(-50%); font-family:var(--dgc-font-mono);
+    font-size:10px; letter-spacing:2px; color:var(--dgc-gold); opacity:0.7;
+    text-shadow:0 1px 3px rgba(0,0,0,0.7); pointer-events:none; white-space:nowrap;
+  }
 
   /* ---- shared shop-modal layout (Armory/Tailor/Bank/Library) ---- */
   .dgc-shop-preview { display:flex; justify-content:center; margin-bottom:14px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; }
@@ -23287,6 +23314,7 @@ $ git stash pop
     <div class="dgc-city-viewport" id="dgcCityViewport">
       <div class="dgc-city-world" id="dgcCityWorld">
         <div class="dgc-city-world-ground"></div>
+        <div class="dgc-city-zone-labels" id="dgcCityZoneLabels"><!-- populated once from CITY_ZONES --></div>
         <div class="dgc-city-decor-layer" id="dgcCityDecorLayer"></div>
         <div class="dgc-city-buildings-layer" id="dgcCityBuildingsLayer"><!-- populated by renderCityBuildings() from CITY_BUILDINGS --></div>
         <div class="dgc-city-sudo-token" id="dgcCitySudoToken">
@@ -24124,6 +24152,64 @@ $ git stash pop
         '<rect class="dgc-chibi-signature" x="47" y="76" width="6" height="3" rx="1"/>';
     }
   };
+
+  /* ============================================================
+     SECTION 3A — OVERWORLD SPRITE (Pokemon-Emerald-style small roaming
+     figure for the explorable City — Phase 4 Section 1B). Deliberately a
+     SEPARATE, much-simplified rig from the full portrait chibi above
+     (small blob body/head, minimal detail) rather than just shrinking
+     the portrait, per the doc's own "portrait for fights/menus, small
+     overworld sprite specifically for roaming the town" split. Every
+     character gets its own tiny hair silhouette in 3 direction groups
+     (down/up/side); "left" vs "right" reuses the SAME side group,
+     mirrored via the City movement code's existing scaleX(-1) facing
+     wrapper — no need for a 4th drawn variant.
+     ============================================================ */
+  var HERO_OVERWORLD_HAIR = {
+    byte: {
+      down: '<path class="dgc-ow-hair" d="M9 15 L6 6 L12 10 L14 3 L18 9 L20 2 L22 9 L26 3 L28 10 L34 6 L31 15 Q26 11 20 11 Q14 11 9 15 Z"/>',
+      up:   '<path class="dgc-ow-hair" d="M8 16 Q8 3 20 3 Q32 3 32 16 Q32 22 20 22 Q8 22 8 16 Z"/>',
+      side: '<path class="dgc-ow-hair" d="M7 15 L4 6 L9 9 L11 2 L16 9 L20 2 L24 9 L27 4 L26 13 Q22 10 17 11 Q11 12 7 15 Z"/>'
+    },
+    nova: {
+      down: '<path class="dgc-ow-hair" d="M9 15 Q9 4 20 4 Q31 4 31 15 Q27 11 20 11 Q13 11 9 15 Z"/><path class="dgc-ow-hair" d="M29 11 Q37 13 36 22 Q33 24 32 18 Q30 13 26 11 Z"/>',
+      up:   '<path class="dgc-ow-hair" d="M8 16 Q8 3 20 3 Q32 3 32 16 Q32 22 20 22 Q8 22 8 16 Z"/><path class="dgc-ow-hair" d="M29 11 Q37 13 36 22 Q33 24 32 18 Q30 13 26 11 Z"/>',
+      side: '<path class="dgc-ow-hair" d="M7 15 Q7 4 18 4 Q26 5 27 13 Q22 10 16 11 Q10 12 7 15 Z"/><path class="dgc-ow-hair" d="M25 10 Q33 12 32 21 Q29 23 28 17 Q26 12 22 10 Z"/>'
+    },
+    sage: {
+      down: '<path class="dgc-ow-hair" d="M9 15 Q7 5 20 4 Q29 5 30 12 Q23 8 16 9 Q11 10 9 15 Z"/>',
+      up:   '<path class="dgc-ow-hair" d="M8 16 Q8 3 20 3 Q32 3 32 16 Q32 22 20 22 Q8 22 8 16 Z"/>',
+      side: '<path class="dgc-ow-hair" d="M7 15 Q5 5 17 4 Q25 5 26 11 Q20 7 14 9 Q9 10 7 15 Z"/>'
+    }
+  };
+  function overworldSpriteSVG(kind) {
+    var isHero = kind === 'hero';
+    var bodyBlob = '<ellipse class="dgc-ow-body" cx="20" cy="39" rx="11" ry="9"/>';
+    var headCircle = '<circle class="dgc-ow-head" cx="20" cy="16" r="11"/>';
+    var hair = isHero ? (HERO_OVERWORLD_HAIR[currentCharacterId()] || HERO_OVERWORLD_HAIR.byte) : null;
+    var down, up, side;
+    if (isHero) {
+      down = bodyBlob + headCircle + '<circle class="dgc-ow-eye" cx="17" cy="16" r="1.4"/><circle class="dgc-ow-eye" cx="23" cy="16" r="1.4"/>' + hair.down;
+      up = bodyBlob + headCircle + hair.up;
+      side = bodyBlob + headCircle + '<circle class="dgc-ow-eye" cx="25" cy="16" r="1.4"/>' + hair.side;
+    } else {
+      // Sudo: no hair — a small glowing visor instead, same 3-group
+      // pattern (visor visible from the front/side, hidden from behind).
+      down = bodyBlob + headCircle + '<circle class="dgc-ow-visor" cx="20" cy="16" r="6"/>';
+      up = bodyBlob + headCircle;
+      side = bodyBlob + headCircle + '<circle class="dgc-ow-visor" cx="24" cy="16" r="5"/>';
+    }
+    var hairAttr = isHero ? ' data-hair="' + (save.equippedHair || 'brown') + '"' : '';
+    return '<svg class="dgc-overworld-sprite dgc-overworld-' + kind + '"' + hairAttr + ' viewBox="0 0 40 50" data-facing="down">' +
+      '<g class="dgc-ow-dir dgc-ow-down">' + down + '</g>' +
+      '<g class="dgc-ow-dir dgc-ow-up">' + up + '</g>' +
+      '<g class="dgc-ow-dir dgc-ow-side">' + side + '</g>' +
+    '</svg>';
+  }
+  // cityHero.facing is 'up'/'down'/'left'/'right'; the overworld sprite
+  // only draws 3 groups (left and right share "side", mirrored via the
+  // existing scaleX facing wrapper) — this maps one to the other.
+  function overworldFacingGroup(facing) { return (facing === 'left' || facing === 'right') ? 'side' : facing; }
 
   var chibiIdCounter = 0;
   function chibiRoot(kind) {
@@ -26944,7 +27030,12 @@ $ git stash pop
     // Section 1B sub-step 2 — General Store: sells town decorations. A
     // 6th building rather than folding decorations into an existing one,
     // per the doc's explicitly offered option.
-    { id: 'store', name: 'General Store', x: 420, y: 380 }
+    { id: 'store', name: 'General Store', x: 420, y: 380 },
+    // Section 3A — Training Grounds: a walk-up LOCATION rather than a
+    // shop — entering it routes straight to Boss Select instead of
+    // opening a modal (see enterCityBuilding()'s special case), tying
+    // "go fight" into the walkable world instead of only the Back button.
+    { id: 'training', name: 'Training Grounds', x: 660, y: 340 }
   ];
   var CITY_SUDO_POS = { x: 170, y: 190 }; // a fixed idle "guide post" near the Armory — simpler and just as alive as full follow-AI
   var cityHero = { x: 450, y: 280, facing: 'down', moving: false };
@@ -26963,7 +27054,22 @@ $ git stash pop
       '</div>';
     }).join('');
   }
-  var CITY_BUILDING_ICONS = { armory: '⚒️', tailor: '🧵', bank: '🏦', library: '📚', trophy: '🏆', store: '🌳' };
+  var CITY_BUILDING_ICONS = { armory: '⚒️', tailor: '🧵', bank: '🏦', library: '📚', trophy: '🏆', store: '🌳', training: '⚔️' };
+  function renderCityZoneLabels() {
+    var layer = $('dgcCityZoneLabels');
+    if (!layer || layer.children.length) return; // static — render once, never needs re-rendering
+    layer.innerHTML = CITY_ZONES.map(function (z) {
+      return '<div class="dgc-city-zone-label" style="left:' + z.x + 'px; top:' + z.y + 'px;">' + z.name + '</div>';
+    }).join('');
+  }
+  // Section 3A — City zoning: purely decorative signposts giving the
+  // town real named geography instead of a flat lawn with building
+  // clusters. Static (don't depend on save state), so rendered once as
+  // plain HTML in #dgcCityWorld rather than through a render function.
+  var CITY_ZONES = [
+    { name: 'TOWN SQUARE', x: 380, y: 230 },
+    { name: 'RESIDENTIAL DISTRICT', x: 620, y: 460 }
+  ];
 
   function cityBuildingCenter(b) { return { x: b.x + 64, y: b.y + 68 }; } // ~center of the roof+body card
 
@@ -27032,6 +27138,10 @@ $ git stash pop
       }
       var facingEl = $('dgcCityHeroFacing');
       if (facingEl) facingEl.style.transform = cityHero.facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)';
+      if (moving) {
+        var heroOwSprite = $('dgcCityHeroSprite').querySelector('.dgc-overworld-sprite');
+        if (heroOwSprite) heroOwSprite.setAttribute('data-facing', overworldFacingGroup(cityHero.facing));
+      }
       updateCityCamera();
       checkCityBuildingProximity();
     }
@@ -27047,7 +27157,13 @@ $ git stash pop
     else if (id === 'library') { renderLibrary(); openModal('dgcLibraryModal'); }
     else if (id === 'trophy') { renderTrophyHall(); openModal('dgcTrophyModal'); }
     else if (id === 'store') { renderGeneralStore(); openModal('dgcGeneralStoreModal'); }
+    else if (id === 'training') { leaveCityToBossSelect(); return; } // a LOCATION, not a shop — no modal, routes straight to Boss Select
     playSfx('click');
+  }
+  function leaveCityToBossSelect() {
+    stopCityLoop();
+    refreshStartScreen();
+    showScreen('start');
   }
 
   function goToCityScreen() {
@@ -27055,9 +27171,12 @@ $ git stash pop
     if (sudoToken) {
       sudoToken.style.left = CITY_SUDO_POS.x + 'px';
       sudoToken.style.top = CITY_SUDO_POS.y + 'px';
+      // Section 3A — Sudo's overworld sprite (small, simplified —
+      // distinct from the full portrait used in fights/menus).
       var sudoSprite = $('dgcCitySudoSprite');
-      if (sudoSprite && !sudoSprite.innerHTML) { sudoSprite.innerHTML = chibiRoot('sudo'); setExpression(sudoSprite, 'happy'); }
+      if (sudoSprite && !sudoSprite.querySelector('.dgc-overworld-sprite')) { sudoSprite.innerHTML = overworldSpriteSVG('sudo'); }
     }
+    renderCityZoneLabels();
     renderCityBuildings();
     renderCityDecorations();
     cancelPlacingDecoration(); // a fresh entry is never mid-placement
@@ -28951,11 +29070,7 @@ $ git stash pop
 
   /* ---- Phase 4 Section 1B — DevOps City: exploration + buildings ---- */
   $('dgcVisitCityFromSelectBtn').addEventListener('click', goToCityScreen);
-  $('dgcCityBackBtn').addEventListener('click', function () {
-    stopCityLoop();
-    refreshStartScreen();
-    showScreen('start');
-  });
+  $('dgcCityBackBtn').addEventListener('click', leaveCityToBossSelect);
   // Walking up to a building (the primary interaction) shows the Enter
   // prompt via checkCityBuildingProximity(); clicking/tapping a building
   // directly is kept as an always-available fallback (accessibility,
@@ -29166,8 +29281,16 @@ $ git stash pop
     // Phase 4 — the City hub is the one screen designed specifically to
     // show off owned gear, so it goes through this exact same refresh
     // hook (called after every level-up AND every Armory/Tailor equip).
+    // Section 3A — the City specifically uses the small overworld sprite,
+    // not the full portrait; preserve whatever direction the hero was
+    // already facing (cityHero.facing) across the re-render instead of
+    // resetting to "down" every time gear changes mid-walk.
     var citySprite = $('dgcCityHeroSprite');
-    if (citySprite) { citySprite.innerHTML = chibiRoot('hero'); setExpression(citySprite, 'happy'); }
+    if (citySprite) {
+      citySprite.innerHTML = overworldSpriteSVG('hero');
+      var owSprite = citySprite.querySelector('.dgc-overworld-sprite');
+      if (owSprite) owSprite.setAttribute('data-facing', overworldFacingGroup((typeof cityHero !== 'undefined' && cityHero.facing) || 'down'));
+    }
     refreshHeroNameLabels();
   }
 
