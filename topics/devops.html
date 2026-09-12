@@ -22346,6 +22346,121 @@ $ git stash pop
   .dgc-chibi-golem .dgc-chibi-grad-hi { stop-color:var(--dgc-success); stop-opacity:0.3; }
   .dgc-chibi-golem .dgc-chibi-grad-lo { stop-color:var(--dgc-success); stop-opacity:0; }
 
+  /* ============================================================
+     PHASE 3 — BOSS PALETTES. Each new boss is the SAME shared archetype
+     shape (see BOSS_BODY_ARCHETYPES) with its own palette + glow color,
+     following the exact pattern Golem already established — this is
+     the "body shape + palette = full expression system for free" payoff.
+     ============================================================ */
+  /* Container Kraken (Docker) — deep-sea blue-teal, ink-dark tentacles. */
+  .dgc-chibi-kraken .dgc-chibi-head { fill:#164e63; stroke:#0b2b38; stroke-width:1.5; }
+  .dgc-chibi-kraken .dgc-chibi-body { fill:#0e3a4a; stroke:#0b2b38; stroke-width:1.5; }
+  .dgc-chibi-kraken .dgc-chibi-tentacle { fill:#0b2b38; }
+  .dgc-chibi-kraken .dgc-chibi-face { color:#22d3ee; }
+  .dgc-chibi-kraken .dgc-eyes-neutral, .dgc-chibi-kraken .dgc-eyes-determined, .dgc-chibi-kraken .dgc-eyes-happy,
+  .dgc-chibi-kraken .dgc-eyes-sparkle, .dgc-chibi-kraken .dgc-eyes-worried, .dgc-chibi-kraken .dgc-eyes-angry,
+  .dgc-chibi-kraken .dgc-eyes-smirk, .dgc-chibi-kraken .dgc-eyes-tired { filter:drop-shadow(0 0 4px #22d3ee); }
+  .dgc-chibi-kraken .dgc-chibi-grad-hi { stop-color:#22d3ee; stop-opacity:0.3; }
+  .dgc-chibi-kraken .dgc-chibi-grad-lo { stop-color:#22d3ee; stop-opacity:0; }
+
+  /* Merge Conflict Hydra (Git) — 3 branch-colored heads. */
+  .dgc-chibi-hydra .dgc-chibi-head { fill:#9a3412; stroke:#5c2009; stroke-width:1.5; }
+  .dgc-chibi-hydra .dgc-chibi-body { fill:#78350f; stroke:#5c2009; stroke-width:1.5; }
+  .dgc-chibi-hydra .dgc-chibi-side-head { fill:#15803d; stroke:#0d4022; stroke-width:1.2; }
+  .dgc-chibi-hydra .dgc-chibi-side-head-b { fill:#a21caf; stroke:#5c1064; }
+  .dgc-chibi-hydra .dgc-chibi-face { color:#fb923c; }
+  .dgc-chibi-hydra .dgc-eyes-neutral, .dgc-chibi-hydra .dgc-eyes-determined, .dgc-chibi-hydra .dgc-eyes-happy,
+  .dgc-chibi-hydra .dgc-eyes-sparkle, .dgc-chibi-hydra .dgc-eyes-worried, .dgc-chibi-hydra .dgc-eyes-angry,
+  .dgc-chibi-hydra .dgc-eyes-smirk, .dgc-chibi-hydra .dgc-eyes-tired { filter:drop-shadow(0 0 4px #fb923c); }
+  .dgc-chibi-hydra .dgc-chibi-grad-hi { stop-color:#fb923c; stop-opacity:0.3; }
+  .dgc-chibi-hydra .dgc-chibi-grad-lo { stop-color:#fb923c; stop-opacity:0; }
+
+  /* The Orchestrator (Kubernetes) — puppet-master blue, thin control strings. */
+  .dgc-chibi-orchestrator .dgc-chibi-head { fill:#1e3a5f; stroke:#0f1e30; stroke-width:1.5; }
+  .dgc-chibi-orchestrator .dgc-chibi-body { fill:#16324f; stroke:#0f1e30; stroke-width:1.5; }
+  .dgc-chibi-orchestrator .dgc-chibi-arm-stub { stroke:#16324f; }
+  .dgc-chibi-orchestrator .dgc-chibi-string { stroke:#93c5fd; opacity:0.7; }
+  .dgc-chibi-orchestrator .dgc-chibi-face { color:#60a5fa; }
+  .dgc-chibi-orchestrator .dgc-eyes-neutral, .dgc-chibi-orchestrator .dgc-eyes-determined, .dgc-chibi-orchestrator .dgc-eyes-happy,
+  .dgc-chibi-orchestrator .dgc-eyes-sparkle, .dgc-chibi-orchestrator .dgc-eyes-worried, .dgc-chibi-orchestrator .dgc-eyes-angry,
+  .dgc-chibi-orchestrator .dgc-eyes-smirk, .dgc-chibi-orchestrator .dgc-eyes-tired { filter:drop-shadow(0 0 4px #60a5fa); }
+  .dgc-chibi-orchestrator .dgc-chibi-grad-hi { stop-color:#60a5fa; stop-opacity:0.3; }
+  .dgc-chibi-orchestrator .dgc-chibi-grad-lo { stop-color:#60a5fa; stop-opacity:0; }
+
+  /* Pipeline Phantom (CI/CD) — translucent, ghostly, a slow flicker. */
+  .dgc-chibi-phantom { opacity:0.86; animation:dgc-phantom-flicker 3.2s ease-in-out infinite; }
+  @keyframes dgc-phantom-flicker { 0%,100%{ opacity:0.86; } 48%{ opacity:0.86; } 50%{ opacity:0.6; } 52%{ opacity:0.86; } }
+  .dgc-chibi-phantom .dgc-chibi-head { fill:#c7d2fe; stroke:#818cf8; stroke-width:1.2; }
+  .dgc-chibi-phantom .dgc-chibi-body { fill:#a5b4fc; stroke:#818cf8; stroke-width:1.2; }
+  .dgc-chibi-phantom .dgc-chibi-face { color:#4338ca; }
+  .dgc-chibi-phantom .dgc-eyes-neutral, .dgc-chibi-phantom .dgc-eyes-determined, .dgc-chibi-phantom .dgc-eyes-happy,
+  .dgc-chibi-phantom .dgc-eyes-sparkle, .dgc-chibi-phantom .dgc-eyes-worried, .dgc-chibi-phantom .dgc-eyes-angry,
+  .dgc-chibi-phantom .dgc-eyes-smirk, .dgc-chibi-phantom .dgc-eyes-tired { filter:drop-shadow(0 0 5px #818cf8); }
+  .dgc-chibi-phantom .dgc-chibi-grad-hi { stop-color:#818cf8; stop-opacity:0.35; }
+  .dgc-chibi-phantom .dgc-chibi-grad-lo { stop-color:#818cf8; stop-opacity:0; }
+
+  /* Packet Reaper (Networking) — dark robe, glowing scythe. */
+  .dgc-chibi-reaper .dgc-chibi-head { fill:#2d3b2d; stroke:#182018; stroke-width:1.5; }
+  .dgc-chibi-reaper .dgc-chibi-body { fill:#1f2a1f; stroke:#182018; stroke-width:1.5; }
+  .dgc-chibi-reaper .dgc-weapon-shaft { fill:#4b5563; }
+  .dgc-chibi-reaper .dgc-weapon-blade { fill:#d1d5db; filter:drop-shadow(0 0 4px #a3e635); }
+  .dgc-chibi-reaper .dgc-chibi-face { color:#a3e635; }
+  .dgc-chibi-reaper .dgc-eyes-neutral, .dgc-chibi-reaper .dgc-eyes-determined, .dgc-chibi-reaper .dgc-eyes-happy,
+  .dgc-chibi-reaper .dgc-eyes-sparkle, .dgc-chibi-reaper .dgc-eyes-worried, .dgc-chibi-reaper .dgc-eyes-angry,
+  .dgc-chibi-reaper .dgc-eyes-smirk, .dgc-chibi-reaper .dgc-eyes-tired { filter:drop-shadow(0 0 4px #a3e635); }
+  .dgc-chibi-reaper .dgc-chibi-grad-hi { stop-color:#a3e635; stop-opacity:0.3; }
+  .dgc-chibi-reaper .dgc-chibi-grad-lo { stop-color:#a3e635; stop-opacity:0; }
+
+  /* The Cloud Titan (Cloud) — towering: scaled up, sky-blue armor plating. */
+  .dgc-chibi-titan { transform:scale(1.12); transform-origin:50% 100%; }
+  .dgc-chibi-titan .dgc-chibi-head { fill:#2563eb; stroke:#1e3a8a; stroke-width:1.5; }
+  .dgc-chibi-titan .dgc-chibi-body { fill:#1d4ed8; stroke:#1e3a8a; stroke-width:1.5; }
+  .dgc-chibi-titan .dgc-chibi-armor-plate { fill:#e0f2fe; stroke:#93c5fd; stroke-width:0.8; }
+  .dgc-chibi-titan .dgc-chibi-face { color:#93c5fd; }
+  .dgc-chibi-titan .dgc-eyes-neutral, .dgc-chibi-titan .dgc-eyes-determined, .dgc-chibi-titan .dgc-eyes-happy,
+  .dgc-chibi-titan .dgc-eyes-sparkle, .dgc-chibi-titan .dgc-eyes-worried, .dgc-chibi-titan .dgc-eyes-angry,
+  .dgc-chibi-titan .dgc-eyes-smirk, .dgc-chibi-titan .dgc-eyes-tired { filter:drop-shadow(0 0 4px #93c5fd); }
+  .dgc-chibi-titan .dgc-chibi-grad-hi { stop-color:#93c5fd; stop-opacity:0.35; }
+  .dgc-chibi-titan .dgc-chibi-grad-lo { stop-color:#93c5fd; stop-opacity:0; }
+
+  /* The Statekeeper (Terraform) — violet construct, gold drift-cracks. */
+  .dgc-chibi-statekeeper .dgc-chibi-head { fill:#4c1d6b; stroke:#2c0f40; stroke-width:1.5; }
+  .dgc-chibi-statekeeper .dgc-chibi-body { fill:#3b1657; stroke:#2c0f40; stroke-width:1.5; }
+  .dgc-chibi-statekeeper .dgc-chibi-cracks { stroke:#fbbf24; filter:drop-shadow(0 0 2px #fbbf24); }
+  .dgc-chibi-statekeeper .dgc-chibi-face { color:#a78bfa; }
+  .dgc-chibi-statekeeper .dgc-eyes-neutral, .dgc-chibi-statekeeper .dgc-eyes-determined, .dgc-chibi-statekeeper .dgc-eyes-happy,
+  .dgc-chibi-statekeeper .dgc-eyes-sparkle, .dgc-chibi-statekeeper .dgc-eyes-worried, .dgc-chibi-statekeeper .dgc-eyes-angry,
+  .dgc-chibi-statekeeper .dgc-eyes-smirk, .dgc-chibi-statekeeper .dgc-eyes-tired { filter:drop-shadow(0 0 4px #a78bfa); }
+  .dgc-chibi-statekeeper .dgc-chibi-grad-hi { stop-color:#a78bfa; stop-opacity:0.3; }
+  .dgc-chibi-statekeeper .dgc-chibi-grad-lo { stop-color:#a78bfa; stop-opacity:0; }
+
+  /* The Script Wraith (Bash/Python) — shadowy black-green, glitch shards. */
+  .dgc-chibi-wraith { opacity:0.9; }
+  .dgc-chibi-wraith .dgc-chibi-head { fill:#1a2e1a; stroke:#0a140a; stroke-width:1.2; }
+  .dgc-chibi-wraith .dgc-chibi-body { fill:#0f1f0f; stroke:#0a140a; stroke-width:1.2; }
+  .dgc-chibi-wraith .dgc-chibi-glitch-frag { fill:#4ade80; opacity:0.8; }
+  .dgc-chibi-wraith .dgc-chibi-face { color:#4ade80; }
+  .dgc-chibi-wraith .dgc-eyes-neutral, .dgc-chibi-wraith .dgc-eyes-determined, .dgc-chibi-wraith .dgc-eyes-happy,
+  .dgc-chibi-wraith .dgc-eyes-sparkle, .dgc-chibi-wraith .dgc-eyes-worried, .dgc-chibi-wraith .dgc-eyes-angry,
+  .dgc-chibi-wraith .dgc-eyes-smirk, .dgc-chibi-wraith .dgc-eyes-tired { filter:drop-shadow(0 0 5px #4ade80); }
+  .dgc-chibi-wraith .dgc-chibi-grad-hi { stop-color:#4ade80; stop-opacity:0.3; }
+  .dgc-chibi-wraith .dgc-chibi-grad-lo { stop-color:#4ade80; stop-opacity:0; }
+
+  /* Final Boss — "3AM Pager": biggest, most intense — red alarm glow,
+     chains, a pulsing warning-light. */
+  .dgc-chibi-pager { transform:scale(1.18); transform-origin:50% 100%; }
+  .dgc-chibi-pager .dgc-chibi-head { fill:#450a0a; stroke:#1f0303; stroke-width:1.5; }
+  .dgc-chibi-pager .dgc-chibi-body { fill:#7f1d1d; stroke:#1f0303; stroke-width:1.5; }
+  .dgc-chibi-pager .dgc-chibi-chain { stroke:#6b7280; }
+  .dgc-chibi-pager .dgc-chibi-pager-light { fill:#ef4444; filter:drop-shadow(0 0 6px #ef4444); animation:dgc-pager-pulse 1.1s ease-in-out infinite; }
+  @keyframes dgc-pager-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+  .dgc-chibi-pager .dgc-chibi-face { color:#ef4444; }
+  .dgc-chibi-pager .dgc-eyes-neutral, .dgc-chibi-pager .dgc-eyes-determined, .dgc-chibi-pager .dgc-eyes-happy,
+  .dgc-chibi-pager .dgc-eyes-sparkle, .dgc-chibi-pager .dgc-eyes-worried, .dgc-chibi-pager .dgc-eyes-angry,
+  .dgc-chibi-pager .dgc-eyes-smirk, .dgc-chibi-pager .dgc-eyes-tired { filter:drop-shadow(0 0 6px #ef4444); }
+  .dgc-chibi-pager .dgc-chibi-grad-hi { stop-color:#ef4444; stop-opacity:0.35; }
+  .dgc-chibi-pager .dgc-chibi-grad-lo { stop-color:#ef4444; stop-opacity:0; }
+
   @keyframes dgc-face-pop { 0%{ transform:scale(0.82); } 55%{ transform:scale(1.08); } 100%{ transform:scale(1); } }
 
   /* ---- sizing per placement context ---- */
@@ -23254,6 +23369,105 @@ $ git stash pop
     '</g>';
   }
 
+  /* ============================================================
+     PHASE 3 — SHARED BOSS BODY ARCHETYPES. Five reusable silhouettes
+     (construct/tentacled/multihead/ghost/humanoid) drawn ONCE, in the
+     same 100x130 head-local coordinate space as hero/Sudo/Golem, so
+     every one of the 8 new bosses + the Final Boss is a palette + a
+     couple of extra accent shapes on top of an existing shape — never
+     new geometry authoring per boss. Each archetype reuses the exact
+     dgc-chibi-body/dgc-chibi-head class names Golem already established,
+     so the existing per-kind CSS palette pattern (.dgc-chibi-<kind> ...)
+     just keeps working unchanged for every new kind.
+     ============================================================ */
+  var BOSS_BODY_ARCHETYPES = {
+    // Golem, Statekeeper — blocky, geometric, "constructed" silhouette.
+    construct: function () {
+      return '<ellipse class="dgc-chibi-shadow" cx="50" cy="120" rx="28" ry="6"/>' +
+        '<path class="dgc-chibi-body" d="M28 102 L28 82 Q28 74 50 74 Q72 74 72 82 L72 102 Q50 110 28 102 Z"/>' +
+        '<path class="dgc-chibi-head" d="M18 44 Q18 10 50 10 Q82 10 82 44 Q82 70 50 70 Q18 70 18 44 Z"/>' +
+        '<path class="dgc-chibi-cracks" d="M30 30 L36 38 M70 28 L64 36 M50 58 L50 66" stroke-width="1.6" fill="none"/>';
+    },
+    // Container Kraken — a wide blob body with 3 curling tentacles.
+    tentacled: function () {
+      return '<ellipse class="dgc-chibi-shadow" cx="50" cy="122" rx="30" ry="6"/>' +
+        '<path class="dgc-chibi-tentacle" d="M24 98 Q8 106 12 124 Q20 112 30 106 Z"/>' +
+        '<path class="dgc-chibi-tentacle" d="M76 98 Q92 106 88 124 Q80 112 70 106 Z"/>' +
+        '<path class="dgc-chibi-tentacle" d="M50 108 Q45 122 52 132 Q57 120 55 108 Z"/>' +
+        '<path class="dgc-chibi-body" d="M23 94 Q21 66 50 64 Q79 66 77 94 Q77 110 50 114 Q23 110 23 94 Z"/>' +
+        '<path class="dgc-chibi-head" d="M19 42 Q19 8 50 8 Q81 8 81 42 Q81 68 50 68 Q19 68 19 42 Z"/>';
+    },
+    // Merge Conflict Hydra — a central head + 2 smaller side heads.
+    multihead: function () {
+      return '<ellipse class="dgc-chibi-shadow" cx="50" cy="120" rx="28" ry="6"/>' +
+        '<path class="dgc-chibi-body" d="M30 102 L30 84 Q30 76 50 76 Q70 76 70 84 L70 102 Q50 110 30 102 Z"/>' +
+        '<circle class="dgc-chibi-side-head" cx="20" cy="54" r="13"/>' +
+        '<circle class="dgc-chibi-side-head dgc-chibi-side-head-b" cx="80" cy="54" r="13"/>' +
+        '<circle class="dgc-chibi-head" cx="50" cy="42" r="26"/>';
+    },
+    // Pipeline Phantom, Script Wraith — a robed shape with a tattered hem.
+    ghost: function () {
+      return '<ellipse class="dgc-chibi-shadow" cx="50" cy="120" rx="24" ry="5"/>' +
+        '<path class="dgc-chibi-body" d="M28 112 Q25 100 29 90 L29 76 Q29 66 50 66 Q71 66 71 76 L71 90 Q75 100 72 112 Q64 105 58 113 Q54 105 50 113 Q46 105 42 113 Q36 105 28 112 Z"/>' +
+        '<circle class="dgc-chibi-head" cx="50" cy="42" r="26"/>';
+    },
+    // The Orchestrator, Packet Reaper, The Cloud Titan, 3AM Pager —
+    // a plain humanoid silhouette; each gets its own extras/weapon/scale.
+    humanoid: function () {
+      return '<ellipse class="dgc-chibi-shadow" cx="50" cy="120" rx="27" ry="6"/>' +
+        '<path class="dgc-chibi-body" d="M29 102 L29 83 Q29 75 50 75 Q71 75 71 83 L71 102 Q50 109 29 102 Z"/>' +
+        '<circle class="dgc-chibi-head" cx="50" cy="42" r="26"/>';
+    }
+  };
+  var BOSS_ARCHETYPE_BY_KIND = {
+    golem: 'construct',
+    kraken: 'tentacled',
+    hydra: 'multihead',
+    orchestrator: 'humanoid',
+    phantom: 'ghost',
+    reaper: 'humanoid',
+    titan: 'humanoid',
+    statekeeper: 'construct',
+    wraith: 'ghost',
+    pager: 'humanoid'
+  };
+  // Small, optional per-boss extras (a signature weapon/prop, or a couple
+  // of extra accent shapes) — same "reusable rig + swappable layer"
+  // spirit as the hero's own weapon system.
+  var BOSS_EXTRAS = {
+    orchestrator: function () {
+      // Puppet-master arms + strings — no separate hand-held weapon; the
+      // strings ARE this boss's signature prop.
+      return '<path class="dgc-chibi-arm-stub" d="M29 88 Q14 82 8 68" fill="none" stroke-width="6" stroke-linecap="round"/>' +
+        '<path class="dgc-chibi-arm-stub" d="M71 88 Q86 82 92 68" fill="none" stroke-width="6" stroke-linecap="round"/>' +
+        '<path class="dgc-chibi-string" d="M8 68 L2 6 M92 68 L98 6" stroke-width="1" fill="none"/>';
+    },
+    reaper: function () {
+      // Scythe — held like the hero's weapon, on its own swappable anchor.
+      return '<g class="dgc-chibi-weapon-anchor" transform="translate(74,80) rotate(-18)">' +
+        '<g class="dgc-chibi-weapon dgc-weapon-scythe">' +
+          '<rect x="-1.5" y="-4" width="3" height="46" class="dgc-weapon-shaft"/>' +
+          '<path d="M-1 -4 Q18 -14 24 4 Q10 2 -1 8 Z" class="dgc-weapon-blade"/>' +
+        '</g>' +
+      '</g>';
+    },
+    titan: function () {
+      // Armor plating accents — "towering, more elaborate" per its brief.
+      return '<path class="dgc-chibi-armor-plate" d="M29 84 L38 78 L38 96 L29 100 Z"/>' +
+        '<path class="dgc-chibi-armor-plate" d="M71 84 L62 78 L62 96 L71 100 Z"/>';
+    },
+    pager: function () {
+      // Chain/cable motifs — the Final Boss's signature, most elaborate look.
+      return '<path class="dgc-chibi-chain" d="M22 78 Q14 90 22 100 Q30 110 22 120" fill="none" stroke-width="2"/>' +
+        '<path class="dgc-chibi-chain" d="M78 78 Q86 90 78 100 Q70 110 78 120" fill="none" stroke-width="2"/>' +
+        '<circle class="dgc-chibi-pager-light" cx="50" cy="90" r="5"/>';
+    },
+    wraith: function () {
+      // Glitch/text-fragment motifs — small floating code-shard rects.
+      return '<g class="dgc-chibi-glitch-frag"><rect x="12" y="30" width="7" height="3"/><rect x="82" y="50" width="6" height="3"/><rect x="8" y="70" width="5" height="3"/></g>';
+    }
+  };
+
   var chibiIdCounter = 0;
   function chibiRoot(kind) {
     // kind: 'hero' | 'sudo' | 'golem' — selects body/head silhouette + palette.
@@ -23290,12 +23504,17 @@ $ git stash pop
         '<rect class="dgc-chibi-visor" x="29" y="28" width="42" height="28" rx="10"/>' +
         '<line class="dgc-chibi-antenna" x1="50" y1="16" x2="50" y2="4" stroke-width="3" stroke-linecap="round"/>' +
         '<circle class="dgc-chibi-antenna-tip" cx="50" cy="4" r="4"/>';
-    } else { // golem
-      body =
-        '<ellipse class="dgc-chibi-shadow" cx="50" cy="120" rx="28" ry="6"/>' +
-        '<path class="dgc-chibi-body" d="M28 102 L28 82 Q28 74 50 74 Q72 74 72 82 L72 102 Q50 110 28 102 Z"/>' +
-        '<path class="dgc-chibi-head" d="M18 44 Q18 10 50 10 Q82 10 82 44 Q82 70 50 70 Q18 70 18 44 Z"/>' +
-        '<path class="dgc-chibi-cracks" d="M30 30 L36 38 M70 28 L64 36 M50 58 L50 66" stroke-width="1.6" fill="none"/>';
+    } else {
+      // Every Phase-3 boss: a shared body-shape ARCHETYPE (so 8+ new
+      // bosses need zero new shape-authoring) + that boss's own palette
+      // (via .dgc-chibi-<kind> CSS) + a small set of optional extras
+      // (weapon/prop, extra accent shapes) — "give the new boss a body
+      // shape + palette, get the full 18-expression face system for
+      // free" applied to Phase 3 exactly as designed in Phase 1.
+      var archetypeName = BOSS_ARCHETYPE_BY_KIND[kind] || 'construct';
+      var archetypeFn = BOSS_BODY_ARCHETYPES[archetypeName] || BOSS_BODY_ARCHETYPES.construct;
+      var extrasFn = BOSS_EXTRAS[kind];
+      body = archetypeFn() + (extrasFn ? extrasFn() : '');
     }
     // Tier only applies to the hero — reflects whatever save.heroTier IS
     // right now, so every call site (title/select/combat/level-up overlay)
