@@ -24881,6 +24881,500 @@ $ git stash pop
         damageIfCorrect: 38,
         damageToHeroIfWrong: 25
       }
+    },
+
+    /* ================================================================
+       BOSS 6 — PACKET REAPER (Networking)
+       ================================================================ */
+    reaper: {
+      id: 'reaper',
+      name: 'Packet Reaper',
+      topic: 'Networking',
+      icon: '💀',
+      chibiKind: 'reaper',
+      phaseHp: [118, 128, 148],
+      phaseNames: ['Scythe — Connectivity Basics', 'Toll — Subnetting Judgment', 'Harvest — Real Incident'],
+      xpReward: 158,
+      coinBaseReward: 94,
+      phases: [
+        /* -------- PHASE 1: Connectivity Basics -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'The Reaper\'s scythe traces a path: <strong>"Check whether <code>example.com</code> is reachable, 4 packets only."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'The classic reachability tool has a count flag so it doesn\'t run forever.',
+            hintPartial: 'ping -c _ example.com',
+            hintFull: 'ping -c 4 example.com',
+            acceptablePatterns: [/^ping\s+example\.com$/i],
+            optimalPatterns: [/^ping\s+-c\s+4\s+example\.com$/i],
+            baseCmds: ['ping']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Packets swirl: <strong>"Find out what process is listening on port 443."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: '"List open files" — sockets count as files in Linux.',
+            hintPartial: 'sudo lsof -i :___',
+            hintFull: 'sudo lsof -i :443',
+            acceptablePatterns: [/^(sudo\s+)?netstat\s+-tulpn\s*\|\s*grep\s+443$/i, /^(sudo\s+)?ss\s+-tulpn\s*\|\s*grep\s+443$/i],
+            optimalPatterns: [/^(sudo\s+)?lsof\s+-i\s*:443$/i],
+            baseCmds: ['lsof', 'netstat', 'ss']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The cloak billows: <strong>"Look up the IP address behind <code>example.com</code>."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The modern DNS lookup tool, terse and script-friendly.',
+            hintPartial: 'd__ example.com',
+            hintFull: 'dig example.com',
+            acceptablePatterns: [/^nslookup\s+example\.com$/i],
+            optimalPatterns: [/^dig\s+example\.com$/i],
+            baseCmds: ['dig', 'nslookup']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A bony finger points along an invisible wire: <strong>"Trace the network path to <code>example.com</code>, hop by hop."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The tool named exactly for what it does.',
+            hintPartial: 't________ example.com',
+            hintFull: 'traceroute example.com',
+            acceptablePatterns: [/^tracepath\s+example\.com$/i],
+            optimalPatterns: [/^traceroute\s+example\.com$/i],
+            baseCmds: ['traceroute', 'tracepath']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Last, before the toll: <strong>"Check whether TCP port 443 is actually open on <code>example.com</code>."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'A small, purpose-built tool for exactly this — "netcat".',
+            hintPartial: 'nc -__ example.com 443',
+            hintFull: 'nc -zv example.com 443',
+            acceptablePatterns: [/^telnet\s+example\.com\s+443$/i],
+            optimalPatterns: [/^nc\s+-zv\s+example\.com\s+443$/i],
+            baseCmds: ['nc', 'telnet']
+          }
+        ],
+        /* -------- PHASE 2: Subnetting Judgment -------- */
+        [
+          {
+            mode: 'triage_call',
+            prompt: 'The Reaper gestures at three floating gates: <strong>"A 3-tier app — web, app, database. The database must NEVER be internet-reachable. How do you design it?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The database\'s subnet shouldn\'t have any path to the internet at all.',
+            hintPartial: 'A private subnet with no route to an internet gateway.',
+            hintFull: 'Best: put the database in a private subnet with no route to an internet gateway — it\'s structurally unreachable from outside.',
+            options: [
+              { id: 'a', label: 'Database in a private subnet, no internet gateway route', tier: 'best', why: 'Structurally unreachable from the internet — the safest possible design, not just a rule that could be misconfigured.' },
+              { id: 'b', label: 'Database in the same public subnet as the web tier', tier: 'wrong', why: 'Puts the most sensitive tier directly in reach of the internet — a single misconfigured rule away from exposure.' },
+              { id: 'c', label: 'One flat subnet for everything, restrict with firewall rules only', tier: 'wrong', why: 'Relies entirely on rules never being misconfigured instead of making the database unreachable by design.' }
+            ],
+            justificationPatterns: [/private|no\s*(internet|route)|unreachable/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"You need this app to survive an entire data center going down. How do you lay out subnets?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'One data center failing shouldn\'t take the whole app with it.',
+            hintPartial: 'Spread subnets/instances across multiple physically separate availability zones.',
+            hintFull: 'Best: subnets across multiple Availability Zones — a single AZ failure doesn\'t take the app down.',
+            options: [
+              { id: 'a', label: 'Subnets spread across multiple Availability Zones', tier: 'best', why: 'Survives an entire AZ/data-center failure — exactly the resilience being asked for.' },
+              { id: 'b', label: 'Everything in a single AZ for simplicity', tier: 'wrong', why: 'A single AZ outage takes the whole application down — the opposite of what was asked.' },
+              { id: 'c', label: 'One subnet stretched across regions', tier: 'wrong', why: 'Not how subnetting actually works across regions — this isn\'t a real, resilient design.' }
+            ],
+            justificationPatterns: [/multiple\s*(az|availability\s*zone)|resilien|survive/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"You\'re sizing a subnet\'s CIDR block for a service you expect to grow a lot. What\'s the smart move?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Running out of IP addresses later means a painful re-architecture.',
+            hintPartial: 'Size it bigger than what\'s needed right now, with real room to grow.',
+            hintFull: 'Best: allocate a larger CIDR block than currently needed — running out of addresses later is expensive to fix.',
+            options: [
+              { id: 'a', label: 'Allocate a larger CIDR block than currently needed', tier: 'best', why: 'Cheap insurance now against an expensive re-architecture later when you actually grow into it.' },
+              { id: 'b', label: 'Size it exactly to current needs', tier: 'wrong', why: 'Leaves zero room to grow — the very growth this question is about would force a redesign.' },
+              { id: 'c', label: 'Make the entire VPC one giant flat subnet', tier: 'wrong', why: 'Removes any network segmentation at all — a different, worse problem than sizing.' }
+            ],
+            justificationPatterns: [/larger|room\s*to\s*grow|future|headroom/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"The web tier needs internet access, but must NOT be directly SSH-able from the internet. What\'s the design?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Public reachability for the app\'s real traffic, but a much tighter rule for SSH specifically.',
+            hintPartial: 'A public subnet for the app, with SSH locked down to a bastion host or VPN only.',
+            hintFull: 'Best: a public subnet for the app, with a security group that restricts SSH (port 22) to a bastion host or VPN, not the whole internet.',
+            options: [
+              { id: 'a', label: 'Public subnet + SSH restricted to a bastion/VPN only', tier: 'best', why: 'Keeps the app publicly reachable for real traffic while closing the specific SSH exposure risk.' },
+              { id: 'b', label: 'Public subnet with SSH open to 0.0.0.0/0', tier: 'wrong', why: 'Exactly the exposure the question said to avoid — SSH reachable from anywhere on the internet.' },
+              { id: 'c', label: 'No internet access on this subnet at all', tier: 'wrong', why: 'Breaks the web tier\'s actual job — it needs to serve internet traffic.' }
+            ],
+            justificationPatterns: [/bastion|vpn|restrict|ssh/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"Two VPCs need to talk to each other, privately, never over the public internet. What\'s the move?"</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'There\'s a purpose-built private connection between VPCs for exactly this.',
+            hintPartial: 'A direct, private link between the two VPCs\' networks.',
+            hintFull: 'Best: VPC peering (or an equivalent private connection) — traffic stays off the public internet entirely.',
+            options: [
+              { id: 'a', label: 'Set up VPC peering between them', tier: 'best', why: 'A direct private connection — traffic never touches the public internet.' },
+              { id: 'b', label: 'Route between them using public IPs over the internet', tier: 'wrong', why: 'Exactly the public-internet exposure the requirement said to avoid.' },
+              { id: 'c', label: 'Merge both into a single VPC', tier: 'wrong', why: 'A drastic, risky restructuring when a peering connection solves this directly.' }
+            ],
+            justificationPatterns: [/peering|private\s*connection|direct/i]
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Service Unreachable -------- */
+        [
+          {
+            mode: 'read_the_room',
+            prompt: 'The harvest begins — a service is unreachable. <strong>Diagnose it from this output, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The name itself is telling you the domain simply doesn\'t resolve to anything.',
+            hintPartial: 'This isn\'t a firewall or routing problem — the DNS record itself is the issue.',
+            hintFull: 'Diagnosis: DNS isn\'t resolving — NXDOMAIN, the record is missing or wrong. Fix: check against a known-good resolver to isolate it, e.g. nslookup example.com 8.8.8.8',
+            outputBlock: [
+              '$ dig example.com',
+              '; <<>> DiG 9.16 <<>> example.com',
+              ';; ->>HEADER<<- status: NXDOMAIN, id: 4821'
+            ],
+            acceptableDiagnosesPatterns: [/nxdomain/i, /dns.*(not\s*resolving|missing|wrong)/i, /no\s*(dns\s*)?record/i],
+            followUpFix: {
+              prompt: 'Confirm it against a known-good resolver to isolate where this is broken:',
+              acceptablePatterns: [/^dig\s+@8\.8\.8\.8\s+example\.com$/i],
+              optimalPatterns: [/^nslookup\s+example\.com\s+8\.8\.8\.8$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A chill spreads — connections just hang and time out. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The port is confirmed closed from the outside, but the app itself is running fine locally.',
+            hintPartial: 'Something between the internet and this host is blocking the port.',
+            hintFull: 'Diagnosis: a local firewall is blocking the port. Fix: open it, e.g. sudo ufw allow 443/tcp',
+            outputBlock: [
+              '$ nc -zv example.com 443',
+              'nc: connect to example.com port 443 (tcp) timed out',
+              '$ sudo systemctl status myapp',
+              'Active: active (running)'
+            ],
+            acceptableDiagnosesPatterns: [/firewall.*(block|closed)/i, /port.*(block|filtered)/i],
+            followUpFix: {
+              prompt: 'Open the port in the local firewall:',
+              acceptablePatterns: [/^sudo\s+iptables\s+-A\s+INPUT\s+-p\s+tcp\s+--dport\s+443\s+-j\s+ACCEPT$/i],
+              optimalPatterns: [/^sudo\s+ufw\s+allow\s+443\/tcp$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The path itself seems to vanish. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The trace never gets past the very first hop.',
+            hintPartial: 'This host has nowhere to send traffic that isn\'t on its own local network.',
+            hintFull: 'Diagnosis: the default gateway is missing or misconfigured. Fix: add the correct default route, e.g. ip route add default via 192.168.1.1',
+            outputBlock: [
+              '$ traceroute example.com',
+              'traceroute to example.com: 1 * * * (all hops timing out immediately)',
+              '$ ip route',
+              '(no default route listed)'
+            ],
+            acceptableDiagnosesPatterns: [/(default\s*)?gateway.*(missing|misconfigured|wrong)/i, /no\s*default\s*route/i],
+            followUpFix: {
+              prompt: 'Set the correct default route:',
+              acceptablePatterns: [/^route\s+add\s+default\s+gw\s+192\.168\.1\.1$/i],
+              optimalPatterns: [/^ip\s+route\s+add\s+default\s+via\s+192\.168\.1\.1$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'It works up close, but not from afar. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Local requests succeed, but nothing from outside this machine ever gets through.',
+            hintPartial: 'The service is only listening on the loopback interface — check what address it\'s bound to.',
+            hintFull: 'Diagnosis: the service is bound to 127.0.0.1 only, not 0.0.0.0 — unreachable from outside. Fix: reconfigure the bind address and restart, e.g. sudo systemctl restart myapp',
+            outputBlock: [
+              '$ curl localhost:8080',
+              '200 OK',
+              '$ curl <server-ip>:8080',
+              'curl: (7) Failed to connect: Connection refused'
+            ],
+            acceptableDiagnosesPatterns: [/(bound|listening).*(127\.0\.0\.1|localhost)/i, /not\s*(bound|listening)\s*on\s*(0\.0\.0\.0|all\s*interfaces)/i],
+            followUpFix: {
+              prompt: 'After fixing the bind address in config, restart it:',
+              acceptablePatterns: [/^sudo\s+systemctl\s+restart\s+myapp\.service$/i],
+              optimalPatterns: [/^sudo\s+systemctl\s+restart\s+myapp$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The Reaper\'s scythe glints red — trust itself has broken. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'The connection itself works — it\'s the certificate\'s validity window that\'s the problem.',
+            hintPartial: 'The certificate\'s "not valid after" date has already passed.',
+            hintFull: 'Diagnosis: the TLS certificate has expired. Fix: renew it, e.g. sudo certbot renew',
+            outputBlock: [
+              '$ curl https://example.com',
+              'curl: (60) SSL certificate problem: certificate has expired'
+            ],
+            acceptableDiagnosesPatterns: [/(tls|ssl)?\s*cert(ificate)?.*expired/i],
+            followUpFix: {
+              prompt: 'Renew the certificate:',
+              acceptablePatterns: [/^sudo\s+certbot\s+renew\s+--force-renewal$/i],
+              optimalPatterns: [/^sudo\s+certbot\s+renew$/i]
+            }
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'The Reaper swings its scythe in one wide arc! <strong>Sequence the correct network-troubleshooting order before it lands.</strong>',
+        steps: [
+          'Check the local host/service first',
+          'Check DNS resolution',
+          'Check the firewall / security group',
+          'Check the remote service itself'
+        ],
+        damageIfCorrect: 38,
+        damageToHeroIfWrong: 25
+      }
+    },
+
+    /* ================================================================
+       BOSS 7 — THE CLOUD TITAN (Cloud: AWS/Azure/GCP)
+       ================================================================ */
+    titan: {
+      id: 'titan',
+      name: 'The Cloud Titan',
+      topic: 'Cloud',
+      icon: '☁️',
+      chibiKind: 'titan',
+      phaseHp: [125, 135, 155],
+      phaseNames: ['Foundation — HA Design Basics', 'Ledger — Cost Judgment', 'Summit — Real Incident'],
+      xpReward: 170,
+      coinBaseReward: 100,
+      phases: [
+        /* -------- PHASE 1: HA Infra Design Basics -------- */
+        [
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'The Titan plants a foot the size of a building: <strong>"Sequence a basic highly-available web app setup."</strong>',
+            damageIfCorrect: 20, damageIfOptimal: 32,
+            hintNudge: 'Spread instances first, then put something in front of them to distribute traffic.',
+            hintPartial: 'Multiple AZs, a load balancer, health checks, then let it scale itself.',
+            hintFull: 'Order: Launch instances across multiple AZs → Put them behind a load balancer → Configure health checks → Set up auto-scaling',
+            steps: ['Launch instances across multiple AZs', 'Put them behind a load balancer', 'Configure health checks', 'Set up auto-scaling']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'A second foot lands: <strong>"Sequence setting up a highly-available database."</strong>',
+            damageIfCorrect: 20, damageIfOptimal: 32,
+            hintNudge: 'You need the primary running before anything can stand by for it.',
+            hintPartial: 'Primary first, then a standby, then backups, then prove failover actually works.',
+            hintFull: 'Order: Provision a primary DB instance → Enable Multi-AZ / a standby replica → Configure automated backups → Test failover',
+            steps: ['Provision a primary DB instance', 'Enable Multi-AZ / a standby replica', 'Configure automated backups', 'Test failover']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'The ground shakes: <strong>"Sequence a basic disaster-recovery plan."</strong>',
+            damageIfCorrect: 20, damageIfOptimal: 32,
+            hintNudge: 'You need something backed up before you can recover it — and a plan is worthless untested.',
+            hintPartial: 'Back up regularly, keep copies elsewhere, document it, then actually test recovering.',
+            hintFull: 'Order: Take regular backups → Store backups in a separate region → Document the recovery runbook → Test the recovery process',
+            steps: ['Take regular backups', 'Store backups in a separate region', 'Document the recovery runbook', 'Test the recovery process']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'The Titan surveys the horizon: <strong>"Sequence rolling out a CDN in front of a web app."</strong>',
+            damageIfCorrect: 20, damageIfOptimal: 32,
+            hintNudge: 'The CDN needs something real to fetch from before it can serve anything.',
+            hintPartial: 'Origin first, then the CDN layer, then caching rules, then point traffic at it.',
+            hintFull: 'Order: Configure the origin server → Set up the CDN distribution → Configure caching rules → Point DNS at the CDN',
+            steps: ['Configure the origin server', 'Set up the CDN distribution', 'Configure caching rules', 'Point DNS at the CDN']
+          },
+          {
+            mode: 'build_the_pipeline',
+            prompt: 'One more test before the ledger: <strong>"Sequence a basic auto-scaling setup."</strong>',
+            damageIfCorrect: 20, damageIfOptimal: 32,
+            hintNudge: 'You need a template for what to launch before you can launch a group of them.',
+            hintPartial: 'Template, then the scaling group itself, then hook up a load balancer, then define WHEN it scales.',
+            hintFull: 'Order: Create a launch template/config → Create an auto-scaling group → Attach a load balancer → Define scaling policies',
+            steps: ['Create a launch template/config', 'Create an auto-scaling group', 'Attach a load balancer', 'Define scaling policies']
+          }
+        ],
+        /* -------- PHASE 2: Cost Management Judgment -------- */
+        [
+          {
+            mode: 'triage_call',
+            prompt: 'The Titan weighs a coin the size of a shield: <strong>"A workload runs 24/7, predictably, for the next year. How do you pay for it?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'You KNOW you\'ll need this capacity constantly — commit for the discount.',
+            hintPartial: 'A reserved/committed pricing option, since usage is steady and predictable.',
+            hintFull: 'Best: reserved instances / a savings plan — steady, predictable, year-long usage is exactly what a commitment discount is for.',
+            options: [
+              { id: 'a', label: 'Reserved instances / a savings plan', tier: 'best', why: 'Steady, predictable usage is exactly the case a commitment discount is built for.' },
+              { id: 'b', label: 'On-demand pricing', tier: 'wrong', why: 'The most expensive option for usage you already know is steady and predictable.' },
+              { id: 'c', label: 'Spot instances', tier: 'wrong', why: 'Can be interrupted at any time — risky for a workload that needs to run continuously.' }
+            ],
+            justificationPatterns: [/reserved|committed|savings|predictable/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"A batch job, flexible timing, fine with being interrupted. How do you pay for it?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'The workload can tolerate exactly the tradeoff this pricing option makes.',
+            hintPartial: 'The cheapest option, which trades reliability for a steep discount.',
+            hintFull: 'Best: spot instances — deeply discounted, and this job can tolerate the occasional interruption.',
+            options: [
+              { id: 'a', label: 'Spot instances', tier: 'best', why: 'The steepest discount, and this workload was specifically described as tolerant of interruption.' },
+              { id: 'b', label: 'Reserved instances', tier: 'wrong', why: 'Pays for a year-long commitment that a flexible, interruptible batch job doesn\'t need.' },
+              { id: 'c', label: 'On-demand', tier: 'defensible', why: 'Works, but costs more than necessary when the job could tolerate cheaper, interruptible capacity.' }
+            ],
+            justificationPatterns: [/spot|interrupt|cheap|discount/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"Traffic is spiky and unpredictable — short, sudden bursts. How do you pay for it?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'You don\'t know when the spikes will hit — commit to nothing, scale with reality.',
+            hintPartial: 'Pay only for what you use, and let it grow/shrink with the traffic itself.',
+            hintFull: 'Best: on-demand with auto-scaling — you pay for what you use and scale with the actual spikes.',
+            options: [
+              { id: 'a', label: 'On-demand with auto-scaling', tier: 'best', why: 'Matches spend to actual unpredictable demand instead of guessing a fixed commitment.' },
+              { id: 'b', label: 'Reserved instances sized for peak', tier: 'wrong', why: 'Over-commits to (and overpays for) capacity that sits idle outside the unpredictable spikes.' },
+              { id: 'c', label: 'Spot instances', tier: 'wrong', why: 'Risks getting interrupted during exactly the traffic spike you most need capacity for.' }
+            ],
+            justificationPatterns: [/on.?demand|auto.?scal|spiky|unpredictable/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"Old logs, rarely ever accessed, must be retained for compliance. Where do they live?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'You need to keep it, but access speed barely matters here.',
+            hintPartial: 'A cheap, cold/archive storage tier built exactly for rarely-accessed data.',
+            hintFull: 'Best: an archive/cold storage tier — same durability, much cheaper, appropriate for data you rarely touch.',
+            options: [
+              { id: 'a', label: 'Cold / archive storage tier', tier: 'best', why: 'Purpose-built for exactly this: retained, rarely accessed, at a much lower cost.' },
+              { id: 'b', label: 'Standard/hot storage', tier: 'wrong', why: 'Pays a premium for fast access this data will essentially never need.' },
+              { id: 'c', label: 'Delete them to save money', tier: 'wrong', why: 'Violates the stated compliance retention requirement.' }
+            ],
+            justificationPatterns: [/archive|cold|cheap|rarely/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: '<strong>"You spot a sudden, unexplained spike in the bill. What\'s the first move?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Find out what\'s actually driving it before you touch anything running.',
+            hintPartial: 'Look at billing/cost-explorer data to see exactly what\'s costing more.',
+            hintFull: 'Best: check cost-explorer/billing dashboards to identify the actual driver before taking any action.',
+            options: [
+              { id: 'a', label: 'Check cost-explorer/billing dashboards for the driver', tier: 'best', why: 'Identifies the real cause first, so whatever action you take next is actually correct.' },
+              { id: 'b', label: 'Immediately shut down all resources', tier: 'wrong', why: 'Could cause a real outage before you even know what\'s actually driving the cost.' },
+              { id: 'c', label: 'Wait for next month\'s bill to see if it repeats', tier: 'wrong', why: 'Lets a possibly-ongoing cost problem (or a security issue) compound for another month.' }
+            ],
+            justificationPatterns: [/cost\s*explorer|billing|dashboard|identify|investigate/i]
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Bad Infra Change -------- */
+        [
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Titan holds up a cracked tablet of infrastructure code. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 26, damageIfOptimal: 40,
+            hintNudge: 'This applies changes straight to production with nobody ever reviewing what they are first.',
+            hintPartial: 'Drop the auto-approve — a plan should be reviewed before it\'s applied.',
+            hintFull: 'Fix: terraform apply',
+            codeBlock: [
+              '# CI deploy step',
+              'terraform init',
+              'terraform apply -auto-approve'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^terraform\s+apply$/i, /^terraform\s+plan\s+-out=tfplan\s*&&\s*terraform\s+apply\s+tfplan$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'Another tablet, cracked down the middle. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 26, damageIfOptimal: 40,
+            hintNudge: 'This security group rule allows SSH from literally anywhere on the internet.',
+            hintPartial: 'Restrict it to your own internal network range instead of the whole internet.',
+            hintFull: 'Fix: cidr_blocks = ["10.0.0.0/16"]',
+            codeBlock: [
+              'resource "aws_security_group_rule" "ssh" {',
+              '  type        = "ingress"',
+              '  from_port   = 22',
+              '  to_port     = 22',
+              '  cidr_blocks = ["0.0.0.0/0"]',
+              '}'
+            ],
+            buggyLineId: 4,
+            correctFixPatterns: [/^cidr_blocks\s*=\s*\["10\.0\.0\.0\/16"\]$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A third tablet, glowing wrong. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 26, damageIfOptimal: 40,
+            hintNudge: 'This storage bucket is set to be readable by literally anyone on the internet.',
+            hintPartial: 'Switch its access control to private.',
+            hintFull: 'Fix: acl = "private"',
+            codeBlock: [
+              'resource "aws_s3_bucket_acl" "data" {',
+              '  bucket = aws_s3_bucket.data.id',
+              '  acl    = "public-read"',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^acl\s*=\s*"private"$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Titan\'s eyes narrow at a fourth tablet. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 26, damageIfOptimal: 40,
+            hintNudge: 'This production database has explicitly turned OFF the setting that would let it survive an AZ failure.',
+            hintPartial: 'Flip it on.',
+            hintFull: 'Fix: multi_az = true',
+            codeBlock: [
+              'resource "aws_db_instance" "prod" {',
+              '  engine   = "postgres"',
+              '  multi_az = false',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^multi_az\s*=\s*true$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'One last tablet before the summit. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 26, damageIfOptimal: 40,
+            hintNudge: 'A real credential is sitting in plain text, committed straight into this file.',
+            hintPartial: 'Reference it from a variable instead of writing the literal key.',
+            hintFull: 'Fix: access_key = var.aws_access_key',
+            codeBlock: [
+              'provider "aws" {',
+              '  region     = "us-east-1"',
+              '  access_key = "AKIAABCDEFG123456"',
+              '}'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^access_key\s*=\s*var\.aws_access_key$/i]
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'The Titan raises both fists — the dashboard flares red with an anomaly! <strong>Sequence the correct response before it strikes.</strong>',
+        steps: [
+          'Identify the anomalous resource from the dashboard',
+          'Confirm it isn\'t expected/legitimate usage',
+          'Scale down or terminate the offending resource',
+          'Set a budget alert to catch it earlier next time'
+        ],
+        damageIfCorrect: 40,
+        damageToHeroIfWrong: 26
+      }
     }
   };
 
