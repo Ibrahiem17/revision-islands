@@ -22423,6 +22423,8 @@ $ git stash pop
   .dgc-shop-preview { display:flex; justify-content:center; margin-bottom:14px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; }
   .dgc-shop-preview-sprite { width:110px; height:140px; }
   .dgc-shop-list { display:flex; flex-direction:column; gap:10px; }
+  .dgc-tailor-slot-label { font-family:var(--dgc-font-mono); font-size:10px; letter-spacing:2px; color:var(--dgc-text-dimmer); margin:14px 0 8px; }
+  .dgc-tailor-slot-label:first-of-type { margin-top:4px; }
   .dgc-shop-card { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid var(--dgc-border); border-radius:8px; padding:10px 12px; }
   .dgc-shop-card.dgc-shop-card-equipped { border-color:var(--dgc-success); background:rgba(var(--dgc-success-rgb),0.06); }
   .dgc-shop-card-icon { font-size:22px; flex-shrink:0; width:30px; text-align:center; }
@@ -22563,6 +22565,36 @@ $ git stash pop
      that "speed" read visually, unlocked at level 12. */
   .dgc-chibi-hero[data-outfit="fasterShell"] .dgc-chibi-body { fill:#0f3b45; stroke:var(--dgc-secondary); }
   .dgc-chibi-hero[data-outfit="fasterShell"] .dgc-chibi-outfit-visor { display:block; }
+
+  /* ============================================================
+     SECTION 1C — MULTI-SLOT CUSTOMIZATION: hair color, shoes, and a
+     head accessory. Same "recolor/reveal via a data-attribute" pattern
+     as tier/outfit above, each fully independent of the others.
+     ============================================================ */
+  /* Hair — recolors .dgc-chibi-hair (default brown fill lives on
+     .dgc-chibi-hero .dgc-chibi-hair, set once near the top of this
+     stylesheet); only non-default colors need an override here. */
+  .dgc-chibi-hero[data-hair="black"] .dgc-chibi-hair { fill:#1c1c1c; }
+  .dgc-chibi-hero[data-hair="blonde"] .dgc-chibi-hair { fill:#d4a843; }
+  .dgc-chibi-hero[data-hair="crimson"] .dgc-chibi-hair { fill:#8f2f27; }
+  .dgc-chibi-hero[data-hair="teal"] .dgc-chibi-hair { fill:#2f8f8a; }
+
+  /* Shoes — always drawn (default = plain work boots); non-default ids
+     just override the fill. */
+  .dgc-chibi-shoes { fill:#3a2a1a; stroke:#1c1208; stroke-width:0.6; }
+  .dgc-chibi-hero[data-shoes="sneakers"] .dgc-chibi-shoes { fill:#d9d9d9; stroke:#8a8a8a; }
+  .dgc-chibi-hero[data-shoes="goldCleats"] .dgc-chibi-shoes { fill:var(--dgc-gold); stroke:#7a5a12; filter:drop-shadow(0 0 3px var(--dgc-gold)); }
+
+  /* Head accessory — hidden by default, one revealed via data-accessory.
+     All sit above the hairline by design (see ACCESSORY_SHOP comment in
+     the script) so an accessory can never cover the expression rig. */
+  .dgc-chibi-acc-headband, .dgc-chibi-acc-cap, .dgc-chibi-acc-wizardhat { display:none; }
+  .dgc-chibi-acc-headband { fill:#c94f3d; stroke:#6e2318; stroke-width:0.6; }
+  .dgc-chibi-acc-cap { fill:#3f8f5c; stroke:#1f4a30; stroke-width:0.8; }
+  .dgc-chibi-acc-wizardhat { fill:#5a3a8f; stroke:#2c1a45; stroke-width:0.8; }
+  .dgc-chibi-hero[data-accessory="headband"] .dgc-chibi-acc-headband { display:block; }
+  .dgc-chibi-hero[data-accessory="cap"] .dgc-chibi-acc-cap { display:block; }
+  .dgc-chibi-hero[data-accessory="wizardHat"] .dgc-chibi-acc-wizardhat { display:block; }
 
   /* ---- Sudo: small robot companion, glowing green screen-face ---- */
   .dgc-chibi-sudo .dgc-chibi-head { fill:#241a3d; stroke:var(--dgc-border-bright); stroke-width:1; }
@@ -23095,7 +23127,14 @@ $ git stash pop
       <div class="dgc-modal-header"><span>🧵 TAILOR</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
       <div class="dgc-modal-body">
         <div class="dgc-shop-preview"><div class="dgc-sprite dgc-shop-preview-sprite" id="dgcTailorPreviewSprite"></div></div>
+        <div class="dgc-tailor-slot-label">OUTFIT</div>
         <div class="dgc-shop-list" id="dgcTailorList"></div>
+        <div class="dgc-tailor-slot-label">HAIR</div>
+        <div class="dgc-shop-list" id="dgcHairList"></div>
+        <div class="dgc-tailor-slot-label">SHOES</div>
+        <div class="dgc-shop-list" id="dgcShoesList"></div>
+        <div class="dgc-tailor-slot-label">ACCESSORY</div>
+        <div class="dgc-shop-list" id="dgcAccessoryList"></div>
       </div>
     </div>
 
@@ -23426,7 +23465,20 @@ $ git stash pop
         // are free to place right now" is always derived as owned minus
         // however many of that id currently appear in townDecorations).
         ownedDecorations: (s.ownedDecorations && typeof s.ownedDecorations === 'object') ? s.ownedDecorations : {},
-        townDecorations: Array.isArray(s.townDecorations) ? s.townDecorations : []
+        townDecorations: Array.isArray(s.townDecorations) ? s.townDecorations : [],
+        // Section 1C — multi-slot hero customization. Weapon + outfit stay
+        // exactly where they already were (equippedWeapon/equippedOutfit,
+        // ownedWeapons/ownedOutfits — unchanged, already shipped and
+        // tested); this adds the 3 genuinely NEW slots (hair color, shoes,
+        // a head accessory) as their own small, independent fields rather
+        // than folding everything into one payload — extends the schema
+        // instead of migrating two already-working fields for no benefit.
+        equippedHair: s.equippedHair || 'brown',
+        ownedHair: Array.isArray(s.ownedHair) ? s.ownedHair : ['brown'],
+        equippedShoes: s.equippedShoes || 'default',
+        ownedShoes: Array.isArray(s.ownedShoes) ? s.ownedShoes : ['default'],
+        equippedAccessory: s.equippedAccessory || 'none',
+        ownedAccessories: Array.isArray(s.ownedAccessories) ? s.ownedAccessories : ['none']
       };
     } catch (e) {
       return {
@@ -23435,7 +23487,9 @@ $ git stash pop
         stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster',
         ownedWeapons: ['keyboardBlaster'], equippedOutfit: 'default', ownedOutfits: ['default'],
         bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
-        ownedDecorations: {}, townDecorations: []
+        ownedDecorations: {}, townDecorations: [],
+        equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
+        equippedAccessory: 'none', ownedAccessories: ['none']
       };
     }
   }
@@ -23823,6 +23877,39 @@ $ git stash pop
     var o = OUTFIT_SHOP.filter(function (o) { return o.id === save.equippedOutfit; })[0];
     return o ? o.focusBonus : 0;
   }
+
+  /* ============================================================
+     SECTION 1C — MULTI-SLOT HERO CUSTOMIZATION. Weapon (above) and
+     Outfit (above — a "full look" slot, covering the doc's own offered
+     "bottoms/pants OR full outfit" either/or) are joined by 3 more
+     independent slots: hair color, shoes, and a head accessory. All are
+     cosmetic (no stat effects — those stay concentrated in weapons, per
+     the master doc's original design split) and all layer on top of the
+     current hero tier + expression rig without touching either.
+     ============================================================ */
+  var HAIR_SHOP = [
+    { id: 'brown', name: 'Brown (Default)', cost: 0, color: '#4a2f1c', desc: 'The starter look.' },
+    { id: 'black', name: 'Jet Black', cost: 80, color: '#1c1c1c', desc: 'Purely a look.' },
+    { id: 'blonde', name: 'Blonde', cost: 80, color: '#d4a843', desc: 'Purely a look.' },
+    { id: 'crimson', name: 'Crimson', cost: 120, color: '#8f2f27', desc: 'Purely a look.' },
+    { id: 'teal', name: 'Teal', cost: 120, color: '#2f8f8a', desc: 'Purely a look.' }
+  ];
+  var SHOES_SHOP = [
+    { id: 'default', name: 'Work Boots', cost: 0, desc: 'The starter look.' },
+    { id: 'sneakers', name: 'Sneakers', cost: 60, desc: 'Purely a look.' },
+    { id: 'goldCleats', name: 'Gold Cleats', cost: 200, desc: 'Purely a look — a flex, not a stat.' }
+  ];
+  // Head accessories are deliberately all ABOVE the hairline (cap/
+  // headband/wizard hat) rather than anything near the eyes/mouth —
+  // chosen specifically so an accessory can never obscure the 15+
+  // expression system this game's whole character-visibility fix was
+  // built to protect.
+  var ACCESSORY_SHOP = [
+    { id: 'none', name: 'No Accessory', cost: 0, minLevel: 1, desc: 'Nothing extra.' },
+    { id: 'headband', name: 'Headband', cost: 50, minLevel: 1, desc: 'Purely a look.' },
+    { id: 'cap', name: 'Baseball Cap', cost: 70, minLevel: 1, desc: 'Purely a look.' },
+    { id: 'wizardHat', name: 'Wizard Hat', cost: 250, minLevel: 10, desc: 'Purely a look — a milestone reward for reaching level 10.' }
+  ];
   function heroWeaponSVG() {
     var id = save.equippedWeapon || 'keyboardBlaster';
     var shapesFn = HERO_WEAPONS[id] || HERO_WEAPONS.keyboardBlaster;
@@ -23967,6 +24054,16 @@ $ git stash pop
         '<path class="dgc-chibi-outfit-scarf" d="M36 84 Q50 92 64 84 L61 96 Q50 100 39 96 Z"/>' +
         '<path class="dgc-chibi-outfit-cloak" d="M28 90 Q20 106 25 118 L36 110 Q32 98 36 88 Z M72 90 Q80 106 75 118 L64 110 Q68 98 64 88 Z"/>' +
         '<path class="dgc-chibi-outfit-visor" d="M27 36 Q50 30 73 36 L73 42 Q50 37 27 42 Z"/>' +
+        // Section 1C — shoes: always drawn (everyone wears SOME shoes),
+        // recolored per save.equippedShoes via CSS.
+        '<ellipse class="dgc-chibi-shoes" cx="38" cy="115" rx="7" ry="4"/>' +
+        '<ellipse class="dgc-chibi-shoes" cx="62" cy="115" rx="7" ry="4"/>' +
+        // Section 1C — head accessories: all drawn ABOVE the hairline,
+        // hidden by default, revealed per data-accessory via CSS — kept
+        // clear of the face group on purpose (see ACCESSORY_SHOP comment).
+        '<path class="dgc-chibi-acc-headband" d="M22 33 Q50 24 78 33 L78 38 Q50 30 22 38 Z"/>' +
+        '<path class="dgc-chibi-acc-cap" d="M18 20 Q50 -4 82 20 L82 27 Q50 12 18 27 Z"/>' +
+        '<path class="dgc-chibi-acc-wizardhat" d="M50 -34 L36 20 Q50 13 64 20 Z"/>' +
         // Weapon: always visibly held, part of the silhouette — not an
         // abstract inventory concept. See heroWeaponSVG()/HERO_WEAPONS.
         heroWeaponSVG();
@@ -23998,7 +24095,12 @@ $ git stash pop
     // tier: every render site (City, Armory/Tailor preview, boss select,
     // combat) automatically shows whatever's currently equipped.
     var outfitAttr = kind === 'hero' ? ' data-outfit="' + (save.equippedOutfit || 'default') + '"' : '';
-    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + outfitAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
+    // Section 1C — hair color + shoes + head accessory, same "reads live
+    // off save" pattern as tier/outfit above.
+    var hairAttr = kind === 'hero' ? ' data-hair="' + (save.equippedHair || 'brown') + '"' : '';
+    var shoesAttr = kind === 'hero' ? ' data-shoes="' + (save.equippedShoes || 'default') + '"' : '';
+    var accessoryAttr = kind === 'hero' ? ' data-accessory="' + (save.equippedAccessory || 'none') + '"' : '';
+    return '<svg class="dgc-chibi dgc-chibi-' + kind + '"' + tierAttr + outfitAttr + hairAttr + shoesAttr + accessoryAttr + ' viewBox="0 0 100 130" data-expr="idle">' +
       '<defs>' +
         '<radialGradient id="' + idAttr + 'Grad" cx="38%" cy="28%" r="80%">' +
           '<stop offset="0%" class="dgc-chibi-grad-hi"/>' +
@@ -26895,9 +26997,78 @@ $ git stash pop
   }
 
   /* ---- 2.2 TAILOR ---- */
+  // Section 1C — the 3 new customization slots (hair/shoes/accessory)
+  // all share one shape (a catalog + an ownedKey array + an equippedKey
+  // string on `save`), so they share ONE generic renderer/buy/equip
+  // implementation rather than 3 near-identical copies. Outfit (above)
+  // keeps its own hand-written version since it also carries a
+  // stat-bearing exception (Faster Shell) the generic path doesn't need
+  // to know about.
+  var CUSTOM_SLOTS = {
+    equippedHair: { catalog: HAIR_SHOP, ownedKey: 'ownedHair', containerId: 'dgcHairList', icon: '💇' },
+    equippedShoes: { catalog: SHOES_SHOP, ownedKey: 'ownedShoes', containerId: 'dgcShoesList', icon: '👟' },
+    equippedAccessory: { catalog: ACCESSORY_SHOP, ownedKey: 'ownedAccessories', containerId: 'dgcAccessoryList', icon: '🎩' }
+  };
+  function renderCustomSlot(equippedKey) {
+    var slot = CUSTOM_SLOTS[equippedKey];
+    var el = $(slot.containerId);
+    if (!el) return;
+    el.innerHTML = slot.catalog.map(function (item) {
+      var owned = save[slot.ownedKey].indexOf(item.id) !== -1;
+      var equipped = save[equippedKey] === item.id;
+      var levelLocked = !owned && item.minLevel && save.level < item.minLevel;
+      var action = equipped
+        ? '<span class="dgc-shop-card-cost" style="color:var(--dgc-success);">✓ Equipped</span>'
+        : owned
+          ? '<button class="dgc-btn dgc-btn-primary" data-slot-action="equip" data-slot-key="' + equippedKey + '" data-slot-id="' + item.id + '">Equip</button>'
+          : levelLocked
+            ? '<span class="dgc-shop-card-lock">🔒 Lv ' + item.minLevel + '</span>'
+            : '<button class="dgc-btn" data-slot-action="buy" data-slot-key="' + equippedKey + '" data-slot-id="' + item.id + '">Buy — ' + item.cost + '🪙</button>';
+      return '<div class="dgc-shop-card' + (equipped ? ' dgc-shop-card-equipped' : '') + '">' +
+        '<div class="dgc-shop-card-icon">' + slot.icon + '</div>' +
+        '<div class="dgc-shop-card-info">' +
+          '<div class="dgc-shop-card-name">' + item.name + '</div>' +
+          '<div class="dgc-shop-card-desc">' + item.desc + '</div>' +
+          (levelLocked ? '<div class="dgc-shop-card-lock">Unlocks at level ' + item.minLevel + '</div>' : '') +
+        '</div>' +
+        '<div class="dgc-shop-card-action">' + action + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  function buyCustomSlotItem(equippedKey, id) {
+    var slot = CUSTOM_SLOTS[equippedKey];
+    var item = slot.catalog.filter(function (i) { return i.id === id; })[0];
+    if (!item || save[slot.ownedKey].indexOf(id) !== -1) return;
+    if (item.minLevel && save.level < item.minLevel) return;
+    if (save.coins < item.cost) { playSfx('insufficientFunds'); return; }
+    save.coins -= item.cost;
+    save[slot.ownedKey].push(id);
+    save[equippedKey] = id;
+    persist();
+    playSfx('purchase');
+    refreshHeroTierVisuals();
+    // Full renderTailor() (not just this one slot) — the shop's own live
+    // preview chibi is owned by renderTailor(), so a narrower refresh
+    // would leave it showing the pre-purchase look until the modal was
+    // closed and reopened.
+    renderTailor();
+  }
+  function equipCustomSlotItem(equippedKey, id) {
+    var slot = CUSTOM_SLOTS[equippedKey];
+    if (save[slot.ownedKey].indexOf(id) === -1 || save[equippedKey] === id) return;
+    save[equippedKey] = id;
+    persist();
+    playSfx('equip');
+    refreshHeroTierVisuals();
+    renderTailor();
+  }
+
   function renderTailor() {
     var preview = $('dgcTailorPreviewSprite');
     if (preview) { preview.innerHTML = chibiRoot('hero'); setExpression(preview, 'happy'); }
+    renderCustomSlot('equippedHair');
+    renderCustomSlot('equippedShoes');
+    renderCustomSlot('equippedAccessory');
     $('dgcTailorList').innerHTML = OUTFIT_SHOP.map(function (o) {
       var owned = save.ownedOutfits.indexOf(o.id) !== -1;
       var equipped = save.equippedOutfit === o.id;
@@ -27128,7 +27299,9 @@ $ git stash pop
       stats: statsForLevel(1), starterCoinsGranted: false, equippedWeapon: 'keyboardBlaster',
       ownedWeapons: ['keyboardBlaster'], equippedOutfit: 'default', ownedOutfits: ['default'],
       bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
-      ownedDecorations: {}, townDecorations: []
+      ownedDecorations: {}, townDecorations: [],
+      equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
+      equippedAccessory: 'none', ownedAccessories: ['none']
     };
     persist();
     refreshHeroTierVisuals();
@@ -28722,6 +28895,17 @@ $ git stash pop
     if (!btn) return;
     var id = btn.getAttribute('data-outfit-id');
     if (btn.getAttribute('data-outfit-action') === 'buy') buyOutfit(id); else equipOutfit(id);
+  });
+  // Section 1C — one delegated handler covers all 3 generic customization
+  // slots (hair/shoes/accessory), keyed by data-slot-key.
+  ['dgcHairList', 'dgcShoesList', 'dgcAccessoryList'].forEach(function (containerId) {
+    $(containerId).addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-slot-action]') : null;
+      if (!btn) return;
+      var key = btn.getAttribute('data-slot-key');
+      var id = btn.getAttribute('data-slot-id');
+      if (btn.getAttribute('data-slot-action') === 'buy') buyCustomSlotItem(key, id); else equipCustomSlotItem(key, id);
+    });
   });
   $('dgcLibraryList').addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('[data-library-action]') : null;
