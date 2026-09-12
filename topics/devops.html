@@ -21858,6 +21858,21 @@ $ git stash pop
   .dgc-boss-card-topic { font-size:10px; color:var(--dgc-text-dimmer); margin:2px 0 8px; text-transform:uppercase; letter-spacing:1px; }
   .dgc-boss-card-status { font-size:10px; color:var(--dgc-gold); margin-bottom:10px; }
   .dgc-boss-card-status.dgc-cleared { color:var(--dgc-success); }
+  /* Final Boss, before all 9 topic bosses are cleared — a silhouette,
+     not just a disabled button, so "locked" reads visually at a glance. */
+  .dgc-boss-card-locked { border-color:var(--dgc-border); background:rgba(0,0,0,0.35); }
+  .dgc-boss-card-locked .dgc-boss-card-sprite, .dgc-boss-card-locked .dgc-boss-card-icon { filter:brightness(0) contrast(1); opacity:0.5; }
+  .dgc-boss-card-locked .dgc-boss-card-name, .dgc-boss-card-locked .dgc-boss-card-topic { color:var(--dgc-text-dimmer); }
+  .dgc-boss-card-status-locked { font-size:10px; color:var(--dgc-text-dimmer); margin-bottom:10px; }
+  .dgc-boss-card-lock-icon { font-size:20px; margin-bottom:4px; opacity:0.7; }
+  /* The reveal moment — final boss's very first render after the 9th
+     topic boss falls — a brief glow-in so unlocking reads as a reward. */
+  .dgc-boss-card-reveal { animation:dgc-boss-reveal 1s ease-out; }
+  @keyframes dgc-boss-reveal {
+    0% { box-shadow:0 0 0 rgba(var(--dgc-gold-rgb),0); transform:scale(0.92); }
+    40% { box-shadow:0 0 30px rgba(var(--dgc-gold-rgb),0.6); }
+    100% { box-shadow:0 0 0 rgba(var(--dgc-gold-rgb),0); transform:scale(1); }
+  }
   .dgc-more-soon { text-align:center; color:var(--dgc-text-dimmer); font-size:11px; margin-top:22px; }
 
   .dgc-btn { font-family:var(--dgc-font-ui); font-size:11.5px; font-weight:700; color:var(--dgc-text); background:rgba(255,255,255,0.04); border:1px solid var(--dgc-border-bright); border-radius:6px; padding:9px 16px; cursor:pointer; transition:all .15s; }
@@ -22829,16 +22844,10 @@ $ git stash pop
       <div class="dgc-growth-stat">⏱ <span id="dgcStatFocus">+0.0s</span> Focus</div>
       <div class="dgc-growth-stat">🍀 <span id="dgcStatLuck">+0%</span> Luck</div>
     </div>
-    <div class="dgc-boss-select">
-      <div class="dgc-boss-card">
-        <div class="dgc-sprite dgc-boss-card-sprite" id="dgcSelectBossSprite"></div>
-        <div class="dgc-boss-card-name">The Terminal Golem</div>
-        <div class="dgc-boss-card-topic">Linux</div>
-        <div class="dgc-boss-card-status" id="dgcBossStatusTerminalGolem">Not Cleared</div>
-        <button class="dgc-btn dgc-btn-fight" id="dgcFightBtn">⚔️ Fight</button>
-      </div>
-    </div>
-    <div class="dgc-more-soon">More bosses (Docker, Git, Kubernetes, CI/CD...) coming in a future update.</div>
+    <!-- Populated by renderBossSelectGrid() — one card per BOSS_ORDER
+         entry, the Final Boss rendered locked/silhouetted until every
+         topic boss is cleared. Replaying a cleared boss stays available. -->
+    <div class="dgc-boss-select" id="dgcBossSelectGrid"></div>
   </div>
 
   <!-- ============ COMBAT SCREEN ============ -->
@@ -23826,6 +23835,507 @@ $ git stash pop
         damageIfCorrect: 34,
         damageToHeroIfWrong: 22
       }
+    },
+
+    /* ================================================================
+       BOSS 2 — THE CONTAINER KRAKEN (Docker)
+       ================================================================ */
+    kraken: {
+      id: 'kraken',
+      name: 'The Container Kraken',
+      topic: 'Docker',
+      icon: '🐙',
+      chibiKind: 'kraken',
+      phaseHp: [110, 120, 140],
+      phaseNames: ['Surface — Image Basics', 'Depths — Crash Diagnosis', 'Abyss — Real Incident'],
+      xpReward: 150,
+      coinBaseReward: 90,
+      phases: [
+        /* -------- PHASE 1: Surface — Image Basics -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'The Kraken surfaces, ink swirling: <strong>"Build an image from the Dockerfile in this directory, tagged as <code>myapp:1.0</code>."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'One command builds AND tags in one go — the flag is -t.',
+            hintPartial: 'docker build -t myapp:___ .',
+            hintFull: 'docker build -t myapp:1.0 .',
+            acceptablePatterns: [/^docker\s+build\s+\.\s+-t\s+myapp:1\.0$/i],
+            optimalPatterns: [/^docker\s+build\s+-t\s+myapp:1\.0\s+\.$/i],
+            baseCmds: ['docker']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A tentacle curls: <strong>"List every currently RUNNING container — nothing stopped."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The plain "list containers" command already defaults to running-only.',
+            hintPartial: 'docker p_',
+            hintFull: 'docker ps',
+            acceptablePatterns: [/^docker\s+container\s+ls$/i],
+            optimalPatterns: [/^docker\s+ps$/i],
+            baseCmds: ['docker']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Ink clouds the water: <strong>"Remove a stopped container named <code>old_container</code>."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The remove subcommand, plus the container\'s name.',
+            hintPartial: 'docker rm ___',
+            hintFull: 'docker rm old_container',
+            acceptablePatterns: [/^docker\s+container\s+rm\s+old_container$/i],
+            optimalPatterns: [/^docker\s+rm\s+old_container$/i],
+            baseCmds: ['docker']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The Kraken groans: <strong>"Show the logs for a running container named <code>web</code>."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'One subcommand, then the container name.',
+            hintPartial: 'docker logs ___',
+            hintFull: 'docker logs web',
+            acceptablePatterns: [/^docker\s+logs\s+-f\s+web$/i],
+            optimalPatterns: [/^docker\s+logs\s+web$/i],
+            baseCmds: ['docker']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Last before the depths: <strong>"List every image stored locally."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'Same shape as listing containers, but for images.',
+            hintPartial: 'docker i____',
+            hintFull: 'docker images',
+            acceptablePatterns: [/^docker\s+image\s+ls$/i],
+            optimalPatterns: [/^docker\s+images$/i],
+            baseCmds: ['docker']
+          }
+        ],
+        /* -------- PHASE 2: Depths — Crash Diagnosis -------- */
+        [
+          {
+            mode: 'read_the_room',
+            prompt: 'The water churns — a container refuses to stay up. <strong>Diagnose it from this output, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Read the error line closely — something else is already using that port.',
+            hintPartial: 'Two processes can\'t bind the same port on the host at once.',
+            hintFull: 'Diagnosis: port 8080 is already in use on the host. Fix: publish on a different host port, e.g. docker run -p 8081:80 myapp',
+            outputBlock: [
+              '$ docker run -p 8080:80 myapp',
+              'docker: Error response from daemon: driver failed programming external connectivity:',
+              'Error starting userland proxy: listen tcp 0.0.0.0:8080: bind: address already in use.'
+            ],
+            acceptableDiagnosesPatterns: [/port\s*8080.*(already\s*in\s*use|taken|bound)/i, /address\s*already\s*in\s*use/i, /port\s*conflict/i],
+            followUpFix: {
+              prompt: 'Get the container running without touching whatever else owns 8080:',
+              acceptablePatterns: [/^docker\s+run\s+-p\s+\d+:80\s+myapp$/i],
+              optimalPatterns: [/^docker\s+run\s+-p\s+8081:80\s+myapp$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'A tentacle goes limp mid-fight — a container keeps dying. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Check the inspect output for the actual kill reason, not just the exit code.',
+            hintPartial: '"OOMKilled: true" means exactly what it says.',
+            hintFull: 'Diagnosis: the container ran out of memory and was OOM-killed. Fix: give it a real memory limit, e.g. docker run --memory=512m myapp',
+            outputBlock: [
+              '$ docker inspect myapp_container --format \'{{.State.OOMKilled}} {{.State.ExitCode}}\'',
+              'true 137'
+            ],
+            acceptableDiagnosesPatterns: [/oom.?killed/i, /out\s*of\s*memory/i, /ran\s*out\s*of\s*memory/i],
+            followUpFix: {
+              prompt: 'Restart it with a sane memory ceiling this time:',
+              acceptablePatterns: [/^docker\s+update\s+-m\s+\d+m\s+myapp_container$/i],
+              optimalPatterns: [/^docker\s+run\s+--memory=?512m\s+myapp$/i, /^docker\s+run\s+-m\s+512m\s+myapp$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The Kraken\'s eyes flash — a container exits the instant it starts. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'A missing piece of required app config, not a Docker problem per se.',
+            hintPartial: 'The app is telling you exactly which variable it needed.',
+            hintFull: 'Diagnosis: a required environment variable was never set. Fix: pass it in with -e, e.g. docker run -e DATABASE_URL=postgres://db/app myapp',
+            outputBlock: [
+              '$ docker logs myapp_container',
+              'Error: DATABASE_URL is not set. Exiting.'
+            ],
+            acceptableDiagnosesPatterns: [/missing.*(env|environment)\s*variable/i, /database_url.*not\s*set/i, /env\w*\s*variable.*not\s*set/i],
+            followUpFix: {
+              prompt: 'Re-run it with the variable actually supplied:',
+              acceptablePatterns: [/^docker\s+run\s+.*-e\s+DATABASE_URL=\S+.*myapp$/i],
+              optimalPatterns: [/^docker\s+run\s+-e\s+DATABASE_URL=\S+\s+myapp$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'Bubbles rise — a container exits cleanly seconds after starting, every time. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Exit code 0 with no crash means the container simply had nothing left to do.',
+            hintPartial: 'There\'s no long-running foreground process keeping it alive.',
+            hintFull: 'Diagnosis: the image has no long-running foreground process (CMD finished immediately). Fix (for now): open a shell inside it to investigate, e.g. docker run -it myapp sh',
+            outputBlock: [
+              '$ docker ps -a',
+              'CONTAINER ID   IMAGE   STATUS',
+              'a1b2c3d4e5f6   myapp   Exited (0) 4 seconds ago'
+            ],
+            acceptableDiagnosesPatterns: [/no\s*(long.?running|foreground)\s*process/i, /exited?\s*(immediately|right\s*away)/i, /nothing\s*(left\s*)?to\s*(keep\s*it\s*running|run)/i],
+            followUpFix: {
+              prompt: 'Open an interactive shell inside it to see what\'s actually going on:',
+              acceptablePatterns: [/^docker\s+run\s+-it\s+myapp\s+bash$/i],
+              optimalPatterns: [/^docker\s+run\s+-it\s+myapp\s+sh$/i]
+            }
+          },
+          {
+            mode: 'read_the_room',
+            prompt: 'The water goes cold — a run command fails before the container even starts. <strong>Diagnose it, then fix it.</strong>',
+            damageIfCorrect: 22, damageIfOptimal: 36,
+            hintNudge: 'Docker is telling you it can\'t find something locally — and won\'t guess.',
+            hintPartial: 'The tag being requested doesn\'t exist locally or remotely under that exact name.',
+            hintFull: 'Diagnosis: the image tag doesn\'t exist locally (and wasn\'t found to pull). Fix: pull the correct tag first, e.g. docker pull myapp:2.0',
+            outputBlock: [
+              '$ docker run myapp:2.0',
+              'Unable to find image \'myapp:2.0\' locally',
+              'docker: Error response from daemon: manifest for myapp:2.0 not found.'
+            ],
+            acceptableDiagnosesPatterns: [/(wrong|nonexistent|missing|bad)\s*(image\s*)?tag/i, /image.*not\s*found/i, /tag.*doesn'?t\s*exist/i],
+            followUpFix: {
+              prompt: 'Get the right image available first:',
+              acceptablePatterns: [/^docker\s+run\s+myapp:1\.0$/i],
+              optimalPatterns: [/^docker\s+pull\s+myapp:2\.0$/i]
+            }
+          }
+        ],
+        /* -------- PHASE 3: Abyss — Real Incident (Dockerfile bugs) -------- */
+        [
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Kraken drags up a waterlogged Dockerfile. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'An unpinned base image is a reproducibility and security risk in production.',
+            hintPartial: 'Pin an exact version tag, not the floating "latest"-like default.',
+            hintFull: 'Fix line 1: FROM node:18-alpine',
+            codeBlock: [
+              'FROM node',
+              'WORKDIR /app',
+              'COPY package.json .',
+              'RUN npm install',
+              'COPY . .',
+              'CMD ["node", "server.js"]'
+            ],
+            buggyLineId: 0,
+            correctFixPatterns: [/^FROM\s+node:18(-alpine)?$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'Another waterlogged page. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Wrong tool for copying a plain local file into the image.',
+            hintPartial: 'ADD auto-extracts archives and fetches URLs — overkill and surprising here. Use the simpler, predictable one.',
+            hintFull: 'Fix: COPY app.tar.gz /app/',
+            codeBlock: [
+              'FROM node:18-alpine',
+              'WORKDIR /app',
+              'ADD app.tar.gz /app/',
+              'RUN npm install',
+              'CMD ["node", "server.js"]'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^COPY\s+app\.tar\.gz\s+\/app\/?$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A third page, ink-smeared. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Check what port the app itself actually listens on further down.',
+            hintPartial: 'The app.listen() call further down uses a different port than what\'s declared here.',
+            hintFull: 'Fix: EXPOSE 3000',
+            codeBlock: [
+              'FROM node:18-alpine',
+              'WORKDIR /app',
+              'COPY . .',
+              'RUN npm install',
+              'EXPOSE 80',
+              'CMD ["node", "server.js"]',
+              '# server.js contains: app.listen(3000)'
+            ],
+            buggyLineId: 4,
+            correctFixPatterns: [/^EXPOSE\s+3000$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'The Kraken shows one more. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Nothing here ever drops root privileges before running the app.',
+            hintPartial: 'The container runs as root the whole time — add a non-root USER before CMD.',
+            hintFull: 'Fix: USER node',
+            codeBlock: [
+              'FROM node:18-alpine',
+              'WORKDIR /app',
+              'COPY . .',
+              'RUN npm install',
+              'CMD ["node", "server.js"]'
+            ],
+            buggyLineId: 3,
+            correctFixPatterns: [/^USER\s+(node|appuser|1000)$/i]
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'One final soaked page before the incident clears. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'The install step never cleans up the package manager\'s cache afterward — that\'s dead weight in every layer above it.',
+            hintPartial: 'Chain a cleanup onto the same RUN so it doesn\'t bloat this layer.',
+            hintFull: 'Fix: RUN apt-get install -y curl && rm -rf /var/lib/apt/lists/*',
+            codeBlock: [
+              'FROM node:18',
+              'RUN apt-get update',
+              'RUN apt-get install -y curl',
+              'WORKDIR /app',
+              'COPY . .',
+              'CMD ["node", "server.js"]'
+            ],
+            buggyLineId: 2,
+            correctFixPatterns: [/^RUN\s+apt-get\s+install\s+-y\s+curl\s+&&\s+rm\s+-rf\s+\/var\/lib\/apt\/lists\/\*$/i]
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'The Kraken rises to full height — ink floods the water! <strong>Sequence the correct build-tag-push workflow before it lands.</strong>',
+        steps: [
+          'Write the Dockerfile',
+          'docker build -t app:1.0 .',
+          'docker tag app:1.0 registry/app:1.0',
+          'docker push registry/app:1.0'
+        ],
+        damageIfCorrect: 36,
+        damageToHeroIfWrong: 24
+      }
+    },
+
+    /* ================================================================
+       BOSS 3 — THE MERGE CONFLICT HYDRA (Git)
+       ================================================================ */
+    hydra: {
+      id: 'hydra',
+      name: 'The Merge Conflict Hydra',
+      topic: 'Git',
+      icon: '🐍',
+      chibiKind: 'hydra',
+      phaseHp: [115, 125, 145],
+      phaseNames: ['First Head — Branching Basics', 'Second Head — Conflict Resolution', 'Third Head — Real Incident'],
+      xpReward: 155,
+      coinBaseReward: 92,
+      phases: [
+        /* -------- PHASE 1: Branching Basics -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'One head snaps forward: <strong>"Create a new branch called <code>feature-x</code> AND switch to it, in one command."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'One classic flag on checkout creates-and-switches in a single step.',
+            hintPartial: 'git checkout -_ feature-x',
+            hintFull: 'git checkout -b feature-x',
+            acceptablePatterns: [/^git\s+branch\s+feature-x\s*&&\s*git\s+checkout\s+feature-x$/i],
+            optimalPatterns: [/^git\s+checkout\s+-b\s+feature-x$/i, /^git\s+switch\s+-c\s+feature-x$/i],
+            baseCmds: ['git']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A second head hisses: <strong>"Switch back to the <code>main</code> branch."</strong>',
+            damageIfCorrect: 12, damageIfOptimal: 20,
+            hintNudge: 'The modern, purpose-built command for changing branches — not the older multi-purpose one.',
+            hintPartial: 'git s_____ main',
+            hintFull: 'git switch main',
+            acceptablePatterns: [/^git\s+checkout\s+main$/i],
+            optimalPatterns: [/^git\s+switch\s+main$/i],
+            baseCmds: ['git']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'A head retracts: <strong>"Delete the local branch <code>old-feature</code> — it\'s already been merged."</strong>',
+            damageIfCorrect: 14, damageIfOptimal: 22,
+            hintNudge: 'The branch subcommand\'s delete flag, lowercase since it\'s already merged.',
+            hintPartial: 'git branch -_ old-feature',
+            hintFull: 'git branch -d old-feature',
+            acceptablePatterns: [/^git\s+branch\s+-D\s+old-feature$/i],
+            optimalPatterns: [/^git\s+branch\s+-d\s+old-feature$/i],
+            baseCmds: ['git']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The Hydra coils: <strong>"Stage every change AND commit it with the message <code>fix bug</code>, in one line."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'Two familiar commands, chained with &&.',
+            hintPartial: 'git add . && git commit -m "___"',
+            hintFull: 'git add . && git commit -m "fix bug"',
+            acceptablePatterns: [/^git\s+add\s+-A\s*&&\s*git\s+commit\s+-m\s+["']fix bug["']$/i],
+            optimalPatterns: [/^git\s+add\s+\.\s*&&\s*git\s+commit\s+-m\s+["']fix bug["']$/i],
+            baseCmds: ['git']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Last head, for now: <strong>"View commit history, one line per commit."</strong>',
+            damageIfCorrect: 12, damageIfOptimal: 20,
+            hintNudge: 'A common flag compresses each commit down to a single summary line.',
+            hintPartial: 'git log --o_____',
+            hintFull: 'git log --oneline',
+            acceptablePatterns: [/^git\s+log$/i],
+            optimalPatterns: [/^git\s+log\s+--oneline$/i],
+            baseCmds: ['git']
+          }
+        ],
+        /* -------- PHASE 2: Conflict Resolution -------- */
+        [
+          {
+            mode: 'terminal',
+            prompt: 'A head bares its teeth over a tangled file: <strong>"You just hand-resolved the conflict markers in <code>config.js</code>. Stage it."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'The exact same staging command you\'d use for any other change.',
+            hintPartial: 'git a__ config.js',
+            hintFull: 'git add config.js',
+            acceptablePatterns: [/^git\s+add\s+\.$/i],
+            optimalPatterns: [/^git\s+add\s+config\.js$/i],
+            baseCmds: ['git']
+          },
+          {
+            mode: 'terminal',
+            prompt: 'Another head watches: <strong>"Every conflict in this merge is now resolved and staged. Complete the merge."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'A merge commit already has a message queued up for you — you just need to finish it.',
+            hintPartial: 'git c_____',
+            hintFull: 'git commit',
+            acceptablePatterns: [/^git\s+commit\s+-m\s+["'].*["']$/i],
+            optimalPatterns: [/^git\s+commit$/i],
+            baseCmds: ['git']
+          },
+          {
+            mode: 'spot_the_bug',
+            prompt: 'A head shows you a "fixed" file — but something\'s still wrong. <strong>Click the buggy line, then type the fix.</strong>',
+            damageIfCorrect: 20, damageIfOptimal: 32,
+            hintNudge: 'This file was committed WITH its conflict markers still sitting in it — look for the tell-tale symbols.',
+            hintPartial: 'Whichever line still starts with those "<<<<<<<"-style markers needs to be replaced with just the resolved code.',
+            hintFull: 'Fix line 2: remove the marker, keep only the intended code: return "hello";',
+            codeBlock: [
+              'function greet() {',
+              '<<<<<<< HEAD',
+              '  return "hello";'
+            ],
+            buggyLineId: 1,
+            correctFixPatterns: [/^return\s+["']hello["'];?$/i, /^\s*return\s+["']hello["'];?\s*$/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'A head tilts, unsure: <strong>"You\'re resolving a conflict where both branches changed the same function differently. What\'s the right move?"</strong>',
+            damageIfCorrect: 18, damageIfOptimal: 30,
+            hintNudge: 'The safest option is the one that actually reads what each side was trying to do.',
+            hintPartial: 'Understand BOTH sides\' intent before writing the final version — don\'t just pick one blindly.',
+            hintFull: 'Best: read both diffs, understand what each side intended, and manually merge the real logic — don\'t just keep one side or blindly accept both.',
+            options: [
+              { id: 'a', label: 'Always keep my own version', tier: 'wrong', why: 'Ignores whatever the other branch was actually trying to fix — you might silently undo real work.' },
+              { id: 'b', label: 'Read both diffs and manually combine the intended logic', tier: 'best', why: 'The only option that actually respects both changes — conflicts exist because two people had two real, different intents.' },
+              { id: 'c', label: 'Always keep the incoming branch\'s version', tier: 'wrong', why: 'Same problem in the other direction — you might discard your own necessary changes.' }
+            ],
+            justificationPatterns: [/understand|intent|both|combine|read|logic/i]
+          },
+          {
+            mode: 'terminal',
+            prompt: 'The last head recoils: <strong>"This merge has gone wrong. Abandon it and go back to before you started merging."</strong>',
+            damageIfCorrect: 16, damageIfOptimal: 26,
+            hintNudge: 'A merge-in-progress can be cleanly cancelled with one dedicated flag.',
+            hintPartial: 'git merge --a____',
+            hintFull: 'git merge --abort',
+            acceptablePatterns: [/^git\s+reset\s+--hard\s+HEAD$/i],
+            optimalPatterns: [/^git\s+merge\s+--abort$/i],
+            baseCmds: ['git']
+          }
+        ],
+        /* -------- PHASE 3: Real Incident — Bad Commit Before Release -------- */
+        [
+          {
+            mode: 'triage_call',
+            prompt: 'The final heads rear up: <strong>"A bad commit was pushed to the shared branch and teammates have already pulled it. What now?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Once history is shared, rewriting it is the dangerous move — undo it forward instead.',
+            hintPartial: 'A new commit that undoes the bad one, without touching anything anyone else has.',
+            hintFull: 'Best: git revert the bad commit — it undoes it safely with a new commit, never rewriting shared history.',
+            options: [
+              { id: 'a', label: 'git revert the bad commit', tier: 'best', why: 'Safe on shared history — adds a new commit undoing the change, nothing anyone else has is disrupted.' },
+              { id: 'b', label: 'git reset --hard to before the bad commit, then force-push', tier: 'wrong', why: 'Rewrites history everyone else already has — their next pull breaks or silently loses work.' },
+              { id: 'c', label: 'Manually re-edit the affected files back by hand', tier: 'defensible', why: 'Works eventually but is slow, error-prone, and leaves no clear record of what was undone or why.' }
+            ],
+            justificationPatterns: [/revert|safe|shared|history|undo/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'A head narrows its eyes: <strong>"Same bad commit — but this time it\'s ONLY local, never pushed. What now?"</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Nobody else has this commit — you\'re free to actually rewrite your own local history.',
+            hintPartial: 'A soft reset uncommits it while keeping the changes, ready to redo properly.',
+            hintFull: 'Best: git reset --soft HEAD~1 (or amend) — it\'s purely local, so rewriting is safe and revert\'s extra noise isn\'t needed.',
+            options: [
+              { id: 'a', label: 'git reset --soft HEAD~1, then recommit properly', tier: 'best', why: 'Purely local history — safe to rewrite, and cleaner than adding a revert commit for a mistake nobody else ever saw.' },
+              { id: 'b', label: 'git revert it, same as if it were shared', tier: 'defensible', why: 'Not wrong, just unnecessary — it leaves permanent noise in history for a mistake that never left your machine.' },
+              { id: 'c', label: 'Push it anyway and fix it in a follow-up commit', tier: 'wrong', why: 'Deliberately ships a known-bad commit when you had a free chance to simply never publish it.' }
+            ],
+            justificationPatterns: [/local|soft|reset|amend|rewrite/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'A head lunges — production is down RIGHT NOW from the last deploy. <strong>What\'s the first move?</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'Stop the bleeding before you start investigating why it happened.',
+            hintPartial: 'Roll back to the last known-good state immediately, then dig into root cause afterward.',
+            hintFull: 'Best: roll back / revert the deploy immediately to stop the outage, THEN investigate root cause — stabilize first.',
+            options: [
+              { id: 'a', label: 'Roll back to the last known-good deploy immediately', tier: 'best', why: 'Stops user impact first — the textbook incident-response order is stabilize, then root-cause.' },
+              { id: 'b', label: 'Try to hotfix forward under pressure', tier: 'wrong', why: 'Writing a fix live during an active outage risks making things worse before they get better.' },
+              { id: 'c', label: 'Investigate the root cause first, then decide', tier: 'wrong', why: 'Leaves users impacted for longer than necessary while you\'re still diagnosing.' }
+            ],
+            justificationPatterns: [/rollback|roll\s*back|revert|stabilize|stop/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'A head coils around older history — the bad commit is buried several commits back, with good work layered on top. <strong>What now?</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'You want to undo ONE change without touching anything built on top of it.',
+            hintPartial: 'A surgical, targeted undo of just that one old commit.',
+            hintFull: 'Best: git revert the specific old commit by hash — surgical, keeps every later good commit intact.',
+            options: [
+              { id: 'a', label: 'git revert the specific old commit by its hash', tier: 'best', why: 'Undoes exactly that one change and nothing else — every later good commit stays untouched.' },
+              { id: 'b', label: 'git reset --hard to right before that commit', tier: 'wrong', why: 'Destroys every good commit that came after it too — way more collateral damage than needed.' },
+              { id: 'c', label: 'Cherry-pick every good commit onto a fresh branch', tier: 'defensible', why: 'Technically works but is far more manual effort and error-prone than a single targeted revert.' }
+            ],
+            justificationPatterns: [/revert|surgical|specific|hash|targeted/i]
+          },
+          {
+            mode: 'triage_call',
+            prompt: 'The last head recoils in alarm — the bad commit contains a leaked credential. <strong>What now?</strong>',
+            damageIfCorrect: 24, damageIfOptimal: 38,
+            hintNudge: 'A revert alone leaves the secret sitting in history forever — that\'s not enough by itself.',
+            hintPartial: 'The credential itself must be treated as compromised no matter what you do to the repo.',
+            hintFull: 'Best: rotate the leaked credential immediately AND scrub it from history — a plain revert alone leaves it exposed in the commit log forever.',
+            options: [
+              { id: 'a', label: 'Rotate the credential immediately AND remove it from history', tier: 'best', why: 'Only this actually neutralizes the leak — the secret is compromised the moment it was pushed, revert or not.' },
+              { id: 'b', label: 'Just git revert the commit', tier: 'wrong', why: 'The credential is still sitting in the git history forever — anyone with repo access (or an old clone) can still find it.' },
+              { id: 'c', label: 'Delete the whole repository and start fresh', tier: 'wrong', why: 'Massive overkill that still doesn\'t neutralize the leaked credential itself, and destroys unrelated history.' }
+            ],
+            justificationPatterns: [/rotate|credential|secret|history|compromised/i]
+          }
+        ]
+      ],
+      specialAttack: {
+        mode: 'build_the_pipeline',
+        prompt: 'All heads rear back at once! <strong>Sequence the correct Git collaboration workflow before it strikes.</strong>',
+        steps: [
+          'Create a branch',
+          'Make commits',
+          'Push the branch',
+          'Open a Pull Request',
+          'Merge after review'
+        ],
+        damageIfCorrect: 36,
+        damageToHeroIfWrong: 24
+      }
     }
   };
 
@@ -23930,14 +24440,64 @@ $ git stash pop
     $('dgcStatAttack').textContent = '+' + Math.round(save.stats.attack * 100) + '%';
     $('dgcStatFocus').textContent = '+' + save.stats.focus.toFixed(1) + 's';
     $('dgcStatLuck').textContent = '+' + Math.round(save.stats.luck * 100) + '%';
-    var statusEl = $('dgcBossStatusTerminalGolem');
-    if (save.bossesDefeated.indexOf('terminalGolem') !== -1) {
-      statusEl.textContent = '✓ Cleared';
-      statusEl.classList.add('dgc-cleared');
-    } else {
-      statusEl.textContent = 'Not Cleared';
-      statusEl.classList.remove('dgc-cleared');
-    }
+    renderBossSelectGrid();
+  }
+
+  /* ============================================================
+     PHASE 3 — BOSS SELECT GRID. One card per boss in BOSS_ORDER, each
+     showing its own chibi + cleared/not-cleared status; the Final Boss
+     is rendered locked/silhouetted until every topic boss is cleared.
+     Replaying an already-cleared boss stays fully available — nothing
+     locks after a first clear except the Final Boss's own gate.
+     ============================================================ */
+  var BOSS_ORDER = ['terminalGolem', 'kraken', 'hydra', 'orchestrator', 'phantom', 'reaper', 'titan', 'statekeeper', 'wraith', 'pager'];
+  var FINAL_BOSS_ID = 'pager';
+  var prevFinalBossLocked = null; // tracks the lock state across renders, to fire the reveal only on the actual unlock moment
+  function isFinalBossUnlocked() {
+    return BOSS_ORDER.filter(function (id) { return id !== FINAL_BOSS_ID; })
+      .every(function (id) { return save.bossesDefeated.indexOf(id) !== -1; });
+  }
+  function renderBossSelectGrid() {
+    var grid = $('dgcBossSelectGrid');
+    if (!grid) return;
+    var finalUnlocked = isFinalBossUnlocked();
+    var justUnlocked = prevFinalBossLocked === true && finalUnlocked === true;
+    prevFinalBossLocked = !finalUnlocked;
+
+    grid.innerHTML = BOSS_ORDER.map(function (id) {
+      var boss = BOSSES[id];
+      if (!boss) return '';
+      var isFinal = id === FINAL_BOSS_ID;
+      var cleared = save.bossesDefeated.indexOf(id) !== -1;
+      if (isFinal && !finalUnlocked) {
+        return '<div class="dgc-boss-card dgc-boss-card-locked" data-boss-id="' + id + '">' +
+          '<div class="dgc-boss-card-lock-icon">🔒</div>' +
+          '<div class="dgc-boss-card-icon">' + boss.icon + '</div>' +
+          '<div class="dgc-boss-card-name">???</div>' +
+          '<div class="dgc-boss-card-topic">Locked</div>' +
+          '<div class="dgc-boss-card-status-locked">Clear all 9 topic bosses to unlock</div>' +
+          '<button class="dgc-btn dgc-btn-fight" disabled>🔒 Locked</button>' +
+        '</div>';
+      }
+      return '<div class="dgc-boss-card' + (isFinal && justUnlocked ? ' dgc-boss-card-reveal' : '') + '" data-boss-id="' + id + '">' +
+        '<div class="dgc-sprite dgc-boss-card-sprite" id="dgcBossCardSprite-' + id + '"></div>' +
+        '<div class="dgc-boss-card-name">' + boss.name + '</div>' +
+        '<div class="dgc-boss-card-topic">' + boss.topic + '</div>' +
+        '<div class="dgc-boss-card-status' + (cleared ? ' dgc-cleared' : '') + '">' + (cleared ? '✓ Cleared' : 'Not Cleared') + '</div>' +
+        '<button class="dgc-btn dgc-btn-fight" data-fight-boss-id="' + id + '">⚔️ Fight</button>' +
+      '</div>';
+    }).join('');
+
+    // Inject each visible card's chibi now that the markup exists.
+    BOSS_ORDER.forEach(function (id) {
+      var boss = BOSSES[id];
+      if (!boss) return;
+      if (id === FINAL_BOSS_ID && !finalUnlocked) return; // locked card has no live chibi, just the flat icon
+      var sprite = $('dgcBossCardSprite-' + id);
+      if (!sprite) return;
+      sprite.innerHTML = chibiRoot(boss.chibiKind);
+      setExpression(sprite, id === FINAL_BOSS_ID ? 'angry' : 'idle');
+    });
   }
 
   /* ============================================================
@@ -25258,7 +25818,11 @@ $ git stash pop
   /* ============================================================
      WIRE UP STATIC BUTTONS
      ============================================================ */
-  $('dgcFightBtn').addEventListener('click', function () { startFight('terminalGolem'); });
+  $('dgcBossSelectGrid').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-fight-boss-id]');
+    if (!btn || btn.disabled) return;
+    startFight(btn.getAttribute('data-fight-boss-id'));
+  });
   $('dgcQuitBtn').addEventListener('click', function () {
     clearInterval(state && state.timer);
     goToStartScreen();
@@ -25348,11 +25912,11 @@ $ git stash pop
     $('dgcTitleHeroSprite').innerHTML = chibiRoot('hero');
     $('dgcTitleSudoSprite').innerHTML = chibiRoot('sudo');
     $('dgcSelectHeroSprite').innerHTML = chibiRoot('hero');
-    $('dgcSelectBossSprite').innerHTML = chibiRoot('golem');
     setExpression($('dgcTitleHeroSprite'), 'happy');
     setExpression($('dgcTitleSudoSprite'), 'idle');
     setExpression($('dgcSelectHeroSprite'), 'confident');
-    setExpression($('dgcSelectBossSprite'), 'idle');
+    // Boss-select's OWN sprites (one per boss card) are injected by
+    // renderBossSelectGrid() instead, since there are now many of them.
     refreshHeroNameLabels();
   }
 
