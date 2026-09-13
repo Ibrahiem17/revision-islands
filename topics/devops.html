@@ -22339,7 +22339,7 @@ $ git stash pop
     background:var(--dgc-bg); border:1px solid var(--dgc-border);
   }
   .dgc-city-world {
-    position:absolute; top:0; left:0; width:900px; height:560px;
+    position:absolute; top:0; left:0; width:1500px; height:760px;
     background:radial-gradient(ellipse at 50% 0%, var(--dgc-bg-3) 0%, var(--dgc-bg) 70%);
   }
   .dgc-city-world-ground {
@@ -22350,8 +22350,20 @@ $ git stash pop
       linear-gradient(180deg, transparent 0%, transparent 60%, var(--dgc-secondary-dim) 60%, #14260f 100%);
   }
   .dgc-city-buildings-layer { position:absolute; inset:0; }
+  /* CRITICAL FIX: this used to be pinned at a fixed left:50%/top:50% —
+     always visually centered regardless of actual position. That's only
+     correct while the camera can still pan freely; once it saturates at
+     a map edge (or, worse, whenever the viewport is wider/taller than
+     the world, which pins the camera at 0 permanently), the world stops
+     scrolling AND the hero stays glued to center — nothing on screen
+     moves at all, which reads exactly like an invisible wall. left/top
+     are now set from JS each tick (updateCityCamera()) to the hero's
+     REAL screen position (world position minus camera offset), so the
+     hero visually walks toward the viewport edge once the camera can't
+     follow any further, instead of freezing. The translate(-50%,-50%)
+     stays — it centers the token ON that computed point, unchanged. */
   .dgc-city-hero-token {
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    position:absolute; transform:translate(-50%,-50%);
     display:flex; flex-direction:column; align-items:center; z-index:3; pointer-events:none;
   }
   .dgc-city-sudo-token { position:absolute; display:flex; flex-direction:column; align-items:center; z-index:2; }
@@ -27029,7 +27041,11 @@ $ git stash pop
      just that one transform, recomputed every animation frame while
      the City screen is open.
      ============================================================ */
-  var CITY_WORLD_W = 900, CITY_WORLD_H = 560;
+  // Widened from the original 900x560 as part of the movement-bug fix
+  // below (a wide viewport could exceed 900px, permanently pinning the
+  // camera at 0 and freezing ALL horizontal movement on screen) — also
+  // gives this addendum's NPC/environment-richness work real room.
+  var CITY_WORLD_W = 1500, CITY_WORLD_H = 760;
   var CITY_BUILDINGS = [
     { id: 'armory', name: 'Armory', x: 70, y: 90 },
     { id: 'tailor', name: 'Tailor', x: 260, y: 60 },
@@ -27086,9 +27102,25 @@ $ git stash pop
     var vp = $('dgcCityViewport');
     if (!vp) return;
     var vw = vp.clientWidth, vh = vp.clientHeight;
-    var camX = Math.max(0, Math.min(CITY_WORLD_W - vw, cityHero.x - vw / 2));
-    var camY = Math.max(0, Math.min(CITY_WORLD_H - vh, cityHero.y - vh / 2));
+    // Clamp(0, worldSize - viewportSize) can go negative if the viewport
+    // is bigger than the world on that axis (a wide Browser pane, say) —
+    // Math.max(0, ...) already guards THAT edge, but a second clamp on
+    // the upper bound guards the case where worldSize < viewportSize
+    // entirely, so camera math never produces a nonsensical negative pan.
+    var camX = Math.max(0, Math.min(Math.max(0, CITY_WORLD_W - vw), cityHero.x - vw / 2));
+    var camY = Math.max(0, Math.min(Math.max(0, CITY_WORLD_H - vh), cityHero.y - vh / 2));
     $('dgcCityWorld').style.transform = 'translate(' + (-camX) + 'px,' + (-camY) + 'px)';
+    // CRITICAL FIX (Section 0): the hero token's on-screen position is
+    // now genuinely computed (world position minus camera offset)
+    // instead of hardcoded to the viewport's center — see the CSS
+    // comment on .dgc-city-hero-token for the full why. This is what
+    // makes movement keep visibly working once the camera saturates at
+    // any map edge, in any viewport size.
+    var heroToken = $('dgcCityHeroToken');
+    if (heroToken) {
+      heroToken.style.left = (cityHero.x - camX) + 'px';
+      heroToken.style.top = (cityHero.y - camY) + 'px';
+    }
   }
 
   function checkCityBuildingProximity() {
