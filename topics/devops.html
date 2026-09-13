@@ -21922,6 +21922,14 @@ $ git stash pop
   .dgc-boss-glyphs { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:8.5px; color:rgba(var(--dgc-success-rgb),0.28); line-height:1.3; overflow:hidden; letter-spacing:1px; white-space:pre-wrap; padding:4px; text-align:center; pointer-events:none; }
   .dgc-vs { align-self:center; font-family:var(--dgc-font-display); font-weight:800; font-size:15px; color:var(--dgc-border-bright); padding-top:150px; }
   .dgc-phase-tag { margin-top:8px; font-size:9.5px; color:var(--dgc-crit); background:rgba(var(--dgc-crit-rgb),0.08); border:1px solid rgba(var(--dgc-crit-rgb),0.25); border-radius:12px; padding:3px 10px; display:inline-block; }
+  /* Phase 5, Section 2 — daily streak badge: same small-pill language as
+     the phase tag above, warm gold instead of crit-red so it doesn't
+     read as a warning. */
+  .dgc-streak-badge {
+    margin-top:8px; font-family:var(--dgc-font-ui); font-weight:700; font-size:10.5px; letter-spacing:0.5px;
+    color:var(--dgc-gold); background:rgba(var(--dgc-gold-rgb),0.1); border:1px solid rgba(var(--dgc-gold-rgb),0.3);
+    border-radius:12px; padding:3px 11px; display:inline-block;
+  }
 
   .dgc-fx-layer { position:absolute; inset:0; pointer-events:none; z-index:5; overflow:visible; }
   .dgc-dmg-num { position:absolute; font-family:var(--dgc-font-display); font-weight:800; white-space:nowrap; animation:dgc-floatup 1s ease-out forwards; text-shadow:0 0 8px currentColor; }
@@ -23149,6 +23157,16 @@ $ git stash pop
     <div class="dgc-starter-coins-sub">Welcome, new dev — here's a head start.</div>
   </div>
 
+  <!-- Phase 5, Section 2 — daily streak toast. Same visual/audio language
+       and non-blocking behavior as the starter-coins toast above (reuses
+       its CSS classes directly), shown once per calendar day the player
+       opens the game, right at the same world-entry moment. -->
+  <div class="dgc-starter-coins-toast" id="dgcStreakToast" hidden>
+    <div class="dgc-starter-coins-burst" id="dgcStreakBurst"></div>
+    <div class="dgc-starter-coins-text" id="dgcStreakText">🔥 3-DAY STREAK</div>
+    <div class="dgc-starter-coins-sub" id="dgcStreakSub">+16 coins for coming back</div>
+  </div>
+
   <!-- ============ RANDOM OUTAGE EVENT ============
        A rare, urgent, high-reward diagnostic pop-in shown occasionally
        when returning to the menu after a fight — see maybeTriggerOutage-
@@ -23197,6 +23215,10 @@ $ git stash pop
           <span class="dgc-logo-line dgc-logo-line-b">TERMINAL <em>COMBAT</em></span>
         </h1>
         <div class="dgc-logo-underline"></div>
+        <!-- Phase 5, Section 2 — daily streak badge: visible but small,
+             never a modal/notification-style interruption. Hidden entirely
+             until there's an actual streak worth showing (see refreshStreakBadge()). -->
+        <div class="dgc-streak-badge" id="dgcStreakBadge" hidden></div>
       </div>
 
       <div class="dgc-title-stage">
@@ -23771,6 +23793,86 @@ $ git stash pop
     playSfx('starterCoins');
     setTimeout(function () { toast.hidden = true; }, 2600);
     refreshTitleScreen(); // the coins are already in `save` — reflect them right away
+  }
+
+  /* ============================================================
+     PHASE 5, SECTION 2 — DAILY STREAK TRACKER. Separate from the
+     in-fight combo streak (resets every fight) — this tracks consecutive
+     CALENDAR DAYS the player has opened the game at all, independent of
+     whether they actually fight anything. Checked once per page load
+     (same "data now, toast deferred to world-entry" split as starter
+     coins above) so it can never fire twice for the same visit.
+     ============================================================ */
+  var STREAK_MILESTONES = [3, 7, 14, 30];
+  var pendingStreakInfo = null;
+  function todayDateString() {
+    var d = new Date();
+    var mm = String(d.getMonth() + 1); if (mm.length < 2) mm = '0' + mm;
+    var dd = String(d.getDate()); if (dd.length < 2) dd = '0' + dd;
+    return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+  function checkDailyStreak() {
+    var today = todayDateString();
+    if (save.lastPlayedDate === today) return; // already counted today — a page refresh isn't a second "day"
+    var isConsecutiveDay = false;
+    if (save.lastPlayedDate) {
+      var prevMidnight = new Date(save.lastPlayedDate + 'T00:00:00');
+      var todayMidnight = new Date(today + 'T00:00:00');
+      var diffDays = Math.round((todayMidnight - prevMidnight) / 86400000);
+      isConsecutiveDay = diffDays === 1;
+    }
+    // A missed day (or the very first visit ever) resets to 1, not 0 — the
+    // day you're currently playing always counts as day 1 of a new streak.
+    save.currentDailyStreak = isConsecutiveDay ? save.currentDailyStreak + 1 : 1;
+    save.longestDailyStreak = Math.max(save.longestDailyStreak, save.currentDailyStreak);
+    save.lastPlayedDate = today;
+    // A modest "nice to have you back" bonus — small flat amount, gentle
+    // per-day scaling capped well below what real play earns, plus a
+    // one-time bump right on a milestone day. Never meant to rival the
+    // per-question/per-fight economy.
+    var isMilestone = STREAK_MILESTONES.indexOf(save.currentDailyStreak) !== -1;
+    var bonus = 10 + Math.min(save.currentDailyStreak, 20) * 2 + (isMilestone ? save.currentDailyStreak * 10 : 0);
+    save.coins += bonus;
+    persist();
+    // Don't show a toast for a bare "1-day streak" — that's just the
+    // first time anyone opens the game (or the first day back after a
+    // long gap), nothing to celebrate yet; the badge itself waits for
+    // the same threshold (see refreshStreakBadge()).
+    if (save.currentDailyStreak > 1) {
+      pendingStreakInfo = { streak: save.currentDailyStreak, bonus: bonus, milestone: isMilestone };
+    }
+  }
+  function showStreakToastIfPending() {
+    if (!pendingStreakInfo) return;
+    var info = pendingStreakInfo;
+    pendingStreakInfo = null;
+    var toast = $('dgcStreakToast');
+    if (!toast) return;
+    toast.hidden = false;
+    var textEl = $('dgcStreakText');
+    var subEl = $('dgcStreakSub');
+    if (textEl) textEl.textContent = '🔥 ' + info.streak + '-DAY STREAK' + (info.milestone ? '!' : '');
+    if (subEl) subEl.textContent = '+' + info.bonus + ' coins for coming back';
+    spawnCoinParticles($('dgcStreakBurst'), info.bonus);
+    // A milestone day (3/7/14/30) gets the same celebratory beat as a
+    // level-up/tier-up moment — reusing that pattern rather than a new
+    // effect system, per the doc's own instruction.
+    playSfx(info.milestone ? 'tierUp' : 'starterCoins');
+    setTimeout(function () { toast.hidden = true; }, 2600);
+    refreshTitleScreen();
+    refreshStreakBadge();
+  }
+  // Small, non-intrusive display on the title screen (not a modal/badge
+  // notification) — updated here and after any streak change.
+  function refreshStreakBadge() {
+    var el = $('dgcStreakBadge');
+    if (!el) return;
+    if (save.currentDailyStreak > 1) {
+      el.hidden = false;
+      el.textContent = '🔥 ' + save.currentDailyStreak + ' day' + (save.currentDailyStreak === 1 ? '' : 's');
+    } else {
+      el.hidden = true; // a bare "1 day" streak isn't worth showing yet — nothing to celebrate on day one
+    }
   }
 
   /* ============================================================
@@ -27318,6 +27420,7 @@ $ git stash pop
     } else {
       bar.hidden = true;
     }
+    refreshStreakBadge();
   }
 
   function refreshStartScreen() {
@@ -30490,6 +30593,7 @@ $ git stash pop
         overlay.hidden = true;
         overlay.classList.remove('dgc-boot-exit');
         showStarterCoinsToastIfPending(); // the "crossing the threshold" moment — exactly where a new player should see it
+        showStreakToastIfPending(); // never both at once in practice — see checkDailyStreak()'s own comment
       }, 480);
     }
     lines.forEach(function (text, i) {
@@ -30583,6 +30687,7 @@ $ git stash pop
      never the fight screen or even the boss-select screen directly.
      ============================================================ */
   grantStarterCoinsIfNeeded(); // data grant happens immediately; the visible toast waits for world-entry
+  checkDailyStreak(); // same split: streak/coins update now, toast (if any) waits for world-entry too
   initChibis();
   refreshTitleScreen();
   refreshStartScreen();
