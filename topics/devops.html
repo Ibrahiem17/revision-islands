@@ -23741,7 +23741,17 @@ $ git stash pop
     // Sudo-only
     thinking:    { eyes:'worried',   mouth:'neutral',    brow:'oneraised',acc:'thought' },
     smug:        { eyes:'smirk',     mouth:'smirk',      brow:'neutral',  acc:'none' },
-    sympathetic: { eyes:'worried',   mouth:'worried',    brow:'worried',  acc:'none' }
+    sympathetic: { eyes:'worried',   mouth:'worried',    brow:'worried',  acc:'none' },
+    // Character art v2 addendum, Section 2A — 5 more expressions raising
+    // the hero/Sudo/boss floor from 15+ to 20+. Each is a genuinely new
+    // eyes/mouth combination (2 brand-new eye shapes, 1 brand-new mouth
+    // shape, the rest reused deliberately in combinations not used
+    // elsewhere) — never a copy-paste of an existing expression.
+    curious:     { eyes:'curious',   mouth:'neutral',    brow:'raised',   acc:'none' },
+    playful:     { eyes:'wink',      mouth:'smirk',       brow:'oneraised',acc:'none' },
+    embarrassed: { eyes:'sheepish',  mouth:'wince',       brow:'worried',  acc:'sweat' },
+    calm:        { eyes:'content',   mouth:'smile',       brow:'neutral',  acc:'none' },
+    determinedIntense: { eyes:'determined', mouth:'gritted', brow:'furrowed', acc:'vein' }
   };
 
   // ---- shared face-part shape library (authored once, in head-local
@@ -23762,6 +23772,13 @@ $ git stash pop
       + '<g class="dgc-face-part dgc-eyes-smirk"><ellipse cx="41" cy="41" rx="3" ry="3.6"/><path d="M55 41 Q59 38 63 41" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></g>'
       + '<g class="dgc-face-part dgc-eyes-confused"><circle cx="40" cy="40" r="4.4"/><circle cx="59" cy="41" r="2"/></g>'
       + '<g class="dgc-face-part dgc-eyes-tired" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M37 41 Q41 43 45 41"/><path d="M55 41 Q59 43 63 41"/></g>'
+      // Character art v2 addendum — 4 new eye variants (curious/wink/
+      // sheepish/content), each a genuinely distinct shape/curve, not a
+      // resize of an existing one.
+      + '<g class="dgc-face-part dgc-eyes-curious"><circle cx="41" cy="40" r="3.8"/><circle cx="59" cy="40" r="3.8"/><circle cx="42" cy="38.4" r="1" fill="#fff"/><circle cx="60" cy="38.4" r="1" fill="#fff"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-wink" stroke="currentColor" stroke-linecap="round"><path d="M37 40 Q41 43 45 40" fill="none" stroke-width="2.2"/><circle cx="59" cy="40" r="3"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-sheepish" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M37 41 Q41 39 45 41"/><path d="M55 41 Q59 39 63 41"/></g>'
+      + '<g class="dgc-face-part dgc-eyes-content" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M38 40 Q41 38.5 44 40"/><path d="M56 40 Q59 38.5 62 40"/></g>'
       // MOUTH (14 variants)
       + '<g class="dgc-face-part dgc-mouth-neutral" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M46 53 Q50 55 54 53" fill="none"/></g>'
       + '<g class="dgc-face-part dgc-mouth-smile" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M44 52 Q50 58 56 52"/></g>'
@@ -23777,6 +23794,10 @@ $ git stash pop
       + '<g class="dgc-face-part dgc-mouth-confused" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"><path d="M44 53 Q47 50 50 53 Q53 56 56 53"/></g>'
       + '<g class="dgc-face-part dgc-mouth-tired" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"><path d="M45 54 L55 54"/></g>'
       + '<g class="dgc-face-part dgc-mouth-poweringup"><ellipse cx="50" cy="55" rx="6" ry="6"/></g>'
+      // Character art v2 addendum — a tense, clenched mouth for the new
+      // Determined-Intense expression (distinct from Tired's thin flat
+      // line: this one is a filled block with a visible teeth-seam).
+      + '<g class="dgc-face-part dgc-mouth-gritted"><rect x="43" y="52" width="14" height="4" rx="1"/><path d="M43 54 L57 54" stroke="rgba(0,0,0,0.35)" stroke-width="0.8" fill="none"/></g>'
       // BROW (6 variants)
       + '<g class="dgc-face-part dgc-brow-neutral" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M37 33 L45 32"/><path d="M55 32 L63 33"/></g>'
       + '<g class="dgc-face-part dgc-brow-furrowed" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M37 31 L45 34"/><path d="M55 34 L63 31"/></g>'
@@ -23843,10 +23864,16 @@ $ git stash pop
     if (!state) return 'idle';
     var lateFight = state.phaseIdx === state.boss.phases.length - 1 &&
                     (Date.now() - state.fightStartTime) > 60000;
+    // Character art v2 addendum, Section 2A — Determined-Intense: a
+    // "next level" escalation of plain Determined, reserved for genuinely
+    // high-stakes moments (a boss's final phase, or the Final Boss at
+    // any point) — HP/pacing concerns (worried/tired) still take
+    // precedence, this only escalates the everyday "focused" baseline.
+    var highStakes = state.isFinalBoss || state.phaseIdx === state.boss.phases.length - 1;
     if (who === 'hero') {
       if (state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25) return 'worried';
       if (lateFight) return 'tired';
-      return 'determined';
+      return highStakes ? 'determinedIntense' : 'determined';
     }
     if (who === 'boss') {
       if (state.bossEnraged) return 'angry'; // existing enrage-timer mechanic (danger-zone tick in startTimer)
@@ -24145,7 +24172,11 @@ $ git stash pop
   var HERO_CHARACTERS = {
     byte: { id: 'byte', name: 'Byte', tagline: 'Confident. A little smug about it.', menuExpr: 'confident' },
     nova: { id: 'nova', name: 'Nova', tagline: 'Earnest. Wide-eyed. All in.', menuExpr: 'happy' },
-    sage: { id: 'sage', name: 'Sage', tagline: 'Calm, cool, unbothered.', menuExpr: 'idle' }
+    // Section 2A — Sage's default now uses the new "calm" expression (a
+    // softer, second positive resting state) instead of plain idle,
+    // since Sage's whole personality read IS "calm" — a real use of the
+    // new expression, not just an addition nobody ever triggers.
+    sage: { id: 'sage', name: 'Sage', tagline: 'Calm, cool, unbothered.', menuExpr: 'calm' }
   };
   var HERO_CHARACTER_ORDER = ['byte', 'nova', 'sage'];
   function currentCharacterId() { return (save.selectedCharacterId && HERO_CHARACTERS[save.selectedCharacterId]) ? save.selectedCharacterId : 'byte'; }
@@ -26809,6 +26840,7 @@ $ git stash pop
       fightStartTime: Date.now(), // drives the pacing-based "tired" state
       bossEnraged: false, // set by startTimer()'s own danger-zone tick (existing enrage-timer mechanic)
       lastQuestionMode: null, // detects a real mode switch → "confused" reaction
+      seenModesThisFight: {}, // Section 2A — first-time-this-fight mode -> hero's "curious" reaction (distinct from boss/Sudo's per-switch "confused")
       hintUsedThisQ: false, // any hint tier used this question → suppresses Sudo's "smug"
       heroLowHpAlertShown: false, // one-shot: first time hero HP crosses the 25% line this fight
       fightLog: [] // every question asked this fight, for the end-of-fight review screen
@@ -27920,6 +27952,14 @@ $ git stash pop
       flashExpression('boss', 'confused', 1300);
       flashExpression('sudo', 'confused', 1300);
     }
+    // Section 2A — the hero gets a distinct reaction the first time THIS
+    // fight sees a given mode at all (genuine novelty, not just "it
+    // changed") — curious, not confused, and it's the hero's own read on
+    // the moment rather than the boss/Sudo's.
+    if (!state.seenModesThisFight[q.mode]) {
+      state.seenModesThisFight[q.mode] = true;
+      flashExpression('hero', 'curious', 1300);
+    }
     state.lastQuestionMode = q.mode;
     $('dgcPrompt').innerHTML = q.prompt;
     var area = $('dgcModeArea');
@@ -28351,7 +28391,12 @@ $ git stash pop
 
       // Hero's face: a timeout reads as "didn't get there in time" (confused),
       // not pain — a real, distinct wrong-answer path from a heavy/light hit.
-      flashExpression('hero', isTimeout ? 'confused' : (dmg > 20 ? 'hurtHeavy' : 'hurtLight'), 1300);
+      // Section 2A — a light miss occasionally reads as a lighthearted
+      // "oops" (embarrassed) rather than always the same hurtLight wince,
+      // so a run of small misses doesn't feel like talking to a frozen
+      // statue; heavy hits stay serious every time (never "cute").
+      var lightMissVariant = (!isTimeout && dmg <= 20 && Math.random() < 0.35) ? 'embarrassed' : 'hurtLight';
+      flashExpression('hero', isTimeout ? 'confused' : (dmg > 20 ? 'hurtHeavy' : lightMissVariant), 1300);
       // Boss is pleased it landed a hit — bigger tell on a bigger hit.
       flashExpression('boss', dmg > 20 ? 'excited' : 'happy', 1200);
       // Sudo: a heavy hit gets sympathy (distinct from Sudo's own hurt faces,
