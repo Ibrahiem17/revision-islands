@@ -22344,31 +22344,52 @@ $ git stash pop
   }
   .dgc-city-world-ground {
     position:absolute; left:0; right:0; bottom:0; height:100%;
+    /* Environment addendum — a real tileable grass texture (Kenney "RPG
+       Pack: base set", CC0) repeated as the base layer, with the
+       existing ambient vignette/gradient tints layered on top of it for
+       zone mood — "grass in natural areas" instead of one flat color. */
     background:
       radial-gradient(circle at 15% 30%, rgba(var(--dgc-success-rgb),0.06), transparent 22%),
       radial-gradient(circle at 70% 60%, rgba(var(--dgc-success-rgb),0.05), transparent 25%),
-      linear-gradient(180deg, transparent 0%, transparent 60%, var(--dgc-secondary-dim) 60%, #14260f 100%);
+      linear-gradient(180deg, transparent 0%, transparent 55%, rgba(10,20,8,0.55) 100%),
+      url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4QUE2OUU0NkQ1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4QUE2OUU0N0Q1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjhBQTY5RTQ0RDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjhBQTY5RTQ1RDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+rfd5NQAAA8NJREFUeNrsWstu2zAQtGjq4aROm6Ao+jr3D/qZ/ateeugP9JBrD0URoA/UseO4Y0+yZiiRZijKkgMvAkOhKXmHuzu7XCr79Pnj6JBFjQ5cjgCeAIDlcnnYAObz+WKxMEesfy3xf9sDgCzLoJPY4WYjfov5J/QAAAI73G4EYJTyPXY8HmMOZg4LADFAcOEHgG9ptNVqJYPReNKwUFaTnZPpbOJ1Fp5w0Um0r68xVhQKcbEbLYALTEA8cCZG+Elr+G3YOQAJaLi7y4u43vQceQIhEXnnAGTlXD5TV0LUbZyPp3FCuPatAIgSLo+vj2OEsF13cVAczB9LDwAghvI8b+k5gbEeaN7AmdpMqEVR7AFDHNvsAAC3AwAEkCvsUkm4EUw+8GilrORiJpTVRnqvN2ezmVkv4tqsppSViZBThOBYHfQOgDmeWuHz+vrapClVzy/AwHrLtLWwRy8A8Am9oQM+LQ+0AUgu5DWVXm6kL+1FK9iBI2ZIaKYPTz5ixfLY4EtuAScLSdYIocXA5JJ4z9WU0akwTKHNymRnconj/giRBW20PDWhI+lHJZe9LT9+SKLOVXRwXLvMNAT2DPlWj4YqTxzAsbF1BDAsAGmbbT0AsLqLrBkPCYC1l7Aq3sMAAGHFK7X7fkSnAiC+VK94Ixo24cVvD63FkPKTC7E/CzR6PHtsWsf8BG7EPiTk3lYAZHvgqnijQxk3AoDaSIcAhHZcPtMGAFYHzFYUhexyYdJ690239BwP4bSJBDyZ+wFi8Bzq6CTkkxyAyQTCbOK0bMrTGro9/yTfTHqojKdYpnMObj/AIwLX0tRpQ9e5r+v2aLjz+Kcx3zUAQNxUVWWOjLzt1eQAQrokMkE3IpPjAnbzJpPJAI3gjAG2eFnP8Ni0r55cDADzDJTOM8COy24LxFlzWBaw0i2DpqU1umit6kYSqFNTKiKKOE0MAiBNdtciJfEl7jyxQAlJWVn6ZW5J8ntktoR7Tl1dlWvOqW4W1WoPNQ8AQHtgKMvSrB3i9j1rAO++vuLVrzd/f364us273Y+LMRkM8FseK0YD2Mbr2ffT919eq0W2BwAMNnm3y3rZI76tks/023uDdNXGuT9KFMKQ67hX0dRJmeNPlr38U5xfnnWhOo86zQNFU9gBiGALdVrl+DufVnLfxeXz4nfexdpb+xWXPOoNgTsXGis1Pdm+6fHy24vuvD+h9g8ycZnrQi/nN+sYmlxVMMJ8ukiOIfnMB0H8bLL1nIsOIiELlkgWgiOV+V2SP/1xov/1ubcMlP8CDABA4WWZS6l4nwAAAABJRU5ErkJggg==);
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+    background-size: auto, auto, auto, 64px 64px;
   }
   .dgc-city-buildings-layer { position:absolute; inset:0; }
-  /* CRITICAL FIX: this used to be pinned at a fixed left:50%/top:50% —
-     always visually centered regardless of actual position. That's only
-     correct while the camera can still pan freely; once it saturates at
-     a map edge (or, worse, whenever the viewport is wider/taller than
-     the world, which pins the camera at 0 permanently), the world stops
-     scrolling AND the hero stays glued to center — nothing on screen
-     moves at all, which reads exactly like an invisible wall. left/top
-     are now set from JS each tick (updateCityCamera()) to the hero's
-     REAL screen position (world position minus camera offset), so the
-     hero visually walks toward the viewport edge once the camera can't
-     follow any further, instead of freezing. The translate(-50%,-50%)
-     stays — it centers the token ON that computed point, unchanged. */
+  /* Section 3 (roads) — a flat, non-sortable layer of real dirt-path/
+     stone-plaza tile art sitting directly on the grass, well below every
+     sortable object's z-index range (those start at y>=20 and this layer
+     has no z-index of its own, i.e. the stacking-context default of 0). */
+  .dgc-city-roads-layer { position:absolute; inset:0; pointer-events:none; }
+  .dgc-city-road-segment {
+    position:absolute; transform-origin:0 50%; background-repeat:repeat; background-size:48px 48px;
+    box-shadow:0 0 14px 6px rgba(20,38,15,0.5) inset; border-radius:6px;
+  }
+  .dgc-city-plaza {
+    position:absolute; border-radius:50%; background-repeat:repeat; background-size:56px 56px;
+    box-shadow:0 0 30px 14px rgba(20,38,15,0.45) inset;
+  }
+  /* Section 2A (depth/draw-order) + Section 4 (hero scale): the hero
+     token used to be pinned OUTSIDE #dgcCityWorld with a fixed z-index
+     — see git history for that old critical-fix comment. It's a CHILD
+     of the world now (HTML), positioned with raw world coordinates and
+     a per-tick z-index = its own Y (updateCityCamera()), so it draws in
+     front of/behind trees, buildings and NPCs correctly based on
+     vertical position instead of always winning. The translate(-50%,
+     -50%) is unchanged — it just centers the token on that point. */
   .dgc-city-hero-token {
     position:absolute; transform:translate(-50%,-50%);
-    display:flex; flex-direction:column; align-items:center; z-index:3; pointer-events:none;
+    display:flex; flex-direction:column; align-items:center; pointer-events:none;
   }
-  .dgc-city-sudo-token { position:absolute; display:flex; flex-direction:column; align-items:center; z-index:2; }
-  .dgc-city-hero-sprite { width:100px; height:128px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
-  .dgc-city-sudo-sprite { width:74px; height:94px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+  .dgc-city-sudo-token { position:absolute; display:flex; flex-direction:column; align-items:center; }
+  /* Section 4 — hero scale fix: was 100x128, which read noticeably
+     larger than every NPC (64x82) and even Sudo (was 74x94) — oversized
+     next to buildings/other characters. Brought down to the same
+     human-scale band as NPCs; Sudo trimmed to match so the hero shrinking
+     didn't leave it looking comparatively oversized. */
+  .dgc-city-hero-sprite { width:68px; height:87px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
+  .dgc-city-sudo-sprite { width:66px; height:84px; filter:drop-shadow(0 8px 6px rgba(0,0,0,0.5)); }
 
   /* ---- Section 3A — overworld sprite: small, simplified, 3 facing
      groups (down/up/side; left/right share "side", mirrored). ---- */
@@ -22417,6 +22438,11 @@ $ git stash pop
   }
   .dgc-city-decor { position:absolute; font-size:26px; cursor:pointer; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.4)); transform:translate(-50%,-50%); }
   .dgc-city-decor:hover { transform:translate(-50%,-50%) scale(1.15); }
+  /* Environment addendum — player-placed grass/flower/tree decorations
+     reuse the real FOLIAGE_SPRITES art; bottom-anchored like the
+     ambient fixtures instead of center-anchored like the emoji ones. */
+  .dgc-city-decor-sprite { width:32px; height:auto; transform:translate(-50%,-88%); }
+  .dgc-city-decor-sprite:hover { transform:translate(-50%,-88%) scale(1.15); }
   .dgc-city-decor-animal { animation:dgc-decor-wander 4s ease-in-out infinite; }
   @keyframes dgc-decor-wander { 0%,100%{ transform:translate(-50%,-50%) translateX(0); } 25%{ transform:translate(-50%,-50%) translateX(10px); } 75%{ transform:translate(-50%,-50%) translateX(-10px); } }
   .dgc-city-viewport.dgc-city-placing-mode { cursor:crosshair; }
@@ -22425,11 +22451,11 @@ $ git stash pop
      LIVING CITY ADDENDUM — NPCs, environment fixtures, dialogue box.
      ============================================================ */
   .dgc-city-npc-layer, .dgc-city-fixture-layer { position:absolute; inset:0; }
-  .dgc-city-fixture { position:absolute; transform:translate(-50%,-50%); pointer-events:none; opacity:0.92; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.35)); z-index:0; }
+  .dgc-city-fixture { position:absolute; transform:translate(-50%,-50%); pointer-events:none; opacity:0.92; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.35)); }
   .dgc-city-fixture-sprite { transform:translate(-50%,-92%); height:auto; opacity:1; image-rendering:auto; }
   .dgc-city-npc-token {
     position:absolute; transform:translate(-50%,-100%); cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; z-index:2;
+    display:flex; flex-direction:column; align-items:center;
   }
   .dgc-city-npc-sprite { width:64px; height:82px; filter:drop-shadow(0 5px 4px rgba(0,0,0,0.45)); }
   .dgc-city-npc-token.dgc-city-walking .dgc-city-npc-sprite { animation:dgc-city-walk-bob .38s ease-in-out infinite; }
@@ -23381,6 +23407,7 @@ $ git stash pop
     <div class="dgc-city-viewport" id="dgcCityViewport">
       <div class="dgc-city-world" id="dgcCityWorld">
         <div class="dgc-city-world-ground"></div>
+        <div class="dgc-city-roads-layer" id="dgcCityRoadsLayer"><!-- populated once by renderCityRoads() from ROAD_SEGMENTS/TOWN_PLAZA --></div>
         <div class="dgc-city-zone-labels" id="dgcCityZoneLabels"><!-- populated once from CITY_ZONES --></div>
         <div class="dgc-city-decor-layer" id="dgcCityDecorLayer"></div>
         <div class="dgc-city-fixture-layer" id="dgcCityFixtureLayer"><!-- populated once by renderCityFixtures() from WORLD_FIXTURES --></div>
@@ -23390,17 +23417,23 @@ $ git stash pop
           <div class="dgc-sudo-bubble dgc-show" id="dgcCitySudoBubble">Try the Armory — new gear helps.</div>
           <div class="dgc-sprite dgc-city-sudo-sprite" id="dgcCitySudoSprite"></div>
         </div>
-      </div>
-
-      <!-- The hero token is a SIBLING of the world, not a child — it stays
-           visually centered in the viewport at all times; only the world
-           translates under it. This is the whole "camera follow" trick. -->
-      <div class="dgc-city-hero-token" id="dgcCityHeroToken">
-        <div class="dgc-char-aura dgc-char-aura-hero"></div>
-        <div class="dgc-city-hero-facing" id="dgcCityHeroFacing">
-          <div class="dgc-sprite dgc-city-hero-sprite" id="dgcCityHeroSprite"></div>
+        <!-- Environment addendum, Section 2A: the hero token used to be a
+             VIEWPORT SIBLING of #dgcCityWorld (see git history for the old
+             comment) so it could stay visually anchored while the world
+             panned under it — but that put it in its own stacking context,
+             so it always rendered on top of every fixture/building/NPC
+             regardless of position. It's a CHILD of the world now, like
+             everything else that needs to draw-order correctly against
+             it; updateCityCamera() positions it with its raw world
+             coordinates (the world's own translate() does the camera-pan
+             math for it) and sets z-index from its Y each tick. -->
+        <div class="dgc-city-hero-token" id="dgcCityHeroToken">
+          <div class="dgc-char-aura dgc-char-aura-hero"></div>
+          <div class="dgc-city-hero-facing" id="dgcCityHeroFacing">
+            <div class="dgc-sprite dgc-city-hero-sprite" id="dgcCityHeroSprite"></div>
+          </div>
+          <div class="dgc-hero-name" id="dgcCityHeroName">Junior Dev</div>
         </div>
-        <div class="dgc-hero-name" id="dgcCityHeroName">Junior Dev</div>
       </div>
 
       <div class="dgc-city-enter-prompt" id="dgcCityEnterPrompt" hidden>⏎ Enter <span id="dgcCityEnterPromptName"></span></div>
@@ -27451,22 +27484,35 @@ $ git stash pop
   // camera at 0 and freezing ALL horizontal movement on screen) — also
   // gives this addendum's NPC/environment-richness work real room.
   var CITY_WORLD_W = 1500, CITY_WORLD_H = 760;
+  // Environment addendum (Section 3 spacing fix) — the 6 Town Square
+  // buildings are laid out on a regular hexagon ring (radius 170) around
+  // a shared plaza hub (400,280) instead of hand-placed coordinates that
+  // used to leave library/trophy only ~2px apart (an actual overlap).
+  // Ring math: adjacent ring points on a regular hexagon are exactly
+  // `radius` apart center-to-center, which — after subtracting the
+  // ~128x136 card footprint — reliably clears ~40px+ between every
+  // building on this ring, at every position, by construction rather
+  // than by hand-tuned per-pair adjustment.
   var CITY_BUILDINGS = [
-    { id: 'armory', name: 'Armory', x: 70, y: 90 },
-    { id: 'tailor', name: 'Tailor', x: 260, y: 60 },
-    { id: 'bank', name: 'Bank', x: 460, y: 100 },
-    { id: 'library', name: 'Library', x: 650, y: 70 },
-    { id: 'trophy', name: 'Trophy Hall', x: 780, y: 130 },
+    { id: 'armory', name: 'Armory', x: 166, y: 224 },
+    { id: 'tailor', name: 'Tailor', x: 251, y: 77 },
+    { id: 'bank', name: 'Bank', x: 421, y: 77 },
+    { id: 'library', name: 'Library', x: 506, y: 224 },
     // Section 1B sub-step 2 — General Store: sells town decorations. A
     // 6th building rather than folding decorations into an existing one,
     // per the doc's explicitly offered option.
-    { id: 'store', name: 'General Store', x: 420, y: 380 },
+    { id: 'store', name: 'General Store', x: 251, y: 371 },
+    { id: 'trophy', name: 'Trophy Hall', x: 421, y: 371 },
     // Section 3A — Training Grounds: a walk-up LOCATION rather than a
     // shop — entering it routes straight to Boss Select instead of
     // opening a modal (see enterCityBuilding()'s special case), tying
     // "go fight" into the walkable world instead of only the Back button.
-    { id: 'training', name: 'Training Grounds', x: 660, y: 340 }
+    // Deliberately OUTSIDE the plaza ring — it's its own zone, not a
+    // Town Square shop — with clear walking distance from the ring's
+    // easternmost building (library, right edge x=634).
+    { id: 'training', name: 'Training Grounds', x: 700, y: 300 }
   ];
+  var CITY_BUILDING_W = 128, CITY_BUILDING_H = 136; // card footprint, for spacing/overlap/z-order math
   var CITY_SUDO_POS = { x: 170, y: 190 }; // a fixed idle "guide post" near the Armory — simpler and just as alive as full follow-AI
   var cityHero = { x: 450, y: 280, facing: 'down', moving: false };
   var cityKeys = { up: false, down: false, left: false, right: false };
@@ -27478,7 +27524,7 @@ $ git stash pop
     if (!layer) return;
     layer.innerHTML = CITY_BUILDINGS.map(function (b) {
       return '<div class="dgc-city-building dgc-city-building-' + b.id + '" data-building="' + b.id + '" ' +
-        'style="left:' + b.x + 'px; top:' + b.y + 'px;" tabindex="0" role="button">' +
+        'style="left:' + b.x + 'px; top:' + b.y + 'px; z-index:' + Math.round(b.y + CITY_BUILDING_H) + ';" tabindex="0" role="button">' +
         '<div class="dgc-city-building-roof"></div>' +
         '<div class="dgc-city-building-body"><div class="dgc-city-building-icon">' + CITY_BUILDING_ICONS[b.id] + '</div><div class="dgc-city-building-name">' + b.name + '</div></div>' +
       '</div>';
@@ -27497,8 +27543,9 @@ $ git stash pop
   // clusters. Static (don't depend on save state), so rendered once as
   // plain HTML in #dgcCityWorld rather than through a render function.
   var CITY_ZONES = [
-    { name: 'TOWN SQUARE', x: 380, y: 230 },
-    { name: 'TRAINING GROUNDS', x: 780, y: 270 },
+    // Environment addendum — re-centered on the new hexagon plaza hub.
+    { name: 'TOWN SQUARE', x: 400, y: 250 },
+    { name: 'TRAINING GROUNDS', x: 764, y: 270 },
     // Living City addendum — re-anchored into the new eastward expansion
     // of the widened world (was 620,460 in the smaller 900px-wide map).
     { name: 'RESIDENTIAL DISTRICT', x: 1220, y: 340 }
@@ -27533,10 +27580,80 @@ $ git stash pop
     rock2: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAE8AAAAnCAYAAABOkxWxAAADoElEQVR42u2aa04aURTH2YFLcAldgktgCS7BJbAEPvcTbbX11YY+wNLiMNBqW4UKRrFNK6WJVg1VJ8TakQ56ev8TMcN1XjB3EAZOcmJiNPH+POf8z4NQqE/s8vIyQszYV5l5tNlsTjYajXuhkTkbg1UlCzMCVVV1fETLYJqmTVAHdnV1pVwDjTCg4aEGyiDEyKMNJdDT09Mx8sEAcRiibmoEr3uhKI7gdWFoRcgnCzw8J6H4o6qU//KV0vkCPc3mbvmz3DvKlTbp294enV9cDBc8KCQPTDk7o3L1J2WLJVNgVv58ZZXKe/v0t9EIPrxjRQnXFIXg1cNDPcKWPn7qCBjvL9nv58o7VKvX6ULTooGFtyDLMS+grHyJpbi0tU3bv46qgYW3KMuKH/DgqY0ifaj8oI2Dg+A1yvOyPOkXuJaQIPqKR7Wp4MGTJNlPePD4+xVa29+XAwVuRpLG/QbX8uR6ngqVyliQUjbKP3IhI9P06xTNppdpUc4KBYgSERyVlaQq/8Anb9P04FXixmcYyDkGUgQ8purxgQaG9RAWmeeqGltlhZx/4MNEsg0e/FFySQg8qPrALTfR4bMJIm6cIhqaRi9YIW9LKylzCxwc0SgqdecymXBfR9X1mtx2Q4Ipgn/Y49QbU3giax/qbF9HlZNhZjV9GIs8ADSmLsRDpGigzt7lzi3sde/mZtCHSIgUCy51e3+Jw5rc7rLlxjD896q3sxGO3m9ZWvdUL+Z1WyKoZSn2XAy8QMMyE7s5V49jjbLoBpl3TDe9XFbGu0nR0vddfftrnBycHoa+riUWsz7UPPhWpRrpyUnS7SEa0YU1uFnz63ZysOr1RIsHlq7cpxBiKEt4q1CodiKBtgPR5VTLzCYHOL6P9sSp1xM5aeiLUvb3ujycR3ESBVQIpjCRwH+PnxKs+jcrIHwvZwUZLjqFjdHXyacRXEFE+Fo1v26Lv1M0wVvpOL8s2f6caBFxij5Pp0yzcyBmUrPRys7tgMBvFJBFoJvo7PvoMxMJCILV3dRuUrADZ6x3xsnC75T1Nfr4EQzC4Ka+mfVsUNpW+8E76qH5FJDVgU1fg/Sz50MmoUs4rtfpX7PpLfpwR+WFQUhnz0AagYhUT1G3jsTaOqUKn2l1u0ybuxUdKvpVlCtX0YeNK8IZ0NCG+DNfZnWY/QTPyZF5WGqACaD+Pjlp39BgWThID7rzOTmTmdDB3U+nx/w8QAfRcTq1vGaN3N1V7j8wLD7ao45XigAAAC10RVh0U29mdHdhcmUAYnkuYmxvb2RkeS5jcnlwdG8uaW1hZ2UuUE5HMjRFbmNvZGVyqAZ/7gAAAABJRU5ErkJggg==',
     grassTuft: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAkCAYAAADl9UilAAAC7klEQVR42s1YzW4SURhFX6DpxlhDmTuXJi59hPoGPAKPUHeamPbSHwRqYRx9APZu2Gg0UjppiBYLzWhtK6MLHoFHGO+ZOHW48w0wCBlIvg1zYc5853znO5BKjXlVHf1R7YZt+pVahpfZZ1tvfm+4wTKdrJU4sIqdyVd6uhus2g/uLkXnRFMbFE4016+9U8191ef1xIHttNIiCAz18ht3y73VlUSBPX+/pqnADj4zF/pLns5jzVLBGVf6IHk6jzN5FVj5XHdhJYkCe/o2taIC27XkEDgbxjLQ2VDBHV6wpaBzSwVW6rDk6aSmc3noVMzWo7PH7OTpbKYNis6jmzVtXAgwHS5QC1tlO80HOYpO02H5KFChELAIY6Z09ndFkbvT+MnrWPzYFCh4X8VmYjE6a2WGBJ0h2wC92Knq2e1P9+PRielC1nrt8MY4C6DWE7qh6gyaQhIJnsPwxAuEUiOjOuCDOGkDVetnc8FzMF/1DLwwFrAX5+nN/fY/MUMXUYKmBgAV1A46XjxjoTPQ6H97VPWKjtDQCAWs2NFuz0tbCNmKlMBsfqdShK5F+RMF7OCLNryN5N050BhlBRBulOeQwOQA+NNI0bj98d7sOxXtDn7Z0XfdnnYyvQGQzg5thmiUFjPXlQNDpLJ9FLBydz13eMHrhL6sua4cj05iOqls5hltNyOKZ6Nd9/Ql9Tvp3rAbeCi8NJRYqKRavWTGtF5WsNICWiOEnx8HCqyYv/jQuM56v1sluHBDVNuoELEmChhWE3ww7hrCkCGljLDVVraPqh98IAYwl3p/krEa17o90fNEc31EvNgI6u6MpDKiJv1poz4Q6XnUTdWAN09gELpKP+l51E3LvdEnoJLsrMCoZT91eih95QV56Y5fUT4WF1jJZqzU0d3YwHZPmFf7bV4QQtz1q9DSLP/aNBX8bLDM/sMnexZzZ+6YaCnApKXEAfbsXWaVAla9zDZwfWZgqnPHodF7sA/sMfnHIJFCgr73B8IO30CcJZAXAAAALXRFWHRTb2Z0d2FyZQBieS5ibG9vZGR5LmNyeXB0by5pbWFnZS5QTkcyNEVuY29kZXKoBn/uAAAAAElFTkSuQmCC'
   };
+  // Environment addendum (Section 3 — roads) — real tileable ground
+  // textures (Kenney "RPG Pack: base set", CC0) for grass/dirt-path/
+  // stone-plaza, used as CSS repeating background-images rather than
+  // one flat color, so the ground itself reads as real tile art too.
+  var GROUND_TILES = {
+    grass: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4QUE2OUU0NkQ1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4QUE2OUU0N0Q1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjhBQTY5RTQ0RDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjhBQTY5RTQ1RDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+rfd5NQAAA8NJREFUeNrsWstu2zAQtGjq4aROm6Ao+jr3D/qZ/ateeugP9JBrD0URoA/UseO4Y0+yZiiRZijKkgMvAkOhKXmHuzu7XCr79Pnj6JBFjQ5cjgCeAIDlcnnYAObz+WKxMEesfy3xf9sDgCzLoJPY4WYjfov5J/QAAAI73G4EYJTyPXY8HmMOZg4LADFAcOEHgG9ptNVqJYPReNKwUFaTnZPpbOJ1Fp5w0Um0r68xVhQKcbEbLYALTEA8cCZG+Elr+G3YOQAJaLi7y4u43vQceQIhEXnnAGTlXD5TV0LUbZyPp3FCuPatAIgSLo+vj2OEsF13cVAczB9LDwAghvI8b+k5gbEeaN7AmdpMqEVR7AFDHNvsAAC3AwAEkCvsUkm4EUw+8GilrORiJpTVRnqvN2ezmVkv4tqsppSViZBThOBYHfQOgDmeWuHz+vrapClVzy/AwHrLtLWwRy8A8Am9oQM+LQ+0AUgu5DWVXm6kL+1FK9iBI2ZIaKYPTz5ixfLY4EtuAScLSdYIocXA5JJ4z9WU0akwTKHNymRnconj/giRBW20PDWhI+lHJZe9LT9+SKLOVXRwXLvMNAT2DPlWj4YqTxzAsbF1BDAsAGmbbT0AsLqLrBkPCYC1l7Aq3sMAAGHFK7X7fkSnAiC+VK94Ixo24cVvD63FkPKTC7E/CzR6PHtsWsf8BG7EPiTk3lYAZHvgqnijQxk3AoDaSIcAhHZcPtMGAFYHzFYUhexyYdJ690239BwP4bSJBDyZ+wFi8Bzq6CTkkxyAyQTCbOK0bMrTGro9/yTfTHqojKdYpnMObj/AIwLX0tRpQ9e5r+v2aLjz+Kcx3zUAQNxUVWWOjLzt1eQAQrokMkE3IpPjAnbzJpPJAI3gjAG2eFnP8Ni0r55cDADzDJTOM8COy24LxFlzWBaw0i2DpqU1umit6kYSqFNTKiKKOE0MAiBNdtciJfEl7jyxQAlJWVn6ZW5J8ntktoR7Tl1dlWvOqW4W1WoPNQ8AQHtgKMvSrB3i9j1rAO++vuLVrzd/f364us273Y+LMRkM8FseK0YD2Mbr2ffT919eq0W2BwAMNnm3y3rZI76tks/023uDdNXGuT9KFMKQ67hX0dRJmeNPlr38U5xfnnWhOo86zQNFU9gBiGALdVrl+DufVnLfxeXz4nfexdpb+xWXPOoNgTsXGis1Pdm+6fHy24vuvD+h9g8ycZnrQi/nN+sYmlxVMMJ8ukiOIfnMB0H8bLL1nIsOIiELlkgWgiOV+V2SP/1xov/1ubcMlP8CDABA4WWZS6l4nwAAAABJRU5ErkJggg==',
+    dirt: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4QUI1NkRDMkQ1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4QUI1NkRDM0Q1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjhBQjU2REMwRDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjhBQjU2REMxRDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+QW/yHgAABD9JREFUeNrMWsl60zAQtmQ56Qtw4NIDBy68EK/EQ/FEfNAWuiXWwkiTuPKqsTxKokOTONGvWTR7xc8f36toSSF2TY3vnXOH1lSE1e16P2riL/PWGF8OPjfq44kQIv7IstgB5QAdiI6f1FLK/pON1As+tCEDgA3klpPZHD4bA3OEgsx2qqbLuJaCcnmsdcZYbexaHQ7wFb4AiQvKhWsE24x1U+z1RAtvalk1VWWs9SSet6AI4KFznnT/0iHArpqqmTG+8oJxnsTlnaqW1hoX0R2wxBzb8UmIr2fkDQ/pDIzxFfFeBo9U+8OkkPN0T57U3ZnJH7jAg6ozzUOtMBcpdrLG+KC9Cv1NAD72O7XREFEueQ4qh28gXeN1DvIzNEN0zi18a6xjiAPE5Ubyy9g1VsIyh6wM9E9yKelWhB9QrhAw6V1Ctg3EBh0LdNkFnxlIUN+kQk0XNNrKG4xPEYLnVHCXkz507FIxLABiU0vKdu8AghOzI1Yo1MO2NrqoxkcAIwKsOmr/rvHuVKxSAsh9le9DJ4YerDNZCvWwpTVm0qh8IEuaF+/CeKKcC0brGkKSEuybIw7wsgEKpPzSROpa7YV8qLIF1ZPEH1z9hAa8RiHTCi/h7+n5vqlZkvgMfEqEUZ2FAbtg0JMxkqjupCddi++pMo4ayOYsJTtGDu/DevzgGgVDJF5bdmQkc9k1tIwtZiHT2q6EPPxkY0FitXrLSsDKadaI787Z/IKMgcHsgoOSzyXxB/UgFqIylFYKvdtCHgHomK6hm8KKjN5fYMHH+A3fwmXxdIe/J96w9wbOGAoryLWM6VfcZ3SgAp1gSKScrqyMUsJJurHoRrTt+PDmbqfG+KdHsHkfEjrQZFdwdeg+idV2nEj5lLBf3Q/o7lY5/M4APirrLm08p/7VZBocbwTZoXjmeqnl8GXsB2JPJ8SJaRQYi58pgd+zFUi7h+Wim84v8lYJfDnWV+9Izen+S+DLheIV00begMWOzzMfoLfg2fGvPB/Yjn/9+cBG/KvNB7jwLzcfKIR/uflAIfzLzQcK4d/EfGAL/uXmA4XwLzcfKITPOR+Y7N+XxmebD8z170vj88wHFvr3GZyswmeYDyz37/Gkcviy2jwfWO7fl8bfmqgl+/el8TfNByj9+9L4m+YDqyJAIXzZhXHs3+MELr5zCxqk22U5/E3zAUr/vjT+1vkAS712zfkAvTC/3fnAcv8eqxN2fBDH21H/ezvyzAfG/ftw8KkP3vVlWfAhnzvqj3/+Urz9eywF4/499pMp+Ml67dDqQ2sGkYFtPjDXvyfOByhO7PWgB66svdO3Mh9IWsjj83uMaJR9+PL0dP98E/OBpOyfXg7x8X8/v/z++mAb10sl4ID47nbQjPOBSfzkej/2bg5Q/+vbn+lAlt2/JxIzxl8b5l4+vcbUV1zzAVGROBjjr+0sPd4/D779L8AAr04cGGNfIh4AAAAASUVORK5CYII=',
+    stone: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyFpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo4QjRFNTMwNEQ1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo4QjRFNTMwNUQ1NEQxMUUzQUQ5RjhGRDAyNzZFMzU5QyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjhCNEU1MzAyRDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjhCNEU1MzAzRDU0RDExRTNBRDlGOEZEMDI3NkUzNTlDIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+EH/x7wAAASNJREFUeNrsmV0OgyAQhJFuE/vY9hL2cL1BPXdNpPTnsQmiiywgzr46Wf0SM8sszf3RK6W67qb+63o5qy2UVhsv8jw7EjVaH/Qk5Mvat7WjMWHv5vZ36n0AROT/gl8vrYMBuP2d+s3/QgAAAACmyyywFxNqQQH9nXqfkX39a1zxfbPF7e/U1zuJT227ZBByB2d0Pa0chNn1sFEAAAAARQPMTvLs+knrfQ6DxOSPrq861EuH9Cj9YwJkWQLARgEAAADUA5BlixFzDmTZYmArIXxSyLmVkD6JYCsBAAAAoPKthPRJRHwrIX0S2cFWorQbDTZAaTcasFEAAGBvAKVdCLBttLQLgTp/IUaoTxPSBUN9mpCOUA8AAACg2lCfJqRz9R8BBgDVs4aWO9ncVgAAAABJRU5ErkJggg=='
+  };
+  // Section 3 — the Town Square plaza hub + the roads connecting it to
+  // Training Grounds and on to the Residential District, so the 3 zones
+  // read as one walkable settlement instead of disconnected patches.
+  var TOWN_PLAZA = { x: 400, y: 280, radius: 150 };
+  var ROAD_SEGMENTS = [
+    { x1: 400, y1: 280, x2: 764, y2: 368, width: 42 },
+    { x1: 764, y1: 368, x2: 1220, y2: 380, width: 42 }
+  ];
+  function renderCityRoads() {
+    var layer = $('dgcCityRoadsLayer');
+    if (!layer || layer.children.length) return; // static — render once
+    var html = '<div class="dgc-city-plaza" style="left:' + (TOWN_PLAZA.x - TOWN_PLAZA.radius) + 'px; top:' + (TOWN_PLAZA.y - TOWN_PLAZA.radius) + 'px; width:' + (TOWN_PLAZA.radius * 2) + 'px; height:' + (TOWN_PLAZA.radius * 2) + 'px; background-image:url(' + GROUND_TILES.stone + ');"></div>';
+    html += ROAD_SEGMENTS.map(function (r) {
+      var dx = r.x2 - r.x1, dy = r.y2 - r.y1;
+      var len = Math.hypot(dx, dy);
+      var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      return '<div class="dgc-city-road-segment" style="left:' + r.x1 + 'px; top:' + r.y1 + 'px; width:' + len + 'px; height:' + r.width + 'px; ' +
+        'background-image:url(' + GROUND_TILES.dirt + '); transform:translateY(-50%) rotate(' + angle + 'deg);"></div>';
+    }).join('');
+    layer.innerHTML = html;
+  }
+  // A point-vs-rectangle helper (with padding) used both to keep newly
+  // scattered fixtures off building footprints/roads (below) and to
+  // reject illegal player decoration placement (Section 2A).
+  function rectContainsPoint(rx, ry, rw, rh, px, py, pad) {
+    pad = pad || 0;
+    return px >= rx - pad && px <= rx + rw + pad && py >= ry - pad && py <= ry + rh + pad;
+  }
+  function pointBlockedForEnvironment(x, y, pad) {
+    for (var i = 0; i < CITY_BUILDINGS.length; i++) {
+      var b = CITY_BUILDINGS[i];
+      if (rectContainsPoint(b.x, b.y, CITY_BUILDING_W, CITY_BUILDING_H, x, y, pad)) return true;
+    }
+    var distToPlaza = Math.hypot(x - TOWN_PLAZA.x, y - TOWN_PLAZA.y);
+    if (distToPlaza < TOWN_PLAZA.radius + (pad || 0)) return true;
+    for (var j = 0; j < ROAD_SEGMENTS.length; j++) {
+      var r = ROAD_SEGMENTS[j];
+      // Distance from point to the segment's line, clamped to its length —
+      // good enough for a straight road strip (no need for true OBB math).
+      var vx = r.x2 - r.x1, vy = r.y2 - r.y1;
+      var lenSq = vx * vx + vy * vy;
+      var t = lenSq ? Math.max(0, Math.min(1, ((x - r.x1) * vx + (y - r.y1) * vy) / lenSq)) : 0;
+      var px = r.x1 + t * vx, py = r.y1 + t * vy;
+      if (Math.hypot(x - px, y - py) < r.width / 2 + (pad || 0)) return true;
+    }
+    return false;
+  }
+  // Residential District house coordinates — hoisted to module scope
+  // (out of the WORLD_FIXTURES IIFE below) so both the fixture-scatter
+  // avoidance AND the player decoration-placement check (Section 2A)
+  // can treat "on top of a house" as blocked, the same as a real
+  // building — houses are drawn via WORLD_FIXTURES, not CITY_BUILDINGS,
+  // so without this a placed decoration could land right on a roof.
+  var HOUSE_LOCATIONS = [[1050, 180], [1150, 130], [1320, 160], [1030, 380], [1200, 430], [1350, 400], [1080, 580], [1280, 600], [1420, 300]];
+  var HOUSE_BOXES = HOUSE_LOCATIONS.map(function (p) { return { x: p[0] - 40, y: p[1] - 40, w: 80, h: 60 }; }); // house glyph is ~80x60 at this font-size, anchored center
+  function blockedByHouse(x, y, pad) {
+    for (var i = 0; i < HOUSE_BOXES.length; i++) {
+      if (rectContainsPoint(HOUSE_BOXES[i].x, HOUSE_BOXES[i].y, HOUSE_BOXES[i].w, HOUSE_BOXES[i].h, x, y, pad)) return true;
+    }
+    return false;
+  }
   var WORLD_FIXTURES = (function () {
     var list = [];
     // Residential District houses — a real little neighborhood.
-    [[1050, 180], [1150, 130], [1320, 160], [1030, 380], [1200, 430], [1350, 400], [1080, 580], [1280, 600], [1420, 300]].forEach(function (p) {
+    HOUSE_LOCATIONS.forEach(function (p) {
       list.push({ icon: '🏠', x: p[0], y: p[1], size: 40 });
     });
     var TREE_KEYS = ['treePine1', 'treePine2', 'treeRound', 'treeAutumnRound', 'treeAutumnPine'];
@@ -27544,6 +27661,11 @@ $ git stash pop
     var FLOWER_KEYS = ['flowerBlue', 'flowerTeal', 'flowerPurple'];
     var ROCK_KEYS = ['rock1', 'rock2'];
     var GRASS_KEYS = ['grassTuft'];
+    // Section 2A — don't drop a fixture on top of a building, the plaza,
+    // a road, or a house: reject the random point and try again (capped
+    // so a saturated zone can't loop forever) rather than placing blind.
+    // (blockedByHouse() now lives at module scope, above, so it's also
+    // reusable by the player decoration-placement check further down.)
     // Real sprite art (see FOLIAGE_SPRITES above) instead of emoji glyphs —
     // each call scatters a random pick from the given key set so a zone
     // isn't just one tree copy-pasted everywhere.
@@ -27551,7 +27673,13 @@ $ git stash pop
       for (var i = 0; i < count; i++) {
         var key = keys[Math.floor(Math.random() * keys.length)];
         var s = size + (sizeJitter ? Math.round((Math.random() - 0.5) * 2 * sizeJitter) : 0);
-        list.push({ sprite: key, x: xMin + Math.random() * (xMax - xMin), y: yMin + Math.random() * (yMax - yMin), size: s });
+        var x, y, tries = 0;
+        do {
+          x = xMin + Math.random() * (xMax - xMin);
+          y = yMin + Math.random() * (yMax - yMin);
+          tries++;
+        } while (tries < 20 && (pointBlockedForEnvironment(x, y, 14) || blockedByHouse(x, y, 10)));
+        list.push({ sprite: key, x: x, y: y, size: s });
       }
     }
     // Town Square + Training Grounds — moderate natural coverage around the buildings.
@@ -27567,14 +27695,23 @@ $ git stash pop
     scatterSprite(ROCK_KEYS, 8, 20, 1490, 20, 740, 30, 6);
     return list;
   })();
+  // Section 2A — depth/draw-order: every sortable world object (fixtures,
+  // buildings, NPCs, hero, Sudo) gets a z-index equal to its own ground
+  // anchor's Y coordinate, so something lower on screen always draws in
+  // front of something higher — the standard top-down/3-quarter trick —
+  // instead of a fixed per-layer stacking order that let a hero standing
+  // above a tree render in front of it (or a building draw over an NPC
+  // standing in front of its door). Fixtures/buildings are static, so
+  // this is computed once at render time, not every tick.
   function renderCityFixtures() {
     var layer = $('dgcCityFixtureLayer');
     if (!layer || layer.children.length) return; // static — render once
     layer.innerHTML = WORLD_FIXTURES.map(function (f) {
+      var z = Math.round(f.y);
       if (f.sprite) {
-        return '<img class="dgc-city-fixture dgc-city-fixture-sprite" style="left:' + f.x + 'px; top:' + f.y + 'px; width:' + f.size + 'px;" src="' + FOLIAGE_SPRITES[f.sprite] + '" alt="">';
+        return '<img class="dgc-city-fixture dgc-city-fixture-sprite" style="left:' + f.x + 'px; top:' + f.y + 'px; width:' + f.size + 'px; z-index:' + z + ';" src="' + FOLIAGE_SPRITES[f.sprite] + '" alt="">';
       }
-      return '<div class="dgc-city-fixture" style="left:' + f.x + 'px; top:' + f.y + 'px; font-size:' + f.size + 'px;">' + f.icon + '</div>';
+      return '<div class="dgc-city-fixture" style="left:' + f.x + 'px; top:' + f.y + 'px; font-size:' + f.size + 'px; z-index:' + z + ';">' + f.icon + '</div>';
     }).join('');
   }
 
@@ -27592,16 +27729,27 @@ $ git stash pop
     var camX = Math.max(0, Math.min(Math.max(0, CITY_WORLD_W - vw), cityHero.x - vw / 2));
     var camY = Math.max(0, Math.min(Math.max(0, CITY_WORLD_H - vh), cityHero.y - vh / 2));
     $('dgcCityWorld').style.transform = 'translate(' + (-camX) + 'px,' + (-camY) + 'px)';
-    // CRITICAL FIX (Section 0): the hero token's on-screen position is
-    // now genuinely computed (world position minus camera offset)
-    // instead of hardcoded to the viewport's center — see the CSS
-    // comment on .dgc-city-hero-token for the full why. This is what
-    // makes movement keep visibly working once the camera saturates at
-    // any map edge, in any viewport size.
+    // CRITICAL FIX (Section 0), superseded by the environment addendum's
+    // Section 2A depth pass: the hero token used to live OUTSIDE
+    // #dgcCityWorld (a viewport sibling) with its screen position
+    // computed by hand every tick (world position minus camera offset),
+    // specifically so it wouldn't freeze once the camera saturated at a
+    // map edge. That sibling placement, though, put the hero in a
+    // separate stacking context from every tree/building/NPC, so it
+    // ALWAYS rendered on top of them regardless of position — the
+    // "hero pokes out in front of a tree it should be standing behind"
+    // bug. The hero token is now a CHILD of #dgcCityWorld instead (see
+    // the HTML), positioned with its raw WORLD coordinates like every
+    // other sortable object — the world's own translate(-camX,-camY)
+    // does the camera-follow math for it "for free", the exact same way
+    // it already did for fixtures/buildings/NPCs, which never had the
+    // freeze bug in the first place. z-index = its own Y keeps it
+    // correctly sorted against everything else on the same ground plane.
     var heroToken = $('dgcCityHeroToken');
     if (heroToken) {
-      heroToken.style.left = (cityHero.x - camX) + 'px';
-      heroToken.style.top = (cityHero.y - camY) + 'px';
+      heroToken.style.left = cityHero.x + 'px';
+      heroToken.style.top = cityHero.y + 'px';
+      heroToken.style.zIndex = Math.round(cityHero.y);
     }
   }
 
@@ -27653,7 +27801,7 @@ $ git stash pop
       // (wanderRadius 0) never move and would otherwise sit at (0,0) forever.
       var token = $('dgcCityNpc-' + npc.id);
       var st = NPC_STATE[npc.id];
-      if (token && st) { token.style.left = st.x + 'px'; token.style.top = st.y + 'px'; }
+      if (token && st) { token.style.left = st.x + 'px'; token.style.top = st.y + 'px'; token.style.zIndex = Math.round(st.y); }
     });
   }
   // Wander tick: each NPC with a wanderRadius > 0 occasionally picks a new
@@ -27687,6 +27835,7 @@ $ git stash pop
       if (token) {
         token.style.left = st.x + 'px';
         token.style.top = st.y + 'px';
+        token.style.zIndex = Math.round(st.y);
         token.classList.toggle('dgc-city-walking', st.moving);
       }
     });
@@ -27809,12 +27958,17 @@ $ git stash pop
     if (sudoToken) {
       sudoToken.style.left = CITY_SUDO_POS.x + 'px';
       sudoToken.style.top = CITY_SUDO_POS.y + 'px';
+      // Section 2A — Sudo is a static fixture, so its sort key is set
+      // once here rather than every tick (+84 approximates its feet,
+      // matching its ~84px-tall sprite, since it isn't bottom-anchored).
+      sudoToken.style.zIndex = Math.round(CITY_SUDO_POS.y + 84);
       // Section 3A — Sudo's overworld sprite (small, simplified —
       // distinct from the full portrait used in fights/menus).
       var sudoSprite = $('dgcCitySudoSprite');
       if (sudoSprite && !sudoSprite.querySelector('.dgc-overworld-sprite')) { sudoSprite.innerHTML = overworldSpriteSVG('sudo'); }
     }
     renderCityZoneLabels();
+    renderCityRoads();
     renderCityFixtures();
     renderCityBuildings();
     renderCityDecorations();
@@ -28086,10 +28240,17 @@ $ git stash pop
      purchasable; owned units get placed/moved/picked-up directly in the
      town rather than through a separate inventory screen.
      ============================================================ */
+  // Environment addendum — the 3 nature items reuse the same real
+  // FOLIAGE_SPRITES art as the ambient world fixtures (a `sprite` key
+  // instead of an `icon` glyph) so a player-placed tree/flower/grass
+  // isn't a downgrade back to emoji next to the ones scattered by the
+  // engine itself. Lamppost/bench/dog/cat are small enough, and outside
+  // this pass's core "grass/flower/tree" complaint, that they stay as
+  // emoji for now — a disclosed scope call, not an oversight.
   var DECORATION_CATALOG = [
-    { id: 'grass', name: 'Grass Tuft', cost: 15, icon: '🌱', kind: 'static', desc: 'A small patch of green.' },
-    { id: 'flowers', name: 'Flower Bed', cost: 30, icon: '🌸', kind: 'static', desc: 'Adds a little color.' },
-    { id: 'tree', name: 'Tree', cost: 60, icon: '🌳', kind: 'static', desc: 'A proper shade tree.' },
+    { id: 'grass', name: 'Grass Tuft', cost: 15, sprite: 'grassTuft', kind: 'static', desc: 'A small patch of green.' },
+    { id: 'flowers', name: 'Flower Bed', cost: 30, sprite: 'flowerBlue', kind: 'static', desc: 'Adds a little color.' },
+    { id: 'tree', name: 'Tree', cost: 60, sprite: 'treeRound', kind: 'static', desc: 'A proper shade tree.' },
     { id: 'lamppost', name: 'Lamppost', cost: 45, icon: '🏮', kind: 'static', desc: 'Lights up the path.' },
     { id: 'bench', name: 'Bench', cost: 40, icon: '🪑', kind: 'static', desc: 'Somewhere to sit between fights.' },
     { id: 'dog', name: 'Town Dog', cost: 90, icon: '🐕', kind: 'animal', desc: 'Wanders a little on its own.' },
@@ -28106,8 +28267,9 @@ $ git stash pop
       var placeBtn = available > 0
         ? '<button class="dgc-btn dgc-btn-primary" data-decor-action="place" data-decor-id="' + d.id + '">Place (' + available + ')</button>'
         : '';
+      var iconHtml = d.sprite ? '<img src="' + FOLIAGE_SPRITES[d.sprite] + '" alt="" style="width:26px; height:26px; object-fit:contain;">' : d.icon;
       return '<div class="dgc-shop-card">' +
-        '<div class="dgc-shop-card-icon">' + d.icon + '</div>' +
+        '<div class="dgc-shop-card-icon">' + iconHtml + '</div>' +
         '<div class="dgc-shop-card-info">' +
           '<div class="dgc-shop-card-name">' + d.name + '</div>' +
           '<div class="dgc-shop-card-desc">' + d.desc + (decorOwnedCount(d.id) ? ' — owned ' + decorOwnedCount(d.id) : '') + '</div>' +
@@ -28144,8 +28306,26 @@ $ git stash pop
     if (banner) banner.hidden = true;
     var vp = $('dgcCityViewport'); if (vp) vp.classList.remove('dgc-city-placing-mode');
   }
+  // Section 2A — reject a placement that would land a new decoration on
+  // a building, the plaza, a road, or right on top of another placed
+  // decoration, instead of only fixing draw-order after the fact.
+  function decorationSpotBlocked(worldX, worldY) {
+    if (pointBlockedForEnvironment(worldX, worldY, 6)) return true;
+    if (blockedByHouse(worldX, worldY, 6)) return true;
+    return save.townDecorations.some(function (d) { return Math.hypot(d.x - worldX, d.y - worldY) < 22; });
+  }
   function placeDecorationAt(worldX, worldY) {
     if (!cityPlacingDecorId) return;
+    if (decorationSpotBlocked(worldX, worldY)) {
+      playSfx('insufficientFunds'); // reused as the generic "can't do that" cue
+      var banner = $('dgcCityPlacingBanner');
+      if (banner) {
+        var prevText = banner.textContent;
+        banner.textContent = "🚫 Can't place on top of that — try another spot";
+        setTimeout(function () { if (!banner.hidden) banner.textContent = prevText; }, 1200);
+      }
+      return;
+    }
     decorInstanceCounter++;
     save.townDecorations.push({ decorId: cityPlacingDecorId, x: worldX, y: worldY, instanceId: 'd' + Date.now() + '_' + decorInstanceCounter });
     persist();
@@ -28170,8 +28350,13 @@ $ git stash pop
     layer.innerHTML = save.townDecorations.map(function (inst) {
       var d = DECORATION_CATALOG.filter(function (d) { return d.id === inst.decorId; })[0];
       if (!d) return '';
+      var z = Math.round(inst.y); // Section 2A — same y-sort as every other ground object
+      if (d.sprite) {
+        return '<img class="dgc-city-decor dgc-city-decor-' + d.kind + ' dgc-city-decor-sprite" data-decor-instance="' + inst.instanceId + '" ' +
+          'style="left:' + inst.x + 'px; top:' + inst.y + 'px; z-index:' + z + ';" src="' + FOLIAGE_SPRITES[d.sprite] + '" alt="">';
+      }
       return '<div class="dgc-city-decor dgc-city-decor-' + d.kind + '" data-decor-instance="' + inst.instanceId + '" ' +
-        'style="left:' + inst.x + 'px; top:' + inst.y + 'px;">' + d.icon + '</div>';
+        'style="left:' + inst.x + 'px; top:' + inst.y + 'px; z-index:' + z + ';">' + d.icon + '</div>';
     }).join('');
   }
 
