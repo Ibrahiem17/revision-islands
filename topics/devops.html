@@ -22053,6 +22053,12 @@ $ git stash pop
     font-size:8.5px; letter-spacing:1px; color:var(--dgc-danger); opacity:0.75;
   }
   .dgc-code-line { display:block; padding:1px 6px; border-radius:2px; cursor:pointer; white-space:pre; color:var(--dgc-text-dim); }
+  /* Phase 5, Section 3A — accessibility: a visible focus ring for the 3
+     interactive elements that were mouse-only (now tabindex+keydown above)
+     — :focus-visible so it only shows for keyboard focus, not every click. */
+  .dgc-code-line:focus-visible, .dgc-option-card:focus-visible, .dgc-seq-chip:focus-visible {
+    outline:2px solid var(--dgc-secondary); outline-offset:2px;
+  }
   .dgc-code-line:hover { background:rgba(var(--dgc-secondary-rgb),0.08); color:var(--dgc-text); }
   .dgc-code-line.dgc-line-selected { background:rgba(var(--dgc-gold-rgb),0.15); color:var(--dgc-gold); box-shadow:0 0 10px rgba(var(--dgc-gold-rgb),0.2) inset; }
 
@@ -23273,6 +23279,18 @@ $ git stash pop
           <button class="dgc-btn" id="dgcSettingsChangeCharBtn">Change</button>
         </div>
         <div class="dgc-setting-row">
+          <div><strong>Practice Mode</strong><div class="dgc-setting-sub">No timer, no HP loss, no enrage — just drill questions calmly. Reduced coin/XP.</div></div>
+          <button class="dgc-toggle" id="dgcPracticeModeToggle" data-on="false"><span class="dgc-toggle-knob"></span></button>
+        </div>
+        <div class="dgc-setting-row">
+          <div><strong>Save Backup</strong><div class="dgc-setting-sub">Download your progress as a file, or restore from one — everything here lives only in this browser</div></div>
+          <div style="display:flex; gap:8px;">
+            <button class="dgc-btn" id="dgcSettingsExportBtn">⭳ Export</button>
+            <button class="dgc-btn" id="dgcSettingsImportBtn">⭱ Import</button>
+            <input type="file" id="dgcSettingsImportFile" accept="application/json" hidden>
+          </div>
+        </div>
+        <div class="dgc-setting-row">
           <div><strong>Reset All Progress</strong><div class="dgc-setting-sub">Wipes coins, XP, cleared bosses — cannot be undone</div></div>
           <button class="dgc-btn dgc-btn-danger-outline" id="dgcSettingsResetBtn">Reset</button>
         </div>
@@ -23696,7 +23714,14 @@ $ git stash pop
         // Living City addendum, Section 5 — lightweight: which line index
         // each NPC last showed, so a repeat conversation advances instead
         // of repeating (and eventually loops, which is explicitly fine).
-        npcLastLineIndex: (s.npcLastLineIndex && typeof s.npcLastLineIndex === 'object') ? s.npcLastLineIndex : {}
+        npcLastLineIndex: (s.npcLastLineIndex && typeof s.npcLastLineIndex === 'object') ? s.npcLastLineIndex : {},
+        // Phase 5, Section 3A — Practice Mode: a persistent settings-style
+        // toggle (same pattern as soundEnabled), not per-fight state.
+        practiceMode: !!s.practiceMode,
+        // Phase 5, Section 2 — daily streak tracker.
+        lastPlayedDate: typeof s.lastPlayedDate === 'string' ? s.lastPlayedDate : null,
+        currentDailyStreak: typeof s.currentDailyStreak === 'number' ? s.currentDailyStreak : 0,
+        longestDailyStreak: typeof s.longestDailyStreak === 'number' ? s.longestDailyStreak : 0
       };
     } catch (e) {
       return {
@@ -23708,7 +23733,8 @@ $ git stash pop
         ownedDecorations: {}, townDecorations: [],
         equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
         equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
-        npcLastLineIndex: {}
+        npcLastLineIndex: {}, practiceMode: false,
+        lastPlayedDate: null, currentDailyStreak: 0, longestDailyStreak: 0
       };
     }
   }
@@ -28445,6 +28471,12 @@ $ git stash pop
   }
 
   function resetAllProgress() {
+    // Practice Mode and the daily streak are settings/return-visit data,
+    // not "progress" in the sense this button describes (coins, XP,
+    // cleared bosses) — carried forward through the wipe, same spirit as
+    // sound settings already being stored outside this reset's blast radius.
+    var keepPracticeMode = save.practiceMode;
+    var keepStreak = { lastPlayedDate: save.lastPlayedDate, currentDailyStreak: save.currentDailyStreak, longestDailyStreak: save.longestDailyStreak };
     save = {
       coins: 0, xp: 0, bossesDefeated: [], bestCombo: 1, highScore: 0,
       level: 1, currentXP: 0, xpToNextLevel: xpToNextLevelForLevel(1), heroTier: tierForLevel(1).id,
@@ -28454,7 +28486,9 @@ $ git stash pop
       ownedDecorations: {}, townDecorations: [],
       equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
       equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
-      npcLastLineIndex: {}
+      npcLastLineIndex: {},
+      practiceMode: keepPracticeMode,
+      lastPlayedDate: keepStreak.lastPlayedDate, currentDailyStreak: keepStreak.currentDailyStreak, longestDailyStreak: keepStreak.longestDailyStreak
     };
     persist();
     refreshHeroTierVisuals();
@@ -28736,6 +28770,12 @@ $ git stash pop
     // (every question mode + the boss special attack) benefits uniformly,
     // without touching each call site individually.
     seconds = seconds + save.stats.focus + outfitFocusBonus();
+    // Practice Mode (Phase 5, Section 3A): no timer pressure at all — a
+    // huge allotment instead of a separate "untimed" code path, so every
+    // existing timer-driven behavior (the fill bar, the enrage flip at
+    // 20%, a genuine on-timeout callback) keeps working unchanged, it
+    // just never realistically reaches the danger zone.
+    if (save.practiceMode) seconds = 999999;
     state.timeAllotted = seconds;
     state.timeLeft = seconds;
     var fill = $('dgcTimerFill');
@@ -28821,7 +28861,7 @@ $ git stash pop
 
     } else if (q.mode === 'spot_the_bug') {
       var linesHtml = q.codeBlock.map(function (line, i) {
-        return '<span class="dgc-code-line" data-line="' + i + '">' + escapeHtml(line) + '</span>';
+        return '<span class="dgc-code-line" data-line="' + i + '" tabindex="0" role="button">' + escapeHtml(line) + '</span>';
       }).join('\n');
       area.innerHTML =
         '<div class="dgc-codeblock">' + linesHtml + '</div>' +
@@ -28830,11 +28870,17 @@ $ git stash pop
           '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="click the buggy line above, then type the fix...">' +
           '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
         '</div>';
+      // Accessibility (Phase 5, Section 3A): same click-only gap as the
+      // triage/sequence modes above — fixed the same way.
+      function selectCodeLine(el) {
+        area.querySelectorAll('.dgc-code-line').forEach(function (e2) { e2.classList.remove('dgc-line-selected'); });
+        el.classList.add('dgc-line-selected');
+        state.selectedLine = parseInt(el.getAttribute('data-line'), 10);
+      }
       area.querySelectorAll('.dgc-code-line').forEach(function (el) {
-        el.addEventListener('click', function () {
-          area.querySelectorAll('.dgc-code-line').forEach(function (e2) { e2.classList.remove('dgc-line-selected'); });
-          el.classList.add('dgc-line-selected');
-          state.selectedLine = parseInt(el.getAttribute('data-line'), 10);
+        el.addEventListener('click', function () { selectCodeLine(el); });
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCodeLine(el); }
         });
       });
       wireEnterAndSubmit(function () {
@@ -28845,7 +28891,7 @@ $ git stash pop
 
     } else if (q.mode === 'triage_call') {
       var cardsHtml = q.options.map(function (opt) {
-        return '<div class="dgc-option-card" data-id="' + opt.id + '">' + escapeHtml(opt.label) + '</div>';
+        return '<div class="dgc-option-card" data-id="' + opt.id + '" tabindex="0" role="button">' + escapeHtml(opt.label) + '</div>';
       }).join('');
       area.innerHTML =
         '<div class="dgc-option-cards">' + cardsHtml + '</div>' +
@@ -28854,11 +28900,19 @@ $ git stash pop
           '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="pick an option above, then justify it in one line...">' +
           '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
         '</div>';
+      // Accessibility (Phase 5, Section 3A): these were plain divs with only
+      // a click handler — completely unreachable via keyboard. tabindex+role
+      // above makes them focusable/announced; Enter/Space here fires the
+      // exact same selection the click handler does, not a parallel path.
+      function selectOptionCard(el) {
+        area.querySelectorAll('.dgc-option-card').forEach(function (e2) { e2.classList.remove('dgc-option-selected'); });
+        el.classList.add('dgc-option-selected');
+        state.selectedOption = el.getAttribute('data-id');
+      }
       area.querySelectorAll('.dgc-option-card').forEach(function (el) {
-        el.addEventListener('click', function () {
-          area.querySelectorAll('.dgc-option-card').forEach(function (e2) { e2.classList.remove('dgc-option-selected'); });
-          el.classList.add('dgc-option-selected');
-          state.selectedOption = el.getAttribute('data-id');
+        el.addEventListener('click', function () { selectOptionCard(el); });
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOptionCard(el); }
         });
       });
       wireEnterAndSubmit(function () {
@@ -29009,23 +29063,29 @@ $ git stash pop
     renderSeq();
     function renderSeq() {
       var poolHtml = state.seqPool.map(function (item, i) {
-        return '<div class="dgc-seq-chip" data-pool-idx="' + i + '">' + escapeHtml(item.label) + '</div>';
+        return '<div class="dgc-seq-chip" data-pool-idx="' + i + '" tabindex="0" role="button">' + escapeHtml(item.label) + '</div>';
       }).join('');
       var chosenHtml = state.seqChosen.map(function (item, i) {
         return '<div class="dgc-seq-chip"><span class="dgc-seq-num">' + (i + 1) + '.</span>' + escapeHtml(item.label) + '</div>';
       }).join('');
       area.innerHTML =
-        '<div style="font-size:10.5px;color:var(--dgc-text-dimmer);margin-bottom:6px;">Click the steps below in the correct order:</div>' +
+        '<div style="font-size:10.5px;color:var(--dgc-text-dimmer);margin-bottom:6px;">Click (or Tab + Enter) the steps below in the correct order:</div>' +
         '<div class="dgc-seq-pool" id="dgcSeqPool">' + (poolHtml || '<span style="color:var(--dgc-text-dimmer);font-size:10.5px;">(all steps placed)</span>') + '</div>' +
         '<div style="font-size:10.5px;color:var(--dgc-text-dimmer);margin-bottom:6px;">Your sequence:</div>' +
         '<div class="dgc-seq-chosen" id="dgcSeqChosen">' + (chosenHtml || '<span style="color:var(--dgc-text-dimmer);font-size:10.5px;">(nothing chosen yet)</span>') + '</div>' +
         '<button class="dgc-btn dgc-btn-primary" id="dgcSeqSubmit" ' + (state.seqPool.length ? 'disabled' : '') + '>Submit Sequence</button>';
+      // Accessibility (Phase 5, Section 3A): tabindex+role above + this
+      // keydown handler make these keyboard-operable — previously mouse-only.
+      function pickPoolChip(el) {
+        var idx = parseInt(el.getAttribute('data-pool-idx'), 10);
+        state.seqChosen.push(state.seqPool[idx]);
+        state.seqPool.splice(idx, 1);
+        renderSeq();
+      }
       area.querySelectorAll('#dgcSeqPool .dgc-seq-chip').forEach(function (el) {
-        el.addEventListener('click', function () {
-          var idx = parseInt(el.getAttribute('data-pool-idx'), 10);
-          state.seqChosen.push(state.seqPool[idx]);
-          state.seqPool.splice(idx, 1);
-          renderSeq();
+        el.addEventListener('click', function () { pickPoolChip(el); });
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickPoolChip(el); }
         });
       });
       var submitBtn = $('dgcSeqSubmit');
@@ -29169,11 +29229,16 @@ $ git stash pop
 
   // Shows the "how close" readout alongside the existing hit/damage FX —
   // one line, tier-colored, auto-clearing when the next question renders.
+  // Phase 5, Section 3A — accessibility: a shape/icon prefix alongside
+  // the tier color, so the result reads correctly without relying on
+  // red/gold/teal alone (the text itself already differs per tier too —
+  // this is a faster-to-scan cue on top of that, not the only signal).
+  var CLOSE_NOTE_TIER_ICON = { wrong: '✗', correct: '✓', optimal: '★' };
   function showCloseNote(q, tier, isTimeout) {
     var el = $('dgcCloseNote');
     if (!el) return;
     el.className = 'dgc-close-note dgc-close-note-' + tier;
-    el.textContent = closenessNote(q, tier, isTimeout);
+    el.textContent = (CLOSE_NOTE_TIER_ICON[tier] || '') + ' ' + closenessNote(q, tier, isTimeout);
     el.hidden = false;
   }
 
@@ -29216,7 +29281,11 @@ $ git stash pop
 
     if (tier === 'wrong') {
       var wasLow = state.heroHpMax && state.heroHp / state.heroHpMax <= 0.25;
-      var dmg = Math.round((q.damageIfCorrect || 15) * 0.6 * enrageFactor());
+      // Practice Mode: the "wrong answer" reaction (close-note, sound,
+      // face, combo reset) all still fire — the only thing switched off
+      // is the actual HP cost, per the doc's "no HP loss on wrong
+      // answers" requirement.
+      var dmg = save.practiceMode ? 0 : Math.round((q.damageIfCorrect || 15) * 0.6 * enrageFactor());
       var comboBeforeReset = state.combo;
       state.heroHp = Math.max(0, state.heroHp - dmg);
       state.combo = 1;
@@ -29284,8 +29353,12 @@ $ git stash pop
     var coinsEarned = Math.round((isOptimal ? 14 : 8) * state.combo * (hintFullUsed ? 0.4 : 1));
     // Luck stat (Phase 2): a gradually growing coin bonus on every landed hit.
     coinsEarned = Math.round(coinsEarned * (1 + save.stats.luck));
+    // Practice Mode: no coin/XP rewards — it's a learning tool, not a way
+    // to bypass the normal risk/reward loop (still deals full damage to
+    // the boss and still logs the question for the review screen).
+    if (save.practiceMode) coinsEarned = 0;
     save.coins += coinsEarned;
-    awardXp(isOptimal ? 6 : 3);
+    if (!save.practiceMode) awardXp(isOptimal ? 6 : 3);
     state.runCoins += coinsEarned;
     if (state.combo > save.bestCombo) save.bestCombo = state.combo;
     persist();
@@ -29393,7 +29466,7 @@ $ git stash pop
 
     function renderSpecialSeq() {
       var poolHtml = state.seqPool.map(function (item, i) {
-        return '<div class="dgc-seq-chip" data-pool-idx="' + i + '">' + escapeHtml(item.label) + '</div>';
+        return '<div class="dgc-seq-chip" data-pool-idx="' + i + '" tabindex="0" role="button">' + escapeHtml(item.label) + '</div>';
       }).join('');
       var chosenHtml = state.seqChosen.map(function (item, i) {
         return '<div class="dgc-seq-chip"><span class="dgc-seq-num">' + (i + 1) + '.</span>' + escapeHtml(item.label) + '</div>';
@@ -29403,12 +29476,19 @@ $ git stash pop
         '<div class="dgc-seq-pool" id="dgcSeqPool">' + (poolHtml || '') + '</div>' +
         '<div class="dgc-seq-chosen" id="dgcSeqChosen">' + (chosenHtml || '<span style="color:var(--dgc-text-dimmer);font-size:10.5px;">(nothing chosen yet)</span>') + '</div>' +
         '<button class="dgc-btn dgc-btn-primary" id="dgcSeqSubmit" ' + (state.seqPool.length ? 'disabled' : '') + '>Submit Sequence</button>';
+      // Accessibility (Phase 5, Section 3A) — same keyboard fix as the
+      // regular pipeline sequencer above; this ad-hoc special-attack
+      // version had its own separate copy of the same mouse-only bug.
+      function pickSpecialChip(el) {
+        var idx = parseInt(el.getAttribute('data-pool-idx'), 10);
+        state.seqChosen.push(state.seqPool[idx]);
+        state.seqPool.splice(idx, 1);
+        renderSpecialSeq();
+      }
       area.querySelectorAll('#dgcSeqPool .dgc-seq-chip').forEach(function (el) {
-        el.addEventListener('click', function () {
-          var idx = parseInt(el.getAttribute('data-pool-idx'), 10);
-          state.seqChosen.push(state.seqPool[idx]);
-          state.seqPool.splice(idx, 1);
-          renderSpecialSeq();
+        el.addEventListener('click', function () { pickSpecialChip(el); });
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickSpecialChip(el); }
         });
       });
       var submitBtn = $('dgcSeqSubmit');
@@ -29426,9 +29506,10 @@ $ git stash pop
       logFightQuestion(fakeQ, tier, false);
       showCloseNote(fakeQ, tier, false);
       if (tier === 'wrong') {
-        state.heroHp = Math.max(0, state.heroHp - sa.damageToHeroIfWrong);
+        var saDmg = save.practiceMode ? 0 : sa.damageToHeroIfWrong; // Practice Mode: no HP stakes on the special attack either
+        state.heroHp = Math.max(0, state.heroHp - saDmg);
         state.combo = 1;
-        spawnDamageNumber('hero', sa.damageToHeroIfWrong, false);
+        spawnDamageNumber('hero', saDmg, false);
         shakeArena('lg'); flashSprite('dgcHeroSprite'); flashHeroDefendPose(); sudoReact('wince');
         playSfx('wrong');
         flashExpression('hero', 'hurtHeavy', 1400);
@@ -29677,7 +29758,7 @@ $ git stash pop
       list.innerHTML = '<div class="dgc-review-empty">No questions recorded this fight.</div>';
       return;
     }
-    var tagText = { wrong: 'WRONG', correct: 'CORRECT', optimal: 'OPTIMAL' };
+    var tagText = { wrong: '✗ WRONG', correct: '✓ CORRECT', optimal: '★ OPTIMAL' };
     list.innerHTML = log.map(function (entry, i) {
       return '<div class="dgc-review-row">' +
         '<div class="dgc-review-row-top">' +
@@ -29717,7 +29798,7 @@ $ git stash pop
       if (save.bossesDefeated.indexOf(state.bossId) === -1) {
         save.bossesDefeated.push(state.bossId);
       }
-      awardXp(state.boss.xpReward);
+      if (!save.practiceMode) awardXp(state.boss.xpReward); // Practice Mode: no victory XP bonus either
       if (state.runCoins > save.highScore) save.highScore = state.runCoins;
       persist();
 
@@ -30164,6 +30245,72 @@ $ git stash pop
   $('dgcSettingsChangeCharBtn').addEventListener('click', function () {
     closeModals();
     showCharacterSelectScreen(true);
+  });
+  /* ---- Phase 5, Section 3A — Practice Mode toggle (same UI pattern as the sound toggle) ---- */
+  function applyPracticeModeToggleUI() {
+    var t = $('dgcPracticeModeToggle');
+    if (t) t.setAttribute('data-on', save.practiceMode ? 'true' : 'false');
+  }
+  $('dgcPracticeModeToggle').addEventListener('click', function () {
+    save.practiceMode = !save.practiceMode;
+    persist();
+    applyPracticeModeToggleUI();
+    playSfx('click');
+  });
+  applyPracticeModeToggleUI();
+
+  /* ============================================================
+     Phase 5, Section 3A — Save Export/Import. Everything lives only in
+     localStorage; this is a manual, no-backend way for a player to back
+     up real progress before clearing browser data or switching devices,
+     and to restore it afterward. Plain file download/upload — no server.
+     ============================================================ */
+  $('dgcSettingsExportBtn').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(save, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'devops-terminal-combat-save-' + stamp + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    playSfx('click');
+  });
+  $('dgcSettingsImportBtn').addEventListener('click', function () {
+    $('dgcSettingsImportFile').click();
+  });
+  $('dgcSettingsImportFile').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    e.target.value = ''; // always reset so re-selecting the SAME file still fires 'change' next time
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var parsed;
+      try { parsed = JSON.parse(reader.result); } catch (err) {
+        showConfirm('⚠ INVALID SAVE FILE', 'That file isn\'t a valid save export (couldn\'t be parsed as JSON). Nothing was changed.', function () {});
+        return;
+      }
+      // Light sanity check — a real export always has these; a random/
+      // corrupt JSON file almost certainly won't, and importing it blind
+      // would silently break the game rather than just failing to load.
+      var looksLikeSave = parsed && typeof parsed === 'object'
+        && typeof parsed.coins === 'number' && typeof parsed.level === 'number' && Array.isArray(parsed.bossesDefeated);
+      if (!looksLikeSave) {
+        showConfirm('⚠ INVALID SAVE FILE', 'That file doesn\'t look like a DevOps Terminal Combat save (missing expected fields). Nothing was changed.', function () {});
+        return;
+      }
+      showConfirm(
+        '⚠ IMPORT SAVE?',
+        'This replaces your CURRENT progress (Level ' + save.level + ', ' + save.coins + ' coins) with the imported save (Level ' + parsed.level + ', ' + parsed.coins + ' coins). This cannot be undone — export your current save first if you want to keep it. Continue?',
+        function () {
+          try { localStorage.setItem(STORE_KEY, JSON.stringify(parsed)); } catch (err) { /* storage unavailable */ }
+          location.reload(); // simplest correct way to re-init every system from the newly-imported save
+        }
+      );
+    };
+    reader.readAsText(file);
   });
   $('dgcCharSelectGrid').addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('[data-choose-character]') : null;
