@@ -22443,6 +22443,10 @@ $ git stash pop
      ambient fixtures instead of center-anchored like the emoji ones. */
   .dgc-city-decor-sprite { width:32px; height:auto; transform:translate(-50%,-88%); }
   .dgc-city-decor-sprite:hover { transform:translate(-50%,-88%) scale(1.15); }
+  /* Environment addendum — hand-illustrated lamppost/bench SVGs (see
+     lamppostSVG()/benchSVG()), same bottom-anchor convention. */
+  .dgc-city-decor-svg { transform:translate(-50%,-95%); filter:drop-shadow(0 3px 2px rgba(0,0,0,0.4)); }
+  .dgc-city-decor-svg:hover { transform:translate(-50%,-95%) scale(1.15); }
   .dgc-city-decor-animal { animation:dgc-decor-wander 4s ease-in-out infinite; }
   @keyframes dgc-decor-wander { 0%,100%{ transform:translate(-50%,-50%) translateX(0); } 25%{ transform:translate(-50%,-50%) translateX(10px); } 75%{ transform:translate(-50%,-50%) translateX(-10px); } }
   .dgc-city-viewport.dgc-city-placing-mode { cursor:crosshair; }
@@ -22453,6 +22457,8 @@ $ git stash pop
   .dgc-city-npc-layer, .dgc-city-fixture-layer { position:absolute; inset:0; }
   .dgc-city-fixture { position:absolute; transform:translate(-50%,-50%); pointer-events:none; opacity:0.92; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.35)); }
   .dgc-city-fixture-sprite { transform:translate(-50%,-92%); height:auto; opacity:1; image-rendering:auto; }
+  .dgc-city-fixture-svg { transform:translate(-50%,-93%); opacity:1; }
+  .dgc-city-fixture-svg svg, .dgc-decor-icon-svg svg, .dgc-city-decor-svg svg { width:100%; height:100%; display:block; }
   .dgc-city-npc-token {
     position:absolute; transform:translate(-50%,-100%); cursor:pointer;
     display:flex; flex-direction:column; align-items:center;
@@ -27653,18 +27659,42 @@ $ git stash pop
   // building — houses are drawn via WORLD_FIXTURES, not CITY_BUILDINGS,
   // so without this a placed decoration could land right on a roof.
   var HOUSE_LOCATIONS = [[1050, 180], [1150, 130], [1320, 160], [1030, 380], [1200, 430], [1350, 400], [1080, 580], [1280, 600], [1420, 300]];
-  var HOUSE_BOXES = HOUSE_LOCATIONS.map(function (p) { return { x: p[0] - 40, y: p[1] - 40, w: 80, h: 60 }; }); // house glyph is ~80x60 at this font-size, anchored center
+  var HOUSE_BOXES = HOUSE_LOCATIONS.map(function (p) { return { x: p[0] - 32, y: p[1] - 56, w: 64, h: 56 }; }); // matches the 60px SVG house, bottom-anchored at (x,y)
   function blockedByHouse(x, y, pad) {
     for (var i = 0; i < HOUSE_BOXES.length; i++) {
       if (rectContainsPoint(HOUSE_BOXES[i].x, HOUSE_BOXES[i].y, HOUSE_BOXES[i].w, HOUSE_BOXES[i].h, x, y, pad)) return true;
     }
     return false;
   }
+  // Environment addendum (icon gap closure) — no pre-made Kenney tile in
+  // either pack turned out to be a single ready-made "house", and
+  // compositing 3-4 real door/window/wall tiles into one legible object
+  // at a 40px display size just produced mud (fine pixel-tile detail
+  // crushed that small). Per the doc's own fallback clause, these small
+  // background houses are hand-illustrated instead — using the EXACT
+  // same non-emoji construction (roof triangle + wall body) as the
+  // interactive CITY_BUILDINGS cards already do, just smaller, so
+  // there's no new visual language, only a consistent smaller instance
+  // of the one this codebase already uses and was never flagged for.
+  var HOUSE_PALETTES = [
+    { roof: '#8f2f27', wall: '#d8c9a3' }, { roof: '#3f6b8f', wall: '#e8ddc0' },
+    { roof: '#2f6b45', wall: '#d8c9a3' }, { roof: '#7a5aa8', wall: '#e8ddc0' }
+  ];
+  function houseSVG(roofColor, wallColor) {
+    return '<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="9" y="27" width="42" height="29" fill="' + wallColor + '" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>' +
+      '<polygon points="4,29 30,6 56,29" fill="' + roofColor + '" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>' +
+      '<rect x="25" y="38" width="10" height="18" fill="#3a2a1a"/>' +
+      '<rect x="15" y="33" width="9" height="9" fill="#bfe3f0" stroke="#3a2a1a" stroke-width="1"/>' +
+      '<rect x="36" y="33" width="9" height="9" fill="#bfe3f0" stroke="#3a2a1a" stroke-width="1"/>' +
+      '</svg>';
+  }
   var WORLD_FIXTURES = (function () {
     var list = [];
     // Residential District houses — a real little neighborhood.
-    HOUSE_LOCATIONS.forEach(function (p) {
-      list.push({ icon: '🏠', x: p[0], y: p[1], size: 40 });
+    HOUSE_LOCATIONS.forEach(function (p, i) {
+      var pal = HOUSE_PALETTES[i % HOUSE_PALETTES.length];
+      list.push({ svg: houseSVG(pal.roof, pal.wall), x: p[0], y: p[1], size: 60 });
     });
     var TREE_KEYS = ['treePine1', 'treePine2', 'treeRound', 'treeAutumnRound', 'treeAutumnPine'];
     var BUSH_KEYS = ['bushTall', 'bushWide'];
@@ -27720,6 +27750,9 @@ $ git stash pop
       var z = Math.round(f.y);
       if (f.sprite) {
         return '<img class="dgc-city-fixture dgc-city-fixture-sprite" style="left:' + f.x + 'px; top:' + f.y + 'px; width:' + f.size + 'px; z-index:' + z + ';" src="' + FOLIAGE_SPRITES[f.sprite] + '" alt="">';
+      }
+      if (f.svg) {
+        return '<div class="dgc-city-fixture dgc-city-fixture-svg" style="left:' + f.x + 'px; top:' + f.y + 'px; width:' + f.size + 'px; height:' + f.size + 'px; z-index:' + z + ';">' + f.svg + '</div>';
       }
       return '<div class="dgc-city-fixture" style="left:' + f.x + 'px; top:' + f.y + 'px; font-size:' + f.size + 'px; z-index:' + z + ';">' + f.icon + '</div>';
     }).join('');
@@ -28269,15 +28302,35 @@ $ git stash pop
   // FOLIAGE_SPRITES art as the ambient world fixtures (a `sprite` key
   // instead of an `icon` glyph) so a player-placed tree/flower/grass
   // isn't a downgrade back to emoji next to the ones scattered by the
-  // engine itself. Lamppost/bench/dog/cat are small enough, and outside
-  // this pass's core "grass/flower/tree" complaint, that they stay as
-  // emoji for now — a disclosed scope call, not an oversight.
+  // engine itself. Lamppost/bench are hand-illustrated SVG (same fallback
+  // reasoning as HOUSE_PALETTES/houseSVG above — no single ready-made
+  // tile for either in the packs on hand, and both are small/simple
+  // enough that a clean shape reads better than composited tile mud at
+  // this size). Dog/cat stay emoji — animals, not environment art, and
+  // never part of this addendum's grass/flower/tree/path scope.
+  function lamppostSVG() {
+    return '<svg viewBox="0 0 24 50" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="12" cy="47" rx="7" ry="2.5" fill="rgba(0,0,0,0.3)"/>' +
+      '<rect x="10" y="14" width="4" height="33" fill="#2e2a26"/>' +
+      '<polygon points="5,14 19,14 15,4 9,4" fill="#3a352e" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>' +
+      '<circle cx="12" cy="9" r="8" fill="#ffd77a" opacity="0.3"/>' +
+      '<circle cx="12" cy="9" r="4.5" fill="#ffe6a3"/>' +
+      '</svg>';
+  }
+  function benchSVG() {
+    return '<svg viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="5" y="20" width="4" height="10" fill="#5c4326"/>' +
+      '<rect x="41" y="20" width="4" height="10" fill="#5c4326"/>' +
+      '<rect x="3" y="14" width="44" height="7" rx="2" fill="#9c7a52" stroke="#5c4326" stroke-width="1"/>' +
+      '<rect x="3" y="3" width="44" height="7" rx="2" fill="#a8875e" stroke="#5c4326" stroke-width="1"/>' +
+      '</svg>';
+  }
   var DECORATION_CATALOG = [
     { id: 'grass', name: 'Grass Tuft', cost: 15, sprite: 'grassTuft', kind: 'static', desc: 'A small patch of green.' },
     { id: 'flowers', name: 'Flower Bed', cost: 30, sprite: 'flowerBlue', kind: 'static', desc: 'Adds a little color.' },
     { id: 'tree', name: 'Tree', cost: 60, sprite: 'treeRound', kind: 'static', desc: 'A proper shade tree.' },
-    { id: 'lamppost', name: 'Lamppost', cost: 45, icon: '🏮', kind: 'static', desc: 'Lights up the path.' },
-    { id: 'bench', name: 'Bench', cost: 40, icon: '🪑', kind: 'static', desc: 'Somewhere to sit between fights.' },
+    { id: 'lamppost', name: 'Lamppost', cost: 45, svg: lamppostSVG(), svgW: 22, svgH: 46, kind: 'static', desc: 'Lights up the path.' },
+    { id: 'bench', name: 'Bench', cost: 40, svg: benchSVG(), svgW: 44, svgH: 28, kind: 'static', desc: 'Somewhere to sit between fights.' },
     { id: 'dog', name: 'Town Dog', cost: 90, icon: '🐕', kind: 'animal', desc: 'Wanders a little on its own.' },
     { id: 'cat', name: 'Town Cat', cost: 90, icon: '🐈', kind: 'animal', desc: 'Wanders a little on its own.' }
   ];
@@ -28292,7 +28345,9 @@ $ git stash pop
       var placeBtn = available > 0
         ? '<button class="dgc-btn dgc-btn-primary" data-decor-action="place" data-decor-id="' + d.id + '">Place (' + available + ')</button>'
         : '';
-      var iconHtml = d.sprite ? '<img src="' + FOLIAGE_SPRITES[d.sprite] + '" alt="" style="width:26px; height:26px; object-fit:contain;">' : d.icon;
+      var iconHtml = d.sprite ? '<img src="' + FOLIAGE_SPRITES[d.sprite] + '" alt="" style="width:26px; height:26px; object-fit:contain;">'
+        : d.svg ? '<span class="dgc-decor-icon-svg" style="display:inline-block; width:22px; height:22px; vertical-align:middle;">' + d.svg + '</span>'
+        : d.icon;
       return '<div class="dgc-shop-card">' +
         '<div class="dgc-shop-card-icon">' + iconHtml + '</div>' +
         '<div class="dgc-shop-card-info">' +
@@ -28379,6 +28434,10 @@ $ git stash pop
       if (d.sprite) {
         return '<img class="dgc-city-decor dgc-city-decor-' + d.kind + ' dgc-city-decor-sprite" data-decor-instance="' + inst.instanceId + '" ' +
           'style="left:' + inst.x + 'px; top:' + inst.y + 'px; z-index:' + z + ';" src="' + FOLIAGE_SPRITES[d.sprite] + '" alt="">';
+      }
+      if (d.svg) {
+        return '<div class="dgc-city-decor dgc-city-decor-' + d.kind + ' dgc-city-decor-svg" data-decor-instance="' + inst.instanceId + '" ' +
+          'style="left:' + inst.x + 'px; top:' + inst.y + 'px; width:' + d.svgW + 'px; height:' + d.svgH + 'px; z-index:' + z + ';">' + d.svg + '</div>';
       }
       return '<div class="dgc-city-decor dgc-city-decor-' + d.kind + '" data-decor-instance="' + inst.instanceId + '" ' +
         'style="left:' + inst.x + 'px; top:' + inst.y + 'px; z-index:' + z + ';">' + d.icon + '</div>';
