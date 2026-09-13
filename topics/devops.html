@@ -22421,6 +22421,60 @@ $ git stash pop
   @keyframes dgc-decor-wander { 0%,100%{ transform:translate(-50%,-50%) translateX(0); } 25%{ transform:translate(-50%,-50%) translateX(10px); } 75%{ transform:translate(-50%,-50%) translateX(-10px); } }
   .dgc-city-viewport.dgc-city-placing-mode { cursor:crosshair; }
 
+  /* ============================================================
+     LIVING CITY ADDENDUM — NPCs, environment fixtures, dialogue box.
+     ============================================================ */
+  .dgc-city-npc-layer, .dgc-city-fixture-layer { position:absolute; inset:0; }
+  .dgc-city-fixture { position:absolute; transform:translate(-50%,-50%); pointer-events:none; opacity:0.92; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.35)); z-index:0; }
+  .dgc-city-npc-token {
+    position:absolute; transform:translate(-50%,-100%); cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; z-index:2;
+  }
+  .dgc-city-npc-sprite { width:64px; height:82px; filter:drop-shadow(0 5px 4px rgba(0,0,0,0.45)); }
+  .dgc-city-npc-token.dgc-city-walking .dgc-city-npc-sprite { animation:dgc-city-walk-bob .38s ease-in-out infinite; }
+  /* NPCs share the hero's generic body/head silhouette + the full
+     expression/blush system, recolored per-NPC via inline attributes in
+     npcChibiRoot() rather than a CSS block per character (15 static
+     palettes have no need for the tier/outfit CSS-layering the hero
+     uses) — this just supplies the parts npcChibiRoot() doesn't inline. */
+  .dgc-chibi-npc .dgc-chibi-face { color:#3a2415; }
+  .dgc-chibi-npc-acc, .dgc-chibi-npc-sig { stroke-width:0.6; }
+
+  .dgc-city-talk-prompt {
+    position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:4;
+    background:rgba(0,0,0,0.75); border:1px solid var(--dgc-secondary); color:var(--dgc-secondary);
+    font-family:var(--dgc-font-ui); font-weight:700; font-size:12px; padding:6px 14px; border-radius:20px;
+    animation:dgc-enter-prompt-bob 1s ease-in-out infinite;
+  }
+
+  /* ---- RPG-style dialogue box: portrait + framed text panel ----
+     Caught by direct testing, same bug class as the recon-overlay fix
+     earlier this session: a `display:flex` here is an author style that
+     silently beats the browser's `[hidden]{display:none}` UA rule, so
+     the explicit override below is required or this shows up permanently
+     regardless of the `hidden` attribute. */
+  .dgc-dialogue-box {
+    position:absolute; left:8px; right:8px; bottom:8px; z-index:10;
+    display:flex; gap:10px; align-items:flex-end;
+    background:linear-gradient(180deg, var(--dgc-bg-3), var(--dgc-bg-2));
+    border:2px solid var(--dgc-border-bright); border-radius:12px; padding:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  }
+  .dgc-dialogue-box[hidden] { display:none; }
+  .dgc-dialogue-portrait-frame {
+    flex-shrink:0; width:76px; height:96px; border-radius:8px; overflow:hidden;
+    background:rgba(0,0,0,0.25); border:1px solid var(--dgc-border);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .dgc-dialogue-portrait { width:64px; height:82px; }
+  .dgc-dialogue-panel { flex:1; min-width:0; }
+  .dgc-dialogue-header { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+  .dgc-dialogue-name { font-family:var(--dgc-font-display); font-weight:700; font-size:13px; color:var(--dgc-gold); }
+  .dgc-dialogue-role { font-size:10px; color:var(--dgc-text-dimmer); }
+  .dgc-dialogue-text { font-size:12.5px; color:var(--dgc-text); line-height:1.6; margin-bottom:8px; min-height:38px; }
+  .dgc-dialogue-footer { display:flex; align-items:center; justify-content:space-between; }
+  .dgc-dialogue-progress { font-size:10px; color:var(--dgc-text-dimmer); font-family:var(--dgc-font-mono); }
+
   .dgc-city-dpad {
     display:none; grid-template-columns:repeat(3, 44px); grid-template-rows:repeat(2, 44px);
     gap:4px; justify-content:center; margin:10px 0;
@@ -23328,7 +23382,9 @@ $ git stash pop
         <div class="dgc-city-world-ground"></div>
         <div class="dgc-city-zone-labels" id="dgcCityZoneLabels"><!-- populated once from CITY_ZONES --></div>
         <div class="dgc-city-decor-layer" id="dgcCityDecorLayer"></div>
+        <div class="dgc-city-fixture-layer" id="dgcCityFixtureLayer"><!-- populated once by renderCityFixtures() from WORLD_FIXTURES --></div>
         <div class="dgc-city-buildings-layer" id="dgcCityBuildingsLayer"><!-- populated by renderCityBuildings() from CITY_BUILDINGS --></div>
+        <div class="dgc-city-npc-layer" id="dgcCityNpcLayer"><!-- populated by renderCityNpcs() from NPC_ROSTER --></div>
         <div class="dgc-city-sudo-token" id="dgcCitySudoToken">
           <div class="dgc-sudo-bubble dgc-show" id="dgcCitySudoBubble">Try the Armory — new gear helps.</div>
           <div class="dgc-sprite dgc-city-sudo-sprite" id="dgcCitySudoSprite"></div>
@@ -23347,7 +23403,27 @@ $ git stash pop
       </div>
 
       <div class="dgc-city-enter-prompt" id="dgcCityEnterPrompt" hidden>⏎ Enter <span id="dgcCityEnterPromptName"></span></div>
+      <!-- Living City addendum — the in-world "you can talk to this
+           person" cue: a bouncing speech-bubble icon, not a text tooltip. -->
+      <div class="dgc-city-talk-prompt" id="dgcCityTalkPrompt" hidden>💬 Talk to <span id="dgcCityTalkPromptName"></span></div>
       <div class="dgc-city-placing-banner" id="dgcCityPlacingBanner" hidden></div>
+
+      <!-- Living City addendum — RPG-style dialogue box: portrait +
+           expression + framed text, not a plain popup/modal. -->
+      <div class="dgc-dialogue-box" id="dgcDialogueBox" hidden>
+        <div class="dgc-dialogue-portrait-frame"><div class="dgc-sprite dgc-dialogue-portrait" id="dgcDialoguePortrait"></div></div>
+        <div class="dgc-dialogue-panel">
+          <div class="dgc-dialogue-header">
+            <span class="dgc-dialogue-name" id="dgcDialogueName">NPC</span>
+            <span class="dgc-dialogue-role" id="dgcDialogueRole">role</span>
+          </div>
+          <div class="dgc-dialogue-text" id="dgcDialogueText"></div>
+          <div class="dgc-dialogue-footer">
+            <span class="dgc-dialogue-progress" id="dgcDialogueProgress">1 / 8</span>
+            <button class="dgc-btn dgc-btn-primary" id="dgcDialogueCloseBtn">Got it →</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="dgc-city-dpad" id="dgcCityDpad" aria-hidden="true">
@@ -23576,7 +23652,11 @@ $ git stash pop
         // save gets `null` here on purpose: that's exactly what the boot
         // flow checks to decide whether to show the character-select
         // screen before the title screen.
-        selectedCharacterId: typeof s.selectedCharacterId === 'string' ? s.selectedCharacterId : (alreadyHadProgress ? 'byte' : null)
+        selectedCharacterId: typeof s.selectedCharacterId === 'string' ? s.selectedCharacterId : (alreadyHadProgress ? 'byte' : null),
+        // Living City addendum, Section 5 — lightweight: which line index
+        // each NPC last showed, so a repeat conversation advances instead
+        // of repeating (and eventually loops, which is explicitly fine).
+        npcLastLineIndex: (s.npcLastLineIndex && typeof s.npcLastLineIndex === 'object') ? s.npcLastLineIndex : {}
       };
     } catch (e) {
       return {
@@ -23587,7 +23667,8 @@ $ git stash pop
         bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
         ownedDecorations: {}, townDecorations: [],
         equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
-        equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null
+        equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
+        npcLastLineIndex: {}
       };
     }
   }
@@ -24262,6 +24343,297 @@ $ git stash pop
   // only draws 3 groups (left and right share "side", mirrored via the
   // existing scaleX facing wrapper) — this maps one to the other.
   function overworldFacingGroup(facing) { return (facing === 'left' || facing === 'right') ? 'side' : facing; }
+
+  /* ============================================================
+     LIVING CITY ADDENDUM — NPCs. Every NPC reuses the EXACT SAME shared
+     pieces as the hero: the generic humanoid body/head silhouette, the
+     shared facePartsSVG()/EXPRESSIONS/setExpression() system (so an NPC
+     genuinely changes eyes/eyebrows/mouth/blush per expression, not a
+     simplified face), and — for 6 of the 15 — the hero's own hair-shape
+     generators. Only 3 new hair silhouettes and a small reusable
+     accessory-shape library were authored new; everything else is reuse
+     + recolor, which is what makes 15 distinct, fully-realized NPCs
+     tractable at all.
+     ============================================================ */
+  var NPC_HAIR_SHAPES = {
+    bun: function () {
+      return '<path class="dgc-chibi-hair" d="M27 38 Q27 20 50 20 Q73 20 73 38 Q66 27 50 27 Q34 27 27 38 Z"/>' +
+        '<circle class="dgc-chibi-hair" cx="50" cy="15" r="7"/>';
+    },
+    buzzcut: function () {
+      return '<path class="dgc-chibi-hair" d="M28 30 Q28 19 50 19 Q72 19 72 30 Q72 24 50 24 Q28 24 28 30 Z"/>';
+    },
+    pigtails: function () {
+      return '<path class="dgc-chibi-hair" d="M27 38 Q27 19 50 19 Q73 19 73 38 Q66 27 50 27 Q34 27 27 38 Z"/>' +
+        '<ellipse class="dgc-chibi-hair" cx="20" cy="36" rx="6" ry="11"/>' +
+        '<ellipse class="dgc-chibi-hair" cx="80" cy="36" rx="6" ry="11"/>' +
+        '<path class="dgc-chibi-npc-sig" d="M16 27 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/>';
+    }
+  };
+  // Kept to the same discipline as the hero's own accessories: everything
+  // sits above the hairline or on the body — never over the eyes/mouth.
+  var NPC_ACCESSORY_SHAPES = {
+    none: function () { return ''; },
+    apron: function () { return '<path class="dgc-chibi-npc-acc" d="M40 88 L50 100 L60 88" fill="none" stroke-width="4" stroke-linecap="round"/>'; },
+    headband: function () { return '<path class="dgc-chibi-npc-acc" d="M25 33 Q50 24 75 33 L75 38 Q50 30 25 38 Z"/>'; },
+    cap: function () { return '<path class="dgc-chibi-npc-acc" d="M20 22 Q50 0 80 22 L80 29 Q50 15 20 29 Z"/>'; },
+    lanyard: function () { return '<rect class="dgc-chibi-npc-acc" x="46" y="90" width="8" height="11" rx="1"/><line x1="50" y1="82" x2="50" y2="90" stroke-width="1.4"/>'; },
+    headphones: function () { return '<path class="dgc-chibi-npc-acc" d="M24 30 Q24 7 50 7 Q76 7 76 30" fill="none" stroke-width="3"/><circle class="dgc-chibi-npc-acc" cx="24" cy="34" r="5"/><circle class="dgc-chibi-npc-acc" cx="76" cy="34" r="5"/>'; },
+    scarf: function () { return '<path class="dgc-chibi-npc-acc" d="M36 82 Q50 90 64 82 L61 94 Q50 98 39 94 Z"/>'; },
+    book: function () { return '<rect class="dgc-chibi-npc-acc" x="68" y="86" width="10" height="13" rx="1"/><line x1="73" y1="87" x2="73" y2="98" stroke-width="0.6"/>'; },
+    chefhat: function () { return '<path class="dgc-chibi-npc-acc" d="M32 22 Q27 4 40 5 Q42 -3 50 -3 Q58 -3 60 5 Q73 4 68 22 Z"/>'; },
+    earpiece: function () { return '<circle class="dgc-chibi-npc-acc" cx="76" cy="38" r="2"/><path d="M76 38 Q81 43 78 49" fill="none" stroke-width="1"/>'; }
+  };
+  // Renders one NPC's full portrait rig (used both for the walk-around
+  // City sprite at small size AND the dialogue-box portrait at a bigger
+  // size — same rig, same expression system, just a different container
+  // size, exactly like hero portrait vs. overworld sprite already do).
+  function npcChibiRoot(npc) {
+    var hairFn = (HERO_HAIR_SHAPES[npc.hair] || NPC_HAIR_SHAPES[npc.hair] || HERO_HAIR_SHAPES.byte);
+    var accFn = NPC_ACCESSORY_SHAPES[npc.accessory] || NPC_ACCESSORY_SHAPES.none;
+    var body =
+      '<ellipse class="dgc-chibi-shadow" cx="50" cy="118" rx="26" ry="6"/>' +
+      '<path class="dgc-chibi-body" d="M28 98 Q28 74 50 74 Q72 74 72 98 L72 112 Q50 118 28 112 Z" fill="' + npc.bodyColor + '" stroke="' + npc.trimColor + '" stroke-width="1.4"/>' +
+      '<circle class="dgc-chibi-head" cx="50" cy="42" r="23" fill="' + npc.skinColor + '"/>' +
+      '<g fill="' + npc.hairColor + '">' + hairFn() + '</g>' +
+      '<ellipse class="dgc-chibi-blush" cx="33" cy="49" rx="5" ry="3"/>' +
+      '<ellipse class="dgc-chibi-blush" cx="67" cy="49" rx="5" ry="3"/>' +
+      '<g fill="' + npc.accColor + '" stroke="' + npc.accColor + '">' + accFn() + '</g>';
+    return '<svg class="dgc-chibi dgc-chibi-npc" data-npc="' + npc.id + '" viewBox="0 0 100 130" data-expr="idle">' +
+      body +
+      '<g class="dgc-chibi-face">' + facePartsSVG() + '</g>' +
+    '</svg>';
+  }
+
+  /* ============================================================
+     THE 15 NPCS. Each has a real identity/role, a loose topic lean
+     (source content follows the master doc's own research constraints —
+     real, practical, interview-relevant, no invented trivia), and 6-8
+     genuinely distinct teaching points. Positions are laid out across
+     the City's 3 zones (Town Square around the existing 5 buildings;
+     Training Grounds around its existing marker; Residential District in
+     the newly-widened east side of the map) rather than clustered.
+     expr: { idle, talk, happy, react } — 4 of the shared EXPRESSIONS
+     table's names, per NPC, satisfying the "3-4 expressions, same
+     facial-completeness standard as the hero" requirement without a
+     single new face shape.
+     ============================================================ */
+  var NPC_ROSTER = [
+    // ---- Town Square ----
+    { id:'priya', name:'Priya', role:'the barista', topic:'Git & Version Control',
+      hair:'nova', hairColor:'#3a2414', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'apron', accColor:'#3f8f5c', x:340, y:210, wanderRadius:70,
+      expr:{ idle:'idle', talk:'happy', happy:'excited', react:'curious' },
+      dialogue:[
+        "Commit early, commit often — small commits are easier to review, and way easier to revert.",
+        "A good commit message answers 'why', not just 'what' — the diff already shows what changed.",
+        "`git rebase` rewrites history; `git merge` preserves it. Rebase your own branch, merge into shared ones.",
+        "Branch names like `feature/login-fix` tell the whole team what's in progress without opening a file.",
+        "`.gitignore` exists so your `node_modules` folder never becomes someone else's problem.",
+        "A pull request is a conversation, not a formality — leave real context for your reviewer.",
+        "Squash your commits before merging if your history is twelve 'fix typo' commits in a row.",
+        "Tags mark release points — `git tag v1.2.0` — so you can always find exactly what shipped."
+      ] },
+    { id:'zoe', name:'Zoe', role:'the office worker on break', topic:'CI/CD Pipelines',
+      hair:'sage', hairColor:'#7a3c2a', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'lanyard', accColor:'#e0722c', x:560, y:230, wanderRadius:70,
+      expr:{ idle:'idle', talk:'confident', happy:'happy', react:'tired' },
+      dialogue:[
+        "A pipeline should fail fast — put the cheap, quick checks like lint and unit tests before the slow ones.",
+        "If your build isn't reproducible, it isn't really tested. Pin your dependency versions.",
+        "Feature flags let you ship code to production dark, then turn it on for real without a redeploy.",
+        "A green pipeline on a broken app usually means your tests aren't testing the right thing.",
+        "Cache your dependencies between pipeline runs — most CI minutes get wasted re-downloading the same packages.",
+        "Deploy small and often. A tiny daily release is much easier to debug than a giant monthly one.",
+        "Your staging environment should look like production, or 'it worked in staging' means nothing.",
+        "Automate the boring parts of a release so a human only has to make the judgment calls."
+      ] },
+    { id:'kenji', name:'Kenji', role:'the student with headphones', topic:'Docker & Containers',
+      hair:'byte', hairColor:'#1f7a6e', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'headphones', accColor:'#2f4a5a', x:230, y:310, wanderRadius:60,
+      expr:{ idle:'idle', talk:'playful', happy:'excited', react:'curious' },
+      dialogue:[
+        "A container isn't a lightweight VM — it shares the host's kernel, which is exactly why it starts so fast.",
+        "Multi-stage builds keep your final image small — build with all the tools, ship with none of them.",
+        "`.dockerignore` matters as much as `.gitignore` — don't COPY your whole repo into the image by accident.",
+        "Containers should be stateless. If it needs to persist data, that's what volumes are for.",
+        "One process per container is the guideline, not a hard law — but it makes scaling and debugging way easier.",
+        "`docker logs` and `docker exec -it` are 90% of container debugging — get comfortable with both.",
+        "Tag your images with something real, not just `latest` — you'll thank yourself during a rollback.",
+        "Image layers are cached — order your Dockerfile so things that change often go near the bottom."
+      ] },
+    { id:'yuki', name:'Yuki', role:'the librarian', topic:'Security Basics',
+      hair:'bun', hairColor:'#1c1c1c', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'book', accColor:'#6b4a28', x:500, y:130, wanderRadius:0,
+      expr:{ idle:'idle', talk:'confident', happy:'calm', react:'worried' },
+      dialogue:[
+        "The principle of least privilege: give an account exactly the access it needs, never more 'just in case.'",
+        "Secrets don't belong in code, ever — not even in a private repo. Use a secrets manager.",
+        "A dependency you didn't write is still your responsibility once it's in production — keep it patched.",
+        "HTTPS everywhere isn't optional anymore — it's the default expectation, not an upgrade.",
+        "Rotate credentials on a schedule, not just after you suspect something happened.",
+        "Multi-factor authentication stops the vast majority of account takeovers cold — the cheapest security win there is.",
+        "Logs are useless for security if nobody's watching them — alerting matters as much as logging.",
+        "Every input from a user is untrusted until proven otherwise. Validate at the boundary."
+      ] },
+    { id:'sofia', name:'Sofia', role:'the pastry chef', topic:'YAML & Config Basics',
+      hair:'nova', hairColor:'#d4a843', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'chefhat', accColor:'#f8f1e2', x:400, y:340, wanderRadius:50,
+      expr:{ idle:'idle', talk:'happy', happy:'excited', react:'confused' },
+      dialogue:[
+        "YAML is picky about indentation — two spaces, consistently, saves you a surprising number of headaches.",
+        "Tabs and YAML don't mix. Most editors will silently convert them for you, some won't.",
+        "A YAML anchor (`&name` / `*name`) lets you reuse a block instead of repeating it five times in one file.",
+        "Quote your strings when they could be misread as another type — `yes`/`no` can parse as booleans by accident.",
+        "Environment-specific config should live in separate files, not scattered `if` statements.",
+        "Validate your YAML before you deploy it — a broken config file fails fast and cheap, or slow and expensive.",
+        "Comments in config files are for the next person — including future you at 2 AM.",
+        "A giant, deeply nested config file is a sign it's time to split it into smaller, composable pieces."
+      ] },
+    // ---- Training Grounds ----
+    { id:'marcus', name:'Marcus', role:'the jogger', topic:'Linux & Terminal Basics',
+      hair:'byte', hairColor:'#1c1c1c', skinColor:'#8a5a3a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'headband', accColor:'#c94f3d', x:720, y:300, wanderRadius:80,
+      expr:{ idle:'idle', talk:'confident', happy:'happy', react:'playful' },
+      dialogue:[
+        "`grep -r` searches recursively through directories — way faster than opening every file by hand.",
+        "Pipe commands together with `|` — `ps aux | grep node` finds exactly the process you're hunting.",
+        "`chmod +x` makes a script executable. Forget it, and 'Permission denied' will haunt your afternoon.",
+        "`tail -f` follows a log file live — perfect for watching an app boot up in real time.",
+        "Everything in Linux is a file, even devices and processes — that's why `/proc` and `/dev` exist.",
+        "Ctrl+R searches your shell history — no need to scroll up forever looking for that one command.",
+        "`df -h` and `du -sh` tell two different stories: disk space available vs. what's actually using it.",
+        "Aliases save your fingers — `alias gs='git status'` pays for itself in a week."
+      ] },
+    { id:'bigsam', name:'Big Sam', role:'the site engineer', topic:'Cloud & Networking',
+      hair:'buzzcut', hairColor:'#5c4a2e', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'cap', accColor:'#f2c14e', x:800, y:400, wanderRadius:60,
+      expr:{ idle:'idle', talk:'confident', happy:'happy', react:'tired' },
+      dialogue:[
+        "A load balancer isn't just for scale — it's also how you survive one server dying at 3 AM.",
+        "DNS changes take time to propagate. If it 'isn't working yet,' it might just be cache.",
+        "Auto-scaling groups are great until they scale up because of a bug, not real traffic — watch your metrics.",
+        "A security group that's wide open 'just for now' has a way of staying open forever.",
+        "Cloud costs creep. An idle resource nobody remembers spinning up is still billing somebody.",
+        "Multi-AZ isn't the same as multi-region — one protects against a data center problem, the other a whole region.",
+        "A CDN caches content closer to users — often the cheapest performance win you can make.",
+        "Infrastructure as code means your infra has a diff, a history, and a rollback — treat it like real code."
+      ] },
+    { id:'chidi', name:'Chidi', role:'the delivery cyclist', topic:'Monitoring & Observability',
+      hair:'buzzcut', hairColor:'#1c1c1c', skinColor:'#7a4a2a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'cap', accColor:'#3f8f5c', x:850, y:250, wanderRadius:90,
+      expr:{ idle:'idle', talk:'playful', happy:'excited', react:'curious' },
+      dialogue:[
+        "Metrics, logs, and traces are the 'three pillars' — each answers a different kind of question about your system.",
+        "Alert on symptoms users would actually notice, not every internal metric that wiggles.",
+        "A dashboard nobody looks at during a normal week won't help you during an incident either.",
+        "P99 latency tells a very different story than average latency — the tail is where the pain lives.",
+        "If every alert is 'urgent,' none of them are — alert fatigue is a real, dangerous failure mode.",
+        "Structured logs (JSON, not plain text) are what make searching a million log lines actually possible.",
+        "A good SLO turns 'is the system healthy' from a feeling into an actual number you can track.",
+        "Distributed tracing shows you one request's whole journey across a dozen services — priceless during a slow-request mystery."
+      ] },
+    { id:'ernie', name:'Big Ernie', role:'the bouncer', topic:'Networking & Firewalls',
+      hair:'buzzcut', hairColor:'#1c1c1c', skinColor:'#5a3a24', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'earpiece', accColor:'#1c1c1c', x:750, y:420, wanderRadius:40,
+      expr:{ idle:'idle', talk:'confident', happy:'confident', react:'angry' },
+      dialogue:[
+        "A firewall rule should say exactly what's allowed and default to denying everything else.",
+        "TCP handshakes, DNS lookups, TLS negotiation — a 'slow' request is often three separate delays stacked up.",
+        "Port 443 is HTTPS, 80 is HTTP, 22 is SSH — knowing the common ones saves a lot of Googling under pressure.",
+        "A VPN doesn't make traffic invisible, it makes it private between two trusted points.",
+        "Rate limiting protects your service from both attackers and your own retry logic gone wrong.",
+        "Not all latency is your server's fault — sometimes it's just physical distance and the speed of light.",
+        "NAT lets many internal machines share one public IP — most home networks run on this exact idea.",
+        "A load balancer health check failing silently can quietly take your whole fleet out of rotation."
+      ] },
+    // ---- Residential District ----
+    { id:'nanailse', name:'Nana Ilse', role:'the gardener', topic:'Career & Interview Advice',
+      hair:'bun', hairColor:'#c9c9c9', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'cap', accColor:'#e8d078', x:1100, y:250, wanderRadius:0,
+      expr:{ idle:'calm', talk:'happy', happy:'excited', react:'confident' },
+      dialogue:[
+        "In interviews, walk through your reasoning out loud — they're grading how you think, not just the answer.",
+        "'I don't know, but here's how I'd find out' is a completely acceptable interview answer.",
+        "Ask about their on-call rotation before you accept an offer — it tells you a lot about the culture.",
+        "A portfolio of real projects beats a list of certifications every time.",
+        "When they ask about a time you failed, they want to hear what you learned, not a confession.",
+        "Negotiate. The worst they say is no, and most companies expect you to ask.",
+        "Read the job posting for what they're actually worried about, not just the tech stack listed.",
+        "Silence during a technical question is fine — thinking out loud beats guessing fast."
+      ] },
+    { id:'walt', name:'Walt', role:'the retired engineer on the bench', topic:'Incident Response War Stories',
+      hair:'buzzcut', hairColor:'#c9c9c9', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'cap', accColor:'#5c4a2e', x:1200, y:180, wanderRadius:0,
+      expr:{ idle:'tired', talk:'confident', happy:'happy', react:'worried' },
+      dialogue:[
+        "The first rule of an incident: stop the bleeding before you find the cause. Rollback first, investigate after.",
+        "Whoever's paged should NOT also be the one writing the status page update — that's two jobs.",
+        "Every real outage I've seen had a warning sign in the logs a week earlier nobody looked at twice.",
+        "A blameless postmortem gets you the truth. A blame-y one gets you a story people tell carefully.",
+        "Communicate over-often during an incident. Silence from the team is scarier than bad news.",
+        "The most dangerous phrase in an incident is 'that shouldn't be possible.' Believe your monitors.",
+        "Runbooks go stale. If nobody's touched yours in six months, it's probably already wrong somewhere.",
+        "The 3 AM pages you remember are never the ones you expected."
+      ] },
+    { id:'oldtom', name:'Old Tom', role:'the regular on the other bench', topic:'Bash & Scripting',
+      hair:'buzzcut', hairColor:'#e8e8e8', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'cap', accColor:'#3f6b8f', x:1350, y:220, wanderRadius:0,
+      expr:{ idle:'idle', talk:'confident', happy:'happy', react:'tired' },
+      dialogue:[
+        "`set -e` stops your script the moment something fails, instead of plowing ahead with bad data.",
+        "Quote your variables — `\"$var\"` — or a filename with a space in it will break your script in a fun way.",
+        "A script only you can read isn't automation, it's a trap for future-you.",
+        "`$?` holds the exit code of the last command — 0 means success, anything else means something went sideways.",
+        "Functions in a bash script are still just bash — keep them small, same as any real language.",
+        "Trap signals (`trap ... EXIT`) to clean up temp files even if your script dies halfway through.",
+        "Heredocs (`<<EOF`) are the cleanest way to write multi-line text without a wall of escaped quotes.",
+        "If a one-liner is getting hard to read, it's begging to become a real script with a name."
+      ] },
+    { id:'ana', name:'Ana', role:'the dog walker', topic:'Terraform & Infrastructure as Code',
+      hair:'nova', hairColor:'#8f2f27', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'scarf', accColor:'#3f8f5c', x:1150, y:450, wanderRadius:90,
+      expr:{ idle:'idle', talk:'happy', happy:'excited', react:'curious' },
+      dialogue:[
+        "`terraform plan` before `terraform apply` — always. It's your one chance to catch a surprise first.",
+        "State files are precious — losing one means Terraform forgets what it already built.",
+        "Modules let you reuse the same infrastructure pattern instead of copy-pasting it into every project.",
+        "Locking your Terraform state prevents two people applying changes at the same time and colliding.",
+        "Terraform describes desired state — change something by hand, and the next plan will want to 'fix' it.",
+        "Variables and outputs are how modules talk to each other without hardcoding values everywhere.",
+        "Destroying infrastructure is one command — that's a feature, and a very good reason to be careful.",
+        "Version your provider and module versions, or 'it worked yesterday' becomes a real mystery."
+      ] },
+    { id:'ravi', name:'Ravi', role:'the food-cart vendor', topic:'Kubernetes & Orchestration',
+      hair:'sage', hairColor:'#1c1c1c', skinColor:'#8a5a3a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'headband', accColor:'#e0722c', x:1300, y:500, wanderRadius:30,
+      expr:{ idle:'idle', talk:'confident', happy:'happy', react:'confused' },
+      dialogue:[
+        "A pod is the smallest deployable unit — but you almost never manage pods directly, you manage Deployments.",
+        "Readiness and liveness probes answer two different questions: 'can it take traffic' and 'is it still alive.'",
+        "A Service gives your pods a stable network identity, since the pods themselves come and go.",
+        "Resource requests and limits stop one noisy pod from starving its neighbors on the same node.",
+        "ConfigMaps and Secrets keep configuration out of your container image, where it belongs.",
+        "A rolling update replaces pods gradually — if the new version is broken, only part of your traffic feels it.",
+        "Namespaces are how one cluster stays organized between teams, environments, or projects.",
+        "`kubectl describe` tells you WHY something's stuck, not just THAT it's stuck — always check it first."
+      ] },
+    { id:'lily', name:'Lily', role:'the kid with a dog', topic:'General Encouragement',
+      hair:'pigtails', hairColor:'#d4a843', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
+      accessory:'none', accColor:'#c94f3d', x:1250, y:600, wanderRadius:90,
+      expr:{ idle:'playful', talk:'happy', happy:'excited', react:'playful' },
+      dialogue:[
+        "You know what's cool? Every single expert started out not knowing this stuff either.",
+        "My dog doesn't understand Kubernetes, but he's a really good listener while I practice explaining it out loud.",
+        "Fun fact: DevOps isn't one job, it's a way two teams learned to stop blaming each other.",
+        "The best way to remember a command is to break something with it once. Ask me how I know.",
+        "It's OK to look up the same command for the hundredth time. Even the bosses in this town would.",
+        "Some days you fix one bug and cause two more. That's not failure, that's Tuesday.",
+        "The terminal looks scary until it doesn't — then it just looks like typing.",
+        "Every real engineer I've met still says 'I have no idea why that worked' at least once a week."
+      ] }
+  ];
+  var NPC_LAST_LINE = {}; // Section 5 — npcLastLineIndex-equivalent, so repeat visits don't repeat the same line back-to-back
 
   var chibiIdCounter = 0;
   function chibiRoot(kind) {
@@ -27125,8 +27497,51 @@ $ git stash pop
   // plain HTML in #dgcCityWorld rather than through a render function.
   var CITY_ZONES = [
     { name: 'TOWN SQUARE', x: 380, y: 230 },
-    { name: 'RESIDENTIAL DISTRICT', x: 620, y: 460 }
+    { name: 'TRAINING GROUNDS', x: 780, y: 270 },
+    // Living City addendum — re-anchored into the new eastward expansion
+    // of the widened world (was 620,460 in the smaller 900px-wide map).
+    { name: 'RESIDENTIAL DISTRICT', x: 1220, y: 340 }
   ];
+
+  /* ============================================================
+     LIVING CITY ADDENDUM, SECTION 3A — environment richness. Houses
+     (Residential District) + generous tree/bush/flower coverage across
+     all 3 zones (denser in Residential, per its "actual neighborhood"
+     ask) so the town reads as a real settlement, not a sparse hub with a
+     few icons. Purely decorative/non-interactive (pointer-events:none)
+     and permanent (not tied to save data, unlike the player's own
+     General Store decorations) — rendered once, same static pattern as
+     the zone labels above.
+     ============================================================ */
+  var WORLD_FIXTURES = (function () {
+    var list = [];
+    // Residential District houses — a real little neighborhood.
+    [[1050, 180], [1150, 130], [1320, 160], [1030, 380], [1200, 430], [1350, 400], [1080, 580], [1280, 600], [1420, 300]].forEach(function (p) {
+      list.push({ icon: '🏠', x: p[0], y: p[1], size: 40 });
+    });
+    function scatter(icon, count, xMin, xMax, yMin, yMax, size) {
+      for (var i = 0; i < count; i++) {
+        list.push({ icon: icon, x: xMin + Math.random() * (xMax - xMin), y: yMin + Math.random() * (yMax - yMin), size: size });
+      }
+    }
+    // Town Square + Training Grounds — moderate natural coverage around the buildings.
+    scatter('🌳', 14, 20, 920, 20, 550, 26);
+    scatter('🌿', 20, 20, 920, 20, 550, 16);
+    scatter('🌸', 10, 20, 920, 20, 550, 14);
+    // Residential District — the densest greenery, the "real neighborhood" bar.
+    scatter('🌳', 22, 950, 1490, 20, 740, 26);
+    scatter('🌿', 32, 950, 1490, 20, 740, 16);
+    scatter('🌸', 18, 950, 1490, 20, 740, 14);
+    scatter('🪨', 6, 20, 1490, 20, 740, 18);
+    return list;
+  })();
+  function renderCityFixtures() {
+    var layer = $('dgcCityFixtureLayer');
+    if (!layer || layer.children.length) return; // static — render once
+    layer.innerHTML = WORLD_FIXTURES.map(function (f) {
+      return '<div class="dgc-city-fixture" style="left:' + f.x + 'px; top:' + f.y + 'px; font-size:' + f.size + 'px;">' + f.icon + '</div>';
+    }).join('');
+  }
 
   function cityBuildingCenter(b) { return { x: b.x + 64, y: b.y + 68 }; } // ~center of the roof+body card
 
@@ -27172,6 +27587,117 @@ $ git stash pop
     }
   }
 
+  /* ============================================================
+     LIVING CITY ADDENDUM — NPC runtime: wander/idle movement, the
+     interaction proximity cue, and the dialogue box. NPCs deliberately
+     have NO collision against the player (buildings don't either, in
+     this engine) — the doc's "don't meaningfully block movement"
+     requirement is satisfied by that absence rather than added
+     avoidance logic, which would be new complexity for no real gain.
+     ============================================================ */
+  var NPC_STATE = {}; // id -> { x, y, facing, moving, wanderUntil, targetX, targetY }
+  function initNpcState() {
+    NPC_ROSTER.forEach(function (npc) {
+      if (NPC_STATE[npc.id]) return; // already initialized this session
+      NPC_STATE[npc.id] = { x: npc.x, y: npc.y, facing: 'down', moving: false, pauseUntil: Date.now() + rand(500, 3000), targetX: npc.x, targetY: npc.y };
+    });
+  }
+  function renderCityNpcs() {
+    var layer = $('dgcCityNpcLayer');
+    if (!layer) return;
+    layer.innerHTML = NPC_ROSTER.map(function (npc) {
+      return '<div class="dgc-city-npc-token" id="dgcCityNpc-' + npc.id + '" data-npc-id="' + npc.id + '" tabindex="0" role="button">' +
+        '<div class="dgc-sprite dgc-city-npc-sprite" id="dgcCityNpcSprite-' + npc.id + '"></div>' +
+      '</div>';
+    }).join('');
+    NPC_ROSTER.forEach(function (npc) {
+      var sprite = $('dgcCityNpcSprite-' + npc.id);
+      if (sprite) { sprite.innerHTML = npcChibiRoot(npc); setExpression(sprite, npc.expr.idle); }
+      // Set the token's initial screen position from NPC_STATE immediately —
+      // don't wait for the next npcWanderTick(), since fixture NPCs
+      // (wanderRadius 0) never move and would otherwise sit at (0,0) forever.
+      var token = $('dgcCityNpc-' + npc.id);
+      var st = NPC_STATE[npc.id];
+      if (token && st) { token.style.left = st.x + 'px'; token.style.top = st.y + 'px'; }
+    });
+  }
+  // Wander tick: each NPC with a wanderRadius > 0 occasionally picks a new
+  // nearby point and ambles toward it; wanderRadius 0 means a fixture NPC
+  // (on a bench, tending a garden, etc.) that never leaves its spot.
+  function npcWanderTick() {
+    NPC_ROSTER.forEach(function (npc) {
+      var st = NPC_STATE[npc.id];
+      if (!st || !npc.wanderRadius) return;
+      var now = Date.now();
+      if (st.moving) {
+        var dx = st.targetX - st.x, dy = st.targetY - st.y;
+        var dist = Math.hypot(dx, dy);
+        if (dist < 3) {
+          st.moving = false;
+          st.pauseUntil = now + rand(1500, 4000);
+        } else {
+          var speed = 0.6;
+          st.x += (dx / dist) * speed;
+          st.y += (dy / dist) * speed;
+          st.facing = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+        }
+      } else if (now >= st.pauseUntil) {
+        var angle = Math.random() * Math.PI * 2;
+        var r = Math.random() * npc.wanderRadius;
+        st.targetX = npc.x + Math.cos(angle) * r;
+        st.targetY = npc.y + Math.sin(angle) * r;
+        st.moving = true;
+      }
+      var token = $('dgcCityNpc-' + npc.id);
+      if (token) {
+        token.style.left = st.x + 'px';
+        token.style.top = st.y + 'px';
+        token.classList.toggle('dgc-city-walking', st.moving);
+      }
+    });
+  }
+  function checkNpcProximity() {
+    var nearest = null, nearestDist = 999999;
+    NPC_ROSTER.forEach(function (npc) {
+      var st = NPC_STATE[npc.id];
+      if (!st) return;
+      var dist = Math.hypot(cityHero.x - st.x, cityHero.y - (st.y - 20));
+      if (dist < 55 && dist < nearestDist) { nearest = npc; nearestDist = dist; }
+    });
+    cityNearNpcId = nearest ? nearest.id : null;
+    var prompt = $('dgcCityTalkPrompt');
+    if (!prompt) return;
+    if (nearest && !cityNearBuildingId) {
+      $('dgcCityTalkPromptName').textContent = nearest.name;
+      prompt.hidden = false;
+    } else {
+      prompt.hidden = true;
+    }
+  }
+  var cityNearNpcId = null;
+
+  /* ---- Dialogue box ---- */
+  function openNpcDialogue(npcId) {
+    var npc = NPC_ROSTER.filter(function (n) { return n.id === npcId; })[0];
+    if (!npc) return;
+    var lastIdx = typeof save.npcLastLineIndex[npcId] === 'number' ? save.npcLastLineIndex[npcId] : -1;
+    var nextIdx = (lastIdx + 1) % npc.dialogue.length;
+    save.npcLastLineIndex[npcId] = nextIdx;
+    persist();
+    var portrait = $('dgcDialoguePortrait');
+    portrait.innerHTML = npcChibiRoot(npc);
+    setExpression(portrait, npc.expr.talk);
+    $('dgcDialogueName').textContent = npc.name;
+    $('dgcDialogueRole').textContent = npc.role + ' · ' + npc.topic;
+    $('dgcDialogueText').textContent = npc.dialogue[nextIdx];
+    $('dgcDialogueProgress').textContent = (nextIdx + 1) + ' / ' + npc.dialogue.length;
+    $('dgcDialogueBox').hidden = false;
+    playSfx('click');
+  }
+  function closeNpcDialogue() {
+    $('dgcDialogueBox').hidden = true;
+  }
+
   function cityMoveTick() {
     // Self-stopping safety net: if the player switches to a different
     // site tab entirely (this page's own nav, not this game's), this
@@ -27183,11 +27709,14 @@ $ git stash pop
     // behavior/code — this only READS visibility).
     var panel = document.getElementById('tab-game');
     if (!panel || panel.offsetParent === null) { stopCityLoop(); return; }
-    // Pause movement while any modal is open on top of the City (the
-    // player may have released a key mid-click, or be reading a shop) —
-    // still keep the loop alive so re-closing the modal resumes instantly.
-    var modalOpen = !$('dgcModalBackdrop').hidden;
+    // Pause movement while any modal OR the NPC dialogue box is open on
+    // top of the City (the player may have released a key mid-click, or
+    // be reading a shop/conversation) — still keep the loop alive so
+    // closing either resumes movement instantly.
+    var dialogueBox = $('dgcDialogueBox');
+    var modalOpen = !$('dgcModalBackdrop').hidden || (dialogueBox && !dialogueBox.hidden);
     if (!modalOpen) {
+      npcWanderTick();
       var speed = 3.2;
       var dx = 0, dy = 0;
       if (cityKeys.up) dy -= 1;
@@ -27217,6 +27746,7 @@ $ git stash pop
       }
       updateCityCamera();
       checkCityBuildingProximity();
+      checkNpcProximity();
     }
   }
   function stopCityLoop() {
@@ -27250,15 +27780,20 @@ $ git stash pop
       if (sudoSprite && !sudoSprite.querySelector('.dgc-overworld-sprite')) { sudoSprite.innerHTML = overworldSpriteSVG('sudo'); }
     }
     renderCityZoneLabels();
+    renderCityFixtures();
     renderCityBuildings();
     renderCityDecorations();
+    initNpcState();
+    renderCityNpcs();
     cancelPlacingDecoration(); // a fresh entry is never mid-placement
+    closeNpcDialogue();
     refreshHeroTierVisuals(); // also (re)renders #dgcCityHeroSprite + name labels, live off `save`
     refreshCityStatsBar();
     showScreen('city');
     stopCityLoop();
     updateCityCamera();
     checkCityBuildingProximity();
+    checkNpcProximity();
     // setInterval rather than requestAnimationFrame — matches the timer-
     // driven pattern already used elsewhere in this file (startTimer()),
     // and doesn't depend on this panel's compositor-visible paint timing.
@@ -27614,7 +28149,8 @@ $ git stash pop
       bankInvestedAmount: 0, lastBankVisitTimestamp: Date.now(), unlockedLibraryPacks: [],
       ownedDecorations: {}, townDecorations: [],
       equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
-      equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null
+      equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
+      npcLastLineIndex: {}
     };
     persist();
     refreshHeroTierVisuals();
@@ -29176,10 +29712,23 @@ $ git stash pop
   $('dgcCityEnterPrompt').addEventListener('click', function () {
     if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId);
   });
+  // Living City addendum — same walk-up-or-click pattern as buildings.
+  $('dgcCityNpcLayer').addEventListener('click', function (e) {
+    var token = e.target.closest ? e.target.closest('[data-npc-id]') : null;
+    if (!token) return;
+    openNpcDialogue(token.getAttribute('data-npc-id'));
+  });
+  $('dgcCityTalkPrompt').addEventListener('click', function () {
+    if (cityNearNpcId) openNpcDialogue(cityNearNpcId);
+  });
+  $('dgcDialogueCloseBtn').addEventListener('click', closeNpcDialogue);
   // Movement: arrow keys / WASD, only while the City screen is actually
   // showing and no modal is layered on top of it (avoids scrolling the
   // page on arrow-key presses, and avoids hijacking input elsewhere).
-  function cityScreenIsLive() { return !$('dgcCityScreen').hidden && $('dgcModalBackdrop').hidden; }
+  function cityScreenIsLive() {
+    var dialogueBox = $('dgcDialogueBox');
+    return !$('dgcCityScreen').hidden && $('dgcModalBackdrop').hidden && (!dialogueBox || dialogueBox.hidden);
+  }
   document.addEventListener('keydown', function (e) {
     if (!cityScreenIsLive()) return;
     var k = e.key.toLowerCase();
@@ -29187,7 +29736,10 @@ $ git stash pop
     else if (k === 'arrowdown' || k === 's') { cityKeys.down = true; e.preventDefault(); }
     else if (k === 'arrowleft' || k === 'a') { cityKeys.left = true; e.preventDefault(); }
     else if (k === 'arrowright' || k === 'd') { cityKeys.right = true; e.preventDefault(); }
-    else if (k === 'enter' || k === ' ') { if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId); }
+    else if (k === 'enter' || k === ' ') {
+      if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId);
+      else if (cityNearNpcId) openNpcDialogue(cityNearNpcId);
+    }
   });
   document.addEventListener('keyup', function (e) {
     var k = e.key.toLowerCase();
@@ -29269,6 +29821,13 @@ $ git stash pop
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && cityPlacingDecorId) cancelPlacingDecoration();
+  });
+  // Living City addendum — Escape or Enter both close an open dialogue,
+  // matching the classic RPG-dialogue-box convention.
+  document.addEventListener('keydown', function (e) {
+    var dialogueBox = $('dgcDialogueBox');
+    if (!dialogueBox || dialogueBox.hidden) return;
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeNpcDialogue(); }
   });
 
   /* ---- Modals ---- */
