@@ -23794,11 +23794,20 @@ $ git stash pop
     var face = rootEl.querySelector('.dgc-chibi-face');
     if (!face) return;
     face.querySelectorAll('.dgc-face-part').forEach(function (el) { el.style.display = 'none'; });
+    // CRITICAL FIX: this used to clear the inline style (style.display='')
+    // to "reveal" a part, which does NOT work — .dgc-face-part{display:
+    // none} is a stylesheet class rule, so clearing an inline override
+    // just falls back to that same "none". Net effect: every character's
+    // eyes/eyebrows/mouth/accessory were invisible this entire time (only
+    // always-on elements like blush/hair/body ever rendered) — confirmed
+    // live via computed style (display:none even after this ran) before
+    // this fix. An explicit inline 'block' actually outranks the class
+    // rule, which is what setting a real face is supposed to do.
     ['eyes', 'mouth', 'brow', 'acc'].forEach(function (cat) {
       var variant = parts[cat];
       if (!variant || variant === 'none') return;
       var el = face.querySelector('.dgc-' + cat + '-' + variant);
-      if (el) el.style.display = '';
+      if (el) el.style.display = 'block';
     });
     if (chibi) chibi.setAttribute('data-expr', exprName);
     face.classList.remove('dgc-face-pop');
