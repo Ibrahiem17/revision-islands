@@ -24456,7 +24456,7 @@ $ git stash pop
     // ---- Town Square ----
     { id:'priya', name:'Priya', role:'the barista', topic:'Git & Version Control',
       hair:'nova', hairColor:'#3a2414', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'apron', accColor:'#3f8f5c', x:340, y:210, wanderRadius:70,
+      accessory:'apron', accColor:'#3f8f5c', x:320, y:250, wanderRadius:70, // environment addendum: nudged off the relocated Tailor building's footprint
       expr:{ idle:'idle', talk:'happy', happy:'excited', react:'curious' },
       dialogue:[
         "Commit early, commit often — small commits are easier to review, and way easier to revert.",
@@ -24484,7 +24484,7 @@ $ git stash pop
       ] },
     { id:'kenji', name:'Kenji', role:'the student with headphones', topic:'Docker & Containers',
       hair:'byte', hairColor:'#1f7a6e', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'headphones', accColor:'#2f4a5a', x:230, y:310, wanderRadius:60,
+      accessory:'headphones', accColor:'#2f4a5a', x:140, y:300, wanderRadius:60, // environment addendum: nudged off the relocated Armory's footprint
       expr:{ idle:'idle', talk:'playful', happy:'excited', react:'curious' },
       dialogue:[
         "A container isn't a lightweight VM — it shares the host's kernel, which is exactly why it starts so fast.",
@@ -24498,7 +24498,7 @@ $ git stash pop
       ] },
     { id:'yuki', name:'Yuki', role:'the librarian', topic:'Security Basics',
       hair:'bun', hairColor:'#1c1c1c', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'book', accColor:'#6b4a28', x:500, y:130, wanderRadius:0,
+      accessory:'book', accColor:'#6b4a28', x:660, y:220, wanderRadius:0, // environment addendum: nudged off Bank, now just east of the Library (fitting, for "the librarian")
       expr:{ idle:'idle', talk:'confident', happy:'calm', react:'worried' },
       dialogue:[
         "The principle of least privilege: give an account exactly the access it needs, never more 'just in case.'",
@@ -24527,7 +24527,7 @@ $ git stash pop
     // ---- Training Grounds ----
     { id:'marcus', name:'Marcus', role:'the jogger', topic:'Linux & Terminal Basics',
       hair:'byte', hairColor:'#1c1c1c', skinColor:'#8a5a3a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'headband', accColor:'#c94f3d', x:720, y:300, wanderRadius:80,
+      accessory:'headband', accColor:'#c94f3d', x:720, y:260, wanderRadius:80, // environment addendum: nudged off the relocated Training Grounds building's footprint
       expr:{ idle:'idle', talk:'confident', happy:'happy', react:'playful' },
       dialogue:[
         "`grep -r` searches recursively through directories — way faster than opening every file by hand.",
@@ -24541,7 +24541,7 @@ $ git stash pop
       ] },
     { id:'bigsam', name:'Big Sam', role:'the site engineer', topic:'Cloud & Networking',
       hair:'buzzcut', hairColor:'#5c4a2e', skinColor:'#e8ad7a', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'cap', accColor:'#f2c14e', x:800, y:400, wanderRadius:60,
+      accessory:'cap', accColor:'#f2c14e', x:800, y:460, wanderRadius:60, // environment addendum: nudged off the relocated Training Grounds building's footprint
       expr:{ idle:'idle', talk:'confident', happy:'happy', react:'tired' },
       dialogue:[
         "A load balancer isn't just for scale — it's also how you survive one server dying at 3 AM.",
@@ -24569,7 +24569,7 @@ $ git stash pop
       ] },
     { id:'ernie', name:'Big Ernie', role:'the bouncer', topic:'Networking & Firewalls',
       hair:'buzzcut', hairColor:'#1c1c1c', skinColor:'#5a3a24', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'earpiece', accColor:'#1c1c1c', x:750, y:420, wanderRadius:40,
+      accessory:'earpiece', accColor:'#1c1c1c', x:650, y:420, wanderRadius:40, // environment addendum: nudged off the relocated Training Grounds building's footprint
       expr:{ idle:'idle', talk:'confident', happy:'confident', react:'angry' },
       dialogue:[
         "A firewall rule should say exactly what's allowed and default to denying everything else.",
@@ -24654,7 +24654,7 @@ $ git stash pop
       ] },
     { id:'lily', name:'Lily', role:'the kid with a dog', topic:'General Encouragement',
       hair:'pigtails', hairColor:'#d4a843', skinColor:'#f0c9a0', bodyColor:'#f8f1e2', trimColor:'#9c7a52',
-      accessory:'none', accColor:'#c94f3d', x:1250, y:600, wanderRadius:90,
+      accessory:'none', accColor:'#c94f3d', x:1250, y:520, wanderRadius:90, // environment addendum: nudged off a Residential District house's footprint
       expr:{ idle:'playful', talk:'happy', happy:'excited', react:'playful' },
       dialogue:[
         "You know what's cool? Every single expert started out not knowing this stuff either.",
@@ -27636,6 +27636,16 @@ $ git stash pop
     }
     return false;
   }
+  // A narrower version for NPC wandering: standing on the plaza or a
+  // road is completely normal for a person (that's what paths/squares
+  // are for) — only a building wall is actually "inside an object".
+  function pointBlockedForNpcWander(x, y, pad) {
+    for (var i = 0; i < CITY_BUILDINGS.length; i++) {
+      var b = CITY_BUILDINGS[i];
+      if (rectContainsPoint(b.x, b.y, CITY_BUILDING_W, CITY_BUILDING_H, x, y, pad)) return true;
+    }
+    return false;
+  }
   // Residential District house coordinates — hoisted to module scope
   // (out of the WORLD_FIXTURES IIFE below) so both the fixture-scatter
   // avoidance AND the player decoration-placement check (Section 2A)
@@ -27825,11 +27835,26 @@ $ git stash pop
           st.facing = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
         }
       } else if (now >= st.pauseUntil) {
-        var angle = Math.random() * Math.PI * 2;
-        var r = Math.random() * npc.wanderRadius;
-        st.targetX = npc.x + Math.cos(angle) * r;
-        st.targetY = npc.y + Math.sin(angle) * r;
-        st.moving = true;
+        // Section 2A — same overlap-avoidance idea as the ambient fixture
+        // scatter: don't wander a target into a building/plaza/road (a
+        // few tries, then just give up and stay put for this cycle — an
+        // NPC skipping one wander leg is invisible, unlike one that
+        // visibly clips through a wall).
+        var angle, r, tx, ty, tries = 0;
+        do {
+          angle = Math.random() * Math.PI * 2;
+          r = Math.random() * npc.wanderRadius;
+          tx = npc.x + Math.cos(angle) * r;
+          ty = npc.y + Math.sin(angle) * r;
+          tries++;
+        } while (tries < 10 && (pointBlockedForNpcWander(tx, ty, 4) || blockedByHouse(tx, ty, 4)));
+        if (tries < 10 || !(pointBlockedForNpcWander(tx, ty, 4) || blockedByHouse(tx, ty, 4))) {
+          st.targetX = tx;
+          st.targetY = ty;
+          st.moving = true;
+        } else {
+          st.pauseUntil = now + rand(800, 1500); // couldn't find a clear spot — try again shortly
+        }
       }
       var token = $('dgcCityNpc-' + npc.id);
       if (token) {
