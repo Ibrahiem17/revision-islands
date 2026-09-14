@@ -22349,7 +22349,14 @@ $ git stash pop
      ============================================================ */
   .dgc-screen-city { position:relative; padding-top:8px; }
   .dgc-city-viewport {
-    position:relative; height:300px; margin:14px 0 6px; border-radius:12px; overflow:hidden;
+    /* Fill most of the browser's height on its own — not just once the
+       player hits the fullscreen toggle (see the :fullscreen override
+       further down, which uses the same 760px = CITY_WORLD_H ceiling so
+       a taller viewport never outgrows the world into dead space). 300px
+       is kept as the floor for short viewports (a small laptop window,
+       a tablet) so the map never gets smaller than it used to be. */
+    position:relative; height:min(760px, calc(100vh - 220px)); min-height:300px;
+    margin:14px 0 6px; border-radius:12px; overflow:hidden;
     background:var(--dgc-bg); border:1px solid var(--dgc-border);
   }
   .dgc-city-world {
