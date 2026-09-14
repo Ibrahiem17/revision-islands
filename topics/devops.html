@@ -22979,6 +22979,14 @@ $ git stash pop
     padding:2vh 2vw;
   }
   .dgc-root:fullscreen .dgc-screen, .dgc-root:-webkit-full-screen .dgc-screen { max-width:900px; margin:0 auto; width:100%; }
+  /* DEVOPS CITY is a walkable map, not a reading-width menu — the generic
+     900px cap above leaves most of a fullscreen display as dead black
+     space around it (and above/below the 300px viewport). Widen the
+     screen and let the camera viewport grow into the freed space; 760px
+     is CITY_WORLD_H exactly, so a taller viewport never outgrows the
+     world and reveals empty space below it instead of more of the town. */
+  .dgc-root:fullscreen .dgc-screen-city, .dgc-root:-webkit-full-screen .dgc-screen-city { max-width:min(1500px, 96vw); }
+  .dgc-root:fullscreen .dgc-city-viewport, .dgc-root:-webkit-full-screen .dgc-city-viewport { height:min(760px, calc(100vh - 220px)); }
 
   /* ============================================================
      "HOW CLOSE WAS I?" — a short readout alongside the existing hit/
