@@ -23834,12 +23834,11 @@ $ git stash pop
     save.currentDailyStreak = isConsecutiveDay ? save.currentDailyStreak + 1 : 1;
     save.longestDailyStreak = Math.max(save.longestDailyStreak, save.currentDailyStreak);
     save.lastPlayedDate = today;
-    // A modest "nice to have you back" bonus — small flat amount, gentle
-    // per-day scaling capped well below what real play earns, plus a
-    // one-time bump right on a milestone day. Never meant to rival the
-    // per-question/per-fight economy.
+    // Flat 500-coin "nice to have you back" bonus every day, plus a
+    // one-time bump right on a milestone day.
+    var DAILY_COIN_BONUS = 500;
     var isMilestone = STREAK_MILESTONES.indexOf(save.currentDailyStreak) !== -1;
-    var bonus = 10 + Math.min(save.currentDailyStreak, 20) * 2 + (isMilestone ? save.currentDailyStreak * 10 : 0);
+    var bonus = DAILY_COIN_BONUS + (isMilestone ? save.currentDailyStreak * 10 : 0);
     save.coins += bonus;
     persist();
     // Don't show a toast for a bare "1-day streak" — that's just the
