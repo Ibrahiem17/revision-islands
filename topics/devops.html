@@ -21878,6 +21878,17 @@ $ git stash pop
   }
   .dgc-more-soon { text-align:center; color:var(--dgc-text-dimmer); font-size:11px; margin-top:22px; }
 
+  /* Remediation doc, Section 1 — per-boss level select tiles, styled
+     consistently with .dgc-boss-card rather than inventing a new look. */
+  .dgc-level-select-grid { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; }
+  .dgc-level-tile { width:160px; background:radial-gradient(circle at 50% 0%,rgba(var(--dgc-success-rgb),0.08),rgba(0,0,0,0.3)); border:1px solid var(--dgc-border); border-radius:10px; padding:14px 10px; text-align:center; }
+  .dgc-level-tile-num { font-family:var(--dgc-font-display); font-size:11px; color:var(--dgc-gold); letter-spacing:1px; }
+  .dgc-level-tile-name { font-size:11.5px; font-weight:700; color:var(--dgc-text); margin:4px 0 6px; }
+  .dgc-level-tile-status { font-size:10px; color:var(--dgc-text-dimmer); margin-bottom:10px; }
+  .dgc-level-tile-cleared { border-color:var(--dgc-success); }
+  .dgc-level-tile-cleared .dgc-level-tile-status { color:var(--dgc-success); }
+  .dgc-level-tile-locked, .dgc-level-tile-unauthored { opacity:0.55; }
+
   .dgc-btn { font-family:var(--dgc-font-ui); font-size:11.5px; font-weight:700; color:var(--dgc-text); background:rgba(255,255,255,0.04); border:1px solid var(--dgc-border-bright); border-radius:6px; padding:9px 16px; cursor:pointer; transition:all .15s; }
   .dgc-btn:hover { border-color:var(--dgc-secondary); color:var(--dgc-secondary); background:rgba(var(--dgc-secondary-rgb),0.08); }
   .dgc-btn-fight { background:rgba(var(--dgc-success-rgb),0.12); border-color:rgba(var(--dgc-success-rgb),0.4); color:var(--dgc-success); width:100%; }
@@ -23356,6 +23367,15 @@ $ git stash pop
       <div class="dgc-modal-body" id="dgcDebriefBody"></div>
     </div>
 
+    <!-- Remediation doc, Section 1 — per-boss level select (5 difficulty
+         levels, linear unlock: level N+1 opens once level N is cleared).
+         A level with no authored questions yet shows as a real, visible
+         "not authored yet" state rather than a fake-playable empty fight. -->
+    <div class="dgc-modal" id="dgcLevelSelectModal" hidden>
+      <div class="dgc-modal-header"><span id="dgcLevelSelectTitle">CHOOSE LEVEL</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body" id="dgcLevelSelectBody"></div>
+    </div>
+
     <!-- ============ PHASE 4 — CITY BUILDING MODALS ============ -->
     <div class="dgc-modal" id="dgcArmoryModal" hidden>
       <div class="dgc-modal-header"><span>⚒️ ARMORY</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
@@ -23779,7 +23799,12 @@ $ git stash pop
         // Phase 5, Section 3 — Leaderboard: the Final Boss run is tracked
         // separately from the general `highScore` (best coins in ANY run)
         // since the doc calls it out as its own dedicated entry.
-        bestFinalBossScore: typeof s.bestFinalBossScore === 'number' ? s.bestFinalBossScore : 0
+        bestFinalBossScore: typeof s.bestFinalBossScore === 'number' ? s.bestFinalBossScore : 0,
+        // Remediation doc, Section 1 — per-boss highest cleared difficulty
+        // level (1-5). Absent/0 means "not on the new leveled structure
+        // yet" for a boss that hasn't been migrated off the old 3-phase
+        // format, which is the correct default for every existing save.
+        bossLevelProgress: (s.bossLevelProgress && typeof s.bossLevelProgress === 'object') ? s.bossLevelProgress : {}
       };
     } catch (e) {
       return {
@@ -23793,7 +23818,7 @@ $ git stash pop
         equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
         npcLastLineIndex: {}, practiceMode: false,
         lastPlayedDate: null, currentDailyStreak: 0, longestDailyStreak: 0,
-        performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0
+        performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0, bossLevelProgress: {}
       };
     }
   }
@@ -25250,7 +25275,347 @@ $ git stash pop
         ],
         damageIfCorrect: 34,
         damageToHeroIfWrong: 22
-      }
+      },
+      // ================================================================
+      // Remediation doc, Section 1 — 5-level restructure. Level 1 only,
+      // authored this batch: 25 genuinely foundational, real-interview/
+      // real-usage Linux questions (self-checked against "would a working
+      // engineer actually encounter this or be asked this?" before
+      // inclusion — none invented to hit the count). Levels 2-5 are left
+      // as empty pools on purpose (see `levels-remaining.md`-equivalent
+      // note below) rather than padded with filler, per the doc's own
+      // explicit rule against that.
+      levels: [
+        {
+          name: 'Level 1 — Fundamentals',
+          hp: 90,
+          questions: [
+            {
+              mode: 'terminal',
+              prompt: 'The Golem flexes a stony arm: <strong>"Give execute permission to <code>script.sh</code> for the OWNER ONLY — nobody else."</strong>',
+              damageIfCorrect: 14, damageIfOptimal: 22,
+              hintNudge: 'Think about which permission *class* you\'re targeting — not "everyone", just one specific class.',
+              hintPartial: 'chmod u___ script.sh',
+              hintFull: 'chmod u+x script.sh',
+              acceptablePatterns: [/^chmod\s+7[45]4\s+script\.sh$/i, /^chmod\s+u\+x,?\s*script\.sh$/i],
+              optimalPatterns: [/^chmod\s+u\+x\s+script\.sh$/i],
+              baseCmds: ['chmod']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A crack of stone: <strong>"Print the full path of the directory you\'re currently in."</strong>',
+              damageIfCorrect: 12, damageIfOptimal: 18,
+              hintNudge: 'Two letters, "print working directory."',
+              hintPartial: 'p__',
+              hintFull: 'pwd',
+              acceptablePatterns: [],
+              optimalPatterns: [/^pwd$/i],
+              baseCmds: ['pwd']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem rumbles: <strong>"Create a directory called <code>build</code>, along with any missing parent directories, in one command."</strong>',
+              damageIfCorrect: 14, damageIfOptimal: 22,
+              hintNudge: 'mkdir has a flag that creates parent directories along the way instead of erroring if they don\'t exist.',
+              hintPartial: 'mkdir -_ ./project/build',
+              hintFull: 'mkdir -p ./project/build',
+              acceptablePatterns: [/^mkdir\s+build$/i],
+              optimalPatterns: [/^mkdir\s+-p\s+.*build$/i],
+              baseCmds: ['mkdir']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A slab shifts: <strong>"Copy the entire <code>configs</code> directory (and everything inside it) to <code>configs-backup</code>."</strong>',
+              damageIfCorrect: 14, damageIfOptimal: 22,
+              hintNudge: 'cp needs a flag to recurse into a directory — without it, cp refuses to copy a folder at all.',
+              hintPartial: 'cp -_ configs configs-backup',
+              hintFull: 'cp -r configs configs-backup',
+              acceptablePatterns: [],
+              optimalPatterns: [/^cp\s+-r\s+configs\s+configs-backup$/i],
+              baseCmds: ['cp']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem grinds its knuckles: <strong>"Rename <code>notes.txt</code> to <code>notes-old.txt</code>."</strong>',
+              damageIfCorrect: 12, damageIfOptimal: 18,
+              hintNudge: 'There\'s no dedicated "rename" command in Linux — one existing command does both moving AND renaming.',
+              hintPartial: 'm_ notes.txt notes-old.txt',
+              hintFull: 'mv notes.txt notes-old.txt',
+              acceptablePatterns: [],
+              optimalPatterns: [/^mv\s+notes\.txt\s+notes-old\.txt$/i],
+              baseCmds: ['mv']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A crack of stone: <strong>"Print the contents of <code>readme.txt</code> straight to the terminal."</strong>',
+              damageIfCorrect: 10, damageIfOptimal: 16,
+              hintNudge: 'The single most common command for "just show me what\'s in this file."',
+              hintPartial: 'c__ readme.txt',
+              hintFull: 'cat readme.txt',
+              acceptablePatterns: [/^less\s+readme\.txt$/i, /^more\s+readme\.txt$/i],
+              optimalPatterns: [/^cat\s+readme\.txt$/i],
+              baseCmds: ['cat', 'less', 'more']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem hisses: <strong>"Show only the LAST 20 lines of <code>app.log</code>."</strong>',
+              damageIfCorrect: 12, damageIfOptimal: 18,
+              hintNudge: 'One command shows the end of a file, with a flag for exactly how many lines.',
+              hintPartial: 'tail -n __ app.log',
+              hintFull: 'tail -n 20 app.log',
+              acceptablePatterns: [/^tail\s+app\.log$/i],
+              optimalPatterns: [/^tail\s+-n\s*20\s+app\.log$/i],
+              baseCmds: ['tail']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A vent hisses: <strong>"Watch <code>app.log</code> live, so new lines appear as they\'re written."</strong>',
+              damageIfCorrect: 14, damageIfOptimal: 22,
+              hintNudge: 'tail has a "follow" flag for exactly this — one of the most-used commands when debugging a live service.',
+              hintPartial: 'tail -_ app.log',
+              hintFull: 'tail -f app.log',
+              acceptablePatterns: [],
+              optimalPatterns: [/^tail\s+-f\s+app\.log$/i],
+              baseCmds: ['tail']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem grinds: <strong>"Search every file under the current directory, recursively, for the string \'ERROR\'."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 26,
+              hintNudge: 'grep has a recursive flag — without it, grep only checks files you name explicitly, not subdirectories.',
+              hintPartial: 'grep -_ "ERROR" .',
+              hintFull: 'grep -r "ERROR" .',
+              acceptablePatterns: [/^grep\s+"?ERROR"?\s+\*$/i],
+              optimalPatterns: [/^grep\s+-r\s+"?ERROR"?\s+\.$/i, /^grep\s+-rn\s+"?ERROR"?\s+\.$/i],
+              baseCmds: ['grep']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A rumble: <strong>"Count how many lines are in <code>data.csv</code>."</strong>',
+              damageIfCorrect: 12, damageIfOptimal: 18,
+              hintNudge: '"Word count" is the command\'s name, but a flag switches it to counting lines instead.',
+              hintPartial: 'wc -_ data.csv',
+              hintFull: 'wc -l data.csv',
+              acceptablePatterns: [],
+              optimalPatterns: [/^wc\s+-l\s+data\.csv$/i],
+              baseCmds: ['wc']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem\'s eyes narrow: <strong>"Find out exactly which binary runs when you type <code>python3</code>."</strong>',
+              damageIfCorrect: 12, damageIfOptimal: 20,
+              hintNudge: 'One command tells you exactly where in $PATH a command actually lives.',
+              hintPartial: 'w____ python3',
+              hintFull: 'which python3',
+              acceptablePatterns: [/^whereis\s+python3$/i],
+              optimalPatterns: [/^which\s+python3$/i],
+              baseCmds: ['which', 'whereis']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A crack of light: <strong>"Create an empty file called <code>.gitkeep</code>."</strong>',
+              damageIfCorrect: 10, damageIfOptimal: 16,
+              hintNudge: 'This command\'s real job is updating a file\'s timestamp — but it also creates the file if it doesn\'t exist yet.',
+              hintPartial: 't____ .gitkeep',
+              hintFull: 'touch .gitkeep',
+              acceptablePatterns: [],
+              optimalPatterns: [/^touch\s+\.gitkeep$/i],
+              baseCmds: ['touch']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem points: <strong>"Show how much disk space is free on every mounted filesystem, in human-readable units."</strong>',
+              damageIfCorrect: 14, damageIfOptimal: 20,
+              hintNudge: '"Disk free" — and a flag for human-readable sizes (GB/MB instead of raw byte counts).',
+              hintPartial: 'df -_',
+              hintFull: 'df -h',
+              acceptablePatterns: [/^df$/i],
+              optimalPatterns: [/^df\s+-h$/i],
+              baseCmds: ['df']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A hiss of steam: <strong>"Show current memory (RAM) usage, in human-readable units."</strong>',
+              damageIfCorrect: 14, damageIfOptimal: 20,
+              hintNudge: 'A short, classic command for memory stats — pair it with the same human-readable flag as df.',
+              hintPartial: 'free -_',
+              hintFull: 'free -h',
+              acceptablePatterns: [/^free$/i],
+              optimalPatterns: [/^free\s+-h$/i],
+              baseCmds: ['free']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'The Golem asks flatly: <strong>"Which user are you currently logged in as?"</strong>',
+              damageIfCorrect: 10, damageIfOptimal: 16,
+              hintNudge: 'Two words, literally asking the question you\'re being asked.',
+              hintPartial: 'who____',
+              hintFull: 'whoami',
+              acceptablePatterns: [/^id\s+-un$/i],
+              optimalPatterns: [/^whoami$/i],
+              baseCmds: ['whoami', 'id']
+            },
+            {
+              mode: 'terminal',
+              prompt: 'A rumble of stone: <strong>"Make <code>deploy.sh</code> readable and writable by its owner, and read-only for everyone else, in one command."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 26,
+              hintNudge: 'Owner needs read+write (6), group and others need read-only (4) — that\'s a 3-digit chmod.',
+              hintPartial: 'chmod 6__ deploy.sh',
+              hintFull: 'chmod 644 deploy.sh',
+              acceptablePatterns: [],
+              optimalPatterns: [/^chmod\s+644\s+deploy\.sh$/i],
+              baseCmds: ['chmod']
+            },
+            {
+              mode: 'spot_the_bug',
+              prompt: 'The Golem shows you a cracked stone tablet — a broken shell script. <strong>Click the buggy line, then type the fix.</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 26,
+              hintNudge: 'Read the if-statement carefully — something bash always expects right after the condition is missing.',
+              hintPartial: 'Line 2 is missing a keyword bash requires after "if [ ... ]".',
+              hintFull: 'Line 2 needs "then" at the end: if [ "$STATUS" = "active" ]; then',
+              codeBlock: [
+                '#!/bin/bash',
+                'if [ "$STATUS" = "active" ]',
+                '    echo "Service is running"',
+                'fi'
+              ],
+              buggyLineId: 1,
+              correctFixPatterns: [/^if\s*\[\s*"?\$STATUS"?\s*=\s*"active"\s*\]\s*;?\s*then$/i]
+            },
+            {
+              mode: 'spot_the_bug',
+              prompt: 'A tablet cracks open: <strong>"This script is supposed to loop over files, but it errors immediately. Find and fix the bug."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 26,
+              hintNudge: 'A for-loop over a list needs a keyword right before the body starts — same family of mistake as an if-statement missing "then".',
+              hintPartial: 'Line 2 is missing the keyword bash needs right after "for f in *.txt".',
+              hintFull: 'Line 2 needs "do" at the end: for f in *.txt; do',
+              codeBlock: [
+                '#!/bin/bash',
+                'for f in *.txt',
+                '    echo "$f"',
+                'done'
+              ],
+              buggyLineId: 1,
+              correctFixPatterns: [/^for\s+f\s+in\s+\*\.txt\s*;?\s*do$/i]
+            },
+            {
+              mode: 'spot_the_bug',
+              prompt: 'The Golem grinds a fragment into place: <strong>"This variable comparison never works the way it should. Find and fix the bug."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 26,
+              hintNudge: 'Inside a bash [ ] test, there needs to be a space on both sides of every operator and bracket.',
+              hintPartial: 'Line 2 is missing spaces around the brackets/operator: [ "$COUNT" -gt 0 ]',
+              hintFull: 'Line 2 should read: if [ "$COUNT" -gt 0 ]; then',
+              codeBlock: [
+                '#!/bin/bash',
+                'if ["$COUNT" -gt 0]; then',
+                '    echo "Non-zero"',
+                'fi'
+              ],
+              buggyLineId: 1,
+              correctFixPatterns: [/^if\s*\[\s*"?\$COUNT"?\s*-gt\s*0\s*\]\s*;?\s*then$/i]
+            },
+            {
+              mode: 'spot_the_bug',
+              prompt: 'A stone panel slides open: <strong>"This script tries to make itself executable, but the deploy still fails with \'Permission denied\'. Find and fix the bug."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 26,
+              hintNudge: 'Read the chmod line carefully — it\'s targeting the wrong file entirely.',
+              hintPartial: 'Line 2 runs chmod on "deploy.sh.bak", not the actual file being executed on line 3.',
+              hintFull: 'Line 2 should read: chmod +x deploy.sh',
+              codeBlock: [
+                '#!/bin/bash',
+                'chmod +x deploy.sh.bak',
+                './deploy.sh'
+              ],
+              buggyLineId: 1,
+              correctFixPatterns: [/^chmod\s+\+x\s+deploy\.sh$/i]
+            },
+            {
+              mode: 'triage_call',
+              prompt: 'The Golem groans: <strong>"You need to permanently delete a directory and everything inside it. Pick your move, then justify it in one line."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 28,
+              hintNudge: 'One of these options double-checks with you before deleting anything nested. The other one just does it, silently and instantly.',
+              hintPartial: 'The safer habit for anything destructive is to confirm what you\'re about to delete first.',
+              hintFull: 'Best: list the directory contents first (or use rm -ri), THEN rm -rf once you\'re sure — never blind rm -rf.',
+              options: [
+                { id: 'a', label: 'Immediately run rm -rf on it, no other checks', tier: 'wrong', why: 'rm -rf gives zero confirmation and zero recovery — a typo\'d path here can delete the wrong thing permanently, with no warning.' },
+                { id: 'b', label: 'List its contents first (or use rm -ri for per-file confirmation), then rm -rf once certain', tier: 'best', why: 'Confirms exactly what you\'re about to permanently destroy before doing it — the standard safe habit for any irreversible command.' },
+                { id: 'c', label: 'Move it to a "trash" folder instead of deleting it', tier: 'defensible', why: 'Genuinely safer (recoverable), but doesn\'t actually answer what was asked ("permanently delete") — a real fix eventually still needs an actual delete step.' }
+              ],
+              justificationPatterns: [/confirm|check\s*first|list\s*(the\s*)?contents|ls\s*first|sure|verify|typo/i]
+            },
+            {
+              mode: 'triage_call',
+              prompt: 'A slab grinds open: <strong>"A teammate says \'just chmod 777 it, that always fixes permission errors.\' Pick your move, then justify it in one line."</strong>',
+              damageIfCorrect: 16, damageIfOptimal: 28,
+              hintNudge: 'One option actually diagnoses WHY the permission error is happening. The other one just throws maximum permissions at it and hopes.',
+              hintPartial: 'chmod 777 makes a file world-writable — that\'s a real security problem, not a real fix.',
+              hintFull: 'Best: check the actual owner/group/permissions with ls -l first, then grant only the specific permission that\'s actually missing.',
+              options: [
+                { id: 'a', label: 'chmod 777 it, like they suggested', tier: 'wrong', why: 'Makes the file world-writable — anyone on the box can now modify it. It "fixes" the symptom by removing all access control, which is its own problem.' },
+                { id: 'b', label: 'Run ls -l to see the actual current permissions/owner, then grant only what\'s actually missing', tier: 'best', why: 'Diagnoses the real cause first — usually the fix is a much narrower chmod (or a chown), not throwing open every permission bit.' },
+                { id: 'c', label: 'Just re-run the command as sudo instead of touching permissions', tier: 'defensible', why: 'Works in the moment, but sidesteps the actual permissions problem rather than fixing it — it\'ll bite the next person who runs it without sudo.' }
+              ],
+              justificationPatterns: [/ls\s*-l|actual\s*permission|diagnose|check\s*first|owner|narrow|specific/i]
+            },
+            {
+              mode: 'read_the_room',
+              prompt: 'The Golem\'s core flickers. <strong>A command you just typed isn\'t recognized. Diagnose it, then fix it.</strong>',
+              damageIfCorrect: 18, damageIfOptimal: 30,
+              hintNudge: 'Read the exact wording of the shell\'s error carefully — it\'s telling you precisely what\'s wrong.',
+              hintPartial: '"command not found" means the shell searched every directory in $PATH and found nothing by that name.',
+              hintFull: 'Diagnosis: the tool isn\'t installed (or isn\'t on $PATH). Fix: install it via the system package manager, e.g. sudo apt install htop.',
+              outputBlock: [
+                '$ htop',
+                'bash: htop: command not found'
+              ],
+              acceptableDiagnosesPatterns: [/not\s*installed/i, /not\s*(on|in)\s*(the\s*)?path/i, /(command|tool)\s*(doesn'?t|does\s*not)\s*exist/i, /missing\s*(package|tool|binary)/i],
+              followUpFix: {
+                prompt: 'Now install it with the system package manager:',
+                acceptablePatterns: [/^sudo\s+yum\s+install\s+(-y\s+)?htop$/i, /^sudo\s+dnf\s+install\s+(-y\s+)?htop$/i],
+                optimalPatterns: [/^sudo\s+apt\s+(install|update\s*&&\s*apt\s+install)\s+(-y\s+)?htop$/i, /^sudo\s+apt-get\s+install\s+(-y\s+)?htop$/i]
+              }
+            },
+            {
+              mode: 'read_the_room',
+              prompt: 'Steam vents from a crack. <strong>You try to run a script you just wrote, and get denied. Diagnose it, then fix it.</strong>',
+              damageIfCorrect: 18, damageIfOptimal: 30,
+              hintNudge: 'Look at the permission bits in the ls -l output — specifically whether the execute bit is set for you.',
+              hintPartial: '-rw-r--r-- has no "x" anywhere — the file isn\'t executable by anyone yet.',
+              hintFull: 'Diagnosis: the script isn\'t marked executable. Fix: chmod +x setup.sh, then run it again.',
+              outputBlock: [
+                '$ ./setup.sh',
+                'bash: ./setup.sh: Permission denied',
+                '',
+                '$ ls -l setup.sh',
+                '-rw-r--r-- 1 devops devops 340 Sep 10 setup.sh'
+              ],
+              acceptableDiagnosesPatterns: [/not\s*executable/i, /missing\s*(the\s*)?execute\s*(bit|permission)/i, /no\s*x\s*permission/i, /permission/i],
+              followUpFix: {
+                prompt: 'Make it executable, then it\'ll run:',
+                acceptablePatterns: [/^chmod\s+755\s+setup\.sh$/i],
+                optimalPatterns: [/^chmod\s+\+x\s+setup\.sh$/i]
+              }
+            },
+            {
+              mode: 'build_the_pipeline',
+              prompt: 'The Golem\'s eyes glow. <strong>Sequence the correct order for safely deploying a new version of a script to a server.</strong>',
+              steps: [
+                'Back up the current version',
+                'Copy the new version over',
+                'Make it executable (chmod +x)',
+                'Test it runs correctly',
+                'Restart the service that uses it'
+              ],
+              damageIfCorrect: 20, damageIfOptimal: 34,
+              damageToHeroIfWrong: 18
+            }
+          ]
+        },
+        { name: 'Level 2 — Intermediate', hp: 110, questions: [] },
+        { name: 'Level 3 — Advanced Basics', hp: 130, questions: [] },
+        { name: 'Level 4 — Real Incidents', hp: 150, questions: [] },
+        { name: 'Level 5 — Interview-Caliber Judgment', hp: 170, questions: [] }
+      ]
     },
 
     /* ================================================================
@@ -27387,17 +27752,37 @@ $ git stash pop
      ============================================================ */
   var state = null; // built fresh each fight in startFight()
 
-  function newRunState(bossId) {
+  // Remediation doc, Section 1 — a "leveled" fight reuses the entire
+  // existing phase engine unchanged: it just builds a throwaway boss
+  // object that LOOKS like a normal single-phase boss (phases/phaseHp/
+  // phaseNames arrays of length 1), so handlePhaseCleared()'s existing
+  // "last phase cleared -> triggerVictory()" branch fires naturally.
+  // The real BOSSES[bossId] entry (and its .phases used elsewhere, e.g.
+  // the Final Boss's mixed-pool) is never mutated.
+  function bossForLevel(bossId, levelIdx) {
+    var base = BOSSES[bossId];
+    var level = base.levels[levelIdx];
+    return Object.assign({}, base, {
+      phases: [level.questions],
+      phaseHp: [level.hp],
+      phaseNames: [level.name]
+    });
+  }
+
+  function newRunState(bossId, levelIdx) {
+    var leveled = typeof levelIdx === 'number';
+    var boss = leveled ? bossForLevel(bossId, levelIdx) : BOSSES[bossId];
     return {
       bossId: bossId,
-      boss: BOSSES[bossId],
+      boss: boss,
+      levelIdx: leveled ? levelIdx : null,
       locked: false, // true while a submitted answer is resolving, to block double-submits
       phaseIdx: 0,
       // HP stat (Phase 2): baseline 100, + a flat bonus per level.
       heroHpMax: 100 + save.stats.hp,
       heroHp: 100 + save.stats.hp,
-      bossHp: BOSSES[bossId].phaseHp[0],
-      bossHpMax: BOSSES[bossId].phaseHp[0],
+      bossHp: boss.phaseHp[0],
+      bossHpMax: boss.phaseHp[0],
       combo: 1,
       comboCountThisTier: 0,
       questionPoolIdx: 0,
@@ -27544,6 +27929,17 @@ $ git stash pop
      locks after a first clear except the Final Boss's own gate.
      ============================================================ */
   var BOSS_ORDER = ['terminalGolem', 'kraken', 'hydra', 'orchestrator', 'phantom', 'reaper', 'titan', 'statekeeper', 'wraith', 'pager'];
+  // Bug fix (remediation doc, Section 4): the terminal-mode prompt used to
+  // say "devops@golem" no matter which boss was actually being fought —
+  // this maps each boss to its own hostname so the prompt is honest.
+  var BOSS_HOSTNAME = {
+    terminalGolem: 'golem', kraken: 'kraken', hydra: 'hydra', orchestrator: 'orchestrator',
+    phantom: 'phantom', reaper: 'reaper', titan: 'titan', statekeeper: 'statekeeper',
+    wraith: 'wraith', pager: 'pager'
+  };
+  function bossHostname() {
+    return (state && state.bossId && BOSS_HOSTNAME[state.bossId]) || 'devops-box';
+  }
   var FINAL_BOSS_ID = 'pager';
   var prevFinalBossLocked = null; // tracks the lock state across renders, to fire the reveal only on the actual unlock moment
   function isFinalBossUnlocked() {
@@ -27572,12 +27968,24 @@ $ git stash pop
           '<button class="dgc-btn dgc-btn-fight" disabled>🔒 Locked</button>' +
         '</div>';
       }
+      // Remediation doc, Section 1 — a boss with a `.levels` array shows
+      // its level progress (N/5) and opens the level-select screen
+      // instead of jumping straight into a fight; every other boss keeps
+      // the exact old one-click-to-fight behavior untouched.
+      var leveled = Array.isArray(boss.levels);
+      var levelProgress = leveled ? (save.bossLevelProgress[id] || 0) : null;
+      var statusHtml = leveled
+        ? '<div class="dgc-boss-card-status' + (cleared ? ' dgc-cleared' : '') + '">' + levelProgress + ' / 5 levels</div>'
+        : '<div class="dgc-boss-card-status' + (cleared ? ' dgc-cleared' : '') + '">' + (cleared ? '✓ Cleared' : 'Not Cleared') + '</div>';
+      var btnHtml = leveled
+        ? '<button class="dgc-btn dgc-btn-fight" data-select-level-boss-id="' + id + '">⚔️ Choose Level</button>'
+        : '<button class="dgc-btn dgc-btn-fight" data-fight-boss-id="' + id + '">⚔️ Fight</button>';
       return '<div class="dgc-boss-card' + (isFinal && justUnlocked ? ' dgc-boss-card-reveal' : '') + '" data-boss-id="' + id + '">' +
         '<div class="dgc-sprite dgc-boss-card-sprite" id="dgcBossCardSprite-' + id + '"></div>' +
         '<div class="dgc-boss-card-name">' + boss.name + '</div>' +
         '<div class="dgc-boss-card-topic">' + boss.topic + '</div>' +
-        '<div class="dgc-boss-card-status' + (cleared ? ' dgc-cleared' : '') + '">' + (cleared ? '✓ Cleared' : 'Not Cleared') + '</div>' +
-        '<button class="dgc-btn dgc-btn-fight" data-fight-boss-id="' + id + '">⚔️ Fight</button>' +
+        statusHtml +
+        btnHtml +
       '</div>';
     }).join('');
 
@@ -27593,12 +28001,40 @@ $ git stash pop
     });
   }
 
+  // Remediation doc, Section 1 — per-boss level select. Linear unlock:
+  // level N+1 opens once level N is cleared. A level with zero authored
+  // questions renders as a real "not authored yet" tile — never a
+  // fake-clickable fight with nothing in it.
+  function renderLevelSelect(bossId) {
+    var boss = BOSSES[bossId];
+    $('dgcLevelSelectTitle').textContent = boss.name.toUpperCase() + ' — CHOOSE LEVEL';
+    var highestCleared = save.bossLevelProgress[bossId] || 0;
+    var body = $('dgcLevelSelectBody');
+    body.innerHTML = '<div class="dgc-level-select-grid">' + boss.levels.map(function (level, i) {
+      var levelNum = i + 1;
+      var authored = level.questions.length > 0;
+      var unlocked = levelNum === 1 || highestCleared >= levelNum - 1;
+      var cleared = highestCleared >= levelNum;
+      var stateClass = !authored ? 'dgc-level-tile-unauthored' : (!unlocked ? 'dgc-level-tile-locked' : (cleared ? 'dgc-level-tile-cleared' : ''));
+      var statusText = !authored ? 'Not authored yet' : (!unlocked ? 'Locked — clear Level ' + (levelNum - 1) + ' first' : (cleared ? '✓ Cleared' : (level.questions.length + ' questions')));
+      var clickable = authored && unlocked;
+      return '<div class="dgc-level-tile ' + stateClass + '">' +
+        '<div class="dgc-level-tile-num">LEVEL ' + levelNum + '</div>' +
+        '<div class="dgc-level-tile-name">' + escapeHtml(level.name) + '</div>' +
+        '<div class="dgc-level-tile-status">' + statusText + '</div>' +
+        (clickable
+          ? '<button class="dgc-btn dgc-btn-fight" data-fight-boss-id="' + bossId + '" data-fight-level-idx="' + i + '">⚔️ Fight</button>'
+          : '<button class="dgc-btn dgc-btn-fight" disabled>' + (!authored ? '🚧 Coming Soon' : '🔒 Locked') + '</button>') +
+      '</div>';
+    }).join('') + '</div>';
+  }
+
   /* ============================================================
      TITLE SCREEN: menu actions, modals, settings, trophy hall
      ============================================================ */
   function openModal(modalId) {
     $('dgcModalBackdrop').hidden = false;
-    ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcDebriefModal', 'dgcConfirmModal',
+    ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcDebriefModal', 'dgcLevelSelectModal', 'dgcConfirmModal',
      'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal', 'dgcGeneralStoreModal'].forEach(function (id) {
       $(id).hidden = id !== modalId;
     });
@@ -28839,9 +29275,9 @@ $ git stash pop
   /* ============================================================
      COMBAT: START / RENDER
      ============================================================ */
-  function startFight(bossId) {
+  function startFight(bossId, levelIdx) {
     if (state && state.timer) clearInterval(state.timer); // defensive: kill any timer from a fight the player abandoned
-    state = newRunState(bossId);
+    state = newRunState(bossId, levelIdx);
     // Fresh fight = fresh expression bookkeeping, so a stale cached baseline
     // or a still-ticking revert timer from the PREVIOUS fight can never
     // leak into this one (same defensive spirit as the state.timer guard above).
@@ -28899,6 +29335,10 @@ $ git stash pop
   function updatePhaseTag() {
     if (state.isFinalBoss) {
       $('dgcPhaseTag').textContent = '⏰ FINAL EXAM — Everything At Once';
+      return;
+    }
+    if (state.levelIdx !== null && state.levelIdx !== undefined) {
+      $('dgcPhaseTag').textContent = 'LEVEL ' + (state.levelIdx + 1) + ' — ' + state.boss.phaseNames[0];
       return;
     }
     $('dgcPhaseTag').textContent = 'Phase ' + (state.phaseIdx + 1) + '/3 — ' + state.boss.phaseNames[state.phaseIdx];
@@ -29084,7 +29524,7 @@ $ git stash pop
     if (q.mode === 'terminal') {
       area.innerHTML =
         '<div class="dgc-terminal">' +
-          '<span class="dgc-terminal-prompt">devops@golem:~$</span>' +
+          '<span class="dgc-terminal-prompt">devops@' + bossHostname() + ':~$</span>' +
           '<input type="text" class="dgc-terminal-input" id="dgcModeInput" autocomplete="off" spellcheck="false" placeholder="type your command...">' +
           '<button class="dgc-btn dgc-terminal-submit" id="dgcModeSubmit">Enter ⏎</button>' +
         '</div>';
@@ -30046,7 +30486,21 @@ $ git stash pop
       shakeArena('lg');
     }, 200);
     guardedTimeout(function () {
-      if (save.bossesDefeated.indexOf(state.bossId) === -1) {
+      if (state.levelIdx !== null && state.levelIdx !== undefined) {
+        // Remediation doc, Section 1 — track per-level progress. Until every
+        // level of a boss is authored, "boss cleared" (which gates the
+        // Final Boss unlock) means "cleared the highest level that
+        // currently HAS real content", not literally level 5 — this keeps
+        // progression sane while levels 2-5 are authored in later batches,
+        // and the bar raises itself automatically as each batch lands.
+        if (!save.bossLevelProgress) save.bossLevelProgress = {};
+        var prevBest = save.bossLevelProgress[state.bossId] || 0;
+        if (state.levelIdx + 1 > prevBest) save.bossLevelProgress[state.bossId] = state.levelIdx + 1;
+        var authoredLevels = BOSSES[state.bossId].levels.filter(function (lv) { return lv.questions.length > 0; }).length;
+        if (state.levelIdx + 1 >= authoredLevels && save.bossesDefeated.indexOf(state.bossId) === -1) {
+          save.bossesDefeated.push(state.bossId);
+        }
+      } else if (save.bossesDefeated.indexOf(state.bossId) === -1) {
         save.bossesDefeated.push(state.bossId);
       }
       if (!save.practiceMode) awardXp(state.boss.xpReward); // Practice Mode: no victory XP bonus either
@@ -30284,9 +30738,24 @@ $ git stash pop
      WIRE UP STATIC BUTTONS
      ============================================================ */
   $('dgcBossSelectGrid').addEventListener('click', function (e) {
+    var levelBtn = e.target.closest('[data-select-level-boss-id]');
+    if (levelBtn && !levelBtn.disabled) {
+      renderLevelSelect(levelBtn.getAttribute('data-select-level-boss-id'));
+      openModal('dgcLevelSelectModal');
+      return;
+    }
     var btn = e.target.closest('[data-fight-boss-id]');
     if (!btn || btn.disabled) return;
     startFight(btn.getAttribute('data-fight-boss-id'));
+  });
+  // Level-select tiles live inside a modal, so they need their own
+  // delegated handler (the boss-select grid's own listener above never
+  // sees clicks inside the modal — separate subtree).
+  $('dgcLevelSelectBody').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-fight-boss-id]');
+    if (!btn || btn.disabled) return;
+    closeModals();
+    startFight(btn.getAttribute('data-fight-boss-id'), parseInt(btn.getAttribute('data-fight-level-idx'), 10));
   });
   $('dgcQuitBtn').addEventListener('click', function () {
     clearInterval(state && state.timer);
