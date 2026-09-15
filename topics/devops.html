@@ -23276,6 +23276,9 @@ $ git stash pop
         <button class="dgc-menu-item" id="dgcMenuTrophy">
           <span class="dgc-menu-item-icon">🏆</span>TROPHY HALL
         </button>
+        <button class="dgc-menu-item" id="dgcMenuDebrief">
+          <span class="dgc-menu-item-icon">📊</span>PROGRESS REPORT
+        </button>
       </div>
     </div>
   </div>
@@ -23342,6 +23345,15 @@ $ git stash pop
         <div class="dgc-trophy-boss-list" id="dgcTrophyBossList"></div>
         <div class="dgc-trophy-note">A living record of every run — nothing here can be bought, only earned.</div>
       </div>
+    </div>
+
+    <!-- Phase 5, Section 1 — Personalized Debrief. Distinct from the
+         per-fight Mission Debrief review screen: this looks ACROSS every
+         fight played so far to find the weakest topic + weakest skill,
+         and ends with one concrete, clickable recommendation. -->
+    <div class="dgc-modal" id="dgcDebriefModal" hidden>
+      <div class="dgc-modal-header"><span>📊 PROGRESS REPORT</span><button class="dgc-modal-close" data-close-modal>✕</button></div>
+      <div class="dgc-modal-body" id="dgcDebriefBody"></div>
     </div>
 
     <!-- ============ PHASE 4 — CITY BUILDING MODALS ============ -->
@@ -23758,7 +23770,16 @@ $ git stash pop
         // Phase 5, Section 2 — daily streak tracker.
         lastPlayedDate: typeof s.lastPlayedDate === 'string' ? s.lastPlayedDate : null,
         currentDailyStreak: typeof s.currentDailyStreak === 'number' ? s.currentDailyStreak : 0,
-        longestDailyStreak: typeof s.longestDailyStreak === 'number' ? s.longestDailyStreak : 0
+        longestDailyStreak: typeof s.longestDailyStreak === 'number' ? s.longestDailyStreak : 0,
+        // Phase 5, Section 1 — Personalized Debrief. Lightweight running
+        // tallies only (per doc: "does not need full question-by-question
+        // history forever") — byBoss drives the "which topic to revisit"
+        // recommendation, byMode drives the "which skill is weakest" one.
+        performanceHistory: normalizePerformanceHistory(s.performanceHistory),
+        // Phase 5, Section 3 — Leaderboard: the Final Boss run is tracked
+        // separately from the general `highScore` (best coins in ANY run)
+        // since the doc calls it out as its own dedicated entry.
+        bestFinalBossScore: typeof s.bestFinalBossScore === 'number' ? s.bestFinalBossScore : 0
       };
     } catch (e) {
       return {
@@ -23771,9 +23792,21 @@ $ git stash pop
         equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
         equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
         npcLastLineIndex: {}, practiceMode: false,
-        lastPlayedDate: null, currentDailyStreak: 0, longestDailyStreak: 0
+        lastPlayedDate: null, currentDailyStreak: 0, longestDailyStreak: 0,
+        performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0
       };
     }
+  }
+  // Phase 5, Section 1 — shared shape for the performance-tracking data,
+  // used both for a genuinely fresh save and to backfill an older one
+  // that predates this field (same non-destructive-migration pattern as
+  // every other field above).
+  function normalizePerformanceHistory(ph) {
+    var clean = (ph && typeof ph === 'object') ? ph : {};
+    return {
+      byBoss: (clean.byBoss && typeof clean.byBoss === 'object') ? clean.byBoss : {},
+      byMode: (clean.byMode && typeof clean.byMode === 'object') ? clean.byMode : {}
+    };
   }
   var save = loadSave();
   function persist() {
@@ -27565,7 +27598,7 @@ $ git stash pop
      ============================================================ */
   function openModal(modalId) {
     $('dgcModalBackdrop').hidden = false;
-    ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcConfirmModal',
+    ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcDebriefModal', 'dgcConfirmModal',
      'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal', 'dgcGeneralStoreModal'].forEach(function (id) {
       $(id).hidden = id !== modalId;
     });
@@ -27598,7 +27631,9 @@ $ git stash pop
       '<div class="dgc-trophy-stat-card"><div class="val">' + save.coins + '</div><div class="lbl">COINS</div></div>' +
       '<div class="dgc-trophy-stat-card"><div class="val">' + save.xp + '</div><div class="lbl">TOTAL XP</div></div>' +
       '<div class="dgc-trophy-stat-card"><div class="val">x' + save.bestCombo + '</div><div class="lbl">BEST COMBO</div></div>' +
-      '<div class="dgc-trophy-stat-card"><div class="val">' + save.highScore + '</div><div class="lbl">HIGH SCORE (coins/run)</div></div>';
+      '<div class="dgc-trophy-stat-card"><div class="val">' + save.highScore + '</div><div class="lbl">HIGH SCORE (coins/run)</div></div>' +
+      '<div class="dgc-trophy-stat-card"><div class="val">' + save.bestFinalBossScore + '</div><div class="lbl">BEST 3AM PAGER RUN</div></div>' +
+      '<div class="dgc-trophy-stat-card"><div class="val">' + save.bossesDefeated.length + ' / ' + Object.keys(BOSSES).length + '</div><div class="lbl">BOSSES CLEARED</div></div>';
     var list = $('dgcTrophyBossList');
     list.innerHTML = Object.keys(BOSSES).map(function (id) {
       var boss = BOSSES[id];
@@ -27609,6 +27644,90 @@ $ git stash pop
         '<span class="dgc-trophy-boss-tag ' + (cleared ? 'cleared">✓ Cleared' : 'locked">Not Cleared') + '</span>' +
         '</div>';
     }).join('');
+  }
+
+  // Phase 5, Section 1 — human-readable names for the 6 gameplay modes,
+  // so the recommendation can name a SKILL ("debugging"), not a code string.
+  var MODE_DISPLAY_NAME = {
+    terminal: 'Terminal Recall',
+    spot_the_bug: 'Spot-the-Bug (debugging)',
+    triage_call: 'Triage Calls (judgment)',
+    read_the_room: 'Read-the-Room (diagnosis)',
+    build_the_pipeline: 'Sequencing',
+    rapid_recon: 'Rapid Recon'
+  };
+  var MIN_ATTEMPTS_FOR_RECOMMENDATION = 3;
+
+  function renderDebrief() {
+    var body = $('dgcDebriefBody');
+    var ph = save.performanceHistory;
+    var bossEntries = Object.keys(ph.byBoss).filter(function (id) { return ph.byBoss[id].attempts > 0; });
+    var totalAttempts = bossEntries.reduce(function (sum, id) { return sum + ph.byBoss[id].attempts; }, 0);
+
+    if (!totalAttempts) {
+      body.innerHTML = '<div class="dgc-trophy-note">No fights recorded yet — play a boss fight, then check back here. This looks across every fight you\'ve played to tell you exactly what to revisit.</div>';
+      return;
+    }
+
+    // Weakest TOPIC: lowest correct-or-better rate, among bosses with
+    // enough attempts to mean something (a single unlucky question
+    // shouldn't brand a boss/topic as your worst).
+    var qualifiedBosses = bossEntries.filter(function (id) { return ph.byBoss[id].attempts >= MIN_ATTEMPTS_FOR_RECOMMENDATION; });
+    var rankedBosses = (qualifiedBosses.length ? qualifiedBosses : bossEntries).map(function (id) {
+      var b = ph.byBoss[id];
+      return { id: id, rate: b.correctOrBetter / b.attempts, attempts: b.attempts };
+    }).sort(function (a, b) { return a.rate - b.rate; });
+    var weakestBoss = rankedBosses[0];
+
+    // Weakest SKILL: lowest optimal-answer rate across the 6 modes.
+    var modeEntries = Object.keys(ph.byMode).filter(function (m) { return ph.byMode[m].attempts > 0; });
+    var qualifiedModes = modeEntries.filter(function (m) { return ph.byMode[m].attempts >= MIN_ATTEMPTS_FOR_RECOMMENDATION; });
+    var rankedModes = (qualifiedModes.length ? qualifiedModes : modeEntries).map(function (m) {
+      var d = ph.byMode[m];
+      return { mode: m, rate: d.optimal / d.attempts, attempts: d.attempts };
+    }).sort(function (a, b) { return a.rate - b.rate; });
+    var weakestMode = rankedModes[0];
+
+    var statsHtml = '<div class="dgc-trophy-stats-grid">' +
+      '<div class="dgc-trophy-stat-card"><div class="val">' + totalAttempts + '</div><div class="lbl">QUESTIONS ANSWERED</div></div>' +
+      '<div class="dgc-trophy-stat-card"><div class="val">' + bossEntries.length + '</div><div class="lbl">BOSSES FACED</div></div>' +
+      '</div>';
+
+    var breakdownHtml = '<div class="dgc-trophy-label">BY TOPIC</div><div class="dgc-trophy-boss-list">' +
+      rankedBosses.map(function (r) {
+        var boss = BOSSES[r.id];
+        if (!boss) return '';
+        return '<div class="dgc-trophy-boss-row"><span class="dgc-trophy-boss-icon">' + boss.icon + '</span>' +
+          '<span class="dgc-trophy-boss-name">' + boss.name + '</span>' +
+          '<span class="dgc-trophy-boss-tag">' + Math.round(r.rate * 100) + '% accuracy · ' + r.attempts + ' asked</span></div>';
+      }).join('') + '</div>';
+
+    var modeHtml = '<div class="dgc-trophy-label">BY SKILL</div><div class="dgc-trophy-boss-list">' +
+      rankedModes.map(function (r) {
+        return '<div class="dgc-trophy-boss-row"><span class="dgc-trophy-boss-name">' + (MODE_DISPLAY_NAME[r.mode] || r.mode) + '</span>' +
+          '<span class="dgc-trophy-boss-tag">' + Math.round(r.rate * 100) + '% optimal · ' + r.attempts + ' asked</span></div>';
+      }).join('') + '</div>';
+
+    var recoHtml = '';
+    if (weakestBoss) {
+      var wBoss = BOSSES[weakestBoss.id];
+      var wModeName = weakestMode ? (MODE_DISPLAY_NAME[weakestMode.mode] || weakestMode.mode) : null;
+      recoHtml = '<div class="dgc-trophy-note" style="margin-top:14px;">' +
+        '<strong>Recommendation:</strong> your accuracy is lowest on <strong>' + (wBoss ? wBoss.name : weakestBoss.id) + '</strong> (' + Math.round(weakestBoss.rate * 100) + '%)' +
+        (wModeName ? ', particularly on <strong>' + wModeName + '</strong> questions' : '') + '. Revisit that fight next.' +
+        '</div>' +
+        (wBoss ? '<button class="dgc-btn dgc-btn-primary" id="dgcDebriefGoBtn" style="margin-top:10px;width:100%;">⚔️ Fight ' + wBoss.name + ' Now</button>' : '');
+    }
+
+    body.innerHTML = statsHtml + breakdownHtml + modeHtml + recoHtml;
+
+    var goBtn = $('dgcDebriefGoBtn');
+    if (goBtn && weakestBoss) {
+      goBtn.addEventListener('click', function () {
+        closeModals();
+        startFight(weakestBoss.id);
+      });
+    }
   }
 
   /* ============================================================
@@ -29372,6 +29491,21 @@ $ git stash pop
       note: closenessNote(q, tier, isTimeout),
       ideal: idealAnswerText(q)
     });
+    // Phase 5, Section 1 — feed the Personalized Debrief's running tallies.
+    // Practice Mode still records here on purpose (doc: "practice mode
+    // should still feed useful data, just without the pressure layer").
+    recordPerformance(state.bossId, q.mode, tier);
+  }
+
+  function recordPerformance(bossId, mode, tier) {
+    var ph = save.performanceHistory;
+    if (!ph.byBoss[bossId]) ph.byBoss[bossId] = { attempts: 0, correctOrBetter: 0, optimal: 0 };
+    if (!ph.byMode[mode]) ph.byMode[mode] = { attempts: 0, correctOrBetter: 0, optimal: 0 };
+    var b = ph.byBoss[bossId], m = ph.byMode[mode];
+    b.attempts++; m.attempts++;
+    if (tier === 'optimal' || tier === 'correct') { b.correctOrBetter++; m.correctOrBetter++; }
+    if (tier === 'optimal') { b.optimal++; m.optimal++; }
+    persist();
   }
 
   /* ============================================================
@@ -29917,6 +30051,9 @@ $ git stash pop
       }
       if (!save.practiceMode) awardXp(state.boss.xpReward); // Practice Mode: no victory XP bonus either
       if (state.runCoins > save.highScore) save.highScore = state.runCoins;
+      // Phase 5, Section 3 — Leaderboard's dedicated Final Boss entry,
+      // tracked separately from the general cross-boss highScore above.
+      if (state.isFinalBoss && state.runCoins > save.bestFinalBossScore) save.bestFinalBossScore = state.runCoins;
       persist();
 
       $('dgcVictoryBossName').textContent = state.boss.name + ' — Cleared!';
@@ -30186,6 +30323,7 @@ $ git stash pop
   $('dgcMenuHowToPlay').addEventListener('click', function () { openModal('dgcHowToPlayModal'); });
   $('dgcMenuSettings').addEventListener('click', function () { applySoundToggleUI(); openModal('dgcSettingsModal'); });
   $('dgcMenuTrophy').addEventListener('click', function () { renderTrophyHall(); openModal('dgcTrophyModal'); });
+  $('dgcMenuDebrief').addEventListener('click', function () { renderDebrief(); openModal('dgcDebriefModal'); });
   $('dgcMenuCity').addEventListener('click', goToCityScreen);
   $('dgcBackToTitleBtn').addEventListener('click', function () {
     refreshTitleScreen();
