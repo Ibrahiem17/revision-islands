@@ -22383,7 +22383,7 @@ $ git stash pop
     background:var(--dgc-bg); border:1px solid var(--dgc-border);
   }
   .dgc-city-world {
-    position:absolute; top:0; left:0; width:1500px; height:760px;
+    position:absolute; top:0; left:0; width:3000px; height:760px; /* = CITY_WORLD_W (also set from JS in goToCityScreen) */
     background:radial-gradient(ellipse at 50% 0%, var(--dgc-bg-3) 0%, var(--dgc-bg) 70%);
   }
   .dgc-city-world-ground {
@@ -22487,6 +22487,107 @@ $ git stash pop
   @keyframes dgc-city-walk-bob { 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-5px) rotate(-3deg); } }
   .dgc-city-hero-facing { transition:transform .08s linear; }
 
+  /* ---- House interior screen (single furnished room, scaled to fit) ---- */
+  .dgc-screen-house { position:relative; padding-top:8px; }
+  .dgc-screen-fadein { animation:dgc-screen-fadein .32s ease-out; }
+  @keyframes dgc-screen-fadein { from { opacity:0; } to { opacity:1; } }
+  .dgc-house-frame {
+    position:relative; margin:14px auto 6px; overflow:hidden; border-radius:12px;
+    background:#1c1409; border:1px solid var(--dgc-border);
+  }
+  .dgc-house-stage { position:absolute; left:0; top:0; width:640px; height:460px; transform-origin:0 0; overflow:hidden; image-rendering:pixelated; }
+  .dgc-house-wall {
+    position:absolute; left:0; top:0; width:640px; height:150px;
+    background:repeating-linear-gradient(90deg, var(--room-wall, #e2d3b3) 0 30px, var(--room-wall2, #d8c6a3) 30px 32px);
+    box-shadow:inset 0 14px 18px -8px rgba(60,35,15,0.35);
+  }
+  .dgc-house-wainscot {
+    position:absolute; left:0; right:0; top:98px; bottom:0; background:var(--room-wainscot, #b98b5e);
+    border-top:4px solid var(--room-wainscot-border, #8f673f); box-shadow:inset 0 -6px 0 var(--room-wainscot-border, #8f673f);
+    background-image:repeating-linear-gradient(90deg, transparent 0 62px, rgba(91,58,34,0.35) 62px 64px);
+  }
+  .dgc-house-floor {
+    position:absolute; left:0; top:150px; width:640px; height:310px; background-repeat:repeat; background-size:128px 64px;
+    image-rendering:pixelated; filter:var(--room-floor-filter, none);
+  }
+  .dgc-house-floor::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(60,35,15,0.32), transparent 34px), linear-gradient(90deg, rgba(60,35,15,0.25), transparent 24px, transparent calc(100% - 24px), rgba(60,35,15,0.25)); }
+  .dgc-house-sidewall { position:absolute; top:0; width:12px; height:460px; background:var(--room-sidewall, #5b3a22); z-index:900; box-shadow:0 0 0 1px #3f2631; }
+  .dgc-house-frontwall { position:absolute; left:0; top:448px; width:640px; height:12px; background:#3f2a18; z-index:900; }
+  .dgc-house-door { position:absolute; left:292px; top:444px; width:56px; height:16px; background:#cfe8f5; border:3px solid #8f673f; border-bottom:0; border-radius:8px 8px 0 0; z-index:901; box-sizing:border-box; }
+  .dgc-house-furn { position:absolute; image-rendering:pixelated; pointer-events:none; user-select:none; }
+  .dgc-house-bubble {
+    position:absolute; z-index:999; transform:translate(-50%,-100%); max-width:200px; width:max-content;
+    background:#fff8e4; color:#3f2a18; border:2px solid #3f2631; border-radius:8px; padding:5px 9px;
+    font-family:var(--dgc-font-ui); font-size:12px; font-weight:600; line-height:1.3; text-align:center; pointer-events:none;
+  }
+  .dgc-house-bubble[hidden] { display:none; }
+
+  /* ---- Home residents, pets and activity animations (CSS only) ---- */
+  .dgc-house-res { position:absolute; width:64px; height:82px; transform-origin:50% 100%; pointer-events:none; }
+  .dgc-house-res-sprite { width:64px; height:82px; transform-origin:50% 100%; filter:drop-shadow(0 4px 3px rgba(0,0,0,0.35)); }
+  .dgc-house-res.dgc-res-sit .dgc-house-res-sprite { filter:none; }
+  .dgc-house-res.dgc-res-sit .dgc-chibi-shadow { display:none; }
+  .dgc-house-res.dgc-res-back .dgc-chibi-face, .dgc-house-res.dgc-res-back .dgc-chibi-blush { display:none; }
+  .dgc-house-res .dgc-chibi { width:100%; height:100%; display:block; overflow:visible; }
+  .dgc-house-pet { position:absolute; pointer-events:none; }
+  .dgc-house-pet-body { position:absolute; left:0; top:0; width:100%; height:100%; image-rendering:pixelated; transform-origin:50% 100%; }
+  .dgc-house-pet-tail { position:absolute; image-rendering:pixelated; transform-origin:0% 100%; }
+  .dgc-house-tvglow { position:absolute; pointer-events:none; mix-blend-mode:screen; animation:dgc-act-tvflick 1.9s steps(1,end) infinite; }
+  .dgc-house-heart { position:absolute; left:50%; top:-6px; font-size:18px; color:#e8506a; text-shadow:0 1px 0 #fff8e4; pointer-events:none; animation:dgc-act-heart 1.3s ease-out forwards; z-index:998; }
+  .dgc-house-z { position:absolute; font:800 13px var(--dgc-font-ui, sans-serif); color:#fff8e4; text-shadow:0 1px 0 #3f2631, 1px 0 0 #3f2631, -1px 0 0 #3f2631; opacity:0; pointer-events:none; animation:dgc-act-zfloat 3.6s ease-in infinite; }
+  .dgc-act-tv .dgc-house-res-sprite { animation:dgc-act-tvsway 5.2s ease-in-out infinite; }
+  .dgc-act-study .dgc-house-res-sprite { animation:dgc-act-studybob 2.4s ease-in-out infinite; }
+  .dgc-act-study .dgc-chibi-arm-right { animation:dgc-act-type .34s ease-in-out infinite; }
+  .dgc-act-read .dgc-house-res-sprite { animation:dgc-act-studybob 5.6s ease-in-out infinite; }
+  .dgc-act-play .dgc-house-res-sprite { animation:dgc-act-bounce .7s ease-in-out infinite; }
+  .dgc-act-sleep .dgc-house-res-sprite, .dgc-act-sleep > .dgc-house-pet-body { animation:dgc-act-breathe 3.6s ease-in-out infinite; }
+  .dgc-act-wag > .dgc-house-pet-tail { animation:dgc-act-wag .5s ease-in-out infinite alternate; }
+  .dgc-act-breathe > .dgc-house-pet-body { animation:dgc-act-breathe 3.2s ease-in-out infinite; }
+  @keyframes dgc-act-tvsway { 0%,100%{ transform:rotate(0deg); } 30%{ transform:rotate(-2.2deg) translateY(-1px); } 60%{ transform:rotate(1.6deg); } }
+  @keyframes dgc-act-studybob { 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(2px) rotate(2deg); } }
+  @keyframes dgc-act-type { 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(9deg); } }
+  @keyframes dgc-act-bounce { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+  @keyframes dgc-act-breathe { 0%,100%{ transform:scale(1,1); } 50%{ transform:scale(1.03,1.06); } }
+  @keyframes dgc-act-wag { from{ transform:rotate(-22deg); } to{ transform:rotate(26deg); } }
+  @keyframes dgc-act-tvflick { 0%{ background:rgba(110,190,255,0.30); } 18%{ background:rgba(190,225,255,0.46); } 37%{ background:rgba(90,160,240,0.22); } 55%{ background:rgba(255,255,255,0.40); } 74%{ background:rgba(120,200,255,0.28); } 100%{ background:rgba(110,190,255,0.30); } }
+  @keyframes dgc-act-heart { 0%{ transform:translate(-50%,0) scale(0.6); opacity:0; } 20%{ opacity:1; } 100%{ transform:translate(-50%,-34px) scale(1.15); opacity:0; } }
+  @keyframes dgc-act-zfloat { 0%{ transform:translate(0,0) scale(0.7); opacity:0; } 15%{ opacity:1; } 100%{ transform:translate(14px,-30px) scale(1.25); opacity:0; } }
+  /* Phase 2 activities */
+  .dgc-act-cook .dgc-house-res-sprite { animation:dgc-act-studybob 3.2s ease-in-out infinite; }
+  .dgc-act-cook .dgc-chibi-arm-right { animation:dgc-act-stir .62s ease-in-out infinite; }
+  .dgc-act-knit .dgc-house-res-sprite { animation:dgc-act-rock 3.6s ease-in-out infinite; }
+  .dgc-act-knit .dgc-chibi-arm-right { animation:dgc-act-knitr .8s ease-in-out infinite alternate; }
+  .dgc-act-knit .dgc-chibi-arm-left { animation:dgc-act-knitl .8s ease-in-out infinite alternate; }
+  .dgc-act-game .dgc-house-res-sprite { animation:dgc-act-gamebob .36s steps(2,end) infinite; }
+  .dgc-act-game .dgc-chibi-arm-left { animation:dgc-act-type .21s ease-in-out infinite; }
+  .dgc-act-game .dgc-chibi-arm-right { animation:dgc-act-type .17s ease-in-out infinite reverse; }
+  .dgc-act-music .dgc-house-res-sprite { animation:dgc-act-sway 2.4s ease-in-out infinite; }
+  .dgc-act-music .dgc-chibi-arm-left { animation:dgc-act-type .5s ease-in-out infinite; }
+  .dgc-act-music .dgc-chibi-arm-right { animation:dgc-act-type .5s ease-in-out infinite .25s; }
+  .dgc-act-paint .dgc-house-res-sprite { animation:dgc-act-studybob 3.8s ease-in-out infinite; }
+  .dgc-act-paint .dgc-chibi-arm-right { animation:dgc-act-paint 1.5s ease-in-out infinite; }
+  @keyframes dgc-act-stir { 0%,100%{ transform:rotate(-16deg); } 50%{ transform:rotate(16deg); } }
+  @keyframes dgc-act-rock { 0%,100%{ transform:rotate(-2.4deg); } 50%{ transform:rotate(2.4deg); } }
+  @keyframes dgc-act-knitr { from{ transform:rotate(-8deg); } to{ transform:rotate(10deg); } }
+  @keyframes dgc-act-knitl { from{ transform:rotate(9deg); } to{ transform:rotate(-8deg); } }
+  @keyframes dgc-act-gamebob { 0%{ transform:translateY(0) rotate(-1.2deg); } 100%{ transform:translateY(-2px) rotate(1.4deg); } }
+  @keyframes dgc-act-sway { 0%,100%{ transform:rotate(-3.2deg) translateY(0); } 50%{ transform:rotate(3.2deg) translateY(-2px); } }
+  @keyframes dgc-act-paint { 0%,100%{ transform:rotate(-6deg); } 35%{ transform:rotate(-26deg); } 70%{ transform:rotate(12deg); } }
+  .dgc-glow-pink { animation-name:dgc-act-glowpink; animation-duration:1.3s; }
+  .dgc-glow-game { animation-name:dgc-act-glowgame; animation-duration:1.7s; }
+  .dgc-glow-mon { animation-name:dgc-act-glowmon; animation-duration:2.6s; animation-timing-function:steps(1,end); }
+  .dgc-glow-alarm { animation-name:dgc-act-glowalarm; animation-duration:1.6s; animation-timing-function:ease-in-out; }
+  @keyframes dgc-act-glowpink { 0%{ background:rgba(255,120,220,0.32); } 30%{ background:rgba(255,200,240,0.48); } 60%{ background:rgba(200,120,255,0.26); } 100%{ background:rgba(255,120,220,0.32); } }
+  @keyframes dgc-act-glowgame { 0%{ background:rgba(90,255,150,0.30); } 22%{ background:rgba(255,90,200,0.36); } 48%{ background:rgba(90,200,255,0.34); } 70%{ background:rgba(255,235,120,0.32); } 100%{ background:rgba(90,255,150,0.30); } }
+  @keyframes dgc-act-glowmon { 0%{ background:rgba(140,200,255,0.20); } 30%{ background:rgba(255,255,255,0.30); } 55%{ background:rgba(100,170,255,0.14); } 80%{ background:rgba(200,240,255,0.26); } 100%{ background:rgba(140,200,255,0.20); } }
+  @keyframes dgc-act-glowalarm { 0%,100%{ background:rgba(255,60,40,0.06); } 50%{ background:rgba(255,90,60,0.38); } }
+  .dgc-house-fx { position:absolute; width:0; height:0; pointer-events:none; }
+  .dgc-fx-puff { position:absolute; left:0; top:0; width:9px; height:9px; margin:-4px 0 0 -4px; border-radius:50%; background:rgba(255,255,255,0.85); box-shadow:0 0 4px rgba(255,255,255,0.7); opacity:0; animation:dgc-fx-steam 2.6s ease-out infinite; }
+  .dgc-fx-note { position:absolute; left:0; top:0; font:800 17px var(--dgc-font-ui, sans-serif); text-shadow:0 1px 0 #3f2631, 1px 0 0 #3f2631, -1px 0 0 #3f2631; opacity:0; animation:dgc-fx-note 3.4s ease-out infinite; }
+  @keyframes dgc-fx-steam { 0%{ transform:translate(0,0) scale(0.5); opacity:0; } 18%{ opacity:0.9; } 100%{ transform:translate(var(--dx,6px),-38px) scale(1.9); opacity:0; } }
+  @keyframes dgc-fx-note { 0%{ transform:translate(0,0) rotate(-10deg) scale(0.7); opacity:0; } 14%{ opacity:1; } 55%{ transform:translate(12px,-26px) rotate(9deg) scale(1); } 100%{ transform:translate(-6px,-56px) rotate(-9deg) scale(1.12); opacity:0; } }
+  .dgc-house-dpad { margin:8px 0; }
+  #dgcHouseAction { bottom:auto; top:10px; z-index:1000; cursor:pointer; }
   .dgc-city-enter-prompt {
     position:absolute; left:50%; bottom:10px; transform:translateX(-50%); z-index:4;
     background:rgba(0,0,0,0.75); border:1px solid var(--dgc-gold); color:var(--dgc-gold);
@@ -22631,6 +22732,37 @@ $ git stash pop
     font-size:10px; letter-spacing:2px; color:var(--dgc-gold); opacity:0.7;
     text-shadow:0 1px 3px rgba(0,0,0,0.7); pointer-events:none; white-space:nowrap;
   }
+
+
+  /* ---- Forest path + New City ---- */
+  .dgc-city-fixture-forest { filter:none; opacity:1; } /* ~300 static trees: no drop-shadow filter (too expensive at this count) */
+  .dgc-city-prop { position:absolute; transform:translate(-50%,-100%); image-rendering:pixelated; image-rendering:-webkit-optimize-contrast; image-rendering:crisp-edges; pointer-events:none; }
+  .dgc-prop-text { position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; font-family:var(--dgc-font-mono); color:#3b2412; line-height:1.15; pointer-events:none; overflow:hidden; }
+  .dgc-prop-text b { font-size:10px; letter-spacing:1px; }
+  .dgc-prop-text span { font-size:8px; opacity:0.85; }
+  .dgc-prop-text-big b { font-size:14px; letter-spacing:2px; }
+  .dgc-prop-text-big span { font-size:10px; }
+  .dgc-zone-label-chip { background:rgba(40,26,12,0.62); color:#ffe9a8; opacity:1; padding:1px 8px; border-radius:8px; }
+  .dgc-forest-tint { position:absolute; top:0; height:760px; pointer-events:none; background:linear-gradient(90deg, rgba(6,24,10,0) 0, rgba(6,24,10,0.30) 90px, rgba(6,24,10,0.30) calc(100% - 90px), rgba(6,24,10,0) 100%); }
+  .dgc-forest-glade { position:absolute; pointer-events:none; border-radius:50%; background:radial-gradient(ellipse at center, rgba(176,222,104,0.62) 0%, rgba(176,222,104,0.40) 55%, rgba(176,222,104,0) 100%); }
+  .dgc-forest-trail { position:absolute; pointer-events:none; border-radius:24px; background:linear-gradient(180deg, rgba(160,206,96,0), rgba(160,206,96,0.30) 14%, rgba(160,206,96,0.30) 86%, rgba(160,206,96,0)); }
+  .dgc-forest-road { position:absolute; top:0; pointer-events:none; overflow:visible; }
+  .dgc-newcity-plaza { position:absolute; pointer-events:none; border-radius:18px; background-repeat:repeat; background-size:56px 56px; box-shadow:0 0 30px 12px rgba(20,38,15,0.45) inset; }
+  .dgc-city-animal-layer { position:absolute; inset:0; pointer-events:none; }
+  .dgc-animal { position:absolute; transform:translate(-50%,-100%); pointer-events:none; }
+  .dgc-animal::after { content:''; position:absolute; left:14%; right:14%; bottom:-2px; height:6px; border-radius:50%; background:rgba(0,0,0,0.25); z-index:-1; }
+  .dgc-animal-flip, .dgc-animal-bob, .dgc-animal-sprite { width:100%; height:100%; }
+  .dgc-animal.dgc-flip .dgc-animal-flip { transform:scaleX(-1); }
+  .dgc-animal-sprite { background-repeat:no-repeat; background-size:200% 100%; background-position:0 0; image-rendering:pixelated; image-rendering:crisp-edges; }
+  .dgc-animal.dgc-moving .dgc-animal-sprite { animation:dgc-animal-frames 0.42s linear infinite; }
+  @keyframes dgc-animal-frames { 0%,49.99%{ background-position:0 0; } 50%,100%{ background-position:100% 0; } }
+  .dgc-animal.dgc-moving .dgc-animal-bob { animation:dgc-animal-walk-bob 0.42s ease-in-out infinite; }
+  .dgc-animal-rabbit.dgc-moving .dgc-animal-bob { animation:dgc-animal-hop 0.42s ease-in-out infinite; }
+  .dgc-animal-bird.dgc-moving .dgc-animal-bob { animation:dgc-animal-hop 0.3s ease-in-out infinite; }
+  .dgc-animal-bird:not(.dgc-moving) .dgc-animal-bob { animation:dgc-animal-peck 2.6s ease-in-out infinite; }
+  @keyframes dgc-animal-walk-bob { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-2px); } }
+  @keyframes dgc-animal-hop { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+  @keyframes dgc-animal-peck { 0%,70%,100%{ transform:translateY(0) rotate(0); } 78%{ transform:translateY(1px) rotate(6deg); } 86%{ transform:translateY(0) rotate(0); } 92%{ transform:translateY(1px) rotate(6deg); } }
 
   /* ---- shared shop-modal layout (Armory/Tailor/Bank/Library) ---- */
   .dgc-shop-preview { display:flex; justify-content:center; margin-bottom:14px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; }
@@ -23550,6 +23682,7 @@ $ git stash pop
         <div class="dgc-city-fixture-layer" id="dgcCityFixtureLayer"><!-- populated once by renderCityFixtures() from WORLD_FIXTURES --></div>
         <div class="dgc-city-buildings-layer" id="dgcCityBuildingsLayer"><!-- populated by renderCityBuildings() from CITY_BUILDINGS --></div>
         <div class="dgc-city-npc-layer" id="dgcCityNpcLayer"><!-- populated by renderCityNpcs() from NPC_ROSTER --></div>
+        <div class="dgc-city-animal-layer" id="dgcCityAnimalLayer"><!-- forest wildlife, populated once by renderForestAnimals() --></div>
         <div class="dgc-city-sudo-token" id="dgcCitySudoToken">
           <div class="dgc-sudo-bubble dgc-show" id="dgcCitySudoBubble">Try the Armory — new gear helps.</div>
           <div class="dgc-sprite dgc-city-sudo-sprite" id="dgcCitySudoSprite"></div>
@@ -23608,6 +23741,35 @@ $ git stash pop
       <div class="dgc-stat-chip">🪙 <span id="dgcCityCoinsDisplay">0</span> coins</div>
       <div class="dgc-stat-chip">LEVEL <span id="dgcCityLevelDisplay">1</span></div>
       <div class="dgc-stat-chip dgc-city-move-hint">Arrow keys / WASD to walk, Enter to go in — or just tap a building</div>
+    </div>
+  </div>
+
+  <!-- ============ HOUSE INTERIOR SCREEN ============ -->
+  <div class="dgc-screen dgc-screen-house" id="dgcHouseScreen" hidden>
+    <button class="dgc-btn dgc-btn-back" id="dgcHouseLeaveBtn">← Leave house</button>
+    <div class="dgc-select-heading" id="dgcHouseHeading">HOME</div>
+    <div class="dgc-subtitle" id="dgcHouseSub">Make yourself comfortable. Walk to the door mat to head back out.</div>
+    <div class="dgc-house-frame" id="dgcHouseFrame">
+      <div class="dgc-house-stage" id="dgcHouseStage">
+        <div class="dgc-city-hero-token" id="dgcHouseHeroToken">
+          <div class="dgc-char-aura dgc-char-aura-hero"></div>
+          <div class="dgc-city-hero-facing" id="dgcHouseHeroFacing">
+            <div class="dgc-sprite dgc-city-hero-sprite" id="dgcHouseHeroSprite"></div>
+          </div>
+          <div class="dgc-hero-name" id="dgcHouseHeroName">Junior Dev</div>
+        </div>
+        <div class="dgc-house-bubble" id="dgcHouseBubble" hidden></div>
+      </div>
+      <div class="dgc-city-enter-prompt" id="dgcHouseAction" hidden></div>
+    </div>
+    <div class="dgc-city-dpad dgc-house-dpad" id="dgcHouseDpad" aria-hidden="true">
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-up" data-dir="up">▲</button>
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-left" data-dir="left">◀</button>
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-down" data-dir="down">▼</button>
+      <button type="button" class="dgc-city-dpad-btn dgc-city-dpad-right" data-dir="right">▶</button>
+    </div>
+    <div class="dgc-stats-row">
+      <div class="dgc-stat-chip dgc-city-move-hint">Arrow keys / WASD to walk, Enter to look at things, Esc or the door mat to leave</div>
     </div>
   </div>
 
@@ -43746,6 +43908,7 @@ $ git stash pop
     $('dgcTitleScreen').hidden = name !== 'title';
     $('dgcStartScreen').hidden = name !== 'start';
     $('dgcCityScreen').hidden = name !== 'city';
+    $('dgcHouseScreen').hidden = name !== 'house';
     $('dgcCombatScreen').hidden = name !== 'combat';
     $('dgcReviewScreen').hidden = name !== 'review';
     $('dgcVictoryScreen').hidden = name !== 'victory';
@@ -44106,7 +44269,7 @@ $ git stash pop
   // below (a wide viewport could exceed 900px, permanently pinning the
   // camera at 0 and freezing ALL horizontal movement on screen) — also
   // gives this addendum's NPC/environment-richness work real room.
-  var CITY_WORLD_W = 1500, CITY_WORLD_H = 760;
+  var CITY_WORLD_W = 3000, CITY_WORLD_H = 760; // 1500 village + 1500 forest path / New City
   // Environment addendum (Section 3 spacing fix) — the 6 Town Square
   // buildings are laid out on a regular hexagon ring (radius 170) around
   // a shared plaza hub (400,280) instead of hand-placed coordinates that
@@ -44158,7 +44321,7 @@ $ git stash pop
     var layer = $('dgcCityZoneLabels');
     if (!layer || layer.children.length) return; // static — render once, never needs re-rendering
     layer.innerHTML = CITY_ZONES.map(function (z) {
-      return '<div class="dgc-city-zone-label" style="left:' + z.x + 'px; top:' + z.y + 'px;">' + z.name + '</div>';
+      return '<div class="dgc-city-zone-label' + (z.cls ? ' ' + z.cls : '') + '" style="left:' + z.x + 'px; top:' + z.y + 'px;">' + z.name + '</div>';
     }).join('');
   }
   // Section 3A — City zoning: purely decorative signposts giving the
@@ -44171,7 +44334,10 @@ $ git stash pop
     { name: 'TRAINING GROUNDS', x: 764, y: 270 },
     // Living City addendum — re-anchored into the new eastward expansion
     // of the widened world (was 620,460 in the smaller 900px-wide map).
-    { name: 'RESIDENTIAL DISTRICT', x: 1220, y: 340 }
+    { name: 'RESIDENTIAL DISTRICT', x: 1220, y: 340 },
+    // Forest path + empty New City (east of the village)
+    { name: 'FOREST PATH', x: 1740, y: 372, cls: 'dgc-zone-label-chip' },
+    { name: 'NEW CITY', x: 2715, y: 205, cls: 'dgc-zone-label-chip' }
   ];
 
   /* ============================================================
@@ -44220,17 +44386,238 @@ $ git stash pop
     { x1: 400, y1: 280, x2: 764, y2: 368, width: 42 },
     { x1: 764, y1: 368, x2: 1220, y2: 380, width: 42 }
   ];
+  /* ============================================================
+     FOREST PATH + NEW CITY (east of the Residential District).
+     The world is widened to 3000px: the village keeps x<1490, a short
+     forest path (x 1490-2440) leads to an EMPTY "New City" plaza. The
+     trees along the path are SOLID: CITY_SOLIDS is a set of wall rects
+     generated from the path centreline (feet-space, same maths as
+     HOUSE_SOLID), so the hero can only follow the track. Forest trees
+     are drawn as ordinary y-sorted fixtures (see WORLD_FIXTURES).
+     ============================================================ */
+  /* FOREST_WALLS_BEGIN */
+  var FOREST_X0 = 1490, FOREST_WALL_X1 = 2440, FOREST_HALF = 36; // feet corridor = 72px inside the 80px visible road
+  var FOREST_PATH = [[1490, 380], [1660, 380], [1860, 335], [2020, 335], [2260, 395], [2440, 395]]; // gently S-shaped centreline (feet y), ~960px
+  function forestCentreY(x) {
+    function ss(a, b, ya, yb) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); t = t * t * (3 - 2 * t); return ya + (yb - ya) * t; }
+    if (x <= 1660) return 380;
+    if (x <= 1860) return ss(1660, 1860, 380, 335);
+    if (x <= 2020) return 335;
+    if (x <= 2260) return ss(2020, 2260, 335, 395);
+    return 395;
+  }
+  var CITY_SOLIDS = (function () {
+    var out = [], step = 16;
+    for (var x = FOREST_X0; x < FOREST_WALL_X1; x += step) {
+      var xb = Math.min(x + step, FOREST_WALL_X1);
+      var ca = forestCentreY(x), cb = forestCentreY(xb);
+      var top = Math.min(ca, cb) - FOREST_HALF, bot = Math.max(ca, cb) + FOREST_HALF;
+      out.push({ x: x, y: -400, w: xb - x, h: top + 400 });                       // north tree wall
+      out.push({ x: x, y: bot, w: xb - x, h: CITY_WORLD_H + 400 - bot });         // south tree wall
+    }
+    // New City: only the outer top/bottom tree belt is solid, the plaza itself is open floor
+    out.push({ x: FOREST_WALL_X1, y: -400, w: CITY_WORLD_W - FOREST_WALL_X1 + 400, h: 500 });
+    out.push({ x: FOREST_WALL_X1, y: 740, w: CITY_WORLD_W - FOREST_WALL_X1 + 400, h: 400 });
+    return out;
+  })();
+  function solidsAt(fx, fy, halfW) {
+    if (fx + halfW <= FOREST_X0) return false;
+    for (var i = 0; i < CITY_SOLIDS.length; i++) {
+      var b = CITY_SOLIDS[i];
+      if (fx + halfW > b.x && fx - halfW < b.x + b.w && fy > b.y && fy < b.y + b.h) return true;
+    }
+    return false;
+  }
+  /* FOREST_WALLS_END */
+  // Road segments: the village road continues to the forest mouth; the forest track itself is drawn as one SVG
+  // (see forestRoadSVG) and only needs invisible segments so decor / scatter stay off it.
+  ROAD_SEGMENTS.push({ x1: 1220, y1: 380, x2: 1470, y2: 380, width: 42 });
+  (function () {
+    for (var x = 1470; x < 2500; x += 60) ROAD_SEGMENTS.push({ x1: x, y1: forestCentreY(x), x2: x + 60, y2: forestCentreY(x + 60), width: 80, noRender: true });
+  })();
+  // Glades: small lighter-grass clearings just beyond the tree walls where the wild animals live.
+  function forestGlade(cx, side) { return { cx: cx, cy: forestCentreY(cx) + side * (side < 0 ? 170 : 195), rx: 64, ry: 34 }; }
+  var FOREST_GLADES = [forestGlade(1650, -1), forestGlade(1800, -1), forestGlade(1800, 1), forestGlade(1990, 1), forestGlade(2150, -1), forestGlade(2150, 1), forestGlade(2320, 1)];
+  // Game trails joining a north glade to a south glade across the path (the crossers use these).
+  var FOREST_TRAILS = [{ x: 1800, n: 1, s: 2 }, { x: 2150, n: 4, s: 5 }].map(function (t) { t.y0 = FOREST_GLADES[t.n].cy; t.y1 = FOREST_GLADES[t.s].cy; return t; });
+  var FOREST_PLAZA = { x: 2470, y: 245, w: 470, h: 300 };
+  var FOREST_ANIMAL_SPRITES = {
+    deer: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAABICAYAAABx2P7CAAABvUlEQVR42u3dsU3DQBSA4cyC6FLSZQA2oMoGjMAO7MEW1FT0DJAJ6EOLr8jpKfb57t0X6TUcli6/v8LCWD4cJvucTw/X/xNdn/2jn4D6CaiffgLqN2Kwy8/nYqLr+uknoH4C6qefgPqNH7A2AOonoH4CAqifgPqNH/Dt+XExH6+nxZTrAOonoH4CAqifgPqNF6wMdO9kD6qfgPoJCKB+Auo3Q8Dj8WkxtXUA9RNQPwEB1E/AjP3KXxht7r1I/np/uTnRh3L0i/UTEEAAAQRQQADb9Ct/8Hv5vjlr/2Fy74meoBo4/WL9BAQQQAABFBDAfQBufTO6vAhtfXzrm+H6CQgggADqJyCAMwBc+wu2vmjWD0AA9RNQPwAB1G/7h1LSBdNPQAABFFA/AQFMCLB2c7232ftFKtn6AQgggAACCCCAcwCMXlRH11s/VBNd37pfbz176wUggAACCCCAAOYEONv+etsvgAACCCCAAAIIIID97S/b8U4wgAACCKATDCCAAAIIIIAA2h+AAAI4JsDaC4lbv7A42/6yHe8EAwgggAA6wQCOCbC2oei6/a37zwSjHQ8ggADaH4AAAtgFwD8SaOJvjZbmkwAAAABJRU5ErkJggg==',
+    fox: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAAAsCAYAAACKTjG2AAABNUlEQVR42u3cMQ6CMBiAUc7i6ujG7C08iPFmHkXv4GTcdRUGCiktbXkk/wQp8OUNRNGua2y79Ifv/yzd3/qmj0D6CKSPQPrMO0HpwcfX1/fnwSzdr09cH4H0AQgggACqpc/4gM/rMTlbBxuf/3nrV50QEH1G9ycQQAABBBBAjQKKDb72hK7neDwNJnR86KFRn8BDtUAAAQQQQABVCij3Q1jued+vkxP7QaI+AgEEEEAAAQRQDUH2Dih1H4H0AQgggACqFVDtwUIB1v6yUx+B9AEIIIAAahPQ0pfKSwuy9QtdpffJ3gsggADSByCAKgWU+odroUn+y8rMPWLvN3a27gUQQAABBBBAAM37w6PSAKU+f+3rAwQQQAABBFCrgEIXtHT/1uunvv+9rw8QQAABBBBAhaz/A33TDdAWPG1OAAAAAElFTkSuQmCC',
+    rabbit: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAwCAYAAADuFn/PAAABDElEQVR42u3buw3CMBQF0MxCm5KOGdiAFZiAETICkzAKI1BQ0kOJbCQiy78kOpZel899PpaSKMkwNB6nw+79rwYDAAADwGYnfDofg7pdL0EBAQAAAIDtTvhjmoJaO8DcTUXzfgAAAAAAQLf+ut9kAAAAAEBDgPiA8QlzqzXI3EU0dUEBAAAAAIBvjeM+qLnt4wZLN1B7AdXODwAAAAAt89cOXPsiVjp/6oICAAAAgDUBmPDOD5IAAAAA0DB/78C5Daw9PwAAAAC0zB9v8Hreg1p6A0vPH7/A+ekHAAAAADoClP7wKDdgauDUvHMv3VMXRO75AQAAAGBJALk/IJSu0h9WLX1/AAAAAGi4/we8x/WZp9vElQAAAABJRU5ErkJggg==',
+    squirrel: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAAAwCAYAAAD9wT87AAABGUlEQVR42u3ZrRHCQBBA4WsEw+AicXjoAIWmCUpghnIoAkULKCrAg86JO5bdkL29l5lVIZl7fCJ/KVW2w2b51kxyvjXfAxBAAAEUCChf0PW4UI00sPZ77R+m7Zu9ByCAAAIoEJB0wY/ztjjSwHxul/1opPulfe57AAIIIIA6Bvp3gHRq57fuqfVZ9wAEEEAAAfR9kPSinS9wGNajqe2fGkj6MtW6ByCAAAIIIDsQbzcJ3nsAAggggHoGmvtB1PrlaGs9AAEEEECRgbSB0oDX814c66BoPQABBBBAAP0e6B3Iew9AAAEEUGQgbaD1g5x1ULQegAACCKDIQNIPVqfdqjjWx9MDEEAAAdQPkDZ46uPpAQgggAhqpucDN0M2Ybog2iEAAAAASUVORK5CYII=',
+    bird: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAAAoCAYAAAB6tz31AAAA8UlEQVR42u3aPQ6CQBCGYU5CYWHlCWhsvIUXoPMIXIfS0sNQm9gZLyD1TLOZzI8b85J8FSF88zQLmx2G5Os6Hb6WZL+/974AAwwwwJEDnW93U7wD6OeXdRNpgVX3BRhggAGuBB3Ho4i+/35MIq0BWqAt4Oq+AAMMMMC/BI5eNKzAOtV9AQYYYIB7AvUOoO+fLrNINnA4OMAAAwxw4QDP10cketHTfXWsgNF9AQYYYIA9Ba3AuqBO9Ie7d4M9vC/AAAMMsAM0+0ej+iBKel+AAQYYYMciZ91s8aa3w4jhfQEGGGCACwfwHoimL8AUBviP++5wq33vGvjBEwAAAABJRU5ErkJggg=='
+  };
+  var FOREST_PROP_SPRITES = {
+    signArrow: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABgCAYAAADW4bYkAAABN0lEQVR42u3csQ3CMBRFUc/CGDQZBImWNegpWIIl2ICtoMYUYIWPv8150q2RclJEKHEp1XbbzV39KtFzkQELsNIA1z9wuxzVsa/fAIABC7CGAb6e9upY6w0AGDBgwJoX+HxYnoKwrrXXs/khDDBgwIA1LLDG6gUcMGABFmABFmABBgwYsAALsAALsAALMGDAgAVYgAVYH7+0VwcYsIsIWPMAe/Hdlw0CLMCAfZvkIWrxhT9gwIA1MfC7H1Bs4QehuciABVhpgEc7ELz1oaT1AjrxHTBgwIAB9wLOtmjgYoANsAE2wIABAwYMGDBgA2yADTBgwIABAwYM2AAbYANsgAEDBgwYMGDAFgz66xffCQA2wAbYQ1SSA7UNsAEGDPhPgLMdgkIIsAEGDNgfHQ5BAQwYMGDAU+0B4ITwzHhv6gkAAAAASUVORK5CYII=',
+    signCity: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAABgCAYAAADhA7tVAAABZ0lEQVR42u3csQ3CMBBA0ZuFMWgYBImWNegpWIIl2ICtoM6BcIISgu1n6VegKHe8AkWCiHT2281D+rYoHUsSYAJMgL0Fdb+epNFdjrtBL+AAE2ACTIABJsAEmASYKgF2Ox8G5Qvm19VWpc8bMAEmwAAD7DfAJMAEmAADTIAJMAEGmAATYAIMMAEmwCTABJgAkwATYAIMMAEmwAQYYAJMgAkwwASYAJMAE2ACDDABJsAEGGD6H2D+gK5vQIAJMAEGmNYBJgEmwAQYYFoeWL6A9CnABJgAk8YByye/YWqlL4FTb1B17T9KBzDAABNggAE2y1l6wHD63j9g9m9AwAADzP4BA8yAgAEGmP0bEDDAHMAAs38DAgaYAxhg9m9AwAADzP4BA8yAgAEGmP0bEDADAtbQ/vMNrP5Dzs5BNbd/wAAzIGCAAWb/gAEGGGCAAWb/BgSskudic+dRauf7B8z+DQgYYIC1uf8nI7lIBirhl9EAAAAASUVORK5CYII=',
+    gate: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAADACAYAAACnDiXyAAAB4UlEQVR42u3dsQ3CMBAF0MzCGIzACgxBScketNSsQc0UKVkB+hQxVmLn7DxL1yGEXnHxIcd/GBLrfDx8e65h6QIECNCqQNMvGMdP15UNBggQoKpAj8ez6wIECFBsoOv11nUBAgQoFlDusPp6vWdrujFLfT5VSwGqT/OAAAFadbUONJRegAABAgQIEKDdAHU/jAICBEiT9hQDBAgQIECAAAECBAgQoFWH1cv9NFu7n+YBAQKkSQMCBAgQIECAAAECBAiQwwuAAAECpEkDAgQIECBAgAABAgQIkGEVECBAnQLlNuVUk04dmMpt0rm/p/jtL4AAASoKlHuRY+mNYvGLJQEBAhQKKHejtvWwWnzjCAgQoE1ns1TVHkarXywJCBCgUD0nFVyydpNuPh0KECBAsyDCjwABAiRfTDoUIEDyxYQfAQIEqL18sdJNtvl0KECAABU9UBUNKNxJe0CAAAECBAhQs0De9gEECJAmDQgQIED/AaVeqAMECBAgTRoQIED+DzLNAwIESJMGBAgQIECAAAECBAgQoD0Oq0vDsgEBAtQ3kCYNCBAgQIAAAQIECBAgQA4vAAIESL5Y5AqXDgUIEKAsoN1dLAkIEKCm88W63zgCAgQodL5YtKo+zQMCBGhu/QBFj8u7HN6bVQAAAABJRU5ErkJggg=='
+  };
+  // Shared Blob URLs: each PNG is decoded from its base64 once and every <img> / CSS background points at the same blob:
+  // (instead of repeating a multi-KB data URI hundreds of times in the HTML string).
+  var SPRITE_BLOB_CACHE = {};
+  function spriteBlobUrl(key, dataUri) {
+    if (SPRITE_BLOB_CACHE[key]) return SPRITE_BLOB_CACHE[key];
+    var url = dataUri;
+    try {
+      var bin = atob(dataUri.slice(dataUri.indexOf(',') + 1)), u8 = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      url = URL.createObjectURL(new Blob([u8], { type: 'image/png' }));
+    } catch (e) { url = dataUri; }
+    SPRITE_BLOB_CACHE[key] = url;
+    return url;
+  }
+  var FOREST_PROPS = [
+    { spr: 'signArrow', x: 1535, y: 344, w: 120, h: 96, text: ['NEW CITY', '▸ forest path'], tx: [8, 8, 92, 48] },
+    { spr: 'gate', x: 2410, y: 395 + 48, w: 72, h: 192 },
+    { spr: 'signCity', x: 2570, y: 322, w: 152, h: 96, text: ['NEW CITY', 'coming soon'], tx: [8, 8, 136, 56], big: true }
+  ];
+  function forestRoadSVG() {
+    var x0 = 1440, x1 = 2476, top = [], bot = [];
+    for (var x = x0; x <= x1; x += 16) {
+      var c = forestCentreY(x);
+      var hw = Math.min(40, 21 + Math.max(0, x - 1440) * 0.2375); // widen from the 42px village road into the 80px track
+      top.push((x - x0) + ',' + (c - hw).toFixed(1));
+      bot.unshift((x - x0) + ',' + (c + hw).toFixed(1));
+    }
+    var pts = top.concat(bot).join(' ');
+    return '<svg class="dgc-forest-road" style="left:' + x0 + 'px;" width="' + (x1 - x0) + '" height="' + CITY_WORLD_H + '" viewBox="0 0 ' + (x1 - x0) + ' ' + CITY_WORLD_H + '" aria-hidden="true">' +
+      '<defs><pattern id="dgcForestDirt" patternUnits="userSpaceOnUse" width="48" height="48"><image href="' + GROUND_TILES.dirt + '" width="48" height="48" style="image-rendering:pixelated"/></pattern>' +
+      '<clipPath id="dgcForestRoadClip"><polygon points="' + pts + '"/></clipPath><filter id="dgcForestRoadBlur" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation="6"/></filter></defs>' +
+      '<polygon points="' + pts + '" fill="url(#dgcForestDirt)"/>' +
+      '<g clip-path="url(#dgcForestRoadClip)"><polygon points="' + pts + '" fill="none" stroke="rgba(20,38,15,0.55)" stroke-width="20" filter="url(#dgcForestRoadBlur)"/></g>' +
+      '<polygon points="' + pts + '" fill="none" stroke="rgba(20,38,15,0.5)" stroke-width="3" stroke-linejoin="round"/></svg>';
+  }
+  // Ground decoration rendered inside the roads layer (below every y-sorted object): deep-forest tint, glades, trails, the track, the New City plaza.
+  function forestGroundHTML() {
+    var h = '<div class="dgc-forest-tint" style="left:' + FOREST_X0 + 'px; width:960px;"></div>';
+    FOREST_TRAILS.forEach(function (t) {
+      h += '<div class="dgc-forest-trail" style="left:' + (t.x - 24) + 'px; top:' + t.y0 + 'px; width:48px; height:' + (t.y1 - t.y0) + 'px;"></div>';
+    });
+    FOREST_GLADES.forEach(function (g) {
+      h += '<div class="dgc-forest-glade" style="left:' + (g.cx - g.rx - 14) + 'px; top:' + (g.cy - g.ry - 10) + 'px; width:' + ((g.rx + 14) * 2) + 'px; height:' + ((g.ry + 10) * 2) + 'px;"></div>';
+    });
+    h += '<div class="dgc-newcity-plaza" style="left:' + FOREST_PLAZA.x + 'px; top:' + FOREST_PLAZA.y + 'px; width:' + FOREST_PLAZA.w + 'px; height:' + FOREST_PLAZA.h + 'px; background-image:url(' + GROUND_TILES.stone + ');"></div>';
+    h += forestRoadSVG();
+    return h;
+  }
+  // Signposts + the stone gate (static y-sorted props) — appended once to the fixture layer.
+  function renderForestProps() {
+    var layer = $('dgcCityFixtureLayer');
+    if (!layer || layer.querySelector('.dgc-city-prop')) return;
+    var html = '';
+    FOREST_PROPS.forEach(function (p) {
+      html += '<img class="dgc-city-prop" style="left:' + p.x + 'px; top:' + p.y + 'px; width:' + p.w + 'px; height:' + p.h + 'px; z-index:' + Math.round(p.y) + ';" src="' + spriteBlobUrl('p:' + p.spr, FOREST_PROP_SPRITES[p.spr]) + '" alt="">';
+      if (p.text) {
+        html += '<div class="dgc-prop-text' + (p.big ? ' dgc-prop-text-big' : '') + '" style="left:' + (p.x - p.w / 2 + p.tx[0]) + 'px; top:' + (p.y - p.h + p.tx[1]) + 'px; width:' + p.tx[2] + 'px; height:' + p.tx[3] + 'px; z-index:' + (Math.round(p.y) + 1) + ';"><b>' + p.text[0] + '</b><span>' + p.text[1] + '</span></div>';
+      }
+    });
+    layer.insertAdjacentHTML('beforeend', html);
+  }
+  // ---- Wild animals: purely visual, non-solid, ignore the hero. Ticked from cityMoveTick next to npcWanderTick (so they pause with modals/dialogue). ----
+  var FOREST_ANIMAL_KINDS = {
+    deer: { fw: 80, fh: 72, s: 0.85, cross: 1.0 },
+    fox: { fw: 72, fh: 44, s: 0.9, cross: 1.0 },
+    rabbit: { fw: 48, fh: 48, s: 0.85, cross: 1.4 },
+    squirrel: { fw: 52, fh: 48, s: 0.85, cross: 1.2 },
+    bird: { fw: 44, fh: 40, s: 0.75, cross: 1.0 }
+  };
+  var FOREST_ANIMAL_DEFS = [
+    { kind: 'fox', glade: 0 }, { kind: 'squirrel', glade: 0 },
+    { kind: 'rabbit', glade: 1, trail: 0 },                  // crosser: north glade <-> south glade over the path at x=1800
+    { kind: 'deer', glade: 3 }, { kind: 'bird', glade: 3 },
+    { kind: 'deer', glade: 4, trail: 1 },                    // crosser at x=2150
+    { kind: 'fox', glade: 5 }, { kind: 'squirrel', glade: 6 }, { kind: 'bird', glade: 6 }
+  ];
+  var FOREST_ANIMALS = [], forestAnimalsRendered = false;
+  function renderForestAnimals() {
+    var layer = $('dgcCityAnimalLayer');
+    if (!layer || forestAnimalsRendered) return;
+    forestAnimalsRendered = true;
+    var html = '';
+    FOREST_ANIMAL_DEFS.forEach(function (d, i) {
+      var k = FOREST_ANIMAL_KINDS[d.kind], g = FOREST_GLADES[d.glade];
+      var a = {
+        id: i, kind: d.kind, glade: d.glade, trail: d.trail == null ? -1 : d.trail,
+        x: g.cx + (Math.random() * 2 - 1) * (g.rx - 20), y: g.cy + (Math.random() * 2 - 1) * (g.ry - 10),
+        tx: 0, ty: 0, speed: 0.5, wait: Math.floor(Math.random() * 240), route: [],
+        crossIn: 375 + Math.floor(Math.random() * 500), flip: false, moving: false, el: null
+      };
+      a.tx = a.x; a.ty = a.y;
+      FOREST_ANIMALS.push(a);
+      html += '<div class="dgc-animal dgc-animal-' + d.kind + '" id="dgcAnimal' + i + '" style="left:' + a.x.toFixed(1) + 'px; top:' + a.y.toFixed(1) + 'px; z-index:' + Math.round(a.y) + '; width:' + Math.round(k.fw * k.s) + 'px; height:' + Math.round(k.fh * k.s) + 'px;">' +
+        '<div class="dgc-animal-flip"><div class="dgc-animal-bob"><div class="dgc-animal-sprite" style="background-image:url(' + spriteBlobUrl('a:' + d.kind, FOREST_ANIMAL_SPRITES[d.kind]) + ');"></div></div></div></div>';
+    });
+    layer.innerHTML = html;
+    FOREST_ANIMALS.forEach(function (a) { a.el = $('dgcAnimal' + a.id); });
+  }
+  function animalPickTarget(a) {
+    var g = FOREST_GLADES[a.glade];
+    a.tx = g.cx + (Math.random() * 2 - 1) * (g.rx - 16);
+    a.ty = g.cy + (Math.random() * 2 - 1) * (g.ry - 8);
+    a.speed = 0.4 + Math.random() * 0.3;
+  }
+  function animalStartCross(a) {
+    var tr = FOREST_TRAILS[a.trail], c = forestCentreY(tr.x), sp = FOREST_ANIMAL_KINDS[a.kind].cross;
+    var fromN = a.glade === tr.n, g1 = FOREST_GLADES[fromN ? tr.n : tr.s], g2 = FOREST_GLADES[fromN ? tr.s : tr.n], dir = fromN ? 1 : -1;
+    a.route = [
+      [tr.x, c - dir * 62, sp],
+      [tr.x, c + dir * 62, sp],
+      [tr.x, g2.cy - dir * g2.ry * 0.5, sp],
+      [g2.cx + (Math.random() * 2 - 1) * (g2.rx - 16), g2.cy + (Math.random() * 2 - 1) * (g2.ry - 8), 0.55, fromN ? tr.s : tr.n]
+    ];
+    a.tx = tr.x; a.ty = g1.cy + dir * g1.ry * 0.5; a.speed = sp;
+    a.crossIn = 1e9; a.crossing = true;
+  }
+  function animalSetMoving(a, on) {
+    if (a.moving === on) return;
+    a.moving = on;
+    a.el.classList.toggle('dgc-moving', on);
+  }
+  function animalTick() {
+    for (var i = 0; i < FOREST_ANIMALS.length; i++) {
+      var a = FOREST_ANIMALS[i];
+      if (!a.el) continue;
+      if (a.crossIn > 0 && a.crossIn < 1e8) a.crossIn--;
+      if (a.wait > 0) {
+        a.wait--;
+        if (a.wait > 0) continue;
+        if (a.trail >= 0 && a.crossIn <= 0) animalStartCross(a); else animalPickTarget(a);
+      }
+      var dx = a.tx - a.x, dy = a.ty - a.y, d = Math.sqrt(dx * dx + dy * dy);
+      if (d <= a.speed) {
+        a.x = a.tx; a.y = a.ty;
+        if (a.route.length) {
+          var w = a.route.shift(); a.tx = w[0]; a.ty = w[1]; a.speed = w[2];
+          if (w[3] != null) a.glade = w[3];
+        } else {
+          if (a.crossing) { a.crossing = false; a.crossIn = 375 + Math.floor(Math.random() * 500); } // idle 6-14s, then cross back
+          a.wait = 90 + Math.floor(Math.random() * 285); // 1.5-6s pause
+          animalSetMoving(a, false);
+        }
+      } else {
+        a.x += dx / d * a.speed; a.y += dy / d * a.speed;
+        if (Math.abs(dx) > 0.25 && (dx < 0) !== a.flip) { a.flip = dx < 0; a.el.classList.toggle('dgc-flip', a.flip); }
+        animalSetMoving(a, true);
+      }
+      a.el.style.left = a.x.toFixed(1) + 'px';
+      a.el.style.top = a.y.toFixed(1) + 'px';
+      a.el.style.zIndex = Math.round(a.y);
+    }
+  }
   function renderCityRoads() {
     var layer = $('dgcCityRoadsLayer');
     if (!layer || layer.children.length) return; // static — render once
     var html = '<div class="dgc-city-plaza" style="left:' + (TOWN_PLAZA.x - TOWN_PLAZA.radius) + 'px; top:' + (TOWN_PLAZA.y - TOWN_PLAZA.radius) + 'px; width:' + (TOWN_PLAZA.radius * 2) + 'px; height:' + (TOWN_PLAZA.radius * 2) + 'px; background-image:url(' + GROUND_TILES.stone + ');"></div>';
     html += ROAD_SEGMENTS.map(function (r) {
+      if (r.noRender) return '';
       var dx = r.x2 - r.x1, dy = r.y2 - r.y1;
       var len = Math.hypot(dx, dy);
       var angle = Math.atan2(dy, dx) * 180 / Math.PI;
       return '<div class="dgc-city-road-segment" style="left:' + r.x1 + 'px; top:' + r.y1 + 'px; width:' + len + 'px; height:' + r.width + 'px; ' +
         'background-image:url(' + GROUND_TILES.dirt + '); transform:translateY(-50%) rotate(' + angle + 'deg);"></div>';
     }).join('');
+    html += forestGroundHTML();
     layer.innerHTML = html;
   }
   // A point-vs-rectangle helper (with padding) used both to keep newly
@@ -44284,6 +44671,18 @@ $ git stash pop
   // houses read as real structures, not single-tile icons.
   var HOUSE_BOX_SIZE = 130; // must track the `size` used for HOUSE sprites below
   var HOUSE_BOXES = HOUSE_LOCATIONS.map(function (p) { return { x: p[0] - HOUSE_BOX_SIZE / 2, y: p[1] - HOUSE_BOX_SIZE * 0.86, w: HOUSE_BOX_SIZE, h: HOUSE_BOX_SIZE * 0.78 }; }); // bottom-anchored at (x,y), scaled to the sprite's display size
+  // SOLID footprint of each house = the wall/roof body (feet-point test). The strip in front of the door stays walkable.
+  var HOUSE_SOLID = HOUSE_LOCATIONS.map(function (p) { return { x: p[0] - 59, y: p[1] - 80, w: 118, h: 86 }; }); // matches the house art's real opaque area: x±59, roof top y-82, wall base y+7
+  var HERO_FOOT_DY = 29; // hero token centre -> feet (measured: leg bottoms sit 29px below the token centre)
+  function houseSolidAt(fx, fy, halfW, pad) {
+    pad = pad || 0;
+    for (var i = 0; i < HOUSE_SOLID.length; i++) {
+      var b = HOUSE_SOLID[i];
+      if (fx + halfW > b.x - pad && fx - halfW < b.x + b.w + pad && fy > b.y - pad && fy < b.y + b.h + pad) return true;
+    }
+    return false;
+  }
+  function heroBlockedAt(x, y) { return houseSolidAt(x, y + HERO_FOOT_DY, 15, 0) || solidsAt(x, y + HERO_FOOT_DY, 15); } // 15 = measured half-width of the hero's legs
   function blockedByHouse(x, y, pad) {
     for (var i = 0; i < HOUSE_BOXES.length; i++) {
       if (rectContainsPoint(HOUSE_BOXES[i].x, HOUSE_BOXES[i].y, HOUSE_BOXES[i].w, HOUSE_BOXES[i].h, x, y, pad)) return true;
@@ -44307,6 +44706,101 @@ $ git stash pop
     houseD: 'data:image/png;base64,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'
   };
   var HOUSE_SPRITE_KEYS = ['houseA', 'houseB', 'houseC', 'houseD'];
+  // House interior art: plant + kitchen counters cropped from Kenney "Roguelike Indoors" (CC0, kenney.nl);
+  // sofa, TV, armchair, fridge, window, coffee table, rug, door mat and floor are hand-pixelled in the same palette (16px native, 4x).
+  var HOUSE_INTERIOR_SPRITES = {
+    sofa: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABcCAYAAAArr/rLAAABt0lEQVR42u3ZsY2DQBAF0K3DIYl7ICEioQXHiF6cuAHqcR10AjGLZAujBcO+L/3MpxvtzIsIQUREREREREREREREJJM8ymJUzbWAqAKiCohqeiDxD4ZnrR/aN7dZzXutLsAAAogCAggggDg4QABxcIAA4uAAAQQQ8wICiHkBAcS8gCgggHgkQAABBBD9Eci7vSft2RcGyLHzp75PQAABBBAHBwggDg4QQBwcIIAAYl5AADEvIICYFxBAAAEEEEAAAQQQQAABBJCzAkn9/3Kf33sD4uC8NyAOznsDYmHeGxALMy8gFmZeQCwMEEAsDBBAfChUHwoBUUAAUUAAUUAAUQXEESgggCgggCggPlz5UOhDoYUBAggggHhvQADx3oA4OO8NiIPz3oBYmPcGxMLMC4iFmRcQCzMvIBYGCCCAAGJ+QADx3oCY33sD4uC8NyAOznsDYmHmBcTCzAuIhZkXEAsDBBALAwQQQAAxPyCAeG9AHJz3viIQ1TUFRBUQVUAAUUAAUUAAUUAAUUAAUUAAUUAAUUAAUQVE9V+BxIl/8OqqVY3/XnXPbr3X8C2AKCCAKCCAKCBbgUzQpzJrNHyGIwAAAABJRU5ErkJggg==',
+    tv: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAAB0CAYAAABe6nowAAAByUlEQVR42u3cIY7CQBSA4d6EBItA4GowqL0CCTi4xAoUghUcYQ2XQOAQSI7CDcCzCYRlpvNov0l+R0ra94kXmlBVic+07l9Vrir6MSRAAAEEEEAygRgMRipYODCAAAIIIIAAUgjI1/qgjAEiQASIAAEEEEAAAQQQQAD5HCC/50vSAAEEEEAAAQQQQHIAsZgCAggggAACCCB+KAMEEEAAAQQQQKICGc63yhggAkSACBBAAAEEEEAAAQSQuEB640XSXn2g38dNqAABBBBAAAEEkG4AsaQCAggggAACCCBtXFIBAQQQQAABBBBALKmAAAIIIIAAAogAAQQQQAABBJAmgdT1RBkDRIAIEAECSIruX/4BIkAECCCA/A9M6XIPNNr9VtEPIIAAAggggHzIgAEJBgwQQAABBBBAEgG5/8Bpt1KH+wMGEAEiQASIABEgAkSACBABAogAUVIg+5+ZOhwgAkSACJBm2i7HDwMEEEAAAQQQQLoB5NnAUg+w9PWjgQQEEEAAAQQQS6olFRBAAAEEEEAAAQQQQAABBBBAAAEEEEAAAQQQQABpH5BXXy6pXQEiQASImgLy7H9T3/0CNVtyEIAAAggggCgPkBs4lMD7rpznjQAAAABJRU5ErkJggg==',
+    armchair: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAABDUlEQVR42u3csRHCIBQGYOZIaeMOaaxsXMHayy5pXMB5nCObaG9BDhNyeeHj7i8p+JoH74CUfsa9P31qJrU+AAMGDDgDOo3XqmkOHDBgwIABAwYMGHAI4PfjXDWAAQMGDBgwYMCAAQMGDBgwYMCAAQMGDBgwYMCAAQPeFjhaAAMGDDgycO2LLbu7OAMYMGDAgAEDBgwYMGDAgAEDBgwYMGDAjQJHT3FDHjBgwIBXBI5epDYvgoABAxbAgAEDBhwC+HXrsindmC+dH/0gAhgwYMCAAQMGDHifwHP94aUNecCAAQMG/P9b7NIi2HoAAwYsgAEDBgz4GMBz4M/hkk30DzhK17f6J0qAAQM+MvAXa+0Q4MDOfKoAAAAASUVORK5CYII=',
+    fridge: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAACQCAYAAACrgC0FAAABLklEQVR42u3dMQ6DIBiAUc7VI7h377W4Ro/ACbp24god2NsdkxKCUYPvT75NlzcYAkZDqGZZ7t8rF1oDCBCgTYHqC0opl24FBggQoF2Bcs5TlVLqChAgQIAAAQIECBAgQIAAAQIECNC5izH+DRAgQIAAAQIECBAgQIAAAQIECBAgQIAAAbJpDwgQIECAAAE6G1Br4TV7gAABOhao96E2W4AAAToWyEIRECBAgAABAgTIwSEgQIDOD/R+3oYCBAgQoBGgz+sxFCBAgAABAgQIECBAgAABAgQIECCb9oAAAQIECBAgQIC8QAUIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIEKB+oHpGfwJQ3793wx/5bw0gQIC2BPoB1XgSb65SddIAAAAASUVORK5CYII=',
+    window: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAABgCAYAAADxTzfMAAABQUlEQVR42u3dsQ3CMBRAwczCGDQMgkTLFoieggFoaRiBDTIBFUPQQBt6R8JyEstOuC+9LrIsX2U3aZpgtutVp3I1sXFIgARoQUDhB+f9RgXrgQECJECAqu1+2v0MECBAgAAtB+j2/FRVDKi2/QICBAgQoPkAhVM7UGy/gAABAgRoONChfSWVOqnrx4BS18sdIECAAAHKBzR2AAECBAgQIECAAAECBGjuF9XcAQIECBAgQIAAAQIECNDUQLED0LgAARIgQIAACRAg1QcUdnm8qyp2ALXtN/tLAiBAgAABmi1Q6gACBAgQIEBDgaYeQIAAAQIECBAgQIAAAfJYCggQIECAAAECBAgQIECAAAECBAiQHzz5AxcgQIAAARIgQAL0n0Dt9dipXD2QcBwSIAECJECAAAHS5EAuql4SBAiQCgF9AabFcTc8Mel7AAAAAElFTkSuQmCC',
+    coffeetable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAABACAYAAADCmvPmAAAA+UlEQVR42u3dsQkCMRSA4cxi4w42Vk4h2IlrWGvhEi5hZSfOYGXlGtpH5IyXcDnzPfi7A+F9TRDNhRDNcjZ5qt5C11gSQAHU14DxA9fjVhX3BgoQoACqGOBpv9KAAQRoiQBVD6CDRNkAAgQIUPUCpnbfLbLmEAMQIECAAMcCeFlPs1Z6YY/bOal4AAIECBAgwFYAHWIAAgQIEOC/BBAgQIAAAfpRky+zBVAAWweUfycJoAC2AnjYzFVxAAEKoAACBAhQAAUQIECAAqjfALvuD+37Acq7z+QbewECFECAgwGGxgcgQIAAAY4HsO+LQIKpa58AARqAAD/NC8gBY8RPN9qgAAAAAElFTkSuQmCC',
+    rug: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAABoCAYAAABR2nocAAABqklEQVR42u3csRGCMBSAYeZwASexcQ+X8RzB3gXs7RzCyoo1sFULcyEEfOQrvjKnB39DXqDrH7cBoupcBAQMAoYRAV8vp+Gdi8I/++5VwAgYBAxjAk4tuB+2sJjiXQgXEQGDgBGwgBEwCBgEjICTg4zUD5z3GxgtN+DsSZyAETAIGAFXOAuR+4doW2nAk+9CCBgBI2ABI2ABI2A3CQEjYAHTQMBTDzLcJGoGXH0S5yYhYAQsYJoIeO6HuOdx9yH3Algfe334XQgBCFjA1gtYwNYL2EMcAkbAAkbAAsZZCDcJkzgELGAELGCchQC7EAhYwAhYwAj45+EQYhGwCAQsYAQsYCIGvPQgQwQCDj2JE4GABYyABUzIgA0yMMgQMAJGwAJGwAJGwCBgBCxgfBdCwHgrGQSMgAWM70LUO8xj/brXr/6NDOsFLGDrBSxg6wUMAkbAAkbAAsZZCARsEoeABYyABYzvQiBguxAIWMAIWMAEDxhyCBgBCxgBwxIBlw4yoKbqkzgQMAiYJgMufYiDOQOefBcCBAwCRsAQjIARMAgYBIyAQcAgYEh6AXqNBknh0RN0AAAAAElFTkSuQmCC',
+    mat: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAgCAYAAADtwH1UAAAAdklEQVR42u3asQ2AIBBAUfZkBGZwARuHYAELB3Ejqa2MMQZOX/GrSyjudRdSLvOhfiVLAABAAwFMy6oXAwAAAIBIAHXbT5nfmwMAAABAZICrB/RsfwAAAAAAAAAAAAAARACQaygAAQAgAAAE4HsA8jMOgAD8pgbZ5oCjL9dhngAAAABJRU5ErkJggg==',
+    plant: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA2ElEQVR42u3YsQkCMRQG4IxjYWXjQi4hYm9xa4gg2F0r7uEArnG2ZwpDJGCS+37428D7DsK7hPDn7IbNlNPQWwAAWBhAPNDp/r0AAABoG8AXBwCgL4DcxSUFcLitPwoAAIC2AHIvtXhgAAAAtAWQC5IaOAVQ/QMJAAAAigI097MEAACArEUnF6C5zRAAAABFCwAAgLbfB7ofGACAhQOsjvtp3u31XLTx+QAAAKgr42WY5n09H0Ubnw8AAIC+94LqLz0AAAAAAAAAwM8gqYbeAgDAwgFEpOq8AcwX3bUD05OxAAAAAElFTkSuQmCC',
+    counterSink: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAx0lEQVR42u3YoQ3DMBAF0GzWTUq7RnlBsXmXKDUq9gIZJcUxaGQpsq3eO+kTy5FPD5x0WVJKW8+UUn6mdz8LAADBAXLOW88cAfTuBwAAAG0f1ENkXdehqfsBAABAX4DZAgAAAAAAAACYdxmaLQAARAcYvcyMDgAA0QHej+sWOQAAANgffF73vw4AAADaAM4eOq0Nnv0eAAAA+gI8b5ddjgDq+wAAADAEAQAAMA7ANggAQCwAf4UBAIgFUC8f0QIAQHQApVTo+gLIHaWmBVWxKgAAAABJRU5ErkJggg==',
+    counterCabinet2: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAqUlEQVR42u3YsQnDMBQEUG+WTdJ6jfQpUqv3Em5VZQuNotRyYwzGhtw7uEYIJF7xQZpKKT25EwAA4QC11p5cAAAAAAAAAAAAAAAAAAAAAAAAAADSAFprPbkAAKQDrO9nTy4AAADGhe/y+usCAADgGMDZQ+foBc8+DwAAANcCfObH0D2A7X4AAAAYggAAALgPwGsQAIAsAL/CAABkAWwfH2kFACAdQESi8wNLrwf1DIPQjwAAAABJRU5ErkJggg==',
+    floor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABCUlEQVR42u3csQ2DMBRFUSbNBuyQPnU2YIkU9NkKatxESDHxzzvF7Y05kb6smOn1uG3KbbIJANgIABQL4L3ct5FrFzz6eqsFAAAAAAAAAAB8p/U5HwIAAAAAAACAfwHQPmDvBzYEAgAAAAAAAIAhEAAAvDQAvDQABECvg5tqBzkAAAAAAAAAAIAAEAACQGcAfBqCfl0LYPT1VgsAAAAAAIBcAC5Iuh1sIwAQAPJ9AOUdhAEAgE0GQABozMugAAAAAAAAAFAVQPqfLgEAAAAAAADAEKgrAJz9gQEAgE0GQACkHNRUG0INgQAAAAAAAABgCAQAAAAAAACApO8DpNf7ciwAANhkABQLYAdUGC9GtHH+WQAAAABJRU5ErkJggg==',
+    // ---- Home interiors (generated by make_sprites.js: ASCII grid / rect painter, 16px native, 4x, outline #5b3a22) ----
+    bookshelf: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAACACAYAAACcL+6CAAAB+UlEQVR42u3drU7EQBQG0D4LlgRLWLMesw9AAhKBQOPQIPBoMKiVoEDyCIBCoZB4sPQSemmmbH/2TPK53UnniM323s60qsLYm218yu+psgEJIMBRAcYPXBzOG/N4dTrpZOv/AQoQIMC1Ajza3Zp0AAIECLAE8OP9qZbSBZXOF7+fzQcQIECATckuaH68rKV0gWcHy1ragjyfzBoDECBAgG0AH3Y2GxMBswUvLheNiYBvL/eNifMDBAgQYJ+Ar7ezxnQNuH1zXQtAgAABAgQIECBAjXVPJgAECLAU8O58f9IBCBAgwDZNpa4b26uer/euHECAAEcFGG/WswVlxYe2QLFY0baJBRAgQIBdAsaCZ0wGGBeYFWAzwKxACxAgQIBDAoxNof8GjNcfAxAgQIAAAQIECFBjHSBAgAA11gECBAjw7xuuNdYBAgQ4ZcDsZr90w3PXjXqAAAECXCVgLHBmgBEoK3i2bdQP7uEigAABAvyW2IQqBcw2ZAMECBAgQIAAAQLUWPdkAkCAADXWPZkAECDA8b6UqutGO0CAAAEOCXDVh1oABAgQ4JAAuz7UovfNhgABAhw1YPYj3PUf21LAwW24BggQ4KgBs0MfSg9IzF5OChAgQIB9Aq57AAIEOG3AtpkaSNsABAhw3IBxlE449VTZgAQQ4JgAvwBc3/YUBXlzIQAAAABJRU5ErkJggg==',
+    desk: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAABoCAYAAAAeh3nMAAACH0lEQVR42u3drU7DUACG4V0HEssVUINBcQskBIfkFvAI9BIkF0BQoCALAokEzFAoBAn1I8geWA9j/Tmnfb7kVSywdY/o1oVNJmZmZmZmPW+/2Fy0mSMMEEAGkAFkKYL5eDystPi8ry28fSygAALIADKALAdATQcQQAAZQAaQpQjo+apoNYAAAsgAMoAsB1CrFp40F8VubUABBJABZAD184B9gKrb5wMggAACCCCAAGrmDs7n86QDCiCAAAIIIIAAauMOzWazpAMIIIAAAggggABKEVBZlrUBBBBAAAEEEEAAAbQ+oLFdjAUIIIAAAggggLyR+N3O8WVtby+3lXIHBRBAAAEEEEAA/e8PxppOp0kX3t8QSAzM0IoBWvtFBUAAAQQQQABlAii8wcPFSW2pg4kVe3y5F/tnCrFiv/8HKIAAAggggAACaJCAyvenTnu9LirdbW9V6hsoQAABBBBAAI0V0NgKn+DYxdhViwEKfw4QQAABBBBAAAHUB6CuT6IBAggggAACCKBuAN2cHkhLA0gACSANFdDZ0Y60NIAEkADSWAE5kRx2AAkgASSA/gYotYufqx6Qthva8QIIIIAAAggggJo5IOd7G7U1fUC6PgnN/XgBBBBAAAEEEEC/H5DULvalDii34wUQQAABBBBAAA3zpDC3NxK9CgMIIIAAAgigfgDJh+oBEkACSEMAtO4XzmlcNf6NhQIIIAGkfgB9AZt+8R9tk744AAAAAElFTkSuQmCC',
+    deskchair: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEQAAAAoCAYAAABHJVyTAAAAhUlEQVR42u3asQmAMBBA0cxi7QQ2Nm5hkdZJLJzI7bQ2QiQEIoR38LvAhVdfCB+zTsPVU6F2gAABUgQQ97OrioGAAAGSBUkfzPFo2rhsj1rvfwEBAQIECBAgQIAAAQIECBAgQIAAAQIESAFI+sHeAwIECBAgQID8B9L7gUz1AQ0QIEByIDfSDkVde8kooQAAAABJRU5ErkJggg==',
+    armchairF: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABgCAYAAACZvLX0AAABMUlEQVR42u3dvQ3CMBAGUM9BScMONFQ0rECN2IWGBZiHObIJiJIUiYyx8YVn6Wsd3WusnPyTUuE4btePJSf9egAGDBjwBOhw2S86zcEBAwYM+I+Bb4fVWwADBgw4EvD9tAkdwIABAwYMGDBgwIB7AB4XPA5gwIABA7bIAQYMGDBgwIABA44NnLs5Lhe49o9D6fxzwMWbBQEDBgy44UaS3he16psFAQMGDBgwYMCAAQMGDBgwYMCTwN9utkRrsJfOBxgwYMCAAQMGDBjwK9EOfwMGDBgwYMCAAQMGDBgwYMCANXs0ewADBgwYMGDAgAEDBgwYMGDAnx7G7j2AAQMG3BJ47v6I63mXlegP9JXWm33jCWDAgAFXBE6dD8CAAQPuud5wL2k3vrsz3gcBAwbcUb1P4R2v04eu+fEAAAAASUVORK5CYII=',
+    dogbed: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAAAoCAYAAABdGbwdAAAAvElEQVR42u3avQ2AIBCGYUYxljqBruJQruAotm7gCBaW9tpbcLnwc6AvydeS4yku5MC5yGsa29syrvQFEEAAJQWYu8abdeiDIu1vDggQQAAlBYl94NSRAAECCKCygN4baAs6tsU02nrVYAABBFBUoNAmLBV8nbs31mBiEwcIIICqBiq9aQMEEEC2QLnvRdWBAAQQQFmBtGCph/ShQ3zziSJAAAGU9Z2stJi/rAIEEECf/jBV/YcqgAD6N9ADQ9KonqntFpsAAAAASUVORK5CYII=',
+    popcorn: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAAsCAYAAAAwwXuTAAAAsklEQVR42u3asQ2AIBCFYWaxdQJdxcZRLRzAUUyk11a0IJcTfZif5FVchI9EYoQQjG3om/2cXL+1PnzdAAIUA14nsG9zkly/tf71BQEIUAxonXDpeBcEIEB1oBW0LmMSL8D7PIAAaweqbzIAAf4deC2Yurbq3MAAAYoDre9kjDFJbsDS9e5dFCDAyoBqYIAA/wZU/1Yt/mcbIEAx4Nfg1w9IAQIUB1ovHXgjd+sCIMBngQc42QSPFBelowAAAABJRU5ErkJggg==',
+    posterRocket: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABICAYAAACjpDbfAAAA/0lEQVR42u3bLw7CMBSA8Z0FCxdgZgfB4EhAoFFwAzwWDI4jkGYCieUWJMwPvUfSpunI3uu+JZ/a0uxnunV/ikJsi3LSWq4IbQABKgPKAx6Xg+l+wAABGgMeV1WnWbVRnTxfgADHDmw/dadUQGg8gADHBowF3OdTb+omGYAAlQNTQX2DAQIE2K1pmqQAAgTYL7Da3rzJ42NvJAACBNgvMPtJBiBALvQAAZoGyguxXLA655KKXQADBDg2YOghk9z/2pXeQuMN/nYJIEDlwFDv59Kb+a8sAAI0BszuSyeAAP8MPF1r1QEEmDtwvT+rDiDA3IHWAgjQGpA/QAECHBT4BZr0JT/fz1UoAAAAAElFTkSuQmCC',
+    posterMountain: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABICAYAAACjpDbfAAAA4UlEQVR42u3bIQ7CQBBG4T0LmhPUcALSA2DqmnAFBEhcPUhqew8kinNg0KA7JEw2U2BmeX/yXMV+bis2JbFVNXtELmkDCNAZUH5w7nehewEDBBgM2LWLUcfr3XXyvAABArR1uzRvAwgQIECAAEsGcpMBCNAGlAMIEOBngbkDCBCgDSi33p6ymhoMEOC/AXNBWtaLAkCAAG3JLZv9KA0MEGDpwKlBMgnSAgiwdKA3kBZAgAC/C9ICCDAaUDvgZpi7TgMDBOgdqF2260PtOvPfBECAzoHRAggwGpAXoAAB/hT4BPQgysoYviLQAAAAAElFTkSuQmCC',
+    lamp: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAABwCAYAAABsIzL3AAAA1klEQVR42u3asQkCMRQG4MziGNc4iCB2DmPhLnb2DmDrFgcOcNaeYAhJ7rjke/C3eV+KEHi8EBLrMOymnITaBdgccN5gej+yUhwM2BxwfsD4PFVNMhiwOeDSoNdt+JsfMCAgICAgYGfA2AG1Awh4Pe9XDWB/wNzh0P1y/EqsYfZwCbB5YOoFUoGLT1gBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE3CCy9AFl9mQxw88DYIyid7A1MwOaBqy92A3YHjIFLp/hPArg14AdpLGM6BEgSbwAAAABJRU5ErkJggg==',
+    dogLie: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAYAAABpYH0BAAAAvElEQVR42u3asQ2AIBBAUWYxdpR2DOAGVm7gCO7gHq5i5RZOYK+tUkiIYO7wk/yOQl4DEowRPnpXHTkzpQ8AAQRQ9YKXqcuaOFAAAQRQNGBowfPgVJcdFEAAAVQFmBpobOvHigMFEEAAVQHGglnb3AIQQAAB1AToT/BBQj/jv99EAAQQwKIAYy8ktV8eAAgggABe27c1adKBQt8PIIAAlg2YGjR0UNYWgAAC+C/Arx84Sk/8C1EAAQTwDeAJmK/BrMAQUg0AAAAASUVORK5CYII=',
+    dogSit: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABACAYAAABP97SyAAAAxElEQVR42u3bsQ3CMBAF0MyC6FLSZQA2oGIDRmAH9mAVKrbIBPRQJ4UjS058Ju+k39p+rs6Wrusy6zocvql0rRcgYHDQ/XxMprkLAAQMBswFPW9DVqqDAQEbA+YCwoMBARsH9v1pEkBAwLKgOeD1uCQDCAi4LhgQEPC/34fVP6kAAXcODNfpAAJWBs4X/IzvSbYGFgcDAgLWBQMCAgICAgICAoYBLoFqA5fOAwi4N+Da4Nz9AQFbB+YOfkRL8ckWQMBtgT/7A709fnQzHAAAAABJRU5ErkJggg==',
+    dogTail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAAPElEQVR42mNgIBFEWyn9x4cZKAWjFhA0cEWWFV5MsoWjFlBs4KgFA2/BaLofDfNRC0YtoIYFo82SAbcAAC48Ev4MX4nYAAAAAElFTkSuQmCC',
+    catSleep: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAAoCAYAAACrUDmFAAAAuklEQVR42u3ZsQ2DMBSEYWahYQd6pkjNDNnBEzFBWlagQtQofVL7RbJlHQ629Vu67gn8uTiB3HWR9Rj7Tyjq/O0LIMDCgHZDr3nwsrnJizqvBiDA1oF2g2rsAZzLM5jY85LBAAEWBkwF5T4ANT9ggAArBx7OeVFL5ep5gABbA7731UtpJQIQYGtA9dtULYXsJQMQYGXAf/8Ap8aWoA1AgK0BY+DYC6+OXCoAAVYOTL3wzJ3bb4ABAtSAX1DwOqAswh2QAAAAAElFTkSuQmCC',
+    catSit: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAA4CAYAAACPKLr2AAAAu0lEQVR42u3ZsQ2EIBTGcWa5xh3sb4qrncEdmMgJrr0VrjLWl+u11Vfw8gUIwfxJvg4fPwpQMASnvcbHfk7IbKXrAbwf0BZ4T8Ml6gCl6wEE+I3PS2x/G9sfIEAVaAcoHYAAVaA6AbUeQIAqYIsxmearGGB3wNobd/VTHcDugSrot8zJNF/FAAECBOgAczfiXKB7kAcIsHIAAgQIsDXQezf/108y3iW6+rz8NQPwdkAPnPszsfrNAsDegAejM2kS2Gj6eAAAAABJRU5ErkJggg==',
+    // ---- PHASE2 SPRITES BEGIN (generated by make_sprites2.js: ASCII grid / rect painter, 16px native, 4x, outline #5b3a22) ----
+    toychest: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAA4CAYAAABqtn+aAAAA+ElEQVR42u3bsQ2CQBQGYOawMpaYGFtt7BlBB7BwExuGcAntLByEHRwAa8/o5ZR4Ab5L/o68/HwdR15RBGe3nrXyPkXsQAIIsFeA4QPNef2U9n4bdUKPF1CAAAEOGlAAAgQIUAACBDgOwMtxkjX1fvMxufsBBAhw2IDNtkrKoVp8TOq8GGDufgABAhw24HU1T0qsYOq82AVn7n4AAQIE2GXBX3/6AAQIECBAgAABAuwG8LQskxIrmDovBpa7H0CAAIcNmPtjveuM7jYGIECAAAECBAjwS8C6nD4ldRkvLBjO+3fCPqnvE/MACBBgvwEtXNtYBwhwxIAPQ5s4atpocTMAAAAASUVORK5CYII=',
+    blocks: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEQAAAA4CAYAAABE814IAAABNklEQVR42u3bL4sCURSG8fkmgrBBZWEt4kwxuEmDf4pBcMOGiSaDIBh2k8lkWNwgfgHBYhKDwa9gs5gN27bM5nsFh+F1XB2eA0+6N/3aCcdxYp62lw6umfPoAwgggEQCCL6rUis/b/RwQIAAAogEsu97RsHP1ugM0HoHBBBAALkEEhYggACSLJCoy9i0lZUKA/l3IEAAASQSgL/zpcofZaPl4CjVa0yMYgcCBBBAJJDaV03KBhm9LaQAAQQQQAABBJDkgIQtT27XlbJB3l+HUmEg8jIICCCAXASxP/xWilLzlyej5vgoVehMjIJTVWo9zRudAQECCCASyMbNSdkgpe5CygY5rDwpQAABBBBAAAHkfkFGmZSUDfJcH0rZILPPrBQggAByXZC4D37uvZtfQAECSLJA/gCPTqbqS+5rbAAAAABJRU5ErkJggg==',
+    blocksScatter: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAAwCAYAAADab77TAAABUklEQVR42u3bsQ7BQBzHcW8ikRikkUgkohaDrUvFSGI1egSDzWQyMHoBj2D0BGaLN6jFwnwn/HP537XF95f8Jpdq+7mhuV4rFUIIIYQQQgghhOSWSa/28NnQ54cYwARggAH+FdDR+qpqZ7ox6goiTZgsy4zmPcEABhhggAEGOBRwf35Q1RVYArQr/b80AQAGGGCAAQb4X4El0GMcea0reNkWdgAGGGCAAS4OOPTiv/17c7hQ1RXYN6hU1/PZnW8fKx0fYIABBhjg7wG2B8xOM1UHy4FR+/j3pKvqvlU36nthw3dDTziAAQYYYIB/BzjdpqpKwNoL+nbgyzgJ2pf7ATDAAAMMMMAFAYd+2WFXeqgCGGCAAQYY4HfA8TxWVQJeNaqqaoGL3vhuj4+i9sdqxwMMMMAAA1xe4KJf+Jd9V2HeH5hr71/pdnQADDDAAAP8bvwTje4GBSLs9XIAAAAASUVORK5CYII=',
+    rugPlay: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAABoCAYAAABR2nocAAACeUlEQVR42u3dsU0DMRiA0duAHWgzAWmo0tCkhwI2YAEmyAhMQZmSIgNQUqZMQYEEfahzSBjLds4+v5O+Ln+kO78gGawwDKPrbnl5lGptCF0ekgCWAJb+AXj8gu+P9z/bb5cnhV5v3nzO+V+gATYPsAUwD7B58wUAv14tpMkCWABLAEs1AH7aHaRiASyAARbAEsDtd/zaneSZAAwwwAADDLAAnh/g3hdsfP+hfGABBhhggAEGGGCA2wPc+oLtb2+KNr7/3O8/tw8swAADDDDAAAMMcAuAS2/iUt8vGclmNW2NAfdbCIABBhhggAEGuEfA594UNAeyMvC1bbIBBhhggAEGGGCAHWg/xINNBPD59lB1qfdX+x+eAAYYYIABBhhggAE+ZAcbC2b9vJ600sBDPyAABhhggAEGGGCAAV5UD7Y1oNUBn/hwEMAAAwwwwAADDHAPgEuDjQVx/fhSdbmB1wYaYIABBhhggAEGeI6AWwe7uS9b76ABBhhggAEGGGCAuwBcGGxtQGsDnhs0wAADDDDAAAMMMMD5N22pYGPBTP1FH7mBx4I+96YOYIABBhhggAEGeA6AjxdDUqmAWwNbGnQs4NT1AxhggAEGGGCAAe4BcOoNh8q9aWv9n2vn3tSVXj+AAQYYYIABBhhggOPrHWxp0AADDDDAAAMMMMAAxwOu7bDO3MHGgp76sA/AAAMMMMAAAwwwwKvih3UALnvYB2CAAQYYYIABBhhggAEGGGCAAQYYYIABBhhggAEGGGCAAQYYYIBbByydM4AFsASwNAXg2Pbb5UnmzeecB9g8wBbAPMDmzecAPL7GL5BqaghdHpIAlgCWwoB/AEXqEy4bfstxAAAAAElFTkSuQmCC',
+    bunting: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALgAAAAsCAYAAADWxHKSAAABjklEQVR42u3csU3DQBQG4MxCS48EDRWiNBUNDVJS0dCyAA1swA5IjAAbMAAFJWU2MDWOFOv0nu3L8f3S37747r5Yihx5tRrk5uyoz+xKZE9m9wa4AA64AA64VAA8+wNa638D0tz52QTAAQcccMABB/wAgG8vT1Jrk3Vf+/4htYAr4IAr4IDrIQAf+9Hyfnoc6hB89oK656/Urj/Wf1o9kNfr1Gbf4MbOf/t5G2r4SSbggAMOOOCAAw54g8B3wAcXNOz5/dukHYKPtt88pvb76WLS1n7+gAMOOOCAAw444C0Anxr8zoOl5AVGQQ/ndS9dan+u7lI7vN4o6NpvcOl/hgMccMABBxxwwAFvEPjYgwrA2waeff6AAw444IADDjjggNe3wCj4sestBT02Lxt4KfjS/Yye/9h8wAEHHHDAAQcccMDjL5opnTc38NJ5SwMvvd65gUcBLv4iJsABBxxwwAEHHPAKgS/9BZp7Xinw6Pwo8Nr30xv/AQcccMABBxxwwKW2AwZIABcBXATw5vMLl8iycWBOk44AAAAASUVORK5CYII=',
+    rockingchair: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABoCAYAAAAOy/VVAAABd0lEQVR42u3duw3CMBQF0MzCGDQMgkSLxBQ0VBQMASsgwQYZgCGYgBZ6EASIHX9yLN0uimyfwvk9p2kCt/l0cq85Te4NAAAAABJO+G45+5j2sM46Xf3PDgQAAAAACgIoPQAAAAAA4H+A83bxMamPBwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgDAC/FjCMDSB6QQcAAAAADAjwfILQBQ+lAfQd/88gAAAAAAAAAAAAAAAkAIhdhFf6jdjgD+sAAAAAAAAAAAAAAAAAAAAAAAAyBri1l6oDAAAAAADe57o/Vh0AAAAAAAAAAAAAAAC85rTaVB0AAAAAAPB9B0IXvYVO7PEAAAAAQEkAqQeY2+Yig/8MFAAAAAAGBOj74VVogNwX4dDzBQAAAAApAWJ/jDv29L4KMokAAEjCeoGuRairIKL2JN81EQAAAAAiAvQFqm0RzX73dAAAAADIqKV+2Bb9DRYAAAAAlAvwAE4bSEwtECisAAAAAElFTkSuQmCC',
+    teatable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABDklEQVR42u3ZIQ7CMBTG8R6FIMFgweB3BEiw3AE1j9gluAQOyRGQHACJB923ZM3LW9eu/b/kU8ve1p9o2jznjHXcLX+ajN3fpS4AAKgMQP7ApdmoElqAfN6tFoOZHAQAAADwPmgt2e99aEyJDgIAAIUDhA4ez1vrxVqP7Tpq1CAAAFAZQGiBMt/Py4u25Psy1gWH/r8HAgAAAJgAcgsAAABgA7hfT0UHAAAA0N0NtJtkKN15Pxhrf/MgBQAAKgcYexjaG3QEAKz9s5sGAwBAYQBWMC2Am3sBAAAAAAAAAAAAAABAoQCpL0MAAABAXpta7MFG8k0TAAAAUG1qsQMAAADkdS6YOrM7CQIAQF4Afxnw1UoCsEVgAAAAAElFTkSuQmCC',
+    photoshelf: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAABACAYAAAD24zL6AAABSElEQVR42u3cLU4DQRiA4Z4FywEIGI7QA5C0ddwBhQaBB4NoDQkJFldZiSCEI1TWgAWFYMU0k/nZ7uzzJa/u1z4jdpttJxNjjDHGDHIuzo5+UvIJAgIECFC9hYZ+orr73l2eJ5X9/QMCBAhQQ0C5F6p+oioDfW/egwECBAgQoHwLPXx8JRW7cOmLlNjX7+6/Pj0OBggQIECAygHt3hbBYoG6bZbXVdu3z+AuEgABAgQIUDag7ecua7mBRn+RAAgQIEAVgbbPV8FKA60Xj1EBAgQIECBArQId3I0qIECAADUENL2fJpUKdDN/yRogQIAAAQL018nT6l+AAAECBKhdoNiFSj88vw/o0B4aKf5jAUCAAAFqCKjvBwMVPhCAAAnQmIBeb2fqMUCABGjMQKVvRBV54woIkAA1DNT3H0Uo87fZAgQI0HCAfgFiBNIjCvwOCwAAAABJRU5ErkJggg==',
+    bigplant: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAACACAYAAACcL+6CAAABjElEQVR42u3cMU7DMBQG4JyDkYUFib07C0sP0Lmn6MDOERBX4Bqcg5vAXA+1Ktvxe8n3S/9qud+QpC+Kl0VERKbldHj8aylAgAABZgY7fh6bujtQgAAB7grw5f1wVYAAAQLc002jBlgDTf9gDhAgwFCArRscDRj+wRwgQICpAMsFL9/PTQUIECBAgHEBu4MCBAgwFWBvsFbQ3oCtwwmAAAECvNVyg/cC1tYDCBAgwC0Btq4HECBAgFsGnD2cAAgQIMAtAYYfqAIECDAVYOsGRwPfu//V38IBBAgwFODojwOjAZYFCBAgQIAAAQIEuA5gNFCAAAECnAlYDmTXHtACBAgQIECAAAECBAgQIECAo0HL9WqAvT+GnH74GECAAFMB9j6MrBUw/YmVAAEC3PShs9EAl+gBCBBg6mve78dr6Ia/CwMECBAgQIAAASYBjA6a/p8IQIAAUwP+nJ+G9uvt4WYBAgQIECBAgAABAgQIECBAgAABAgQ4D7D2g3sXIECAACOBrt0lewACBDgy/0eRP2tS1u89AAAAAElFTkSuQmCC',
+    plantFern: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA7ElEQVR42u3avQ3CQAyG4cxBSZOGCehpaDIANVOwASMgVsgazMEmpKY565Ot3I/fT3KXnM5PJEu5ZJoIIYQQQnbK7Xz8lQoAAAAYu+HHeiqWBdQdGAAAJANQG7YAltdSrOZAAABgcAB1SKkgasO7D00AAEgGoA4la8PRAOp6MggAAAwO4B0q3g1Hg6pDEwAAsgNEb0i93yrvkLPWBwCA7ADelxm1gejrvQ8MAACyA3jPB77PS9WqfiIEAADJAGqDNP8lCAAAkgN87nNova+HvwIAAAAAAAAAAAAAAAAA+vhXOLq6+zscAADaBtgAVFVOP/UTJ5UAAAAASUVORK5CYII=',
+    plantFlower: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABCElEQVR42u3bLQ4CMRCG4Z4DyQXwPQUes5pL4DkFZ8DhEAgkAsMNkCQk2EV3BJNJh02n+zb51K7YPpt82Z82pYnHJi9HS1JvAwAAZgYgJ/S6DaaEBwEAgM4ArCWmAYzvSxEAAACgLQB5Ac/11hTvEpz8QQoAAAD4CSBLTAOQWe1yEe38z/VuSjUIAAAA4FqC3gDyBgAAAAC+ABqInMB5OJjSfAkCAAAAVQCypDQAa8lqgH//QAIAAAC4lqD1ZQsAAABoC6D2ePgSBACAzgG8F0B4/ygJtwIEAAAA6GvRFAAAzBzgccyuOe0XRQAAAAAAAAAAAAAAAACANjdR1S5uDr+REgAAYgF8AYGWpQyIF6jLAAAAAElFTkSuQmCC',
+    plantSill: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAm0lEQVR42u3ZsQmAMBSE4cxiKYKl4BIZwFEs7Cwcwd5GcEattTCES/IQ/8CVgfuqR16cE8/QV6cSZ30AABAL+9VLKQ4CAMC4cHEQAADGgHbqbwEA4OuA8WheEwKE7j8jgwAAiATEFg5FBUSDAAAAAABA1rnQ7VvWZJ/EAAAkfh+ohYsvfwEASAyol1mK+XYaAAAAAADwUw/gz4ALaL+tBo72ORYAAAAASUVORK5CYII=',
+    plantHang: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABgCAYAAABIW7GEAAABIUlEQVR42u3csW3DMBAFUM2RMrUncO8mjQfwJEE2yAiBV/AMmSOuXHkNp03YEIcjaFJ6B/xOovggQCIhUsvSuU7718ffLGsrQMDBQffr979MDwYEBAQE3BSw7FA0NWA0gIBrB5YNflx2qZTA49cxlTQYEHAwYGtQmSwoDQYEBAQEBAQEBBwWGJ3g1kC3z0MoUUDz2QQg4JOB5Qm1C/y877um+R0DBAQEBAScCNh8cA0IODmwzPntpWmi/QEEnA0YncDWjs8uKqi1BwgIGOtQdk0AICDgWMBo/wABtwaMPgQAAQH7AmsvbkDArQGzGz8AAQHbArOD4ywwOjDovlkLEHDjwO6blAEBBwNmP5jWzh/+TweAgJP9nGNZWwECKqXWVL9UKbG1yTnVhwAAAABJRU5ErkJggg==',
+    cushion: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAAAgCAYAAACxSj5wAAAAoElEQVR42u3ZQQ2AMAyF4WlBBlZwgA+UoIEECQhABAq4wplelqavZEv+Ju/Kuu/QZaMUiqKojmoah6fnAAQQQH0B2QX2efnkWjdX7uMMxbue7VcOBhBAAEmB7AeyN2w3YJMN6gYDCCCApEDqIewFjAJF+6sOcYAAAigVyDuT1IDZqfUfPsUAAgggKVAUrPX8fpsHCCCAeLTnrwZAALUK9AKExtvxCiAeqgAAAABJRU5ErkJggg==',
+    yarn: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAgCAYAAAB6kdqOAAAAbElEQVR42mNgIBFEWyn9x4cZ6A1GHTToHETIwhcBWXgx1R086qBB7yBSLSSEN2h5oGBCDh510PB30LcFGyjCow4adRC18aiDRh2EXvCRikcdNPwcROsGGtUT+aiDBr2DqN1RpHnHctRBA+0gALinSYpndf1BAAAAAElFTkSuQmCC',
+    beanbag: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABACAYAAADlNHIOAAABAklEQVR42u3csQ3CMBAF0MzCAvQMAQOwBSUVczAFo7AR1IQispSzffb70u8iy7lXRInkLIuIiEgnuZ4On8iaMAAAAqDfgd4vr9BOBwYAAAAADQf8vL1D2xoMAAAAAGYCqD3gbEAAAAAAMBLA1ovS7ADhIAAAAABQEaD04xiAnUEAAAAAIBFAa6DWAwYAAAAAAAoAgALICLC+4Hx8/LT3G+x9v+v9/YEAAAAAwEQAe6+fbT0AAAAA6Amg9nvB6OsVDxwAAAAAEgFsdXSA0nkAAAAAQCaA0kN4pRsareGH+AAAAACgIUD0Qzv7wLs7KQ8AAAAAA/90r3Wn/+shAAAARgL4Am5KGHk4QbkZAAAAAElFTkSuQmCC',
+    beanbagG: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABACAYAAADlNHIOAAABAklEQVR42u3csQ3CMBAF0MxCwRA0DELBCDAHUzACazAV1IQispSzffb70u8iy7lXRInkLIuIiEgnuZwOn8iaMAAAAqDfgZ6fj9BOBwYAAAAADQd8e79C2xoMAAAAAGYCqD3gbEAAAAAAMBLA1ovS7ADhIAAAAABQEaD04xiAnUEAAAAAIBFAa6DWAwYAAAAAAAoAgALICLC+4Hi//rT3G+x9v+v9/YEAAAAAwEQAe6+fbT0AAAAA6Amg9nvB6OsVDxwAAAAAEgFsdXSA0nkAAAAAQCaA0kN4pRsareGH+AAAAACgIUD0Qzv7wLs7KQ8AAAAAA/90r3Wn/+shAAAARgL4Ar7ImepbMR32AAAAAElFTkSuQmCC',
+    controller: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAcCAYAAAATFf3WAAAAf0lEQVR42mNgQAPRVkr/BxIzEAKjDhx2DkRXEBWVNqAYw8GjDhxxDrSycsGLDx06hIIJqX8RkIWCCakfdeCoAwk5iBC2z9+AgtHN+3AhAQWPOnDUgbTOJP6z/FHwoMvFow4ccg6ktEE66sBRB5LaRyG510Vhp4z2Bow6cJA5EADb8YjKzBxNegAAAABJRU5ErkJggg==',
+    neonGame: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAAsCAYAAADivbOOAAABAklEQVR42u3c3Q2CMBSAUTbw3QmMI7iMeziK0zkCG9R3TCT1Xiqlh+R7ojT8nAdISKdpsZ1PlyJt1bS2uUkCUABKTQAuB5THS9qsD5AACkABCKB2CfB6vkk/B6AAFIAAagyA5TlXFZ2v9vjo9USvN3o+a93n8rXa46PjAQQQQAABBBDAYwLMvqHZwGoBRMe3fsnPBlMLGEAAAQQQQAABBLAFgGwg2fv//dGRDTAKFEAAAQQQQAABHBNg9gPfer7W8/cGsPuvYAABBBBAAAEEcJc/I/QO0M8IAAIIIIAAAgjgiAAlAAWgBKD6ByhZHUsASgDqeAAtUi6r5AtAAAWghgP4BhHp2YcXEC/fAAAAAElFTkSuQmCC',
+    posterInvader: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABICAYAAACjpDbfAAAA70lEQVR42u3bsRGDMAyFYY+QIhMwBk0GSZGSHaiyQZbIKCkyBjswAKmtFDqdAVvW77tX2QZ9FAYOk5Jo93HYPCdpDSDAxoBywPf9dJ0/MECAzoCv6ZblehmzbOsni+w/O7JegAB7B54d7YICBBgN+FjmLHuDrMcHCDAacG9w6XyAAKMBZUFHByDA6EBrAaUA63iAAKMDay86AAFGAx5947c+jAME2DuQN3qAAOsCW/vgKesBCLB3oHrCecliLrhwPkCA0YFawVrcbQQCCLDxRaY0AAECVDbEGgu09lvBAAH2DvQWgAC9AfkDFCDAqsAfAREc4iaRWjwAAAAASUVORK5CYII=',
+    posterNotes: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABICAYAAACjpDbfAAAAx0lEQVR42u3bsQnCQBSA4VvCWnAMG3cQOxs7G8EV3MAlMoqFpaMIDhDrexYiSbzc8R38VRJ4X5MrjksprP161ddc+rYAAWcGjC/cu0vVfYABASsDXo+brOX5VLTn45AVn8d5AQFbB/avWxYgIOC8fjJxoLEDBAQEBASsCdj8Rg8ICAgICDgA2PxGDwgICAjYFHDoQGMHCAgICAj4T2Dp4gEsIGDrwMVuO2lx4F+/BwQELBsgICAgIOCUwNoCBKwN6AYoIGBR4BsIoCEAkKCP/wAAAABJRU5ErkJggg==',
+    posterVinyl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABICAYAAACjpDbfAAAAz0lEQVR42u3bsQ2CQBiA0ZvFWElpR2PPBCY2dq7hBi7BEI5g6QiO4AZaeyZcyBm4k3fJ13HJ/xoSOAghWod29aq5kFqAgIUB4wtu/bnqvsCAgJUBL6fdZ5t12UXzAgICAgICTglsmm1WgICA44C5oJ+DAQH/HJgaqOv2WWWDAQEXBkwN/Li2g40FAwICDgNToHh/CgwICOgmAwhYMtDTBCDgtEBv1QABywI6XQIEnBf4vB9nDRBw6UBfOgECAgICLgpYWYCAtQH9AQoIOCvwDaxuW9NpD7hTAAAAAElFTkSuQmCC',
+    stove: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABYCAYAAABF7PEoAAABNUlEQVR42u3cvW2EMBgGYGZJS5kq1Jni0meIGyA7cANkjhOLsAR9Up+Ls5B/zpgH6W0QP/ZTfKDPgmHYuX1Nb38tZyi9AQBwMoDwBuu6Np3sIAAAAHhadG6335emeFEEAOBkAOEFpunzaWIDvF5/iiY2vt0gAACcHCB3ESwN0PxTAACAgwPEQFoDqN4RAgCgM4C9TcjSE0wtgslvggAAdA5wtKZn9qYpAAAAHnaM43vXAQAAQBrA/WNMSuz6l8t3UgAAAJAGMM/zQ5ZlOXTC+QAAACANIFbkYgOqfT4AAAAUQQAAAOQD2Lat6QAAAKAsQLjQEB5fO+F4AAAAUBcgtamZutABAACAtgBqBwAAAAAAAADwOoDWAgAAAAsjAAAAyAfQWwAAALDvO8Lecvg/RgIAkBfgH/GkEQ4KLzmnAAAAAElFTkSuQmCC',
+    rangehood: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABACAYAAAC5vjEqAAAA1UlEQVR42u3auw2DMABFUWbJGFklk3kdK3t4iAxAalIEWf5ijqXXwymuEPK2dT6v52Mv2bb6AQQIUFOQlNJhMca/CyEcthwYIECAAAECBAgQIECAAAECBAjQxYHOfnjVBrocGCBAgJqCnL1w600HBggQoK4ffqMHCBCgewGNjvJ00QYECNCtojw84oAAAeoKNHuUu0ccECBAVYFWi3L1aAMCBKgq0OoRLo40IECAAI0EAwQIUFeg3wtLuds/76ErfX5AgAD1Bcq9hLn6im+pAgIEKAfoCzbrNdD6+7UwAAAAAElFTkSuQmCC',
+    diningtable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAABQCAYAAADC1z0QAAAB0klEQVR42u3dIU7EQBQG4J4FywEIazjCosHgCBiOgsdjUEgkqcNxBOQKBAKxDnSHpMNkptvp9HvJr3ZfdvbN16TpdtOuC+pyc/Qj600XK0MCBBABRAoBCd+w//4cze7mYjS193+9Xw2yfdgOsju/Hc/Cv3+s/w8YQAABBBBAAAFkkv4QyNq+PyCAAAIIIIDUAqT0AnKr9ADu3p6zUnoDc6s0IEAAAQQQQABZKpCwPl42g7yeHg8Svh4mNpAwfd8PEq7/5OkxK6mfFztgSs8HEEAAAQQQQJYKJPckLDaA1KQOINywcP25QFI/L/UAyp1P9VdSAQEEEEAAAeRAP9Yd+kJQbMNKXwhMBVL7hURAAAEEEEAAmQtI6zfE6K/s11z9gBgwIAYMCCD6AdEPiH5A9M8IxAD9cQoQ/YDoB0R/jUCk7QAigAggMheQ2EmMtB1ABBABROYCEv55WNYVQAQQAUSWAkR/W/3RBwoZMCCA6AdEfyEgqQ81vL8+S0rqQ/RyH8K3tv7c/ehSCxBAAAEEEEAmAhJb8OwLWnkBogBRgAACCCCAAAIIIIAAAggggACiAFGAKEAAAQQQQAABBBBApl5g6g0xqvH9AAQQQAABBJD/1S8bJ5FjxAjhGwAAAABJRU5ErkJggg==',
+    chair: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABICAYAAACwc3YrAAAAt0lEQVR42u3ZvQ3CMBAGUM9CSUWdhj2IlJaMQU/BELAEG2SMbAI1FImiOGeD3klffX7F+UdO6avaZveaSqq9AABWLnh4XCZTHQgAIDPgdj4uSnEQAEAw4OeHGAAAAADASQwAYBcCAMgG2DoAANGAsT9VlVkQAEBmwPPafeR+2BcNAEA0IPogW315BAAoDCj+gAIAMMQAAKGA6AAA1AawCwEAuI0CAAAA/BNgrsHWH9vZ+wEALOv3Bs8zbRHigNqAAAAAAElFTkSuQmCC',
+    stool: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAA4CAYAAAC7UXvqAAAAlUlEQVR42u3asQ2EMAwF0MxyY9AwyEm0rEFPcUvcEmzAVjBCZAKKkZ6l3yZ5ja1ILqVS3+Fz9ExpLQCAxgfv/6VrwiAAgCAg24PDIACAmwHbOqUOAMDdgNpc+M1j1zRPYgCAhwHRJtB6PgAAAAAAAAAAAABAHoAfGYA/sS4EAAAAAHA9AADZANGFp6cXqkr2CwDeDjgBCoOFT17gUPcAAAAASUVORK5CYII=',
+    piano: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAABQCAYAAAD2rvwMAAABfElEQVR42u3dIXbCMBzA4ZwFi8RVc4Bp8BNoToHeiXqKSQ6ArN8sDW/LY+uW/pMv7/1UeCVJP1HVppSN47D5kL4qlYZDEkACSEEA5T84HF5DNd3eQxftvB9AAQQQQAABBFAjgIZhH6r8hlwub6suX2+08wYIIIAAAggggNYJKFoAAQQQQAABBBBAAkgAOSQBpFqApmmatd3uflV+vaWvX/v/e9sfQPYHEEAAAQTQzxYwjuOs/z7gpf+/t/0BBBBAAAEEEEAOGCCA7A8ggAACCCAHDBBA9gcQQAAB1BKg0gLN9zUPkHmAzANkHiAHDBBA5gEyD5D5dgDlF5DuA0gACSC1Cijai6/lTfUCSAABpB6/laHvu74Ms7yhTAAJIAEEkAASQAJI/QIqfUe+VOkDa0t/+F51708qDYAAAkgAKSigZ4EB1Bag9NcDIIAAAgggNQrodDprxQEkgAQQQAB5iPYQDZAAEkAAAbQUqOoLMmLdH4AAAgggCzTq3J9PeF1b1M+FnZMAAAAASUVORK5CYII=',
+    guitar: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABwCAYAAABYWvPrAAABHElEQVR42u3cLQ7CQBAG0B4BgUISEgQ3wGO4AhrDUbgUSQWHQKG4BuiuoCHT/Ul5TT5FQ+aJ2V0ypV0XvE779TuSrvYFABAseL9ZhlIcBAAQLLjv+0GigPT7JgcBAFiFAACKgq6X4yCvx22Q5k+jAAAAAACTHvaKH9YAADQxAAAAAICNDABAEwMAAAAAFCk4upFVn9AAAPxY8P28/SlpE4/dn31SDwAAAACQteAoIAwCAGisJ6xCAHMDPK+HQXarxdekgPRzAIDWAGNNmxuQfScGAAgWXBowCgIAqAwYS/QHDQBAbUAUBAAAAAAwL0Ca6J9BAQBqA3IPOCZv2tITGoC/A9QGNTehAfh7QG5Q9acWAQAyPwjrTX8AjQM+pltqJjryG/8AAAAASUVORK5CYII=',
+    speaker: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABQCAYAAABMIbYpAAAA2UlEQVR42u3cLQ6DMACAUc6BWmaRc9VTqKkJ5ic4AIdA74C7yabbJTSkI0B4TT4FCX2m4b+qkvEI58+eq3IDEHBjwHSHtr1H9f2w6ZrmEvUDBgTcOTCE66q9byEq3Q4ICBg3jq+i5h4PEBBwGphOIA0QELAMmFs05gLnggEBjw60igICOtkGBAQEBAR0sg0IeAxgKejfYEDAowNzE+6652SlF8SAgICAgICAgICASwUICOiuGiDgnt+T8XQJELAMWNenyZb+MCR3fEBAQEBAwBKgPyEAAq4K/AJYBiVhKRHe8wAAAABJRU5ErkJggg==',
+    deskDual: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAABwCAYAAABIFn9yAAAC2ElEQVR42u3drU7DUBiA4d0BBoVAYEkICa4Gg5pCjwRQkMAdDINH7AJAILgIsFOTKILbJBKDHhJSkh1O2rWnp0+T1/G379sTctISBoPI66TYWeon86p3XslflggAAAIAAAHQAwDlF7C7e6BfhRZuRqvnBQAAAAAAAAAAAABA9wBsF2e9qiqAja3NXgUAAAAAAAAAAAAAQP4Abt4njdZ1AGeLcVTlz59Op60GAAAAAAAAAAAAAAAADsEOwQAAAAAAAAAAAAAA9AvA4rlIuq4fglMLAAAAAAAAAAAAAAAAHIIdggEAAAAAAAAAAAAAAKDNh+XqfniubgBNP6z2cXxVawAAAAAAAAAAAAAAAOAQ7BAMAAAAAAAAAAAAAEC/ANy/fdVa6A1Z9RDnYbi4h9sAAAAAAAAAAAAAAADAIdghGAAAAAAAAAAAAACAvAEUxZF+FQJgRnHzSg6IhQIAgIUCAICFAgBA4wMbjS6i6juA1Oc1Hu5HFQKxdkAWCgAAFgoAABYKQA8BxH7DuotdaNM/n3nFVfUqf73P1/OVrf03AgDmBQAA5gUAAOaVAYCmB5L6jZjU6vq8qr7hAQAAAAAAAAAAAACoDqD8AYvZo5Rtf0AAIAAAEAAACIDl7Ok2qebzedaFXn/oH2Cktq/UAwAAAAAAAAAAAAAgfQDr/idybQcAAAAAAAAAAAAAAABtA3i5O5WyDQABAIAAAEAA/AUwuTxcmSEq5ULvXwAEAAACAAABUB1A6jc+QgO7Hu71utB8urZfAAAAAAAAAAAAAADSB/Aw3FpZ0wBCr7/rNQ2g6f0CAAAAAAAAAAAAAOAQDEC7AByCAQAAAAAAAAAAAPIDkPrCAagGoGv7BQAAAAAAAAAAAADAjTAA3AgDAAAAAAAAAAAAAMCNMH8Q40YYAAAAAAAAAAAAAAD/ByB1OQAEAAACAAABsByUr/IHSDk1CF2GJAAkAKT8AXwDjrWrffGr3fQAAAAASUVORK5CYII=',
+    whiteboard: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABgCAYAAADVenpJAAABzElEQVR42u3aIVLDQBiA0ZwFJCdIDAgconhEfUW5QHUFNyiHYCormahKblAMujOouqIQXSbshKZbkn0787nMNt088U/aogjWQ3Wx13ArYsshAeCgAFA2AMILFouFBtwPEAAAAAAAAADQAMDq9wIAAAAAAACAvwLY7T7V4wAAAAAAAACgKwCzl23SYl9wv71LWux+Zh9PSQMAAAAAAACAVADG81XSws+vqtuD3ldV0mL3M15OkgYAAAAAAAAA5wJQ3k87Ldw/POAYgPn0stPC/WP3Ez6gcnLza21f7AAAAAAAAACAIdAQCAAAAAAAAAA5AQg7N4DYkAYAAAAAAAAAQwEg/woWAAJAAAgAASAABMB36/WbThgAAAAAAAAAGALzbPQ8OggAAAAAAAAADIH9GMq6fsAAAAAAAAAAYAg09AEAAAAAAACAITCfoREAAAAAAAAA+jIEvpZXBxn0ABAAAkB5AlC7AAAAAAAAAMCPQQJAAAgAnRKAhhUAAAAAAAAANAHYbDZH1fbFRmy/68dlq2L7hX+yjHXsefy3AAAAAAAAAKAJQF3XGnAAAAAAAAAAAAAAAAAAAAAA5A0gXOEFGlZFbDkkABwUAMoFwBcaBxxNowRuOQAAAABJRU5ErkJggg==',
+    pagerSign: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAAsCAYAAADivbOOAAAA9ElEQVR42u3cMQ7CIBiAUc7Ryb2jm0fwCD2A979B3WuiofAD0tfk22pS4A22IaR0uJbltktRpV+XSRKAAlBqAvB4w7a9pLA+QAIoAAUggBoC4LrepbAAFIACEEDNCXB/Pr6W+/va99ceT+nz9h5v9PwBCCCAAAIIIIBzAqw9gbkLNPqCRM9P7/HmrheAAAIIIIAAAgjgmQku/RPfG2DpSw2AAAIIIIAAAgjgFQF6CfEhGkAAAQQQQAABtBlh9M0IrT/Ulz5f7c0XAAIIIIAAAgjgNQBKAApACUD9H0Cp6YGVJkEACkBpyDOjJafkC0AJQE0H8A09iDgkBdZDbAAAAABJRU5ErkJggg==',
+    filecabinet: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABYCAYAAABF7PEoAAAA10lEQVR42u3cMQ6CMACG0Z7FY3AU3L1Tr9NTuPUCjt1lpkZN0ygpfU3+jQB5A8M3EEJ1rsvleeaFbwcAgMkA6gtyzruVUoZejHG3FxAAAAAAAAAAwFuA1pXH/adrfR8AAAD8F6Deut661vt8AAAAHAtw9AAAANAHUN9g9AEAAKANIKU09AAAACCKAgAAQBQFAACAKAoAAABRFAAAAKIoAAAARFEAAACIogAAABBFAQAAIIoCAABAFAUAAIAoCgAAAFEUAIDZAc720QMAAMBnAH+UBABgaoANwqzfEELn+y8AAAAASUVORK5CYII=',
+    easel: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAACQCAYAAADQpO/JAAACHklEQVR42u3coU7EMACA4T0LFoFm5h7hHoAEcEg0CjQIPFgeAAkOgTiJIJfwAmgSAvZQiJvYKF23bv2a/PK2dd+JLl1WVTMbB/XOJqTKAGgANADOBOz6ZBEUUIAGQIAAAQIEaAAECDDtg3PqYgGHDiBAgAABTgcw9oZp5EUUQIACCDAZ4Pf7g1oCCBAgQIDlAr6d1VvldoOf9nejAggQIECAAP9aE7TZ4vQ+qliwzefzVrGgAAECBAiwHMBYgNTAsYsWgAABAgQI8LfgRcbqtbXUwAABAgQIEGCugLfrr6AsYgACBAgQ4FQAc6v4DV2AAAECBFgsYPEv9gIECBAgwGw2dFN3edQeQIAAAQIEmOrF3rEXJQABAgQIEGAqwI+X41HzkQOAAAECBFgK4PJmOWihiyCAAAECBAhwLoBdAQQIECBAgLk8yO+d16MGECBAgAABAgQIECBAgHMDLL2uPxRAgAABApwOYPMEq7uL1kI/CtD8feiLu13XM7V6BwUIECBAgL0BPl4dKmEAAQIEqHwBPaynDSBAgACVD2AXaFehFxxb6CIhtr7nN/huBECAAAECHG3DN3YCsYC5zw8gQIAAAQIECBAgQIAAAQIECBAgQIAAAQIECBAgQIAAAQIECBAgQIAAAQIECBAgQIAAAQIECBAgQIAAAQIECBAgQIAAAc4HsOv8qY8PECBAgAABjnVDzc8EzQ8gQPP75/gBdXTR1E4BycsAAAAASUVORK5CYII=',
+    canvasstack: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABoCAYAAAAOy/VVAAABiklEQVR42u3dIU4DQRSA4T0LmgRJspcoHlPdKyDgHNSsAEOC4QSVlVUkOGQlBt0qBIi2sztd5s1+k/xyk2Y+MX2ZZLdpClu37cWupppoCwAAAAD+ccM/111VFQ8CAAAAAAUBrJ8efrXtNqH6+/sBAAAAYEoAQwcXAAAAAAAQB6D2QQoAAAAAAPQfpJbv36Ea+icAAAAAACID5B6kAAAAAABAuQC1D1IAAAAAAOB0gNoO0aHPr+ZdUgAAAAAAoH9fm/nBAAAAAABAPQDHNjwVBAAAAAAAAPjp+uU5KQAAAAAAUM8gBgAAAAAApnshAwAAAAAAAAAAAAAAAAAAAAAAAOB0gLvXy1ABAAAAAIB8ALPHWahyAwwNAAAAAKYM8PHWJpUb4Oq+TerYBmb/iA8AAAAABALY3iwOVjvA6G89BAAAAICCAMY+hFPBAQAAAABAPQAOYQAAAAAA0Bfg7BcqAAAAAACgWICzX6gAAAAAQMUA0Rt9QwEAAAAgEEDuD7mVVhNtAQAAAMB4aw9XAo8pgSjmtgAAAABJRU5ErkJggg==',
+    paintpots: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAAAsCAYAAACJ1f3bAAAA80lEQVR42u3asQnCQBSAYWexdQJtHEQQO0sHsbDOFpaxk0zgBmlTuoHW9woPcwlK8j34q4NHuK8IgSwWpmh2m+XrU24IkAEEyIwFcl+vkp6PQxIwQAYQIPMroO3pmgQMECBAgPp/eH3b1Pdfjtuk23mfBAgQIECA+r/0Sov74wOXFvfHl3RpOcAcUDwHBAgQIECA+gK1bZsUAb49z4IBAgQI0IyAuq5Lihcez3Pl9scLH3p/vPDS/U3TDBogQIAAAQIECBAgQID+D6i0qe0HBAgQIEDjAdV1PWhT219V1aABAgQI0JyB/Lj4X/sBAQIEaEZAb2/FOtEtRZQwAAAAAElFTkSuQmCC',
+    paintrug: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAABoCAYAAABR2nocAAADRElEQVR42u3dIZbUQBAG4DnLWg7AYw0KvXgEHsM99gh4DGolkmMgkQgkHvQ071EUVZ10Ml/e+9VmZpPOF1FTnc7lktze3N/9EpmVy+zNIAvAIgALwP8B9uePrzeVLy+e/TW3Nh6z0w4aYIABBlgABhjgDcB+f/2ulNXBAr04aIABBhhgARhg+QfAVbAPHx6ucnbA4/FGf1/9fA8PGmCAAQYYYIABlgUAV4u6rYECDDDAAAMMsAAMMMDZRkW10XG0yTtZ4AADDLAADDDAAAN8PMBjkRYVbbPz7fP9Vcrf9/gqFYgABlgABhhggAEGuAq6u6gZgf+RJNgqaDcAwAALwAADDDDAtwf45funq8wu2lYDPOb5p49XicZr3D8KwAADDDDAAAMMMMDzJ7RXJ7xv3ghpBhyBHif7jPtXwd4aaIABBhhggAEGGOA9AI8DXi3SzgY6O17dYMdkFx9c/QYAGGCAAQYYYIABBjhfJM5ubETjszfoCOzqRSHAAAMMMMAAAwzwERoZR2uEVMFmb/huwNmX0BytUQIwwAADDDDAAAO8QhFXncBeLQKrD5k+vn26SveARwAi0CPALNjo8wADDDDAAAMMMMAAr1fEdT9kGjUyqsdXLerG48sWbePnAQYYYIABBhhggAEGOGpcjEVdtsgb948aFd2NhWxR56lkgAEGGGCAAQYY4LvDnVC0mF8WXDbVRsnsCezReGTBVxd2qS4ADjDAAAMMMMAAA7wH4K0nmI//L1zAOkgVbAQy+9KarRc26U61EZQtKgEGGGCAAQYYYIBnAJ49wbv9xYWLAc4WcSP41cF2A25vZAAMMMAAAwwwwADv0MjIXuDoh/ZuwN2gqy83j7IaWIABBhhggAEGGOAzAh4bB+MFy04gr17wCGD0UOTeC3JnwY5AosbI3oCzDwwADDDAAAMMMMAArwg4Alh9iHJ2YyO7oPTRAXenewL67r9CAAwwwAADDDDAADcA3nuyT/dLVbZu3GRBVwEffSETgAEGGGCAAQYY4BmAx221hU72fpn41kXe2c5vOliAAQYYYIABBhjgBsCrg57dGDn7DXN6sAADDDDAAjDAADcAjkCLdOYyezPIArAIwALw5fIbdAS9SemR8goAAAAASUVORK5CYII=',
+    windowBig: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAB4CAYAAAB1ovlvAAACKElEQVR42u3aoU7DUBSA4T4LmifA4DF7ABIsD4GZR+CHmZhdgkVhK9AoxBThBQhzI9gu2QlpT7m9/W7yuy45uedTXZumc64vzg5SVk10XJIAFIDSKAC7D7SbpZTWEUgABaAABFBFAHy4vZTSAlAACkAANU2Aj29fRfd8f3My8+cGIIAAWiCAAAIIoAUOP/9h/94rAAEEEEAAAQQQwDEA9j0ABgA/V6cbGSSAAAIIIIAAAjhPgNln9gAjcP8MEkAAAQQQQAABBBDAAgEGIAEEEEAAAQQQQAB9jAAggAACCCCAAAII4G9Pu++iixYY/b7vyZ4/+0V03/kBBBBAAAEEEEAApwAw+wwOcOAPUoe+fwABBBBAAAEEEEAARwD4x7LvH0AAAQQQQAABrBNgdEGadwAKQAEIoAAUgAAKQAEIoOoA+PKxL7rogsyfG4AAAmiBAAIIIIAWCCCAAAJogQACCCCAFggggOYH0AIBBND8AFoggACaH0ALBBBA808D4Pr1quiiBZo/NwABBNACAQQQwDoB3m3Piy5aoPlzAxBAAC0QQAABBNACAQQQQAAtEEAAAawD4GK1KLpogebPDUAAAbRAAAEEEEALBBBAAAG0QAABBLAOgFKfABSAAhBAASgAARSAAhBAlQFw166ltAAUgAIQQJUJsN0spbQAFIACEEABKAABFIACEECVAdAf5vI1jACUAFT9ALun+4A0ZE10XJIAFIDSGAB/ABQod6OKdOBlAAAAAElFTkSuQmCC',
+    lightbeam: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAABoCAYAAAAeh3nMAAABOElEQVR42u3SMQ0AIBRDwS8JHehGBi5Y2EBEQ1juJd07XJ01WrQ9+9eF/0tZAAkggAACCCigBBABAAEEEEAAAQQQQAIIIIAAAgoogAASQAABBBBQQAEEkAACCCCAgAIKIIAEEEAAAQQQQAABJIAAAgggoIACCCABBBBAAAEFFEAACSCAAAIIIIAAAkgAAQQQQEABBRBAAggggAACCiiAABJAAAEEEEAAAQSQAAIIIICAAgoggAQQQAABBBRQAAEkgAACCCCggAIIIAEEEEAAAQQQQAAJIIAAAggooAACSAABBBBAQAEFEEACCCCAAAIIIIAAEkAAAQQQUEABBJAAAggggIACCiCABBBAAAEEEEAAAQQQQAIIIKCAAggggAASQAABBRRAAAEEkAACCCigAAIIIIAE0DtAF2AZK5P4J1YjAAAAAElFTkSuQmCC',
+    floorWood: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABJ0lEQVR42u3dsQ3CMBAF0AxFzwrUNGzBCGmRmIIl6NkK6riJrIQ7K/eK3+JgXnH4GzG958t3pDxup0U+z2uptO//3/s9AQAAAAAAAAAAIXndz4sAAAAAAAAAwKgA2gfeuuDa6x0NwNoHDgAAAAAAAABZANoFpVYAAMAmACB1ATgIUgYBAAAAAAAAwBEB9B7EZK/XC2DrQR0AAAAAAAAAGALHKIsMgQAAAAAAALgPINpAAUAAkMj7AMqY2CEsOwAAAAAAAACQBSC6rBkdQG+5s3sZBAAAAAAAAACGwBAAe//4FgAAAAAAAADcBxBtoAAgAIj7AMog3wIAAAAAAADIBtAefCiDcg+OAAAAAAAAAMAfNhgCAQAAAAAAqAVAIaINtBEACABSMj8NfD3S0YtjtwAAAABJRU5ErkJggg==',
+    floorWoodDark: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABGElEQVR42u3cKw6EMBQFUJaBHkeCGD0eg2EJLAE/m5/RNBi+hb4jriKB0BzRvFuopq753Sl9W8/yHd6hkr7/2etdAQAAAAAAAAAAAAAAAAAAAADAioyf1yx7r5cOIH1fAAAAAAAAAMgFIH2gxAoAAFgEACQuAIMggyAAAAAAAAAAAAAAAAAAAAAAADiqDNp7v9LLHwAAAAAAAABwHkC0gQKAACA5zwMYxFy7CcsdAAAAAAAAAABgG4CjB2FXPw8AAAAAAAAAAFgub2wCAQAAAAAAKBWAQkQbaCEAEADEeQCbQGUQAAAAAAAAAPhR4zYATxskAQAAAAAAAMBZH2c+7WPP8JtAAAAAAAAAwgBQiGgDLQQAAoCEzB/EWrnoVlnzIwAAAABJRU5ErkJggg==',
+    floorWhite: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABGklEQVR42u3cMQ6CMBSAYe5/Ai7h5sARdCcmrMTRO8DCQgeMCbzWvG/4Z0PzDZVX2s3TY2mp4dbv+rxfqSqf/+r17gAAAAAAAABga3zeD8sGoHx+AAAAAAAAALAJtAkEAAAAAAAAgH8GUP6gcgUAABYBAOUFYBPoXwAAAAAAAAAAtFD08KX28AcAAAAAAAAAAGhjE/grgLPBAAAAAAAAAIDzADINFAACQJHnAQxjYjdhtQMAAAAAAAAAH2cCAAAAAAAAAABHAGofmLgaTPn80RdkAAAAAAAAAEAUAAMR00ALAYAAkPMAhkFeBAEAAAAAAJAXwLfLogE49+NXAAAAAAAAALAJzHlBAwAAAAAAAAA4DyDTQAEgABTYCuc1pUWOx2mxAAAAAElFTkSuQmCC',
+    floorKids: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAAA7UlEQVR42u3boRGAMBAEwJRMJdRBGQiKoAIsKAwiaFJAmMytOIN5kluVmS/PtdWe2dfpE/P/nV8UAIACAFBALIBzn2vPtD9wH0vXtPPTzw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwNgA2g+SFQAAcAkASC4Ay5m2gxUAgAIAUEAmAA8x2ecHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGBsABYkbQe7CAAEAInMC+YJbUZN1eFQAAAAAElFTkSuQmCC',
+    floorChecker: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAAA70lEQVR42u3bQQmAQBRFUdO4NYAFDGECQ5nBGoIBZmEEl+7HGB95Z+AFuHBWA3+4t7VXrvql9w8AAAAAAADEAjiXuVfufVrp0vsBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPg3gH0ae+XadZQuvR8AAAAAAIBcAI4zs/sBAAAAAADIBeAjJrsfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIB/A3Ccmd0PAAAAAABAbP8HsvjhkqDh8igAAAAASUVORK5CYII=',
+    floorCarpet: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABQ0lEQVR42u3bvQ3CMBAG0CxDCy1iACRWYAL2XwDquIkiY/vOfsVXIeXH9yKdDnt7XN/fmXO7vHbJ9vzP+2eXf19/AwAAAAAAYFkA2Reo94LNFgAAAAAAANYFkL2JUnAAAAAAAAAAiDkIqgU0GmBrYOX1z96vXJ+j9Sp/BwAAAAAAAACZs6ktC15eHwAALDoAAoDBTIwC9b4/AAAAAAAAANjkmeP5AQAAAAAAACAKgNFN39Ggo/f7ZQMKAAAAAAAAAL2alNoCjR6cTL8pFAAAAAAAAOcCDG6mHHyl2xUMAAAAAABAMwDRBh2zNW3l+7Qu6OkmEAAAAAAAgGUBtD68qGmM/UEAAAAAAAAAgIwBOvqgCQAAKCoAAsCqBy9qC9C7SQ6/IwgAAAAAAIC0ABwWXevPKwAAAAAAAAAQB0MEAAFAlsoPH6kjyc5Hfd4AAAAASUVORK5CYII=',
+    floorGrey: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABRklEQVR42u3cMQ7CMAwAwL6aiRkWmBiQGBA7j4SFhQqpRHXTJr7Bc2XnkCw7Ydjtjy/xf9wez69oPZ/BoQLgYAEQAHzicLpWjfH3z5d71ciePwAAAAAAAAAA8Dv/cdMHAAAAAAAAAABsswDjA2u9CSzNBwAAAAAAAACiAGy9CSot0NQyxyAIAAAAAAAAAHIMQgAAAAAAAAAAAMsgAAAAAAAAAAAAAAAAAAAAAADIBkDkepwKAACKCoAAYK0mZOllU2kTtvQlzK1dSAEAAAAAAACAtR4mRBegFFRrj1OjfzAAAAAAAAAAYBlTpwmMzn8uCAAAAAAAAADo5U+aemsCu58EAgAAAAAAkAZA7WXIFIjaTV/6bSAAAAAAAADdAJhbwNICRC9DSvOPBtP8IAgAAAAAAAC7AI8zQ/KvfUkWAAAAAACAtADeTPUHPN30MrUAAAAASUVORK5CYII=',
+    dogSpottedLie: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAYAAABpYH0BAAAAy0lEQVR42u3asQ2AIBCFYWaxtdTKUXQjV3IOK1srSxfQWgovhAMP/C95nQH5LA4JzhmvaWiulHG1F4AAAlj0gvd1SRpzoAACCKBpQGnB57GpZh7712jPlxwUQAABLApQAgpdYCxI6PifgwIIIIBFAYY2hbbtHvm6KWiPDyCAANYN6D/gg0g/49Y3xrHzAwgggP8CDD2QtHZ4kH0jDSCAAFYFqF2pm0LsB5EKQAABrBtQG1R64dICIIAA/gsw9wVH6zF/QxRAAAGMAbwBqzHIRngoy0IAAAAASUVORK5CYII=',
+    dogSpottedTail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAARElEQVR42mNgIBFEWyn9x4cZKAWjFhA0sCvKBAV/enUbBZNs4agFBA1EN4AQHrWA/hZQnGpGLRgNklELRi0YbZYMBgsANDTyniCI0i0AAAAASUVORK5CYII=',
+    dogBlackLie: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAYAAABpYH0BAAAAuElEQVR42u3asQ2AIBBAUWahdgImcAIaF3AWRnA2aieg11YsJEQwd/hJfkchrwEJxggfi7NHz8zoA0AAAVS9YO/XrokDBRBAAEUDlhbs3Ky67qAAAgigKsDWQNZOjw0HCiCAAKoCrAVLKWUBCCCAAGoCvE8IYcsq/Yz/fhMBEEAAhwKsvZDUfnkAIIAAAngtxr1p0oFK3w8ggACODdgatHRQ1haAAAL4L8CvHzhKT/wLUQABBPAN4AkZFmaP5KLF0QAAAABJRU5ErkJggg==',
+    dogBlackTail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAAPElEQVR42mNgIBFEWyn9x4cZKAWjFhA00MrKAy8m2cJRCyg2cNSCgbdgNN2PhvmoBaMWUMOC0WbJgFsAAHHYr+8MOQcXAAAAAElFTkSuQmCC',
+    dogCreamSit: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABACAYAAABP97SyAAAAwklEQVR42u3bsQ3CMBAF0MxCm5KOEViBjWhYh4IFWCRiApQu1EnhyJITn8k76be2n6uzpeu6zLpdTlMqXesFCBgc9Hxck2nuAgABgwFzQcP7npXqYEDAxoC5gPBgQMDGgX1/ngUQELAsaAn4Dq9kAAEBtwUDAgL+9/uw+icVIODBgeE6HUDAysDlgtP4mWVvYHEwICBgXTAgICAgICAgIGAY4BqoNnDtPICARwNuDc7dHxCwdWDu4Ee0FJ9sAQTcF/gDQMQDJ2Nu0g0AAAAASUVORK5CYII=',
+    dogCreamTail: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAcCAYAAAB75n/uAAAAPElEQVR42mNgIBFEWyn9x4cZKAWjFhA08NnJLryYZAtHLaDYwFELBt6C0XQ/GuajFoxaQA0LRpslA24BAOYtte6I8rmRAAAAAElFTkSuQmCC',
+    catGreySleep: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAAoCAYAAACrUDmFAAAAv0lEQVR42u3ZsQ2DMBBGYWZJS0nHKlmELj3KFlQZIHukoMwAGcB9qO8iYVm/Cbb1kF5ngT+KE8hdF7mu4+W7l7r+9AsgwMKAfkPT7W5aHk+Tul4NIMDWgX6Dav4FvNb3brH7JYMBAiwMmArq+8GU+wWo/YABAqwc+JlnkzpUcq8HCLA1YAjBVNoQAQiwNaD6baoOhcOHDECAlQH//QOcmh+CPoAAWwPGwLEH5k4eKgABVg5MPfA8utNPgAEC1IAbkqCiP2TpFhgAAAAASUVORK5CYII=',
+    catGreySit: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAA4CAYAAACPKLr2AAAAwElEQVR42u3ZsQ2DMBCFYc9CS0nHKlkkHT3KFqkyQPZIkZIBGMA9tPgKn05nyzL6Lb3OnL/mDDYhKOMxD8c1wTlK1wN4P6As8FxeSawLlK4HEOD7800i58vI+QABWoFygdIBCNAKHMcpiQbQ5gME6G2SfV2zad7FALsD1t64q5/qAHYPtIJ+/y2b5l0MECBAgArQuxF7gepBHiDAygEIECDA1kDt3RxjzEa7RLc+b/6aAXg7oAb2/kysfrMAsDfgCZ9imhHcyoCxAAAAAElFTkSuQmCC'
+    // ---- PHASE2 SPRITES END ----
+  };
+  // Front-door centre, as an x offset from the house anchor. Measured from the 148px sprite PNGs (door centre x=91 for houseA/D, x=57 for houseB/C; anchor x=74) scaled x0.878 to the 130px display size. The door base sits ~y+6.
+  var HOUSE_DOOR_DX = { houseA: 15, houseB: -15, houseC: -15, houseD: 15 };
+  var HOUSE_DOORS = HOUSE_LOCATIONS.map(function (p, i) {
+    var cx = p[0] + HOUSE_DOOR_DX[HOUSE_SPRITE_KEYS[i % HOUSE_SPRITE_KEYS.length]];
+    // trigger rect (feet point) just in front of the door; retY = hero token centre that puts the feet ~16px below the wall base
+    return { cx: cx, x: cx - 22, y: p[1] + 3, w: 44, h: 28, retY: p[1] + 16 - HERO_FOOT_DY };
+  });
   var WORLD_FIXTURES = (function () {
     var list = [];
     // Residential District houses — a real little neighborhood, using real
@@ -44353,7 +44847,7 @@ $ git stash pop
         var x, y, tries = 0;
         do {
           // keep the WHOLE sprite (bottom-center anchored, s wide/tall) inside the 1500x760 world so nothing is clipped at the map edge
-          var lx = Math.max(xMin, s / 2 + 6), hx = Math.min(xMax, 1494 - s / 2), ly = Math.max(yMin, sh + 6), hy = Math.min(yMax, 754);
+          var lx = Math.max(xMin, s / 2 + 6), hx = Math.min(xMax, CITY_WORLD_W - 6 - s / 2), ly = Math.max(yMin, sh + 6), hy = Math.min(yMax, 754);
           x = lx + Math.random() * (hx - lx);
           y = ly + Math.random() * (hy - ly);
           tries++;
@@ -44381,7 +44875,7 @@ $ git stash pop
       var tall = (key === 'treePine1' || key === 'treeAutumnPine');
       if (tall) s = Math.round(s * 0.72);
       var sh = tall ? s * 2 : s;
-      if (x - s / 2 < 6 || x + s / 2 > 1494 || y - sh < 6 || y > 754) return;
+      if (x - s / 2 < 6 || x + s / 2 > CITY_WORLD_W - 6 || y - sh < 6 || y > 754) return;
       if (pointBlockedForEnvironment(x, y, 14) || spriteHitsHouse(x, y, s, sh)) return;
       list.push({ sprite: key, x: x, y: y, size: s });
     }
@@ -44392,6 +44886,89 @@ $ git stash pop
     [[1474, 150, 'treePine1'], [1474, 300, 'treeAutumnPine'], [1472, 560, 'treePine1'], [1474, 700, 'treeAutumnPine']].forEach(function (t) {
       list.push({ sprite: t[2], x: t[0], y: t[1], size: 37 });
     });
+    // ---- Forest path trees (seeded, so the forest is identical every load). Dense rows hug both sides of the track, sparser deep forest fills
+    // up to the map edges, glades/trails stay clear. Rendered by renderCityFixtures() with shared Blob URLs and no drop-shadow filter (`forest:true`).
+    (function () {
+      var seed = 7301;
+      function rnd() { seed = (seed + 0x6D2B79F5) | 0; var t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+      var MIX = ['treePine1', 'treePine1', 'treePine2', 'treeRound', 'treeAutumnRound', 'treeAutumnPine', 'treePine2', 'treeRound', 'treePine1'];
+      var XEND = 2360; // leave the gate frame (x 2382-2438) clear
+      function isTall(k) { return k === 'treePine1' || k === 'treeAutumnPine'; }
+      function pickKey() { return MIX[Math.floor(rnd() * MIX.length)]; }
+      function widthOf(k) { return isTall(k) ? 40 + Math.round(rnd() * 8) : 50 + Math.round(rnd() * 10); }
+      function clearOfGlades(x, base, w, sh) {
+        var x0 = x - w / 2 - 4, x1 = x + w / 2 + 4, y0 = base - 0.92 * sh - 4, y1 = base + 0.08 * sh + 4, i;
+        for (i = 0; i < FOREST_GLADES.length; i++) { var g = FOREST_GLADES[i]; if (x1 > g.cx - g.rx && x0 < g.cx + g.rx && y1 > g.cy - g.ry && y0 < g.cy + g.ry) return false; }
+        for (i = 0; i < FOREST_TRAILS.length; i++) { var t = FOREST_TRAILS[i]; if (x1 > t.x - 26 && x0 < t.x + 26 && y1 > t.y0 && y0 < t.y1) return false; }
+        return true;
+      }
+      function add(x, base, key, w) {
+        var sh = isTall(key) ? w * 2 : w;
+        if (x - w / 2 < FOREST_X0 + 6 || x + w / 2 > CITY_WORLD_W - 6) return;
+        if (base - 0.92 * sh < 4 || base + 0.08 * sh > 758) return;
+        if (!clearOfGlades(x, base, w, sh)) return;
+        list.push({ sprite: key, x: Math.round(x * 10) / 10, y: Math.round(base * 10) / 10, size: w, forest: true });
+      }
+      // dense rows next to the track (3 per side); trunks just outside the 72px walkable corridor
+      var k, x, key, w, c, sh;
+      for (k = 0; k < 3; k++) {
+        for (x = 1620 + (k % 2) * 18 + rnd() * 10; x < XEND; x += 36 + rnd() * 8) { // north side (the signpost owns x<1620 there)
+          key = pickKey(); w = widthOf(key); sh = isTall(key) ? w * 2 : w; c = forestCentreY(x);
+          add(x, c - 42 - 0.08 * sh - k * 26 - rnd() * 5, key, w);
+        }
+        for (x = 1510 + (k % 2) * 18 + rnd() * 10; x < XEND; x += 36 + rnd() * 8) { // south side: canopy top starts at the road edge
+          key = pickKey(); w = widthOf(key); sh = isTall(key) ? w * 2 : w; c = forestCentreY(x);
+          add(x, c + 40 + 0.92 * sh + k * 26 + rnd() * 5, key, w);
+        }
+      }
+      // deep forest: sparse columns out to the top / bottom map edges
+      for (x = 1512; x < XEND; x += 50 + rnd() * 8) {
+        c = forestCentreY(x);
+        var b = c - 42 - 52 - 40;
+        while (true) {
+          key = pickKey(); w = widthOf(key); sh = isTall(key) ? w * 2 : w;
+          var minB = 4 + 0.92 * sh + 1;
+          if (b < minB) { add(x + rnd() * 8, minB, key, w); break; }
+          add(x + rnd() * 8, b, key, w);
+          b -= 50 + rnd() * 10;
+        }
+        b = c + 40 + 40 + 52 + 40;
+        while (true) {
+          key = pickKey(); w = widthOf(key); sh = isTall(key) ? w * 2 : w;
+          var maxB = 757 - 0.08 * sh;
+          if (b > maxB) { add(x + 22 + rnd() * 8, maxB, key, w); break; }
+          add(x + 22 + rnd() * 8, b, key, w);
+          b += 50 + rnd() * 10;
+        }
+      }
+      // undergrowth bushes plugging the trail mouths (the tree wall stays visually unbroken; animals walk "through" them)
+      FOREST_TRAILS.forEach(function (t) {
+        var cc = forestCentreY(t.x);
+        [-12, 12].forEach(function (dx) {
+          list.push({ sprite: 'bushWide', x: t.x + dx, y: cc - 42, size: 30, forest: true });
+          list.push({ sprite: 'bushTall', x: t.x + dx * 0.9, y: cc + 40 + 0.92 * 30, size: 30, forest: true });
+        });
+      });
+      // New City tree belt (top / bottom / right edge) + flowers, tufts and rocks so the empty plaza field is not a bare lawn
+      var i;
+      for (x = 2462; x < 2985; x += 46) {
+        key = pickKey(); w = widthOf(key); sh = isTall(key) ? w * 2 : w;
+        add(x + rnd() * 12, 80 + rnd() * 14, key, w);
+        key = pickKey(); w = widthOf(key);
+        add(x + 23 + rnd() * 12, 750 - rnd() * 6, key, w);
+      }
+      for (i = 170; i < 730; i += 64) { key = pickKey(); w = widthOf(key); add(2958 + rnd() * 8, i + rnd() * 12, key, w); }
+      var flora = [['flowerBlue', 22], ['flowerTeal', 22], ['flowerPurple', 22], ['grassTuft', 18], ['grassTuft', 18], ['rock1', 28], ['rock2', 28], ['bushTall', 32], ['bushWide', 32]];
+      for (i = 0; i < 46; i++) {
+        var f = flora[Math.floor(rnd() * flora.length)];
+        var fx = 2460 + rnd() * 520, fy = 120 + rnd() * 620;
+        var inPlaza = fx > FOREST_PLAZA.x - 16 && fx < FOREST_PLAZA.x + FOREST_PLAZA.w + 16 && fy > FOREST_PLAZA.y - 10 && fy < FOREST_PLAZA.y + FOREST_PLAZA.h + 34;
+        var nearGate = fx < 2500 && fy > 300 && fy < 480;
+        var nearLabel = fx > 2630 && fx < 2800 && fy > 170 && fy < 250;
+        if (inPlaza || nearGate || nearLabel) continue;
+        list.push({ sprite: f[0], x: Math.round(fx), y: Math.round(fy), size: f[1], forest: true });
+      }
+    })();
     return list;
   })();
   // Section 2A — depth/draw-order: every sortable world object (fixtures,
@@ -44408,6 +44985,7 @@ $ git stash pop
     layer.innerHTML = WORLD_FIXTURES.map(function (f) {
       var z = Math.round(f.y);
       if (f.sprite) {
+        if (f.forest) return '<img class="dgc-city-fixture dgc-city-fixture-sprite dgc-city-fixture-forest" style="left:' + f.x + 'px; top:' + f.y + 'px; width:' + f.size + 'px; z-index:' + z + ';" src="' + spriteBlobUrl('f:' + f.sprite, FOLIAGE_SPRITES[f.sprite]) + '" alt="">';
         var spriteSrc = HOUSE_SPRITES[f.sprite] || FOLIAGE_SPRITES[f.sprite];
         return '<img class="dgc-city-fixture dgc-city-fixture-sprite" style="left:' + f.x + 'px; top:' + f.y + 'px; width:' + f.size + 'px; z-index:' + z + ';" src="' + spriteSrc + '" alt="">';
       }
@@ -44452,11 +45030,23 @@ $ git stash pop
     if (heroToken) {
       heroToken.style.left = cityHero.x + 'px';
       heroToken.style.top = cityHero.y + 'px';
-      heroToken.style.zIndex = Math.round(cityHero.y);
+      heroToken.style.zIndex = Math.round(cityHero.y + HERO_FOOT_DY);
     }
   }
 
   function checkCityBuildingProximity() {
+    // House front doors: hero's feet inside a door trigger rect -> 'house:<i>' (same prompt/Enter/tap path as shops).
+    var hfx = cityHero.x, hfy = cityHero.y + HERO_FOOT_DY;
+    for (var hi = 0; hi < HOUSE_DOORS.length; hi++) {
+      var hd = HOUSE_DOORS[hi];
+      if (hfx >= hd.x && hfx <= hd.x + hd.w && hfy >= hd.y && hfy <= hd.y + hd.h) {
+        cityNearBuildingId = 'house:' + hi;
+        var hp = $('dgcCityEnterPrompt');
+        $('dgcCityEnterPromptName').textContent = (HOUSE_HOMES[hi] && HOUSE_HOMES[hi].sign) || 'House';
+        if (hp) hp.hidden = false;
+        return;
+      }
+    }
     var nearest = null, nearestDist = 999999;
     CITY_BUILDINGS.forEach(function (b) {
       var c = cityBuildingCenter(b);
@@ -44523,8 +45113,9 @@ $ git stash pop
           st.pauseUntil = now + rand(1500, 4000);
         } else {
           var speed = 0.6;
-          st.x += (dx / dist) * speed;
-          st.y += (dy / dist) * speed;
+          var nnx = st.x + (dx / dist) * speed, nny = st.y + (dy / dist) * speed;
+          if (houseSolidAt(nnx, nny, 8, 0)) { st.moving = false; st.pauseUntil = now + rand(800, 1500); }
+          else { st.x = nnx; st.y = nny; }
           st.facing = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
         }
       } else if (now >= st.pauseUntil) {
@@ -44540,8 +45131,8 @@ $ git stash pop
           tx = npc.x + Math.cos(angle) * r;
           ty = npc.y + Math.sin(angle) * r;
           tries++;
-        } while (tries < 10 && (pointBlockedForNpcWander(tx, ty, 4) || blockedByHouse(tx, ty, 4)));
-        if (tries < 10 || !(pointBlockedForNpcWander(tx, ty, 4) || blockedByHouse(tx, ty, 4))) {
+        } while (tries < 10 && (pointBlockedForNpcWander(tx, ty, 4) || houseSolidAt(tx, ty, 12, 6)));
+        if (!(pointBlockedForNpcWander(tx, ty, 4) || houseSolidAt(tx, ty, 12, 6))) {
           st.targetX = tx;
           st.targetY = ty;
           st.moving = true;
@@ -44619,6 +45210,7 @@ $ git stash pop
     var modalOpen = !$('dgcModalBackdrop').hidden || (dialogueBox && !dialogueBox.hidden);
     if (!modalOpen) {
       npcWanderTick();
+      animalTick();
       var speed = 3.2;
       var dx = 0, dy = 0;
       if (cityKeys.up) dy -= 1;
@@ -44629,8 +45221,11 @@ $ git stash pop
       if (moving) {
         var len = Math.hypot(dx, dy);
         dx = dx / len * speed; dy = dy / len * speed;
-        cityHero.x = Math.max(20, Math.min(CITY_WORLD_W - 20, cityHero.x + dx));
-        cityHero.y = Math.max(20, Math.min(CITY_WORLD_H - 20, cityHero.y + dy));
+        var nx = Math.max(20, Math.min(CITY_WORLD_W - 20, cityHero.x + dx));
+        var ny = Math.max(20, Math.min(CITY_WORLD_H - 20, cityHero.y + dy));
+        // Solid houses: resolve X and Y separately so the hero slides along a wall instead of sticking to it.
+        if (!heroBlockedAt(nx, cityHero.y)) cityHero.x = nx;
+        if (!heroBlockedAt(cityHero.x, ny)) cityHero.y = ny;
         if (dx > 0) cityHero.facing = 'right';
         else if (dx < 0) cityHero.facing = 'left';
         else if (dy > 0) cityHero.facing = 'down';
@@ -44656,6 +45251,7 @@ $ git stash pop
     cityKeys = { up: false, down: false, left: false, right: false };
   }
   function enterCityBuilding(id) {
+    if (typeof id === 'string' && id.indexOf('house:') === 0) { enterHouse(parseInt(id.slice(6), 10)); return; }
     if (id === 'armory') { renderArmory(); openModal('dgcArmoryModal'); }
     else if (id === 'tailor') { renderTailor(); openModal('dgcTailorModal'); }
     else if (id === 'bank') { renderBank(); openModal('dgcBankModal'); }
@@ -44685,9 +45281,13 @@ $ git stash pop
       var sudoSprite = $('dgcCitySudoSprite');
       if (sudoSprite && !sudoSprite.querySelector('.dgc-overworld-sprite')) { sudoSprite.innerHTML = overworldSpriteSVG('sudo'); }
     }
+    var cityWorldEl = $('dgcCityWorld');
+    if (cityWorldEl) cityWorldEl.style.width = CITY_WORLD_W + 'px';
     renderCityZoneLabels();
     renderCityRoads();
     renderCityFixtures();
+    renderForestProps();
+    renderForestAnimals();
     renderCityBuildings();
     renderCityDecorations();
     initNpcState();
@@ -44706,6 +45306,750 @@ $ git stash pop
     // and doesn't depend on this panel's compositor-visible paint timing.
     cityRafHandle = setInterval(cityMoveTick, 16);
   }
+
+  /* ============================================================
+     HOUSE INTERIORS — walk up to the front door of any Residential
+     house, press Enter (or tap the prompt) and step into a single
+     furnished room (its own screen, not a modal). Leave via the door
+     mat + Enter, Escape, or the Leave button; you reappear outside the
+     same door. Nothing here is saved.
+     ============================================================ */
+  var HOUSE_ROOM = { w: 640, h: 460, minX: 26, maxX: 614, minY: 158, maxY: 436, startX: 320, startY: 408 };
+  var HOUSE_MAT_ZONE = { x: 276, y: 398, w: 88, h: 40 }; // feet inside here + Enter = leave
+  // Furniture: spr = HOUSE_INTERIOR_SPRITES key, x/y/w/h = drawn box (stage px), solid = [x,y,w,h] feet-blocking rect,
+  // hit = interaction-only rect, say = flavour line shown on Enter.
+  var HOUSE_FURN = [
+    { spr: 'rug', x: 122, y: 214, w: 176, h: 104, z: 1 },
+    { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+    { spr: 'window', x: 304, y: 24, w: 104, h: 96, z: 2, hit: [304, 150, 104, 10], label: 'window', say: 'Lovely day out. No incidents in sight.' },
+    { spr: 'plant', x: 20, y: 114, w: 64, h: 64, solid: [32, 152, 40, 26], label: 'plant', say: 'It is thriving. Unlike the legacy service.' },
+    { spr: 'tv', x: 142, y: 74, w: 136, h: 116, solid: [146, 150, 128, 40], label: 'TV', say: 'Nothing good on. Just a status page.' },
+    { spr: 'counterSink', x: 424, y: 114, w: 64, h: 64, solid: [424, 150, 64, 28], label: 'sink', say: 'The kettle is on. Stand-up is in five.' },
+    { spr: 'counterCabinet2', x: 488, y: 114, w: 64, h: 64, solid: [488, 150, 64, 28], label: 'cupboard', say: 'Mugs. Every one has a ticket number on it.' },
+    { spr: 'fridge', x: 552, y: 40, w: 72, h: 144, solid: [554, 150, 68, 34], label: 'fridge', say: 'Leftover pizza. Untouched since the last deploy.' },
+    { spr: 'coffeetable', x: 154, y: 228, w: 112, h: 64, solid: [158, 236, 104, 56], label: 'coffee table', say: 'A mug of cold coffee. Classic.' },
+    { spr: 'sofa', x: 110, y: 293, w: 200, h: 92, solid: [114, 298, 192, 86], label: 'sofa', say: 'Comfy. You could refactor here for hours.' },
+    { spr: 'armchair', x: 18, y: 222, w: 88, h: 88, solid: [22, 230, 80, 80], label: 'armchair', say: 'Reserved for whoever is on call tonight.' },
+    { spr: 'armchair', x: 314, y: 222, w: 88, h: 88, flip: true, solid: [318, 230, 80, 80], label: 'armchair', say: 'Still warm. Someone just merged to main.' }
+  ];
+
+  // ---- Data-driven homes. HOUSE_HOMES[i] belongs to house index i; null = the generic room (DEFAULT_HOME). ----
+  // Home = { name, sign, heading, subtitle, theme:{wall,wall2,wainscot,wainscotBorder,sidewall,floorFilter}, furniture:[...], residents:[...], pets:[...] }
+  // Furniture: as HOUSE_FURN, plus front:N (a second copy clipped from N px down, drawn ABOVE seated residents),
+  //   glow:[x,y,w,h,'#rgb'] (flickering screen overlay), css:'extra style'.
+  // Resident: { id,name,hair,hairColor,skinColor,bodyColor,trimColor,accessory,accColor,expr,x,y(feet),scale,pose,back,act,hit,lines }
+  // Pet: { id,kind,name,spr,x,y,w,h,act,solid,hit,tail:{spr,x,y,w,h},z,lines }
+  var DEFAULT_HOME = {
+    name: 'House', sign: 'House', heading: 'HOME',
+    subtitle: 'Make yourself comfortable. Walk to the door mat to head back out.',
+    theme: {}, furniture: HOUSE_FURN, residents: [], pets: []
+  };
+  var HOUSE_HOMES = [
+    // ---------- Home 1: Patel — Movie Night ----------
+    {
+      name: 'Patel', sign: 'Patel home', heading: 'PATEL HOME — MOVIE NIGHT',
+      subtitle: 'Popcorn is out and the film has started. Walk to the door mat to head back out.',
+      theme: { wall: '#f0c59a', wall2: '#e8b98a', wainscot: '#a8562f', wainscotBorder: '#7a3a1c', sidewall: '#6b3a1f' },
+      furniture: [
+        { spr: 'rug', x: 122, y: 214, w: 176, h: 104, z: 1 },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'window', x: 304, y: 24, w: 104, h: 96, z: 2, hit: [304, 150, 104, 10], label: 'window', say: 'Dusk out there. The perfect uptime for a film.' },
+        { spr: 'posterMountain', x: 46, y: 28, w: 56, h: 72, z: 2, hit: [40, 150, 70, 10], label: 'poster', say: 'A mountain. Nobody has ever rolled back from the summit.' },
+        { spr: 'posterRocket', x: 446, y: 26, w: 56, h: 72, z: 2, hit: [440, 150, 70, 10], label: 'poster', say: 'A rocket. Launched with zero downtime, allegedly.' },
+        { spr: 'plant', x: 20, y: 114, w: 64, h: 64, solid: [32, 152, 40, 26], label: 'plant', say: 'It is thriving. Unlike the legacy service.' },
+        { spr: 'tv', x: 142, y: 74, w: 136, h: 116, solid: [146, 150, 128, 40], label: 'TV', say: 'Streaming in glorious 4K. Buffering only during the plot twist.', glow: [166, 82, 88, 48] },
+        { spr: 'counterSink', x: 424, y: 114, w: 64, h: 64, solid: [424, 150, 64, 28], label: 'sink', say: 'The kettle is on. The film is on pause. Never both.' },
+        { spr: 'counterCabinet2', x: 488, y: 114, w: 64, h: 64, solid: [488, 150, 64, 28], label: 'cupboard', say: 'Mugs. Every one has a ticket number on it.' },
+        { spr: 'fridge', x: 552, y: 40, w: 72, h: 144, solid: [554, 150, 68, 34], label: 'fridge', say: 'Leftover pizza. Untouched since the last deploy.' },
+        { spr: 'coffeetable', x: 154, y: 228, w: 112, h: 64, solid: [158, 236, 104, 56], label: 'coffee table', say: 'Popcorn. Half eaten. The other half is in the sofa.' },
+        { spr: 'popcorn', x: 182, y: 224, w: 56, h: 44, z: 293 },
+        { spr: 'sofa', x: 110, y: 293, w: 200, h: 92, z: 300, front: 44, solid: [114, 298, 192, 86], label: 'sofa', say: 'Prime seats. Row 1 of 1.' },
+        { spr: 'armchair', x: 18, y: 222, w: 88, h: 88, solid: [22, 230, 80, 80], label: 'armchair', say: 'Reserved for whoever is on call tonight.' },
+        { spr: 'armchair', x: 314, y: 222, w: 88, h: 88, flip: true, solid: [318, 230, 80, 80] },
+        { spr: 'lamp', x: 452, y: 196, w: 40, h: 112, solid: [454, 288, 36, 20], label: 'floor lamp', say: 'Mood lighting. Also a single point of failure.' },
+        { spr: 'plant', x: 552, y: 292, w: 64, h: 64, solid: [564, 330, 40, 26], label: 'plant', say: 'Watered on a cron job. Which is sometimes skipped.' }
+      ],
+      residents: [
+        { id: 'asha', name: 'Asha', hair: 'bun', hairColor: '#1b1416', skinColor: '#c98d5f', bodyColor: '#2fa4a0', trimColor: '#1f6f6c', accessory: 'none', accColor: '#2fa4a0',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 176, y: 349, scale: 0.9, pose: 'sit', back: true, act: 'tv', hit: [146, 298, 60, 86],
+          lines: ["Shh, this is the bit where the server room catches fire.", "Never deploy on a Friday. Ever. I learned that the hard way.", "Vikram picked the film again. Cue the loading spinner of doom."] },
+        { id: 'vikram', name: 'Vikram', hair: 'byte', hairColor: '#171215', skinColor: '#b97a4e', bodyColor: '#c8443a', trimColor: '#8f2a24', accessory: 'none', accColor: '#c8443a',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 244, y: 349, scale: 0.9, pose: 'sit', back: true, act: 'tv', hit: [214, 298, 60, 86],
+          lines: ["It's not a bug, it's a plot twist.", "Pass the popcorn. It is stored in an unmonitored bowl.", "This is my third rewatch. Consider it regression testing."] }
+      ],
+      pets: [
+        { id: 'marmalade', kind: 'cat', name: 'Marmalade', spr: 'catSleep', x: 330, y: 243, w: 56, h: 40, z: 312, act: 'sleep', hit: [318, 230, 80, 80],
+          lines: ["Purr... (She is running in low-power mode.)", "Zzz. (Do not disturb: build in progress.)", "Mrrp. (She approves your merge request.)"] }
+      ]
+    },
+    // ---------- Home 2: Okafor — Study House ----------
+    {
+      name: 'Okafor', sign: 'Okafor home', heading: 'OKAFOR HOME — STUDY HOUSE',
+      subtitle: 'Shh, exams are coming. Walk to the door mat to head back out.',
+      theme: { wall: '#cfe0f2', wall2: '#c2d6ec', wainscot: '#3f5f8a', wainscotBorder: '#2c4468', sidewall: '#3b4a63', floorFilter: 'saturate(0.7) brightness(0.93) hue-rotate(-12deg)' },
+      furniture: [
+        { spr: 'rug', x: 40, y: 246, w: 176, h: 104, z: 1, css: 'filter:hue-rotate(185deg);' },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'bookshelf', x: 24, y: 58, w: 80, h: 128, solid: [26, 154, 76, 30], label: 'bookshelf', say: 'Every book here has a README. Nobody has read any of them.' },
+        { spr: 'bookshelf', x: 108, y: 58, w: 80, h: 128, solid: [110, 154, 76, 30], label: 'bookshelf', say: 'Alphabetised by the day it was due back at the library.' },
+        { spr: 'posterMountain', x: 208, y: 32, w: 56, h: 72, z: 2, hit: [200, 150, 72, 10], label: 'poster', say: 'A mountain. Studying is just climbing with more highlighters.' },
+        { spr: 'window', x: 304, y: 24, w: 104, h: 96, z: 2, hit: [304, 150, 104, 10], label: 'window', say: 'Sunny. Outside is out of scope until after the exam.' },
+        { spr: 'posterRocket', x: 428, y: 30, w: 56, h: 72, z: 2, hit: [420, 150, 72, 10], label: 'poster', say: 'Launch day! Cue frantic last-minute revision.' },
+        { spr: 'plant', x: 488, y: 114, w: 64, h: 64, solid: [500, 152, 40, 26], label: 'plant', say: 'It survives on coffee fumes and good intentions.' },
+        { spr: 'bookshelf', x: 546, y: 58, w: 80, h: 128, solid: [548, 154, 74, 30], label: 'bookshelf', say: 'The bottom shelf is all cookery. Nobody knows why.' },
+        { spr: 'lamp', x: 20, y: 206, w: 40, h: 112, solid: [24, 296, 32, 22], label: 'floor lamp', say: 'Reading light. Brighter than the average status page.' },
+        { spr: 'armchairF', x: 66, y: 250, w: 88, h: 96, z: 300, front: 56, solid: [68, 290, 84, 54], label: 'armchair', say: 'A very well-read armchair.' },
+        { spr: 'dogbed', x: 288, y: 306, w: 72, h: 40, z: 1 },
+        { spr: 'deskchair', x: 424, y: 274, w: 68, h: 40, z: 317 },
+        { spr: 'desk', x: 372, y: 236, w: 144, h: 104, solid: [374, 268, 140, 70], label: 'desk', say: 'Notes, a lamp, and one laptop on 3% battery.' },
+        { spr: 'plant', x: 550, y: 296, w: 64, h: 64, solid: [562, 334, 40, 26], label: 'plant', say: 'Photosynthesis: the original build pipeline.' }
+      ],
+      residents: [
+        { id: 'chidi', name: 'Chidi', hair: 'buzzcut', hairColor: '#171215', skinColor: '#8a5a3a', bodyColor: '#3f6fb0', trimColor: '#2c4f86', accessory: 'headphones', accColor: '#3a3a44',
+          expr: { idle: 'determined', talk: 'happy', happy: 'excited', react: 'tired' }, x: 458, y: 318, scale: 0.9, pose: 'sit', act: 'study', hit: [374, 268, 140, 70],
+          lines: ["Shh, I'm in the flow. Git blame says it is mine.", "Revision tip: test your fixes before you say 'it works on my machine'.", "Ten minutes' break after every pomodoro. Yes, I have a cron job for it."] },
+        { id: 'mrsokafor', name: 'Mrs. Okafor', hair: 'nova', hairColor: '#2a1a12', skinColor: '#7a4a30', bodyColor: '#8a5fb0', trimColor: '#5f3f80', accessory: 'scarf', accColor: '#e0b83a',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 110, y: 330, scale: 0.9, pose: 'sit', act: 'read', hit: [68, 290, 84, 54],
+          lines: ["Good habits compound, like interest. Or like tech debt.", "Chidi has been on that laptop for hours. I hope he committed his work.", "Do sit down, dear. Yes, the sofa is also documented."] }
+      ],
+      pets: [
+        { id: 'biscuit', kind: 'dog', name: 'Biscuit', spr: 'dogLie', x: 284, y: 288, w: 80, h: 40, act: 'wag', solid: [288, 308, 72, 22], hit: [288, 296, 76, 40],
+          tail: { spr: 'dogTail', x: 76, y: 8, w: 24, h: 28 },
+          lines: ["Woof! (He wants you to check his logs.)", "Woof woof. (Translation: walkies are overdue.)", "Bork! (He has found a memory leak in the biscuit tin.)"] }
+      ]
+    },
+    // ==== PHASE2 HOMES BEGIN ====
+    // ---------- Home 3: Tanaka — Kids Zone ----------
+    {
+      name: 'Tanaka', sign: 'Tanaka home', heading: 'TANAKA HOME — KIDS ZONE',
+      subtitle: 'Mind the blocks! Walk to the door mat to head back out.',
+      theme: { wall: '#f6e3a0', wall2: '#eed58c', wainscot: '#b07a48', wainscotBorder: '#7a4e26', sidewall: '#7a4e26', floor: 'floorKids' },
+      furniture: [
+        { spr: 'rugPlay', x: 110, y: 240, w: 176, h: 104, z: 1 },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'bunting', x: 24, y: 4, w: 184, h: 44, z: 2 },
+        { spr: 'bunting', x: 430, y: 4, w: 184, h: 44, z: 2 },
+        { spr: 'window', x: 304, y: 24, w: 104, h: 96, z: 2, hit: [304, 150, 104, 10], label: 'window', say: 'Bright and sunny. Perfect weather for a block-tower deployment.' },
+        { spr: 'posterRocket', x: 132, y: 52, w: 56, h: 72, z: 2, hit: [126, 150, 70, 10], label: 'poster', say: 'A rocket! Drawn by Mika. Mission status: crayon.' },
+        { spr: 'toychest', x: 28, y: 124, w: 80, h: 56, solid: [28, 150, 80, 30], label: 'toy chest', say: 'Blocks, cars and one suspiciously sticky robot.' },
+        { spr: 'bookshelf', x: 200, y: 58, w: 80, h: 128, solid: [202, 154, 76, 30], label: 'bookshelf', say: 'Picture books. Mostly pictures of things that crashed.' },
+        { spr: 'sofa', x: 412, y: 100, w: 200, h: 92, z: 100, front: 44, solid: [414, 152, 192, 42], label: 'sofa', say: 'Somewhere under these cushions is a missing sock. And a build artifact.' },
+        { spr: 'blocks', x: 146, y: 262, w: 68, h: 56, label: 'block tower', hit: [140, 300, 80, 30], say: 'A tower of blocks. Zero tests, zero regrets.' },
+        { spr: 'blocksScatter', x: 206, y: 300, w: 120, h: 48, z: 3 },
+        { spr: 'bigplant', x: 542, y: 238, w: 80, h: 128, solid: [554, 332, 56, 28], label: 'big plant', say: 'It has been watered four times today. By four different children.' },
+        { spr: 'plantFern', x: 24, y: 214, w: 64, h: 64, solid: [36, 250, 40, 26], label: 'plant', say: 'A fern. Lightly chewed by the cat.' }
+      ],
+      residents: [
+        { id: 'kai', name: 'Kai', hair: 'buzzcut', hairColor: '#171215', skinColor: '#e8b98a', bodyColor: '#e0503a', trimColor: '#a3302a', accessory: 'none', accColor: '#e0503a',
+          expr: { idle: 'excited', talk: 'happy', happy: 'excited', react: 'curious' }, x: 160, y: 314, scale: 0.62, pose: 'stand', act: 'play', wander: { x: 130, y: 296, w: 70, h: 38 },
+          lines: ["I'm deploying this block tower to production!", "It's not falling over. It's a rolling release.", "Mika says my tower has no tests. I say it has ... gravity."] },
+        { id: 'mika', name: 'Mika', hair: 'pigtails', hairColor: '#2a1a12', skinColor: '#f0c9a0', bodyColor: '#e8709a', trimColor: '#b04a70', accessory: 'none', accColor: '#e8709a',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 236, y: 316, scale: 0.62, pose: 'stand', act: 'play', wander: { x: 200, y: 296, w: 70, h: 38 },
+          lines: ["Kai knocked the tower over. That's a hotfix, right?", "The rainbow rug is my staging environment.", "Want to play? You can be the load balancer."] },
+        { id: 'hiro', name: 'Hiro', hair: 'byte', hairColor: '#171215', skinColor: '#e8b98a', bodyColor: '#3f8f5c', trimColor: '#2a6640', accessory: 'book', accColor: '#f0d060',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'tired' }, x: 512, y: 156, scale: 0.9, pose: 'sit', act: 'read', hit: [480, 152, 64, 42],
+          lines: ["Shh, I'm reading. Well. Pretending to, while I watch the kids.", "Rule one of parenting: keep a backup of everything. Especially bedtimes.", "Those two run like a pair of parallel jobs. Never on time."] }
+      ],
+      pets: [
+        { id: 'pebble', kind: 'cat', name: 'Pebble', spr: 'catGreySit', x: 366, y: 204, w: 40, h: 56, z: 262, act: 'breathe', solid: [370, 244, 32, 14], hit: [362, 236, 48, 26],
+          lines: ["Mrrp. (She is monitoring the couch. Nothing gets past her.)", "Purr. (Uptime: nine lives.)", "Meow. (She wants a treat. Priority: critical.)"] }
+      ]
+    },
+    // ---------- Home 4: Nana Rosa's Cottage ----------
+    {
+      name: 'Nana Rosa', sign: 'Nana Rosa home', heading: "NANA ROSA'S COTTAGE",
+      subtitle: 'The kettle is on. Walk to the door mat to head back out.',
+      theme: { wall: '#cfe6c0', wall2: '#c2ddb2', wainscot: '#6f9a5a', wainscotBorder: '#4a6e3a', sidewall: '#4a6e3a', floor: 'floorWood' },
+      furniture: [
+        { spr: 'rug', x: 200, y: 232, w: 176, h: 104, z: 1, css: 'filter:hue-rotate(300deg) saturate(0.8);' },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'plantFlower', x: 20, y: 114, w: 64, h: 64, solid: [32, 152, 40, 26], label: 'flowers', say: 'Geraniums. Nana talks to them. They never talk back. Unlike Slack.' },
+        { spr: 'bigplant', x: 96, y: 50, w: 80, h: 128, solid: [108, 154, 56, 26], label: 'big plant', say: 'Older than the codebase. And better documented.' },
+        { spr: 'photoshelf', x: 194, y: 66, w: 104, h: 64, z: 2, hit: [190, 150, 100, 10], label: 'photo shelf', say: 'Photos of the whole family. Nobody is wearing the same shirt twice. Unlike CI logs.' },
+        { spr: 'window', x: 304, y: 24, w: 104, h: 96, z: 2, hit: [304, 150, 104, 10], label: 'window', say: 'A garden full of tomatoes. All running in production.' },
+        { spr: 'plantSill', x: 332, y: 76, w: 48, h: 48, z: 3 },
+        { spr: 'plantFern', x: 420, y: 114, w: 64, h: 64, solid: [432, 152, 40, 26], label: 'fern', say: 'A fern. Low maintenance. Nothing like a legacy service.' },
+        { spr: 'plantHang', x: 490, y: 30, w: 56, h: 96, z: 2, hit: [486, 150, 64, 10], label: 'hanging plant', say: 'Hung with love and a bit of string. Not unlike our old deploy scripts.' },
+        { spr: 'bookshelf', x: 546, y: 58, w: 80, h: 128, solid: [548, 154, 74, 30], label: 'bookshelf', say: 'Knitting patterns, recipes and a very thick book on gardening.' },
+        { spr: 'plantFern', x: 22, y: 232, w: 64, h: 64, solid: [34, 268, 40, 26], label: 'fern', say: 'Nana repots this every spring. Scheduled maintenance.' },
+        { spr: 'cushion', x: 150, y: 322, w: 72, h: 32, z: 3 },
+        { spr: 'rockingchair', x: 250, y: 248, w: 96, h: 104, z: 300, front: 60, solid: [256, 300, 84, 50], label: 'rocking chair', say: 'It rocks at a steady 0.5 Hz. A very stable service.' },
+        { spr: 'teatable', x: 358, y: 292, w: 64, h: 64, solid: [362, 322, 56, 30], label: 'tea table', say: 'A steaming mug of tea. Cold for the past hour. Nana forgot again.' },
+        { spr: 'yarn', x: 226, y: 358, w: 36, h: 32, z: 4 },
+        { spr: 'bigplant', x: 542, y: 238, w: 80, h: 128, solid: [554, 332, 56, 28], label: 'big plant', say: 'Jungle corner. Do not enter without a machete or a merge request.' },
+        { spr: 'plantFlower', x: 44, y: 336, w: 64, h: 64, solid: [56, 372, 40, 26], label: 'flowers', say: 'Cheerful. Somebody is definitely getting a hug.' }
+      ],
+      residents: [
+        { id: 'nanarosa', name: 'Nana Rosa', hair: 'bun', hairColor: '#d6d6dc', skinColor: '#e8b98a', bodyColor: '#8a5fb0', trimColor: '#5f3f80', accessory: 'scarf', accColor: '#e8a3b5',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 298, y: 320, scale: 0.9, pose: 'sit', act: 'knit', hit: [276, 310, 44, 40],
+          lines: ["Back in my day we deployed by carrier pigeon.", "Knit one, purl one, and always keep a backup of the pattern.", "Sit down, dear. Slow and steady wins the release."] }
+      ],
+      pets: [
+        { id: 'ginger', kind: 'cat', name: 'Ginger', spr: 'catSleep', x: 158, y: 302, w: 56, h: 40, z: 346, act: 'sleep', solid: [156, 322, 60, 26], hit: [150, 310, 76, 44],
+          lines: ["Purr... (Ginger is asleep. Do not restart her.)", "Zzz. (She has been idle for 18 hours. Very efficient.)", "Mrrp. (She loves Nana's lap. And yours, apparently.)"] }
+      ]
+    },
+    // ---------- Home 5: Lindqvist — Gamers ----------
+    {
+      name: 'Lindqvist', sign: 'Lindqvist home', heading: 'LINDQVIST HOME — GAMERS',
+      subtitle: 'Player two has joined the lobby. Walk to the door mat to head back out.',
+      theme: { wall: '#4a3f78', wall2: '#41376b', wainscot: '#2c2450', wainscotBorder: '#1c1738', sidewall: '#1c1738', floor: 'floorCarpet', floorFilter: 'brightness(0.95)' },
+      furniture: [
+        { spr: 'rug', x: 176, y: 254, w: 176, h: 104, z: 1, css: 'filter:hue-rotate(250deg) saturate(1.1) brightness(0.75);' },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'bookshelf', x: 24, y: 58, w: 80, h: 128, solid: [26, 154, 76, 30], label: 'game shelf', say: 'Every game is 100% completed. Every backlog is 0% completed.' },
+        { spr: 'posterInvader', x: 124, y: 42, w: 56, h: 72, z: 2, hit: [118, 150, 70, 10], label: 'poster', say: 'Space invaders. The original stress test for a load balancer.' },
+        { spr: 'neonGame', x: 240, y: 26, w: 160, h: 44, z: 2 },
+        { spr: 'speaker', x: 192, y: 104, w: 56, h: 80, solid: [194, 154, 52, 30], label: 'speaker', say: 'Bass so heavy it triggers the smoke detector every Friday.' },
+        { spr: 'tv', x: 252, y: 74, w: 136, h: 116, solid: [256, 150, 128, 40], label: 'TV', say: 'GAME ON, says the neon sign. Level 7: the boss has 99 problems and every one is a merge conflict.', glow: [276, 82, 88, 48, 'game'] },
+        { spr: 'speaker', x: 392, y: 104, w: 56, h: 80, solid: [394, 154, 52, 30], label: 'speaker', say: 'The left speaker was jealous, so this one is louder.' },
+        { spr: 'posterRocket', x: 470, y: 40, w: 56, h: 72, z: 2, hit: [464, 150, 70, 10], label: 'poster', say: 'A rocket. Every speedrun starts with a clean build.' },
+        { spr: 'plantFern', x: 548, y: 114, w: 64, h: 64, solid: [560, 152, 40, 26], label: 'plant', say: 'The only member of the household that never lags.' },
+        { spr: 'controller', x: 294, y: 312, w: 40, h: 28, z: 3 },
+        { spr: 'controller', x: 306, y: 346, w: 40, h: 28, z: 3 },
+        { spr: 'beanbag', x: 186, y: 262, w: 96, h: 64, z: 250, front: 22, solid: [190, 300, 88, 26], label: 'bean bag', say: 'A very well-tested bean bag. Zero memory leaks. Some filling leaks.' },
+        { spr: 'sofa', x: 340, y: 262, w: 200, h: 92, z: 300, front: 44, css: 'filter:hue-rotate(250deg) saturate(0.8);', solid: [344, 300, 192, 54], label: 'sofa', say: 'Player-two seat. Pizza-stained, battle-tested.' },
+        { spr: 'dogbed', x: 54, y: 314, w: 72, h: 40, z: 1 },
+        { spr: 'beanbagG', x: 520, y: 336, w: 96, h: 64, solid: [524, 366, 88, 34], label: 'spare bean bag', say: 'Reserved for a friend who has promised to come over since 2019.' }
+      ],
+      residents: [
+        { id: 'elias', name: 'Elias', hair: 'byte', hairColor: '#d9b040', skinColor: '#f0c9a0', bodyColor: '#3fa08a', trimColor: '#26705f', accessory: 'headphones', accColor: '#ff7ae0',
+          expr: { idle: 'excited', talk: 'happy', happy: 'excited', react: 'curious' }, x: 234, y: 304, scale: 0.9, pose: 'sit', back: true, act: 'game', hit: [214, 296, 40, 34],
+          lines: ["Do not pause. I am in a rolling release. Of loot.", "One more level, then I'll do my homework. Definitely.", "The boss has 99 problems and lag is all of them."] },
+        { id: 'freja', name: 'Freja', hair: 'pigtails', hairColor: '#7a3c2a', skinColor: '#f0c9a0', bodyColor: '#e8709a', trimColor: '#b04a70', accessory: 'none', accColor: '#e8709a',
+          expr: { idle: 'curious', talk: 'happy', happy: 'excited', react: 'curious' }, x: 440, y: 318, scale: 0.9, pose: 'sit', back: true, act: 'tv', hit: [420, 300, 40, 54],
+          lines: ["Elias, you are not the main character. I am the reviewer.", "My job is to shout suggestions. Like a code review, but louder.", "Player two is still waiting on the controller. Merge request pending."] }
+      ],
+      pets: [
+        { id: 'pixel', kind: 'dog', name: 'Pixel', spr: 'dogSpottedLie', x: 50, y: 296, w: 80, h: 40, act: 'wag', solid: [54, 316, 72, 22], hit: [54, 304, 76, 40],
+          tail: { spr: 'dogSpottedTail', x: 76, y: 8, w: 24, h: 28 },
+          lines: ["Woof. (He is sleeping through the boss fight. Respect.)", "Snore. (Zero packet loss. Full rest.)", "Bork! (He wants the last controller for himself.)"] }
+      ]
+    },
+    // ---------- Home 6: Marco's Kitchen ----------
+    {
+      name: 'Marco', sign: 'Marco home', heading: "MARCO'S KITCHEN",
+      subtitle: 'Something smells delicious. Walk to the door mat to head back out.',
+      theme: { wall: '#f2e6d4', wall2: '#e8dac4', wainscot: '#b03a2e', wainscotBorder: '#7a2018', sidewall: '#7a2018', floor: 'floorChecker' },
+      furniture: [
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'fridge', x: 24, y: 40, w: 72, h: 144, solid: [26, 150, 68, 34], label: 'fridge', say: 'Twelve cheeses. Zero vegetables. Definitely a balanced pipeline.' },
+        { spr: 'counterCabinet2', x: 96, y: 114, w: 64, h: 64, solid: [96, 150, 64, 28], label: 'cupboard', say: 'Pasta in every shape. Sorted by deployment stage.' },
+        { spr: 'counterSink', x: 160, y: 114, w: 64, h: 64, solid: [160, 150, 64, 28], label: 'sink', say: 'Only two dishes left. The dishwasher is on retry.' },
+        { spr: 'rangehood', x: 220, y: 20, w: 72, h: 64, z: 2 },
+        { spr: 'stove', x: 224, y: 90, w: 64, h: 88, z: 178, solid: [224, 150, 64, 28], label: 'stove', say: 'A pot of sauce. Simmering at a steady 200 OK.' },
+        { spr: 'counterCabinet2', x: 288, y: 114, w: 64, h: 64, solid: [288, 150, 64, 28], label: 'cupboard', say: 'Herbs, spices and one jar labelled "secret". It is oregano.' },
+        { spr: 'counterCabinet2', x: 352, y: 114, w: 64, h: 64, solid: [352, 150, 64, 28], label: 'cupboard', say: 'Never serve to prod before tasting in staging.' },
+        { spr: 'window', x: 436, y: 24, w: 104, h: 96, z: 2, hit: [436, 150, 104, 10], label: 'window', say: 'A sunny street outside. Deliveries all arrived on time.' },
+        { spr: 'plantSill', x: 464, y: 76, w: 48, h: 48, z: 3 },
+        { spr: 'bookshelf', x: 546, y: 58, w: 80, h: 128, solid: [548, 154, 74, 30], label: 'cookbooks', say: 'Two hundred cookbooks. Marco only follows the one from his mother.' },
+        { spr: 'stool', x: 300, y: 196, w: 48, h: 56, z: 200, solid: [304, 226, 40, 24], label: 'stool', say: 'A step for small chefs. Lucia has taken it over.' },
+        { spr: 'diningtable', x: 380, y: 250, w: 136, h: 80, solid: [384, 290, 128, 40], label: 'dining table', say: 'The table is set for four. Somebody always eats standing up.' },
+        { spr: 'chair', x: 332, y: 270, w: 48, h: 72, solid: [338, 308, 36, 34], label: 'chair', say: 'A very sturdy chair. Approved by the on-call kitchen inspector.' },
+        { spr: 'chair', x: 516, y: 270, w: 48, h: 72, flip: true, solid: [522, 308, 36, 34], label: 'chair', say: 'This chair has heard every story about the pasta of 2014.' },
+        { spr: 'plant', x: 24, y: 250, w: 64, h: 64, solid: [36, 288, 40, 26], label: 'plant', say: 'Basil. Dying of love, mostly.' }
+      ],
+      residents: [
+        { id: 'marco', name: 'Marco', hair: 'buzzcut', hairColor: '#171215', skinColor: '#c98d5f', bodyColor: '#f8f1e2', trimColor: '#9c7a52', accessory: 'chefhat', accColor: '#ffffff',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 200, y: 236, scale: 0.9, pose: 'stand', act: 'cook',
+          lines: ["Never serve to prod before tasting in staging.", "A good sauce, like a good pipeline, is never rushed.", "Two rules: stir constantly, and always keep a rollback dish."] },
+        { id: 'lucia', name: 'Lucia', hair: 'pigtails', hairColor: '#3a2414', skinColor: '#c98d5f', bodyColor: '#f0c440', trimColor: '#b08a20', accessory: 'apron', accColor: '#c0392b',
+          expr: { idle: 'excited', talk: 'happy', happy: 'excited', react: 'curious' }, x: 324, y: 214, scale: 0.62, pose: 'stand', act: 'cook', hit: [304, 204, 40, 12],
+          lines: ["I'm the sous-chef! I taste-test in production.", "Papa says stir left. I stir right. It's called A/B testing.", "I can see the whole kitchen from up here!"] }
+      ],
+      pets: [
+        { id: 'brutus', kind: 'dog', name: 'Brutus', spr: 'dogSit', x: 440, y: 344, w: 70, h: 80, act: 'wag', solid: [446, 396, 58, 24], hit: [440, 380, 70, 44],
+          tail: { spr: 'dogTail', x: 52, y: 44, w: 30, h: 35 },
+          lines: ["Woof! (He has been begging for pasta since 1 PM.)", "Whine. (Translation: one small meatball, please.)", "Bork! (He would trade his bed for a sausage.)"] }
+      ],
+      fx: [{ kind: 'steam', x: 256, y: 96, n: 4, z: 990 }, { kind: 'steam', x: 448, y: 262, n: 2, z: 990 }]
+    },
+    // ---------- Home 7: Alvarez — Music Room ----------
+    {
+      name: 'Alvarez', sign: 'Alvarez home', heading: 'ALVAREZ HOME — MUSIC ROOM',
+      subtitle: 'The band is warming up. Walk to the door mat to head back out.',
+      theme: { wall: '#7fcfc6', wall2: '#6fbfb6', wainscot: '#2f7f7a', wainscotBorder: '#1f5754', sidewall: '#1f5754', floor: 'floorWoodDark' },
+      furniture: [
+        { spr: 'rug', x: 190, y: 290, w: 176, h: 104, z: 1, css: 'filter:hue-rotate(300deg);' },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'guitar', x: 28, y: 74, w: 48, h: 112, solid: [28, 154, 44, 30], label: 'guitar', say: 'Three chords and the truth. Also a broken string.' },
+        { spr: 'speaker', x: 96, y: 102, w: 56, h: 80, solid: [98, 154, 52, 30], label: 'speaker', say: 'Turned up to eleven. Load tested by the neighbours.' },
+        { spr: 'posterNotes', x: 176, y: 40, w: 56, h: 72, z: 2, hit: [170, 150, 70, 10], label: 'poster', say: 'Sheet music. In 4/4, the same rhythm as a nightly build.' },
+        { spr: 'window', x: 304, y: 24, w: 104, h: 96, z: 2, hit: [304, 150, 104, 10], label: 'window', say: 'The choir next door is in tune. A rare merge.' },
+        { spr: 'posterVinyl', x: 434, y: 40, w: 56, h: 72, z: 2, hit: [428, 150, 70, 10], label: 'poster', say: 'A vinyl record. The original persistent storage.' },
+        { spr: 'speaker', x: 494, y: 102, w: 56, h: 80, solid: [496, 154, 52, 30], label: 'speaker', say: 'The bass drives the whole pipeline. Literally the beat.' },
+        { spr: 'bookshelf', x: 546, y: 58, w: 80, h: 128, solid: [548, 154, 74, 30], label: 'bookshelf', say: 'Songbooks alphabetised by key. Not by title. Chaos.' },
+        { spr: 'piano', x: 176, y: 236, w: 144, h: 80, z: 150, front: 20, solid: [180, 262, 136, 54], label: 'keyboard', say: 'A keyboard with 61 keys and one loose C sharp.' },
+        { spr: 'cushion', x: 350, y: 330, w: 72, h: 32, z: 3 },
+        { spr: 'armchairF', x: 440, y: 236, w: 88, h: 96, z: 300, front: 56, solid: [442, 276, 84, 54], label: 'armchair', say: 'The front-row seat. Reserved for the loudest supporter.' },
+        { spr: 'plant', x: 30, y: 214, w: 64, h: 64, solid: [42, 252, 40, 26], label: 'plant', say: 'It grows faster when there is music. Science, allegedly.' },
+        { spr: 'plantFern', x: 552, y: 300, w: 64, h: 64, solid: [564, 338, 40, 26], label: 'fern', say: 'This fern has perfect pitch.' }
+      ],
+      residents: [
+        { id: 'sofia', name: 'Sofia', hair: 'pigtails', hairColor: '#2a1a12', skinColor: '#d7a074', bodyColor: '#f0c440', trimColor: '#b08a20', accessory: 'headband', accColor: '#e8506a',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 248, y: 286, scale: 0.9, pose: 'sit', act: 'music', hit: [230, 262, 40, 54],
+          lines: ["Keep the rhythm! A good pipeline is like a good beat: steady.", "This one is in the key of Deploy major.", "I practise every day. That's continuous integration, for musicians."] },
+        { id: 'miguel', name: 'Miguel', hair: 'byte', hairColor: '#2a1a12', skinColor: '#c98d5f', bodyColor: '#6a7fa3', trimColor: '#4d6088', accessory: 'headphones', accColor: '#e8506a',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 484, y: 316, scale: 0.9, pose: 'sit', act: 'tv', hit: [466, 290, 36, 40],
+          lines: ["Beautiful! That solo had zero downtime.", "My favourite gig: watching Sofia rehearse. Free tickets, of course.", "Turn it up a little. Then a little more. Then deploy."] }
+      ],
+      pets: [
+        { id: 'luna', kind: 'cat', name: 'Luna', spr: 'catGreySleep', x: 358, y: 310, w: 56, h: 40, z: 348, act: 'sleep', solid: [356, 330, 60, 26], hit: [350, 318, 76, 44],
+          lines: ["Purr... (Luna is asleep. She has heard this song 400 times.)", "Zzz. (Not even the drum solo bothers her.)", "Mrrp. (She votes for a quiet lullaby.)"] }
+      ],
+      fx: [{ kind: 'notes', x: 250, y: 238, n: 4, z: 995 }]
+    },
+    // ---------- Home 8: Dan's Home Office ----------
+    {
+      name: 'Dan', sign: 'Dan home', heading: "DAN'S HOME OFFICE",
+      subtitle: 'On call, as always. Walk to the door mat to head back out.',
+      theme: { wall: '#c9ced6', wall2: '#bcc2cc', wainscot: '#5b6473', wainscotBorder: '#3c4350', sidewall: '#3c4350', floor: 'floorGrey' },
+      furniture: [
+        { spr: 'rug', x: 240, y: 236, w: 176, h: 104, z: 1, css: 'filter:grayscale(1) brightness(1.05);' },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'filecabinet', x: 24, y: 90, w: 64, h: 88, solid: [24, 154, 64, 26], label: 'filing cabinet', say: 'Incident reports. Sorted by pager volume.' },
+        { spr: 'whiteboard', x: 100, y: 40, w: 128, h: 96, z: 2, hit: [96, 150, 140, 10], label: 'whiteboard', say: 'Commit, build, test, deploy. And a loop back when it fails. Which is always.' },
+        { spr: 'pagerSign', x: 262, y: 20, w: 160, h: 44, z: 2, glow: [266, 24, 152, 36, 'alarm'] },
+        { spr: 'deskDual', x: 244, y: 74, w: 192, h: 112, solid: [246, 152, 188, 34], label: 'desk', say: 'The ON CALL sign is lit. The coffee is on. Dan is not. Two monitors, seven open terminals.', glow: [[260, 82, 60, 36, 'mon'], [336, 82, 60, 36, 'mon', 1.1]] },
+        { spr: 'window', x: 456, y: 24, w: 104, h: 96, z: 2, hit: [456, 150, 104, 10], label: 'window', say: 'The outside world. Rumoured to exist. Dan has not verified it.' },
+        { spr: 'plantFern', x: 564, y: 114, w: 64, h: 64, solid: [574, 152, 40, 26], label: 'plant', say: 'Dan waters it during incidents. It has never been so hydrated.' },
+        { spr: 'deskchair', x: 306, y: 230, w: 68, h: 40, solid: [312, 240, 56, 26] },
+        { spr: 'bigplant', x: 24, y: 232, w: 80, h: 128, solid: [36, 326, 56, 26], label: 'big plant', say: 'The only thing in the office with a stable release cycle.' },
+        { spr: 'lamp', x: 566, y: 200, w: 40, h: 112, solid: [568, 290, 36, 20], label: 'floor lamp', say: 'Bright enough for a 3 AM production incident.' },
+        { spr: 'plantFlower', x: 500, y: 330, w: 64, h: 64, solid: [512, 366, 40, 26], label: 'flowers', say: 'A gift from the team. Because they never see him outside Zoom.' }
+      ],
+      residents: [
+        { id: 'dan', name: 'Dan', hair: 'byte', hairColor: '#3a2414', skinColor: '#e8b98a', bodyColor: '#4a5a70', trimColor: '#2c3f6b', accessory: 'headphones', accColor: '#3a3a44',
+          expr: { idle: 'determined', talk: 'happy', happy: 'excited', react: 'tired' }, x: 340, y: 252, scale: 0.9, pose: 'sit', back: true, act: 'study', hit: [300, 230, 80, 40],
+          lines: ["If the pager goes off, I'm not here.", "It works on my machine. Which is also the office. And the kitchen.", "Two monitors: one for code, one for the incident. Guess which is busier."] }
+      ],
+      pets: [
+        { id: 'cron', kind: 'dog', name: 'Cron', spr: 'dogBlackLie', x: 292, y: 262, w: 80, h: 40, z: 304, act: 'sleep', solid: [296, 282, 72, 22], hit: [292, 268, 80, 40],
+          tail: { spr: 'dogBlackTail', x: 76, y: 8, w: 24, h: 28 },
+          lines: ["Snore. (Cron runs at midnight. So does he, in his dreams.)", "Woof. (He sleeps through every alert. Not a good on-call dog.)", "Zzz. (Uptime: 99.9% asleep.)"] }
+      ]
+    },
+    // ---------- Home 9: Ines' Painter's Studio ----------
+    {
+      name: 'Ines', sign: 'Ines home', heading: "INES' PAINTER'S STUDIO",
+      subtitle: 'Mind the wet paint. Walk to the door mat to head back out.',
+      theme: { wall: '#f4ead2', wall2: '#eadfc4', wainscot: '#d9c9a4', wainscotBorder: '#a8956a', sidewall: '#a8956a', floor: 'floorWhite' },
+      furniture: [
+        { spr: 'paintrug', x: 150, y: 290, w: 176, h: 104, z: 1 },
+        { spr: 'mat', x: 272, y: 414, w: 96, h: 32, z: 1 },
+        { spr: 'canvasstack', x: 32, y: 74, w: 96, h: 104, solid: [34, 154, 92, 26], label: 'canvases', say: 'Finished paintings waiting to be hung. Like a backlog, but prettier.' },
+        { spr: 'photoshelf', x: 132, y: 60, w: 104, h: 64, z: 2, hit: [130, 150, 108, 10], label: 'shelf', say: 'Inspiration: photos, postcards and one fossilised brush.' },
+        { spr: 'windowBig', x: 240, y: 20, w: 160, h: 120, z: 2, hit: [240, 150, 160, 10], label: 'big window', say: 'North light. The best release environment for a painting.' },
+        { spr: 'plantSill', x: 262, y: 76, w: 48, h: 48, z: 3 },
+        { spr: 'lightbeam', x: 254, y: 156, w: 144, h: 104, z: 2 },
+        { spr: 'lightbeam', x: 330, y: 156, w: 144, h: 104, z: 2 },
+        { spr: 'bookshelf', x: 546, y: 58, w: 80, h: 128, solid: [548, 154, 74, 30], label: 'art books', say: 'Monet, Klee and a very thick manual for a printer.' },
+        { spr: 'easel', x: 430, y: 100, w: 112, h: 144, solid: [436, 226, 100, 20], label: 'easel', say: 'A colourful abstract. Reviewers say: "Interesting. Needs unit tests."' },
+        { spr: 'paintpots', x: 300, y: 264, w: 104, h: 44, solid: [304, 282, 96, 24], label: 'paint pots', say: 'Red, blue and yellow. Every colour is a merge of three.' },
+        { spr: 'stool', x: 352, y: 320, w: 48, h: 56, solid: [356, 350, 40, 24], label: 'stool', say: 'Splattered with every colour ever made.' },
+        { spr: 'plantFern', x: 24, y: 214, w: 64, h: 64, solid: [36, 252, 40, 26], label: 'plant', say: 'A muse. Drinks a lot of water and turpentine. No, wait: only water.' },
+        { spr: 'plantFlower', x: 552, y: 300, w: 64, h: 64, solid: [564, 338, 40, 26], label: 'flowers', say: 'Fresh sunflowers. Ines paints them. Then sniffs them. Then paints again.' }
+      ],
+      residents: [
+        { id: 'ines', name: 'Ines', hair: 'bun', hairColor: '#8f2a24', skinColor: '#f0c9a0', bodyColor: '#f4ecd8', trimColor: '#b8ad98', accessory: 'headband', accColor: '#e8506a',
+          expr: { idle: 'happy', talk: 'happy', happy: 'excited', react: 'curious' }, x: 424, y: 270, scale: 0.9, pose: 'stand', act: 'paint',
+          lines: ["Every deploy is just a painting until someone hangs it in prod.", "Mix the colours slowly. Same as merging branches.", "A blank canvas is a fresh repo. Scary and exciting."] }
+      ],
+      pets: [
+        { id: 'dot', kind: 'dog', name: 'Dot', spr: 'dogCreamSit', x: 250, y: 344, w: 42, h: 48, act: 'wag', solid: [252, 372, 36, 18], hit: [246, 358, 50, 36],
+          tail: { spr: 'dogCreamTail', x: 36, y: 30, w: 18, h: 21 },
+          lines: ["Woof. (She is watching the brush. Very focused.)", "Yip! (She has paint on her nose again.)", "Woof woof. (Translation: it needs more blue.)"] }
+      ]
+    }
+    // ==== PHASE2 HOMES END ====
+  ];
+  var houseIdx = -1, houseReturn = null, houseLoopHandle = null, houseLockUntil = 0;
+  var houseHero = { x: HOUSE_ROOM.startX, y: HOUSE_ROOM.startY - HERO_FOOT_DY, facing: 'up', moving: false };
+  var houseBubbleUntil = 0, houseActionText = '', houseActionMode = null;
+  var houseHomeActive = DEFAULT_HOME, houseFurnActive = HOUSE_FURN, houseSolidRects = [], houseBubbleAnchor = null;
+  var houseLineIdx = {}; // per-session (in-memory) line cursor per resident/pet id
+
+  function homeFor(i) { return (i >= 0 && HOUSE_HOMES[i]) || DEFAULT_HOME; }
+
+  function houseFurnHTML(f) {
+    var S = HOUSE_INTERIOR_SPRITES;
+    var z = f.z !== undefined ? f.z : f.y + f.h;
+    var st = 'left:' + f.x + 'px;top:' + f.y + 'px;width:' + f.w + 'px;height:' + f.h + 'px;' + (f.flip ? 'transform:scaleX(-1);' : '') + (f.css || '');
+    var h = '<img class="dgc-house-furn" alt="" draggable="false" src="' + S[f.spr] + '" style="' + st + 'z-index:' + z + ';">';
+    if (f.front !== undefined) {
+      var zf = f.zf !== undefined ? f.zf : f.y + f.h;
+      h += '<img class="dgc-house-furn dgc-house-furn-front" alt="" draggable="false" src="' + S[f.spr] + '" style="' + st + 'clip-path:inset(' + f.front + 'px 0 0 0);z-index:' + zf + ';">';
+    }
+    if (f.glow) {
+      var gl = typeof f.glow[0] === 'number' ? [f.glow] : f.glow;
+      gl.forEach(function (g) {
+        h += '<div class="dgc-house-tvglow' + (g[4] ? ' dgc-glow-' + g[4] : '') + '" style="left:' + g[0] + 'px;top:' + g[1] + 'px;width:' + g[2] + 'px;height:' + g[3] + 'px;' + (g[5] ? 'animation-delay:' + g[5] + 's;' : '') + 'z-index:' + ((f.z !== undefined ? f.z : f.y + f.h) + 1) + ';"></div>';
+      });
+    }
+    return h;
+  }
+
+  function houseAddZs(el, n, x0, y0) {
+    for (var k = 0; k < n; k++) {
+      var z = document.createElement('span');
+      z.className = 'dgc-house-z'; z.textContent = 'z';
+      z.style.left = (x0 + k * 5) + 'px'; z.style.top = (y0 - k * 3) + 'px'; z.style.animationDelay = (k * 1.2) + 's';
+      el.appendChild(z);
+    }
+  }
+
+  // Simple in-room wander: pick a target inside the zone (feet coords), walk 0.5px/tick, pause 1.5-4s. Zones never touch solids (checked offline).
+  var houseWanderers = [];
+  function houseEntPos(e) { return { x: e._lx !== undefined ? e._lx : e.x, y: e._ly !== undefined ? e._ly : e.y }; }
+  function houseWanderPick(w) {
+    var z = w.zone;
+    w.tx = z.x + Math.random() * z.w; w.ty = z.y + Math.random() * z.h;
+  }
+  function houseWanderTick() {
+    for (var k = 0; k < houseWanderers.length; k++) {
+      var w = houseWanderers[k];
+      if (w.wait > 0) { w.wait--; continue; }
+      var dx = w.tx - w.x, dy = w.ty - w.y, d = Math.hypot(dx, dy);
+      if (d <= 0.6) { w.wait = 94 + Math.floor(Math.random() * 156); houseWanderPick(w); continue; }
+      w.x += dx / d * 0.5; w.y += dy / d * 0.5;
+      var e = w.ent;
+      e._lx = w.x; e._ly = w.y;
+      if (w.pet) { w.el.style.left = (w.x - e.w / 2) + 'px'; w.el.style.top = (w.y - e.h) + 'px'; w.el.style.zIndex = Math.round(w.y); }
+      else { w.el.style.left = w.x + 'px'; w.el.style.top = w.y + 'px'; w.el.style.zIndex = Math.round(w.y); }
+    }
+  }
+  function houseRegisterWander(e, el, isPet) {
+    var w = { ent: e, el: el, pet: isPet, zone: e.wander, x: isPet ? e.x + e.w / 2 : e.x, y: isPet ? e.y + e.h : e.y, wait: 30 + Math.floor(Math.random() * 120) };
+    houseWanderPick(w);
+    houseWanderers.push(w);
+  }
+  // Ambient particle effects (steam puffs, floating music notes): { kind:'steam'|'notes', x, y, n, z }
+  function houseBuildFx(home) {
+    var stage = $('dgcHouseStage');
+    if (!stage) return;
+    (home.fx || []).forEach(function (f) {
+      var box = document.createElement('div');
+      box.className = 'dgc-house-fx';
+      box.style.left = f.x + 'px'; box.style.top = f.y + 'px'; box.style.zIndex = f.z !== undefined ? f.z : 990;
+      var n = f.n || 3, glyphs = ['♪', '♫', '♬', '♪'], cols = ['#fff3c4', '#ffb0d0', '#9bd6f5', '#b8f0a0'];
+      for (var k = 0; k < n; k++) {
+        var sp = document.createElement('span');
+        if (f.kind === 'notes') {
+          sp.className = 'dgc-fx-note'; sp.textContent = glyphs[k % 4]; sp.style.color = cols[k % 4];
+          sp.style.left = ((k % 2 ? 10 : -12) + k * 3) + 'px'; sp.style.animationDelay = (-(k * 3.4 / n)) + 's';
+        } else {
+          sp.className = 'dgc-fx-puff';
+          sp.style.left = ((k % 3) * 6 - 6) + 'px'; sp.style.animationDelay = (-(k * 2.6 / n)) + 's'; sp.style.setProperty('--dx', ((k % 2 ? 7 : -5)) + 'px');
+        }
+        box.appendChild(sp);
+      }
+      stage.appendChild(box);
+    });
+  }
+
+  function buildHouseResidents(home) {
+    var stage = $('dgcHouseStage');
+    if (!stage) return;
+    houseWanderers = [];
+    (home.pets || []).forEach(function (p) {
+      p._lx = undefined; p._ly = undefined;
+      var w = document.createElement('div');
+      w.className = 'dgc-house-pet dgc-act-' + (p.act || 'still');
+      w.setAttribute('data-pet', p.id);
+      w.style.cssText = 'left:' + p.x + 'px;top:' + p.y + 'px;width:' + p.w + 'px;height:' + p.h + 'px;z-index:' + (p.z !== undefined ? p.z : Math.round(p.y + p.h)) + ';';
+      var img = '<img class="dgc-house-pet-body" alt="" draggable="false" src="' + HOUSE_INTERIOR_SPRITES[p.spr] + '">';
+      if (p.tail) img += '<img class="dgc-house-pet-tail" alt="" draggable="false" src="' + HOUSE_INTERIOR_SPRITES[p.tail.spr] + '" style="left:' + p.tail.x + 'px;top:' + p.tail.y + 'px;width:' + p.tail.w + 'px;height:' + p.tail.h + 'px;">';
+      w.innerHTML = img;
+      if (p.act === 'sleep') houseAddZs(w, 3, p.w - 10, 4);
+      stage.appendChild(w);
+      if (p.wander) houseRegisterWander(p, w, true);
+    });
+    (home.residents || []).forEach(function (r) {
+      r._lx = undefined; r._ly = undefined;
+      var sc = r.scale || 0.9;
+      var el = document.createElement('div');
+      el.className = 'dgc-house-res dgc-act-' + (r.act || 'still') + (r.pose === 'sit' ? ' dgc-res-sit' : '') + (r.back ? ' dgc-res-back' : '');
+      el.setAttribute('data-res', r.id);
+      el.style.left = r.x + 'px'; el.style.top = r.y + 'px';
+      el.style.marginLeft = '-32px'; el.style.marginTop = '-82px';
+      el.style.transform = 'scale(' + sc + ')';
+      el.style.zIndex = r.z !== undefined ? r.z : Math.round(r.y);
+      var sp = document.createElement('div');
+      sp.className = 'dgc-sprite dgc-house-res-sprite';
+      sp.style.animationDelay = (-(r.x % 7) * 0.37) + 's';
+      var svg = npcChibiRoot(r);
+      if (r.back) svg = svg.replace('class="dgc-chibi-head" cx="50" cy="42" r="23" fill="' + r.skinColor + '"', 'class="dgc-chibi-head" cx="50" cy="42" r="23" fill="' + r.hairColor + '"');
+      sp.innerHTML = svg;
+      el.appendChild(sp);
+      if (!r.back) setExpression(sp, r.expr.idle);
+      if (r.act === 'sleep') houseAddZs(el, 3, 46, 8);
+      stage.appendChild(el);
+      if (r.wander) houseRegisterWander(r, el, false);
+    });
+    houseBuildFx(home);
+  }
+
+  function buildHouseRoom(i) {
+    var stage = $('dgcHouseStage');
+    if (!stage) return;
+    var home = homeFor(i);
+    houseHomeActive = home; houseFurnActive = home.furniture;
+    // wipe the previous room (never the hero token or the bubble)
+    Array.prototype.forEach.call(stage.querySelectorAll('.dgc-house-wall,.dgc-house-floor,.dgc-house-sidewall,.dgc-house-frontwall,.dgc-house-door,.dgc-house-furn,.dgc-house-tvglow,.dgc-house-res,.dgc-house-pet,.dgc-house-fx'), function (n) { n.parentNode.removeChild(n); });
+    var th = home.theme || {};
+    [['--room-wall', th.wall], ['--room-wall2', th.wall2], ['--room-wainscot', th.wainscot], ['--room-wainscot-border', th.wainscotBorder], ['--room-sidewall', th.sidewall], ['--room-floor-filter', th.floorFilter]].forEach(function (kv) {
+      if (kv[1]) stage.style.setProperty(kv[0], kv[1]); else stage.style.removeProperty(kv[0]);
+    });
+    var hd = $('dgcHouseHeading'), sb = $('dgcHouseSub');
+    if (hd) hd.textContent = home.heading || 'HOME';
+    if (sb) sb.textContent = home.subtitle || DEFAULT_HOME.subtitle;
+    var S = HOUSE_INTERIOR_SPRITES;
+    var html = '<div class="dgc-house-wall"><div class="dgc-house-wainscot"></div></div>' +
+      '<div class="dgc-house-floor" style="background-image:url(' + (S[th.floor] || S.floor) + ')"></div>' +
+      '<div class="dgc-house-sidewall" style="left:0"></div><div class="dgc-house-sidewall" style="right:0"></div>' +
+      '<div class="dgc-house-frontwall"></div><div class="dgc-house-door"></div>';
+    home.furniture.forEach(function (f) { html += houseFurnHTML(f); });
+    stage.insertAdjacentHTML('afterbegin', html);
+    buildHouseResidents(home);
+    houseSolidRects = [];
+    home.furniture.forEach(function (f) { if (f.solid) houseSolidRects.push(f.solid); });
+    (home.pets || []).forEach(function (p) { if (p.solid) houseSolidRects.push(p.solid); });
+  }
+
+  function houseBlockedAt(cx, cy) {
+    var fx = cx, fy = cy + HERO_FOOT_DY;
+    if (fx < HOUSE_ROOM.minX || fx > HOUSE_ROOM.maxX || fy < HOUSE_ROOM.minY || fy > HOUSE_ROOM.maxY) return true;
+    for (var i = 0; i < houseSolidRects.length; i++) {
+      var r = houseSolidRects[i];
+      if (fx + 10 > r[0] && fx - 10 < r[0] + r[2] && fy > r[1] && fy < r[1] + r[3]) return true;
+    }
+    return false;
+  }
+  function houseOnMat() {
+    var fx = houseHero.x, fy = houseHero.y + HERO_FOOT_DY, m = HOUSE_MAT_ZONE;
+    return fx >= m.x && fx <= m.x + m.w && fy >= m.y && fy <= m.y + m.h;
+  }
+  function houseRectDist(r, fx, fy) {
+    var dx = Math.max(r[0] - fx, 0, fx - (r[0] + r[2])), dy = Math.max(r[1] - fy, 0, fy - (r[1] + r[3]));
+    return Math.hypot(dx, dy);
+  }
+  // Nearest interactable: furniture (within 30px) OR resident / pet (within 38px, preferred by a 10px bias).
+  // Returns { kind:'furn'|'res'|'pet', label, say?, ent } or null.
+  function houseNearFurn() {
+    var fx = houseHero.x, fy = houseHero.y + HERO_FOOT_DY, best = null, bd = 1e9;
+    houseFurnActive.forEach(function (f) {
+      var r = f.hit || f.solid;
+      if (!r || !f.say) return;
+      var d = houseRectDist(r, fx, fy);
+      if (d <= 30 && d < bd) { best = { kind: 'furn', label: f.label, say: f.say, ent: f }; bd = d; }
+    });
+    ['residents', 'pets'].forEach(function (key) {
+      (houseHomeActive[key] || []).forEach(function (e) {
+        var lp = houseEntPos(e), r;
+        if (e.hit) r = [e.hit[0] + lp.x - e.x, e.hit[1] + lp.y - e.y, e.hit[2], e.hit[3]];
+        else r = key === 'residents' ? [lp.x - 20, lp.y - 24, 40, 24] : (e.wander ? [lp.x - e.w / 2, lp.y - 24, e.w, 24] : [e.x, e.y + e.h - 24, e.w, 24]);
+        var d = houseRectDist(r, fx, fy);
+        if (d <= 38 && d - 10 < bd) { best = { kind: key === 'residents' ? 'res' : 'pet', label: e.name, ent: e }; bd = d - 10; }
+      });
+    });
+    return best;
+  }
+
+  function renderHouseHero() {
+    var tok = $('dgcHouseHeroToken');
+    if (!tok) return;
+    tok.style.left = houseHero.x + 'px';
+    tok.style.top = houseHero.y + 'px';
+    tok.style.zIndex = Math.round(houseHero.y + HERO_FOOT_DY);
+    var fe = $('dgcHouseHeroFacing');
+    if (fe) fe.style.transform = houseHero.facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)';
+    var ow = $('dgcHouseHeroSprite') && $('dgcHouseHeroSprite').querySelector('.dgc-overworld-sprite');
+    if (ow) ow.setAttribute('data-facing', overworldFacingGroup(houseHero.facing));
+    tok.classList.toggle('dgc-city-walking', !!houseHero.moving);
+    var b = $('dgcHouseBubble');
+    if (b && !b.hidden) {
+      var bax = houseBubbleAnchor ? houseBubbleAnchor.x : houseHero.x;
+      var bay = houseBubbleAnchor ? houseBubbleAnchor.y : houseHero.y - 58;
+      b.style.left = Math.max(110, Math.min(HOUSE_ROOM.w - 110, bax)) + 'px';
+      b.style.top = Math.max(60, bay) + 'px';
+    }
+  }
+
+  function fitHouseStage() {
+    var scr = $('dgcHouseScreen'), frame = $('dgcHouseFrame'), stage = $('dgcHouseStage');
+    if (!scr || !frame || !stage) return;
+    var avail = scr.clientWidth - 24;
+    if (avail <= 0) avail = HOUSE_ROOM.w;
+    var s = Math.min(avail / HOUSE_ROOM.w, Math.max(0.3, (window.innerHeight - 230) / HOUSE_ROOM.h), 1.6);
+    frame.style.width = Math.round(HOUSE_ROOM.w * s) + 'px';
+    frame.style.height = Math.round(HOUSE_ROOM.h * s) + 'px';
+    stage.style.transform = 'scale(' + s + ')';
+  }
+
+  function screenFadeIn(id) {
+    var el = $(id);
+    if (!el) return;
+    el.classList.remove('dgc-screen-fadein');
+    void el.offsetWidth; // restart the CSS animation
+    el.classList.add('dgc-screen-fadein');
+    setTimeout(function () { el.classList.remove('dgc-screen-fadein'); }, 400);
+  }
+
+  function enterHouse(i) {
+    if (!(i >= 0 && i < HOUSE_DOORS.length)) return;
+    if (!$('dgcHouseScreen').hidden || Date.now() < houseLockUntil) return;
+    var d = HOUSE_DOORS[i];
+    houseReturn = { x: d.cx, y: d.retY, i: i };
+    houseIdx = i;
+    stopCityLoop();
+    houseBubbleAnchor = null;
+    buildHouseRoom(i);
+    var hs = $('dgcHouseHeroSprite');
+    if (hs) hs.innerHTML = overworldSpriteSVG('hero');
+    refreshHeroNameLabels();
+    houseHero = { x: HOUSE_ROOM.startX, y: HOUSE_ROOM.startY - HERO_FOOT_DY, facing: 'up', moving: false };
+    var b = $('dgcHouseBubble'); if (b) b.hidden = true;
+    houseActionText = ''; houseActionMode = null;
+    showScreen('house');
+    fitHouseStage();
+    renderHouseHero();
+    screenFadeIn('dgcHouseScreen');
+    houseLockUntil = Date.now() + 450;
+    stopHouseLoop();
+    houseLoopHandle = setInterval(houseTick, 16);
+    try { playSfx('click'); } catch (e) { /* sfx optional */ }
+  }
+
+  function stopHouseLoop() {
+    if (houseLoopHandle) { clearInterval(houseLoopHandle); houseLoopHandle = null; }
+    cityKeys = { up: false, down: false, left: false, right: false };
+  }
+
+  function leaveHouse() {
+    if ($('dgcHouseScreen').hidden || !houseReturn) return;
+    stopHouseLoop();
+    houseHero.moving = false;
+    cityHero.x = houseReturn.x;
+    cityHero.y = houseReturn.y;
+    cityHero.facing = 'down';
+    cityHero.moving = false;
+    var ct = $('dgcCityHeroToken');
+    if (ct) ct.classList.remove('dgc-city-walking');
+    goToCityScreen();
+    screenFadeIn('dgcCityScreen');
+    houseLockUntil = Date.now() + 450;
+    try { playSfx('click'); } catch (e) { /* sfx optional */ }
+  }
+
+  function houseShowBubble(text, anchor) {
+    var b = $('dgcHouseBubble');
+    if (!b) return;
+    houseBubbleAnchor = anchor || null;
+    b.textContent = text;
+    b.hidden = false;
+    houseBubbleUntil = Date.now() + 2600;
+    renderHouseHero();
+  }
+
+  function houseInteract() {
+    if (Date.now() < houseLockUntil) return;
+    if (houseOnMat()) { leaveHouse(); return; }
+    var n = houseNearFurn();
+    if (!n) return;
+    if (n.kind === 'furn') { houseShowBubble(n.say, null); }
+    else {
+      var e = n.ent, ls = e.lines || ['...'];
+      var k = houseLineIdx[e.id] || 0;
+      houseLineIdx[e.id] = (k + 1) % ls.length;
+      if (n.kind === 'res') {
+        var rp = houseEntPos(e);
+        houseShowBubble(e.name + ': ' + ls[k % ls.length], { x: rp.x, y: rp.y - 82 * (e.scale || 0.9) - 4 });
+      } else {
+        var pp = houseEntPos(e);
+        houseShowBubble(ls[k % ls.length], { x: e.wander ? pp.x : e.x + e.w / 2, y: (e.wander ? pp.y - e.h : e.y) - 4 });
+        var pw = document.querySelector('#dgcHouseStage .dgc-house-pet[data-pet="' + e.id + '"]');
+        if (pw) {
+          var old = pw.querySelector('.dgc-house-heart'); if (old) old.parentNode.removeChild(old);
+          var hh = document.createElement('span'); hh.className = 'dgc-house-heart'; hh.textContent = '♥';
+          pw.appendChild(hh);
+          setTimeout(function () { if (hh.parentNode) hh.parentNode.removeChild(hh); }, 1400);
+        }
+      }
+    }
+    try { playSfx('click'); } catch (er) { /* sfx optional */ }
+  }
+
+  function houseTick() {
+    var panel = document.getElementById('tab-game');
+    if (!panel || panel.offsetParent === null || $('dgcHouseScreen').hidden) { stopHouseLoop(); return; }
+    if ($('dgcModalBackdrop').hidden) {
+      var speed = 3.2, dx = 0, dy = 0;
+      if (cityKeys.up) dy -= 1;
+      if (cityKeys.down) dy += 1;
+      if (cityKeys.left) dx -= 1;
+      if (cityKeys.right) dx += 1;
+      var moving = dx !== 0 || dy !== 0;
+      if (moving) {
+        var len = Math.hypot(dx, dy);
+        dx = dx / len * speed; dy = dy / len * speed;
+        if (!houseBlockedAt(houseHero.x + dx, houseHero.y)) houseHero.x += dx;
+        if (!houseBlockedAt(houseHero.x, houseHero.y + dy)) houseHero.y += dy;
+        if (dx > 0) houseHero.facing = 'right';
+        else if (dx < 0) houseHero.facing = 'left';
+        else if (dy > 0) houseHero.facing = 'down';
+        else if (dy < 0) houseHero.facing = 'up';
+      }
+      houseHero.moving = moving;
+      renderHouseHero();
+    }
+    houseWanderTick();
+    var b = $('dgcHouseBubble');
+    if (b && !b.hidden && Date.now() > houseBubbleUntil) b.hidden = true;
+    // Action prompt (tappable): leave on the mat, else "look at" the nearest furniture.
+    var text = '', mode = null;
+    if (houseOnMat()) { text = '⏎ Leave house'; mode = 'leave'; }
+    else {
+      var f = houseNearFurn();
+      if (f) {
+        if (f.kind === 'res') text = '⏎ Talk to ' + f.label;
+        else if (f.kind === 'pet') text = '⏎ Pet ' + f.label;
+        else text = '⏎ Look at ' + f.label;
+        mode = 'look';
+      }
+    }
+    if (text !== houseActionText) {
+      houseActionText = text; houseActionMode = mode;
+      var pr = $('dgcHouseAction');
+      if (pr) { pr.textContent = text; pr.hidden = !mode; }
+    }
+  }
+
+  function houseScreenIsLive() {
+    var s = $('dgcHouseScreen');
+    return !!s && !s.hidden && $('dgcModalBackdrop').hidden;
+  }
+  document.addEventListener('keydown', function (e) {
+    if (!houseScreenIsLive()) return;
+    var k = e.key.toLowerCase();
+    if (k === 'arrowup' || k === 'w') { cityKeys.up = true; e.preventDefault(); }
+    else if (k === 'arrowdown' || k === 's') { cityKeys.down = true; e.preventDefault(); }
+    else if (k === 'arrowleft' || k === 'a') { cityKeys.left = true; e.preventDefault(); }
+    else if (k === 'arrowright' || k === 'd') { cityKeys.right = true; e.preventDefault(); }
+    else if (k === 'enter' || k === ' ') { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) houseInteract(); }
+    else if (k === 'escape') { e.stopImmediatePropagation(); if (Date.now() >= houseLockUntil) leaveHouse(); }
+  });
+  $('dgcHouseLeaveBtn').addEventListener('click', function () { if (Date.now() >= houseLockUntil) leaveHouse(); });
+  $('dgcHouseAction').addEventListener('click', houseInteract);
+  window.addEventListener('resize', function () { if (!$('dgcHouseScreen').hidden) fitHouseStage(); });
+  Array.prototype.forEach.call(document.querySelectorAll('#dgcHouseDpad .dgc-city-dpad-btn'), function (btn) {
+    var dir = btn.getAttribute('data-dir');
+    var press = function (e) { e.preventDefault(); cityKeys[dir] = true; };
+    var release = function () { cityKeys[dir] = false; };
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointerleave', release);
+    btn.addEventListener('pointercancel', release);
+  });
 
   /* ---- 2.1 ARMORY ---- */
   function renderArmory() {
@@ -45057,6 +46401,7 @@ $ git stash pop
   // a building, the plaza, a road, or right on top of another placed
   // decoration, instead of only fixing draw-order after the fact.
   function decorationSpotBlocked(worldX, worldY) {
+    if (worldX > FOREST_X0 - 10 || solidsAt(worldX, worldY, 0)) return true; // forest path + New City stay decoration-free
     if (pointBlockedForEnvironment(worldX, worldY, 6)) return true;
     if (blockedByHouse(worldX, worldY, 6)) return true;
     return save.townDecorations.some(function (d) { return Math.hypot(d.x - worldX, d.y - worldY) < 22; });
@@ -47080,6 +48425,8 @@ $ git stash pop
       var owSprite = citySprite.querySelector('.dgc-overworld-sprite');
       if (owSprite) owSprite.setAttribute('data-facing', overworldFacingGroup((typeof cityHero !== 'undefined' && cityHero.facing) || 'down'));
     }
+    var houseSprite = $('dgcHouseHeroSprite');
+    if (houseSprite) houseSprite.innerHTML = overworldSpriteSVG('hero');
     refreshHeroNameLabels();
   }
 
@@ -47087,7 +48434,7 @@ $ git stash pop
   // hardcoded "Junior Dev", everywhere that label appears.
   function refreshHeroNameLabels() {
     var tierName = tierById(save.heroTier).name;
-    [ 'dgcTitleHeroTag', 'dgcSelectHeroName', 'dgcCombatHeroName', 'dgcCityHeroName' ].forEach(function (id) {
+    [ 'dgcTitleHeroTag', 'dgcSelectHeroName', 'dgcCombatHeroName', 'dgcCityHeroName', 'dgcHouseHeroName' ].forEach(function (id) {
       var el = $(id);
       if (el) el.textContent = tierName;
     });
