@@ -1572,3 +1572,128 @@
     position:absolute; bottom:16px; right:18px; background:rgba(255,255,255,0.05); border:1px solid var(--dgc-border-bright);
     color:var(--dgc-text-dim); font-size:11px; padding:5px 12px;
   }
+
+/* ============================================================
+   ROOFS (Plan F stage 2): outdoor night scenes, new resident activities, fx, props.
+   ROOF ACTIVITIES: r.act may hold several space-separated names ("flirt drink").
+     body  : stargaze point chat laughchat kiss hug flirt tipsy dance mix   (animate .dgc-house-res-sprite)
+     arms  : chat laughchat kiss hug point dance tipsy (+ drink: sip, mix: shake) animate arm + matching hand (custom props --a0 --a1 --s0 --s1 --t0 --t1 --dur --dl)
+   Residents that use any of these get .dgc-res-x (arm pivots move to the shoulders, viewBox space).
+   ============================================================ */
+.dgc-house-wall.dgc-sky { background:radial-gradient(ellipse at 50% 108%, var(--sky-glow, rgba(255,120,200,0.25)), transparent 62%), linear-gradient(180deg, var(--sky-top, #070b26) 0%, var(--sky-bot, #1a2358) 100%); box-shadow:none; }
+.dgc-house-floor.dgc-deck::after { background:linear-gradient(180deg, rgba(8,10,40,0.55), transparent 40px), linear-gradient(90deg, rgba(8,10,40,0.35), transparent 24px, transparent calc(100% - 24px), rgba(8,10,40,0.35)); }
+.dgc-house-sidewall.dgc-side-parapet { top:104px; height:356px; background:var(--room-sidewall, #7d8299); box-shadow:inset 0 4px 0 #dde0ec, inset 0 6px 0 #8d92a8, 0 0 0 1px #2c3046; }
+.dgc-glow-star { animation:none; background:rgba(235,240,255,0.72); border-radius:1px; }
+.dgc-glow-twy2, .dgc-glow-twp2, .dgc-glow-twb2 { animation-duration:3.3s; animation-timing-function:ease-in-out; border-radius:2px; }
+.dgc-glow-twy2 { animation-name:dgc-act-twy; } .dgc-glow-twp2 { animation-name:dgc-act-twp; } .dgc-glow-twb2 { animation-name:dgc-act-twb; }
+.dgc-glow-moonhalo { animation:none; background:radial-gradient(circle, rgba(255,246,200,0.36) 0%, rgba(255,246,200,0.13) 42%, transparent 70%); border-radius:50%; }
+.dgc-glow-night { animation:none; background:rgba(26,34,110,0.20); mix-blend-mode:multiply; }
+.dgc-glow-nightwarm { animation:none; background:rgba(84,38,76,0.20); mix-blend-mode:multiply; }
+.dgc-glow-pool-pink, .dgc-glow-pool-cyan, .dgc-glow-pool-amber, .dgc-glow-pool-violet { animation:dgc-pool-pulse 3.4s ease-in-out infinite; border-radius:50%; }
+.dgc-glow-pool-pink { background:radial-gradient(ellipse, rgba(255,90,190,0.42), transparent 70%); }
+.dgc-glow-pool-cyan { background:radial-gradient(ellipse, rgba(70,220,255,0.36), transparent 70%); animation-delay:-1.2s; }
+.dgc-glow-pool-amber { background:radial-gradient(ellipse, rgba(255,170,70,0.46), transparent 70%); animation-delay:-0.6s; }
+.dgc-glow-pool-violet { background:radial-gradient(ellipse, rgba(160,110,255,0.36), transparent 70%); animation-delay:-2s; }
+@keyframes dgc-pool-pulse { 0%,100% { opacity:0.7; } 50% { opacity:1; } }
+.dgc-glow-disco { animation-name:dgc-act-disco; animation-duration:2.4s; animation-timing-function:steps(1,end); }
+@keyframes dgc-act-disco { 0% { background:rgba(255,80,190,0.30); } 25% { background:rgba(80,220,255,0.28); } 50% { background:rgba(255,220,90,0.26); } 75% { background:rgba(160,110,255,0.30); } 100% { background:rgba(255,80,190,0.30); } }
+.dgc-glow-bulb { animation:none; background:rgba(255,225,150,0.85); border-radius:50%; box-shadow:0 0 6px 2px rgba(255,210,120,0.75); }
+.dgc-glow-neon { animation-name:dgc-act-neon; animation-duration:4.4s; animation-timing-function:steps(1,end); background:rgba(255,80,190,0.16); }
+@keyframes dgc-act-neon { 0% { opacity:1; } 90% { opacity:1; } 92% { opacity:0.35; } 94% { opacity:1; } 96% { opacity:0.5; } 100% { opacity:1; } }
+.dgc-roof-cloud { opacity:0.2; filter:brightness(0.55) saturate(0.6) hue-rotate(195deg); animation:dgc-cloud-drift 130s linear infinite; }
+@keyframes dgc-cloud-drift { from { transform:translateX(-150px); } to { transform:translateX(800px); } }
+
+/* ---- roof people: props, prop-holding sprite ---- */
+.dgc-house-res-sprite { position:relative; }
+.dgc-res-prop { position:absolute; pointer-events:none; transform-origin:50% 100%; }
+.dgc-res-prop img { display:block; width:100%; height:100%; image-rendering:pixelated; }
+.dgc-res-x .dgc-chibi-arm-left, .dgc-res-x .dgc-chibi-hand:nth-of-type(1) { transform-box:view-box; transform-origin:32px 81px; }
+.dgc-res-x .dgc-chibi-arm-right, .dgc-res-x .dgc-chibi-hand:nth-of-type(2) { transform-box:view-box; transform-origin:68px 81px; }
+.dgc-res-x .dgc-chibi-arm-left, .dgc-res-x .dgc-chibi-arm-right { animation:dgc-x-arm var(--dur,4s) ease-in-out var(--dl,0s) infinite; }
+.dgc-res-x .dgc-chibi-hand:nth-of-type(1), .dgc-res-x .dgc-chibi-hand:nth-of-type(2) { animation:dgc-x-hand var(--dur,4s) ease-in-out var(--dl,0s) infinite; }
+@keyframes dgc-x-arm { 0%,100% { transform:rotate(var(--a0,0deg)) scale(1,var(--s0,1)); } 50% { transform:rotate(var(--a1,0deg)) scale(1,var(--s1,1)); } }
+@keyframes dgc-x-hand { 0%,100% { transform:rotate(var(--a0,0deg)) translateY(var(--t0,0px)); } 50% { transform:rotate(var(--a1,0deg)) translateY(var(--t1,0px)); } }
+
+/* ---- activities: body ---- */
+.dgc-act-stargaze .dgc-house-res-sprite { animation:dgc-x-gaze 8s ease-in-out infinite; } .dgc-act-stargaze .dgc-chibi-face, .dgc-act-point .dgc-chibi-face { transform:translateY(-3px); }
+.dgc-act-point .dgc-house-res-sprite { animation:dgc-x-gaze 8s ease-in-out infinite; }
+.dgc-act-chat .dgc-house-res-sprite { animation:dgc-x-nod 2.6s ease-in-out infinite; }
+.dgc-act-laughchat .dgc-house-res-sprite { animation:dgc-x-laugh 3.8s ease-in-out infinite; }
+.dgc-act-kiss .dgc-house-res-sprite { animation:dgc-x-kiss 4.2s ease-in-out infinite; }
+.dgc-act-hug .dgc-house-res-sprite { animation:dgc-x-hug 5.2s ease-in-out infinite; }
+.dgc-act-flirt .dgc-house-res-sprite { animation:dgc-x-flirt 4.4s ease-in-out infinite; }
+.dgc-act-tipsy .dgc-house-res-sprite { animation:dgc-x-tipsy 6s ease-in-out infinite; }
+.dgc-act-dance .dgc-house-res-sprite { animation:dgc-x-dance 4.4s ease-in-out infinite; }
+.dgc-act-mix .dgc-house-res-sprite { animation:dgc-x-mixbob 0.72s ease-in-out infinite; }
+
+@keyframes dgc-x-gaze { 0%,100% { transform:rotate(-1.6deg) translateY(0); } 50% { transform:rotate(1.4deg) translateY(-1.5px); } }
+@keyframes dgc-x-nod { 0%,100% { transform:translateY(0) rotate(0); } 30% { transform:translateY(1.6px) rotate(1deg); } 62% { transform:translateY(0) rotate(-1deg); } }
+@keyframes dgc-x-laugh { 0%,56%,100% { transform:translateY(0) rotate(0); } 8% { transform:translateY(-4px) rotate(-2deg); } 16% { transform:translateY(0); } 24% { transform:translateY(-4px) rotate(2deg); } 32% { transform:translateY(0); } 40% { transform:translateY(-3px) rotate(-1.4deg); } 48% { transform:translateY(0); } }
+@keyframes dgc-x-kiss { 0%,100% { transform:translateY(0) rotate(0); } 50% { transform:translateY(-1.6px) rotate(0.8deg); } }
+@keyframes dgc-x-hug { 0%,100% { transform:translateX(0); } 50% { transform:translateX(1.5px) translateY(-1px); } }
+@keyframes dgc-x-flirt { 0%,100% { transform:rotate(-2.4deg) translateX(-1px); } 50% { transform:rotate(2.4deg) translateX(1px); } }
+@keyframes dgc-x-tipsy { 0%,100% { transform:rotate(-5deg) translateX(-3px); } 25% { transform:rotate(0) translateX(0) translateY(-1px); } 50% { transform:rotate(5deg) translateX(3px); } 75% { transform:rotate(1deg) translateX(0) translateY(-1px); } }
+@keyframes dgc-x-dance { 0%,100% { transform:rotate(-3deg) translateX(-3px); } 50% { transform:rotate(3deg) translateX(3px); } }
+@keyframes dgc-x-mixbob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-1.5px); } }
+@keyframes dgc-x-step { 0%,100% { transform:rotate(-7deg); } 50% { transform:rotate(7deg); } }
+.dgc-act-dance .dgc-chibi-leg-left { animation:dgc-x-step 2.2s ease-in-out infinite; }
+.dgc-act-dance .dgc-chibi-leg-right { animation:dgc-x-step 2.2s ease-in-out infinite reverse; }
+
+/* ---- activities: arms (angles: right arm negative = raise outward, left arm positive) ---- */
+.dgc-act-stargaze .dgc-chibi-arm-left, .dgc-act-stargaze .dgc-chibi-hand:nth-of-type(1) { --a0:6deg; --a1:24deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:8s; --dl:0s; }
+.dgc-act-point .dgc-chibi-arm-right, .dgc-act-point .dgc-chibi-hand:nth-of-type(2) { --a0:-126deg; --a1:-134deg; --s0:1.4; --s1:1.4; --t0:10px; --t1:10px; --dur:6s; --dl:0s; }
+.dgc-act-chat .dgc-chibi-arm-right, .dgc-act-chat .dgc-chibi-hand:nth-of-type(2) { --a0:-30deg; --a1:-12deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:1.7s; --dl:0.6s; }
+.dgc-act-chat .dgc-chibi-arm-left, .dgc-act-chat .dgc-chibi-hand:nth-of-type(1) { --a0:14deg; --a1:30deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:1.7s; --dl:0s; }
+.dgc-act-laughchat .dgc-chibi-arm-right, .dgc-act-laughchat .dgc-chibi-hand:nth-of-type(2) { --a0:-14deg; --a1:-44deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:0.95s; --dl:0s; }
+.dgc-act-laughchat .dgc-chibi-arm-left, .dgc-act-laughchat .dgc-chibi-hand:nth-of-type(1) { --a0:12deg; --a1:34deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:0.95s; --dl:0.3s; }
+.dgc-act-kiss .dgc-chibi-arm-right, .dgc-act-kiss .dgc-chibi-hand:nth-of-type(2) { --a0:-98deg; --a1:-104deg; --s0:1.1; --s1:1.1; --t0:2.5px; --t1:2.5px; --dur:4.2s; --dl:0s; }
+.dgc-act-kiss .dgc-chibi-arm-left, .dgc-act-kiss .dgc-chibi-hand:nth-of-type(1) { --a0:9deg; --a1:14deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:4.2s; --dl:0s; }
+.dgc-act-hug .dgc-chibi-arm-right, .dgc-act-hug .dgc-chibi-hand:nth-of-type(2) { --a0:-100deg; --a1:-95deg; --s0:1.12; --s1:1.12; --t0:3px; --t1:3px; --dur:5.2s; --dl:0s; }
+.dgc-act-hug .dgc-chibi-arm-left, .dgc-act-hug .dgc-chibi-hand:nth-of-type(1) { --a0:26deg; --a1:30deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:5.2s; --dl:0s; }
+.dgc-act-tipsy .dgc-chibi-arm-right, .dgc-act-tipsy .dgc-chibi-hand:nth-of-type(2) { --a0:-9deg; --a1:9deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:6s; --dl:0s; }
+.dgc-act-tipsy .dgc-chibi-arm-left, .dgc-act-tipsy .dgc-chibi-hand:nth-of-type(1) { --a0:8deg; --a1:-10deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:6s; --dl:0s; }
+.dgc-act-dance .dgc-chibi-arm-right, .dgc-act-dance .dgc-chibi-hand:nth-of-type(2) { --a0:-84deg; --a1:-76deg; --s0:1.15; --s1:1.15; --t0:4px; --t1:4px; --dur:4.4s; --dl:0s; }
+.dgc-act-dance .dgc-chibi-arm-left, .dgc-act-dance .dgc-chibi-hand:nth-of-type(1) { --a0:24deg; --a1:34deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:4.4s; --dl:0s; }
+.dgc-act-flirt .dgc-chibi-arm-left, .dgc-act-flirt .dgc-chibi-hand:nth-of-type(1) { --a0:10deg; --a1:16deg; --s0:1; --s1:1; --t0:0px; --t1:0px; --dur:4.4s; --dl:0s; }
+
+/* drink: periodic sip (arm + hand + prop rise to the face) */
+.dgc-act-drink .dgc-chibi-arm-right, .dgc-act-drink .dgc-chibi-hand:nth-of-type(2) { animation:dgc-x-sip 6s ease-in-out var(--dl,0s) infinite; }
+.dgc-act-drink .dgc-res-prop { animation:dgc-x-propsip 6s ease-in-out var(--dl,0s) infinite; }
+@keyframes dgc-x-sip { 0%,52%,100% { transform:rotate(0deg); } 62%,80% { transform:rotate(-105deg); } 90% { transform:rotate(0deg); } }
+@keyframes dgc-x-propsip { 0%,52%,100% { transform:translate(0,0) rotate(0deg); } 62%,80% { transform:translate(-6px,-14px) rotate(-14deg); } 90% { transform:translate(0,0) rotate(0deg); } }
+/* mix: the bartender shakes a shaker */
+.dgc-act-mix .dgc-chibi-arm-right, .dgc-act-mix .dgc-chibi-hand:nth-of-type(2) { animation:dgc-x-shake 3.6s ease-in-out var(--dl,0s) infinite; }
+.dgc-act-mix .dgc-res-prop { animation:dgc-x-propshake 3.6s ease-in-out var(--dl,0s) infinite; }
+@keyframes dgc-x-shake { 0%,38%,100% { transform:rotate(-12deg); } 5%,13%,21%,29% { transform:rotate(-100deg); } 9%,17%,25% { transform:rotate(-76deg); } }
+@keyframes dgc-x-propshake { 0%,38%,100% { transform:translate(2.6px,-2.2px) rotate(0deg); } 5%,13%,21%,29% { transform:translate(2.7px,-24.6px) rotate(-12deg); } 9%,17%,25% { transform:translate(6.3px,-18.9px) rotate(10deg); } }
+
+/* ---- fx: hearts, sparkles, speech dots, shooting star ---- */
+.dgc-fx-heart { position:absolute; left:0; top:0; font:800 14px/1 var(--dgc-font-ui, sans-serif); color:#ff5a8a; text-shadow:0 1px 0 #3f2631, 1px 0 0 #3f2631, -1px 0 0 #3f2631; opacity:0; animation:dgc-fx-heart 3.6s ease-out infinite; }
+@keyframes dgc-fx-heart { 0% { transform:translate(0,0) scale(0.5); opacity:0; } 14% { opacity:1; } 60% { transform:translate(var(--dx,0px),-24px) scale(1); opacity:1; } 100% { transform:translate(calc(var(--dx,0px) * -0.6),-44px) scale(1.15); opacity:0; } }
+.dgc-fx-spark { position:absolute; left:0; top:0; font:800 13px/1 var(--dgc-font-ui, sans-serif); color:#ffe27a; text-shadow:0 0 5px rgba(255,226,122,0.9); opacity:0; animation:dgc-fx-spark 2.4s ease-in-out infinite; }
+@keyframes dgc-fx-spark { 0%,100% { transform:scale(0) rotate(0deg); opacity:0; } 35%,55% { transform:scale(1.1) rotate(35deg); opacity:1; } 80% { transform:scale(0.4) rotate(70deg); opacity:0.4; } }
+.dgc-fx-speech { position:absolute; left:-14px; top:-12px; width:28px; height:15px; box-sizing:border-box; background:#fff8e4; border:2px solid #3f2631; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:2px; opacity:0; animation:dgc-fx-speech 3.8s ease-in-out infinite; }
+.dgc-fx-speech::after { content:''; position:absolute; left:6px; bottom:-6px; width:5px; height:5px; background:#fff8e4; border-right:2px solid #3f2631; border-bottom:2px solid #3f2631; transform:rotate(45deg) skew(10deg,10deg); }
+.dgc-fx-speech i { display:block; width:3px; height:3px; border-radius:50%; background:#3f2631; animation:dgc-fx-dot 0.9s steps(1,end) infinite; }
+.dgc-fx-speech i:nth-child(2) { animation-delay:0.3s; } .dgc-fx-speech i:nth-child(3) { animation-delay:0.6s; }
+@keyframes dgc-fx-speech { 0%,10% { opacity:0; transform:translateY(4px) scale(0.6); } 18%,70% { opacity:1; transform:translateY(0) scale(1); } 82%,100% { opacity:0; transform:translateY(-3px) scale(0.9); } }
+@keyframes dgc-fx-dot { 0% { opacity:0.25; } 33% { opacity:1; } 100% { opacity:0.25; } }
+.dgc-fx-shoot { position:absolute; left:0; top:0; width:56px; height:2px; background:linear-gradient(90deg, transparent, #fff); border-radius:2px; opacity:0; transform:rotate(24deg); animation:dgc-fx-shoot 11s linear infinite; }
+@keyframes dgc-fx-shoot { 0%,86% { opacity:0; transform:translate(0,0) rotate(24deg); } 88% { opacity:1; } 100% { opacity:0; transform:translate(170px,76px) rotate(24deg); } }
+
+/* ---- lift panel: 7 buttons (R spans the top row) ---- */
+.dgc-lift-btn[data-floor="6"] { grid-column:1 / -1; width:100%; border-radius:21px; letter-spacing:3px; }
+
+/* ============================================================
+   ROOFS stage 3 (Tower B "Starlight Terrace"): teal night tint, fire pit flame / pool / embers.
+   ============================================================ */
+.dgc-glow-nightteal { animation:none; background:rgba(8,56,74,0.24); mix-blend-mode:multiply; }
+.dgc-glow-pool-fire { animation:dgc-fire-pulse 1.5s ease-in-out infinite; background:radial-gradient(ellipse, rgba(255,120,30,0.52), rgba(255,90,20,0.22) 46%, transparent 72%); border-radius:50%; }
+@keyframes dgc-fire-pulse { 0%,100% { opacity:0.72; transform:scale(1); } 22% { opacity:1; transform:scale(1.04,0.98); } 48% { opacity:0.66; transform:scale(0.97,1.03); } 74% { opacity:0.95; transform:scale(1.02); } }
+.dgc-glow-flame { animation:dgc-flame 0.8s ease-in-out infinite; background:radial-gradient(ellipse at 50% 62%, rgba(255,235,150,0.78), rgba(255,150,40,0.44) 46%, transparent 74%); border-radius:50% 50% 42% 42%; transform-origin:50% 100%; }
+@keyframes dgc-flame { 0%,100% { opacity:0.62; transform:scale(1,1); } 20% { opacity:0.92; transform:scale(0.94,1.12); } 45% { opacity:0.7; transform:scale(1.06,0.94); } 70% { opacity:0.9; transform:scale(0.96,1.08); } }
+.dgc-fx-ember { position:absolute; left:0; top:0; width:3px; height:3px; border-radius:50%; background:#ffb347; box-shadow:0 0 4px 1px rgba(255,140,40,0.85); opacity:0; animation:dgc-fx-ember 3.2s ease-out infinite; }
+@keyframes dgc-fx-ember { 0% { transform:translate(0,0) scale(1); opacity:0; } 12% { opacity:1; } 70% { opacity:0.7; } 100% { transform:translate(var(--dx,0px),-58px) scale(0.3); opacity:0; } }
+/* hug: inner arm wraps round the partner's back (longer reach), outer arm relaxed; pair leans in */
+.dgc-act-hug .dgc-chibi-arm-right, .dgc-act-hug .dgc-chibi-hand:nth-of-type(2) { --a0:-108deg; --a1:-100deg; --s0:1.3; --s1:1.3; --t0:5px; --t1:5px; --dur:5.2s; }
+.dgc-act-hug .dgc-chibi-arm-left, .dgc-act-hug .dgc-chibi-hand:nth-of-type(1) { --a0:14deg; --a1:20deg; --dur:5.2s; }

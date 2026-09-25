@@ -26,6 +26,8 @@
  *            search: SECTION 3A — CHARACTER SELECTION
  *     1025  NPCs: chibi NPC rig and the 15 NPC definitions
  *            search: LIVING CITY ADDENDUM — NPCs
+ *     1330  NPC DIALOGUE: content data + pickLine engine (shuffled bags, reactive lines)
+ *            search: === DIALOGUE ENGINE ===
  *     1454  BOSSES / QUESTIONS / LEVELS: question bank (data-driven)
  *            search: QUESTION BANK — fully data-driven
  *    20034  RUNTIME STATE + UI screen switching
@@ -46,6 +48,9 @@
  *            search: TOWERS (New City)
  *    22722  TOWERS: per-floor themes (hallways, rooms)
  *            search: TOWER THEMES (Plan D part 3)
+ *    23990  ROOFS: outdoor night roofs of both towers (sky, moon, skyline, lounge crowd, roof people/fx/expressions)
+ *            search: ROOFS (Plan F stages 2-3). Tower A = Skyline Bar (neon cocktail lounge), Tower B = Starlight Terrace (fire pit, tasting table, picnic blanket).
+ *            search: roofPeopleA / roofPeopleB / ROOF_DIALOGUE_A / ROOF_DIALOGUE_B / TOWER_ROOFS
  *    23817  CITY: general store + town decorations
  *            search: GENERAL STORE + TOWN DECORATIONS
  *    24009  SOUND: settings + SFX engine (Web Audio)
@@ -212,7 +217,12 @@
         // level (1-5). Absent/0 means "not on the new leveled structure
         // yet" for a boss that hasn't been migrated off the old 3-phase
         // format, which is the correct default for every existing save.
-        bossLevelProgress: (s.bossLevelProgress && typeof s.bossLevelProgress === 'object') ? s.bossLevelProgress : {}
+        bossLevelProgress: (s.bossLevelProgress && typeof s.bossLevelProgress === 'object') ? s.bossLevelProgress : {},
+        // Dialogue engine (see DIALOGUE ENGINE): per-character shuffled-bag state,
+        // conversation counts and 'visited' place flags. Backfilled empty for old saves.
+        dialogueBag: (s.dialogueBag && typeof s.dialogueBag === 'object' && !Array.isArray(s.dialogueBag)) ? s.dialogueBag : {},
+        talked: (s.talked && typeof s.talked === 'object' && !Array.isArray(s.talked)) ? s.talked : {},
+        visited: (s.visited && typeof s.visited === 'object' && !Array.isArray(s.visited)) ? s.visited : {}
       };
     } catch (e) {
       return {
@@ -226,7 +236,8 @@
         equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
         npcLastLineIndex: {}, practiceMode: false,
         lastPlayedDate: null, currentDailyStreak: 0, longestDailyStreak: 0,
-        performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0, bossLevelProgress: {}
+        performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0, bossLevelProgress: {},
+        dialogueBag: {}, talked: {}, visited: {}
       };
     }
   }
@@ -480,11 +491,41 @@
     playful:     { eyes:'wink',      mouth:'smirk',       brow:'oneraised',acc:'none' },
     embarrassed: { eyes:'sheepish',  mouth:'wince',       brow:'worried',  acc:'sweat' },
     calm:        { eyes:'content',   mouth:'smile',       brow:'neutral',  acc:'none' },
-    determinedIntense: { eyes:'determined', mouth:'gritted', brow:'furrowed', acc:'vein' }
+    determinedIntense: { eyes:'determined', mouth:'gritted', brow:'furrowed', acc:'vein' },
+    // Roof expressions (Plan F stage 2)
+    kiss:        { eyes:'closed',    mouth:'pucker',     brow:'soft',     acc:'blushmore' },
+    love:        { eyes:'heart',     mouth:'smile',      brow:'soft',     acc:'hearts' },
+    tipsy:       { eyes:'halflid',   mouth:'wobble',     brow:'neutral',  acc:'tipsy' },
+    flirty:      { eyes:'flirtwink', mouth:'smirkflirt', brow:'oneraised',acc:'flirtheart' },
+    stargaze:    { eyes:'up',        mouth:'awe',        brow:'raised',   acc:'none' },
+    laugh:       { eyes:'laugh',     mouth:'laughopen',  brow:'raised',   acc:'blushmore' }
   };
 
   // ---- shared face-part shape library (authored once, in head-local
   // coordinates centered on (50,42)), reused verbatim by every character.
+  // Roof expressions (Plan F stage 2): extra face parts, same head-local coordinates as the library below. Appended by facePartsSVG().
+  var FACE_PARTS_ROOF = ''
+    // eyes: closed (lashes), heart, half-lid, up (stargaze), laugh (> <), flirtwink (lash + wink)
+    + '<g class="dgc-face-part dgc-eyes-closed" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M37 40 Q41 44 45 40"/><path d="M55 40 Q59 44 63 40"/><path d="M37 40 L34.6 38.6"/><path d="M63 40 L65.4 38.6"/></g>'
+    + '<g class="dgc-face-part dgc-eyes-heart" fill="#e8406a"><path d="M41 44.6 C34.6 40.6 35.6 35.6 38.6 35.6 C40.2 35.6 41 36.8 41 37.8 C41 36.8 41.8 35.6 43.4 35.6 C46.4 35.6 47.4 40.6 41 44.6 Z"/><path d="M59 44.6 C52.6 40.6 53.6 35.6 56.6 35.6 C58.2 35.6 59 36.8 59 37.8 C59 36.8 59.8 35.6 61.4 35.6 C64.4 35.6 65.4 40.6 59 44.6 Z"/><circle cx="38.4" cy="38.4" r="0.9" fill="#fff"/><circle cx="56.4" cy="38.4" r="0.9" fill="#fff"/></g>'
+    + '<g class="dgc-face-part dgc-eyes-halflid"><path d="M37.4 41 A3.6 3.6 0 0 0 44.6 41 Z"/><path d="M55.4 41 A3.6 3.6 0 0 0 62.6 41 Z"/><path d="M36.4 40.6 L45.6 40.6 M54.4 40.6 L63.6 40.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></g>'
+    + '<g class="dgc-face-part dgc-eyes-up"><circle cx="41" cy="39" r="4.3"/><circle cx="59" cy="39" r="4.3"/><circle cx="42" cy="36.8" r="1.7" fill="#fff"/><circle cx="60" cy="36.8" r="1.7" fill="#fff"/><circle cx="40" cy="41.2" r="0.8" fill="#fff"/><circle cx="58" cy="41.2" r="0.8" fill="#fff"/></g>'
+    + '<g class="dgc-face-part dgc-eyes-laugh" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M37 37.5 L44.5 40.6 L37 43.7"/><path d="M63 37.5 L55.5 40.6 L63 43.7"/></g>'
+    + '<g class="dgc-face-part dgc-eyes-flirtwink" stroke="currentColor" stroke-linecap="round"><ellipse cx="41" cy="40.4" rx="3" ry="3.6" stroke="none"/><path d="M37.6 38 L35.4 36.6" fill="none" stroke-width="1.6"/><path d="M55 40.4 Q59 43.6 63 40.4" fill="none" stroke-width="2.3"/><path d="M63 40.4 L65.2 38.8" fill="none" stroke-width="1.6"/></g>'
+    // mouth: pucker, wobble, awe, laughopen, smirkflirt
+    + '<g class="dgc-face-part dgc-mouth-pucker"><ellipse cx="50" cy="54" rx="2.4" ry="2.8" fill="#d94868"/><ellipse cx="49.2" cy="53.2" rx="0.8" ry="0.8" fill="#ff9ab0"/></g>'
+    + '<g class="dgc-face-part dgc-mouth-wobble" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M42.5 54 Q46 51 48.5 54 Q51 57 54 53.5 Q56.5 51.6 58 54.8"/></g>'
+    + '<g class="dgc-face-part dgc-mouth-awe"><ellipse cx="50" cy="55" rx="2.8" ry="3.5"/></g>'
+    + '<g class="dgc-face-part dgc-mouth-laughopen"><path d="M41 50.4 L59 50.4 Q58.4 62.6 50 62.6 Q41.6 62.6 41 50.4 Z"/><ellipse cx="50" cy="59.6" rx="4.2" ry="2.2" fill="#e8506a"/><path d="M43.5 51.2 L56.5 51.2" stroke="#fff" stroke-width="1.6" opacity="0.85"/></g>'
+    + '<g class="dgc-face-part dgc-mouth-smirkflirt" fill="none" stroke="#c23a5a" stroke-width="2.6" stroke-linecap="round"><path d="M45.5 53.4 Q51.5 58.6 57.5 51.4"/><path d="M58.6 50.2 L59.8 49.4" stroke-width="1.4"/></g>'
+    // brow: soft
+    + '<g class="dgc-face-part dgc-brow-soft" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M37 32.6 Q41 30.4 45 32.2"/><path d="M55 32.2 Q59 30.4 63 32.6"/></g>'
+    // accessory: blushmore, hearts, tipsy, flirtheart
+    + '<g class="dgc-face-part dgc-acc-blushmore" fill="#ff7a9c" opacity="0.55"><ellipse cx="33" cy="49" rx="7" ry="4.4"/><ellipse cx="67" cy="49" rx="7" ry="4.4"/></g>'
+    + '<g class="dgc-face-part dgc-acc-hearts" fill="#ff4f7d"><path d="M77 27 C72.6 24.2 73.2 20.6 75.3 20.6 C76.4 20.6 77 21.5 77 22.1 C77 21.5 77.6 20.6 78.7 20.6 C80.8 20.6 81.4 24.2 77 27 Z"/><path d="M22 20 C19.2 18.2 19.6 15.8 21 15.8 C21.7 15.8 22 16.4 22 16.8 C22 16.4 22.3 15.8 23 15.8 C24.4 15.8 24.8 18.2 22 20 Z"/></g>'
+    + '<g class="dgc-face-part dgc-acc-tipsy"><g fill="#ff6a86" opacity="0.62"><ellipse cx="33" cy="49" rx="7.6" ry="4.8"/><ellipse cx="67" cy="49" rx="7.6" ry="4.8"/></g><g fill="#fff" opacity="0.8"><circle cx="74" cy="27" r="1.6"/><circle cx="79" cy="21" r="1.1"/><circle cx="77" cy="33" r="0.9"/></g></g>'
+    + '<g class="dgc-face-part dgc-acc-flirtheart" fill="#ff4f7d"><path d="M77 30 C72.6 27.2 73.2 23.6 75.3 23.6 C76.4 23.6 77 24.5 77 25.1 C77 24.5 77.6 23.6 78.7 23.6 C80.8 23.6 81.4 27.2 77 30 Z"/><path d="M66 24 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1 z" fill="#ffe27a"/></g>';
+
   function facePartsSVG() {
     return ''
       // EYES (13 variants)
@@ -541,7 +582,8 @@
       + '<g class="dgc-face-part dgc-acc-vein" stroke="var(--dgc-danger)" stroke-width="1.8" stroke-linecap="round"><path d="M70 22 l3 3 m-3 0 l3 -3 m-1.5 -3 l0 9"/></g>'
       + '<g class="dgc-face-part dgc-acc-exclaim" fill="var(--dgc-gold)"><rect x="72" y="14" width="3" height="11" rx="1.5"/><circle cx="73.5" cy="29" r="1.8"/></g>'
       + '<g class="dgc-face-part dgc-acc-glow" fill="none" stroke="var(--dgc-gold)" stroke-width="1.4" opacity="0.8"><circle cx="50" cy="40" r="30"/></g>'
-      + '<g class="dgc-face-part dgc-acc-thought" fill="currentColor" opacity="0.85"><circle cx="70" cy="26" r="1.6"/><circle cx="75" cy="21" r="1.2"/><circle cx="79" cy="17" r="0.9"/></g>';
+      + '<g class="dgc-face-part dgc-acc-thought" fill="currentColor" opacity="0.85"><circle cx="70" cy="26" r="1.6"/><circle cx="75" cy="21" r="1.2"/><circle cx="79" cy="17" r="0.9"/></g>'
+      + FACE_PARTS_ROOF;
   }
 
   // Applies a named expression to one character's rig root element by
@@ -1045,6 +1087,19 @@
         '<ellipse class="dgc-chibi-hair" cx="20" cy="36" rx="6" ry="11"/>' +
         '<ellipse class="dgc-chibi-hair" cx="80" cy="36" rx="6" ry="11"/>' +
         '<path class="dgc-chibi-npc-sig" d="M16 27 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z"/>';
+    },
+    // Roof cast hair (Plan F stage 2)
+    long: function () {
+      return '<path class="dgc-chibi-hair" d="M25 40 Q23 16 50 16 Q77 16 75 40 L78 66 Q72 69 70 60 L70 40 Q62 26 50 26 Q38 26 30 40 L30 60 Q28 69 22 66 Z"/>';
+    },
+    curly: function () {
+      return '<circle class="dgc-chibi-hair" cx="33" cy="23" r="8.5"/><circle class="dgc-chibi-hair" cx="50" cy="18" r="10"/><circle class="dgc-chibi-hair" cx="67" cy="23" r="8.5"/><circle class="dgc-chibi-hair" cx="26" cy="36" r="6"/><circle class="dgc-chibi-hair" cx="74" cy="36" r="6"/>';
+    },
+    bob: function () {
+      return '<path class="dgc-chibi-hair" d="M24 48 Q21 15 50 14 Q79 15 76 48 L71 50 Q70 31 50 26 Q30 31 29 50 Z"/>';
+    },
+    slick: function () {
+      return '<path class="dgc-chibi-hair" d="M26 38 Q27 16 52 16 Q75 17 74 37 Q64 22 42 27 Q30 30 26 38 Z"/><path class="dgc-chibi-hair" d="M52 16 Q62 9 71 16 Q62 15 52 16 Z"/>';
     }
   };
   // Kept to the same discipline as the hero's own accessories: everything
@@ -1059,7 +1114,13 @@
     scarf: function () { return '<path class="dgc-chibi-npc-acc" d="M36 82 Q50 90 64 82 L61 94 Q50 98 39 94 Z"/>'; },
     book: function () { return '<rect class="dgc-chibi-npc-acc" x="68" y="86" width="10" height="13" rx="1"/><line x1="73" y1="87" x2="73" y2="98" stroke-width="0.6"/>'; },
     chefhat: function () { return '<path class="dgc-chibi-npc-acc" d="M32 22 Q27 4 40 5 Q42 -3 50 -3 Q58 -3 60 5 Q73 4 68 22 Z"/>'; },
-    earpiece: function () { return '<circle class="dgc-chibi-npc-acc" cx="76" cy="38" r="2"/><path d="M76 38 Q81 43 78 49" fill="none" stroke-width="1"/>'; }
+    earpiece: function () { return '<circle class="dgc-chibi-npc-acc" cx="76" cy="38" r="2"/><path d="M76 38 Q81 43 78 49" fill="none" stroke-width="1"/>'; },
+    // Roof cast accessories (Plan F stage 2)
+    bowtie: function () { return '<path class="dgc-chibi-npc-acc" d="M50 84 L43 80 L43 88 Z M50 84 L57 80 L57 88 Z"/><circle class="dgc-chibi-npc-acc" cx="50" cy="84" r="1.8"/>'; },
+    tie: function () { return '<path class="dgc-chibi-npc-acc" d="M47.5 78 L52.5 78 L54 84 L52.5 98 L50 101 L47.5 98 L46 84 Z"/>'; },
+    flower: function () { return '<circle class="dgc-chibi-npc-acc" cx="30" cy="27" r="3.2"/><circle class="dgc-chibi-npc-acc" cx="26.4" cy="24" r="2.4"/><circle class="dgc-chibi-npc-acc" cx="33.6" cy="23.6" r="2.4"/><circle cx="30" cy="26" r="1.2" fill="#fff8e4" stroke="none"/>'; },
+    shades: function () { return '<rect class="dgc-chibi-npc-acc" x="30" y="19" width="16" height="7" rx="2.5"/><rect class="dgc-chibi-npc-acc" x="54" y="19" width="16" height="7" rx="2.5"/><path d="M46 22.5 L54 22.5" fill="none" stroke-width="1.6"/>'; },
+    necklace: function () { return '<path class="dgc-chibi-npc-acc" d="M38 78 Q50 92 62 78" fill="none" stroke-width="2.6" stroke-dasharray="1.6 2.4" stroke-linecap="round"/>'; }
   };
   // Renders one NPC's full portrait rig (used both for the walk-around
   // City sprite at small size AND the dialogue-box portrait at a bigger
@@ -1321,7 +1382,516 @@
         "Every real engineer I've met still says 'I have no idea why that worked' at least once a week."
       ] }
   ];
-  var NPC_LAST_LINE = {}; // Section 5 — npcLastLineIndex-equivalent, so repeat visits don't repeat the same line back-to-back
+  // Content data: per-NPC intro + extra plain lines + conditional (reactive) lines.
+  // The 8 original topic-tip lines of each NPC stay in NPC_ROSTER above; the
+  // merge step below turns everything into npc.dialogue = { intro, lines }.
+  var NPC_DIALOGUE_DATA = {
+    priya: {
+      intro: "Oh, a new face! I'm Priya, I run the cafe. Sit, breathe, and ask me anything about Git. The first question is on the house.",
+      more: [
+        "Between you and me, the flat white is easy. Getting Zoe's order right on a Monday is the real challenge.",
+        "I name every coffee order after a git command. Mine is a hotfix: strong, fast, and slightly panicked.",
+        "Sofia keeps sending over croissants to test. I'm a professional, so I test them thoroughly. Every single one.",
+        "The Library next door is so quiet I can hear my milk steamer apologise for itself.",
+        "Kenji sits by the window with his headphones on for hours. I think he's actually just hiding from his own merge conflicts.",
+        "Ever tried to draw a branch graph on a napkin? Mine looks like a very confused octopus.",
+        "Regulars are my favourite part. I know Marcus is coming when I hear someone panting at the door.",
+        "Steam, grind, tamp, pour. Funny how every job turns out to be a small pipeline if you squint.",
+        "Someone left a lovely note on my tip jar: 'git blame me for the good coffee.' I laughed for a full minute.",
+        "I hear the New City has two enormous towers now. I'd love to open a tiny cafe up in one of them.",
+        "Chidi zooms past my window a dozen times a day. Either he's very busy or very lost. Possibly both."
+      ],
+      cond: [
+        { t: "Working late, {hero}? Let me make you something warm. The night shift crowd is my favourite.", if: { night: true } },
+        { t: "{bosses} bosses down, {hero}! The whole cafe was talking about it over breakfast. You're basically famous.", if: { bosses: 3 } },
+        { t: "Level {level}! I'd say the drinks are on me, but honestly the drinks are always on me. Well done, though.", if: { minLevel: 5 } },
+        { t: "A {streak}-day streak? That's more consistent than my morning rush. I'm genuinely impressed.", if: { streak: 3 } },
+        { t: "Someone said there's a party up on the tower roof! Do they have an espresso machine up there? Asking for professional reasons.", if: { visited: 'roofA' } },
+        { t: "Nova, right? I love the ponytail. You look like someone who writes very tidy commit messages.", if: { hero: 'nova' } }
+      ]
+    },
+    zoe: {
+      intro: "Oh. Hi. I'm Zoe. I'm on my break, technically, which means I'm not supposed to talk about pipelines. Ask me about pipelines.",
+      more: [
+        "My lanyard says 'Senior Something.' Nobody has told me what the something is. I've stopped asking.",
+        "Fourteen meetings today. Four could have been an email. Two could have been a shrug.",
+        "Priya's coffee is the only reason I still believe in mornings. Barely.",
+        "I used to love Fridays. Then I learned about Friday deploys. Now I just love Saturdays.",
+        "Yuki says the Library is the quietest place in town. I say it's the only place my phone can't find me.",
+        "Every office has a printer that hates someone. Ours has chosen me. We're in a long, ongoing feud.",
+        "My desk plant is doing better than my inbox. That's not a high bar, but it's a bar.",
+        "Walt says he retired from incident response. I say nobody retires from it, they just stop getting paged.",
+        "My idea of relaxing is watching a pipeline go green. Sad? Maybe. Satisfying? Absolutely.",
+        "Someone put a sticker on the office fridge: 'It works on my machine.' I wanted to frame it.",
+        "The Bank has a queue. The cafe has a queue. The whole town is one big pipeline, honestly."
+      ],
+      cond: [
+        { t: "It's night and you're still out here? Fine, respect. Fellow member of the 'one more thing' club.", if: { night: true } },
+        { t: "{bosses} bosses? Okay, that's real progress. I'll tell my manager you're the reason I got a good review. Kidding. Mostly.", if: { bosses: 4 } },
+        { t: "Level {level}, huh. You're moving fast. I'm still working on level 'finish this ticket.'", if: { minLevel: 6 } },
+        { t: "{streak} days in a row. Do you even sleep? Also, teach me your ways.", if: { streak: 4 } },
+        { t: "A party on the tower roof? Of course. The one time I get invited somewhere, I'm on a deadline.", if: { visited: 'roofA' } },
+        { t: "Oh, it's Byte. Confident, a little smug, very productive. I'll allow it.", if: { hero: 'byte' } }
+      ]
+    },
+    kenji: {
+      intro: "Whoa, hi! Sorry, headphones. I'm Kenji, I'm studying containers and honestly I can't stop talking about them. Wanna hear something cool?",
+      more: [
+        "I'm building a tiny app just to put it in a container. The app is a hello-world. The container is the whole point.",
+        "My headphones are playing lo-fi beats at exactly the tempo of a build progress bar. It's weirdly calming.",
+        "The Armory sells swords, but a container image is the real starter weapon. Small, sharp, and it ships anywhere.",
+        "Priya says I've been in her cafe for six hours. In my defense, the wifi and the vibes were both excellent.",
+        "Yuki lent me a book on security. I read the first page and immediately added a non-root user to my Dockerfile.",
+        "My first Docker image was two gigabytes. Multi-stage builds taught me shame. Then they taught me better.",
+        "Everyone says 'it works on my machine.' With containers, it's 'it works in my image,' which is way more convincing.",
+        "I named my test container 'bob' and now I feel bad every time I delete it. Rest in peace, bob.",
+        "Marcus jogs past and yells 'Hup hup!' Every time. I've started answering 'Push pull!' He doesn't get it.",
+        "Someone told me there's a whole New City out east with two towers. Imagine the container fleet they run.",
+        "I dream in Dockerfiles now. Last night I forgot a COPY line and woke up in a cold sweat."
+      ],
+      cond: [
+        { t: "It's dark out and I'm still here, still building. Docker doesn't sleep, so neither do I. Send snacks.", if: { night: true } },
+        { t: "{bosses} bosses?! You're like a rolling release. Always shipping something new!", if: { bosses: 3 } },
+        { t: "Level {level} already? Your progress is so fast, it would make a great cached layer.", if: { minLevel: 5 } },
+        { t: "Ha, Nova! You'd be great with containers. Earnest, tidy, and never afraid to try 'docker run' one more time.", if: { hero: 'nova' } },
+        { t: "Wait, there's a party on the tower roof?! Do they need a container guy? I bring my own headphones.", if: { visited: 'roofB' } },
+        { t: "You've got {coins} coins? Spend a few on an upgrade. Even a little image gets better with a good base.", if: { coins: 300 } }
+      ]
+    },
+    yuki: {
+      intro: "Welcome. I am Yuki, the librarian. Please keep your voice low and your curiosity high. Today, we are reading about security.",
+      more: [
+        "Every book here has a story. Some of them have a due date. The due date is usually the more suspenseful part.",
+        "I shelve books by topic, then by author, then by mood. Nobody knows about the mood shelf. Please keep it secret.",
+        "Priya's cafe smells of coffee. The Library smells of paper. I know which one I'd choose for a rainy afternoon.",
+        "Kenji borrowed my security book and returned it with sticky notes on every page. Very thorough. Slightly sticky.",
+        "The best way to remember something is to explain it aloud. Preferably in a whisper.",
+        "A quiet reading room is a form of access control, really. Only the calm may enter.",
+        "Marcus once jogged into the Library by mistake. He apologised in a whisper so polite I nearly forgave the sweat.",
+        "There is a small map tucked inside the Trophy Hall guidebook. I have studied it more than I will admit.",
+        "Tea is best with a chapter of a book. Coffee is best with a deadline. I have made my choice.",
+        "Lily asked me if books ever get tired. I told her they only rest between readers. She seemed satisfied.",
+        "Old Tom likes to tell me the ending of stories before I read them. I have politely stopped him thirty-one times."
+      ],
+      cond: [
+        { t: "The Library closes soon, yet you walk in the dark. Be careful, {hero}. Even peaceful streets are worth watching.", if: { night: true } },
+        { t: "{bosses} bosses have fallen to you. A remarkable chapter. I have set aside a small shelf for your progress.", if: { bosses: 3 } },
+        { t: "Level {level}. Knowledge compounds, {hero}, the same way interest does at the Bank.", if: { minLevel: 5 } },
+        { t: "{streak} days of study in a row. I find this deeply admirable. Consistency is the quiet superpower.", if: { streak: 3 } },
+        { t: "I heard laughter from the tower roof. I do not usually approve of noise, but I hope it was joyful.", if: { visited: 'roofA' } },
+        { t: "Sage. Calm and unbothered. We would get along very well in the reading room.", if: { hero: 'sage' } }
+      ]
+    },
+    sofia: {
+      intro: "Hello, hello! I'm Sofia, the pastry chef! Everything I bake is a config file in disguise. Hungry, or just curious? Both is fine!",
+      more: [
+        "A good croissant has about eighty layers, and every one of them is hand-folded. That's a nested config if I ever saw one!",
+        "I test each recipe three times before it goes in the window. That's my pipeline, and it tastes delicious.",
+        "Priya swears my almond cake is the reason people come to her cafe. I swear it's her coffee. We're both right.",
+        "Oh, the smell of butter at five in the morning! It's better than any alarm clock.",
+        "Ravi keeps trying to trade me a samosa for a cinnamon roll. It's the best negotiation in town, and I always accept.",
+        "Once I mixed up salt and sugar. The cake looked perfect. That, my friend, was my first production incident.",
+        "Whisk, fold, rest, bake. If a step is missing, the cake tells on you. Config files are the same!",
+        "The General Store keeps selling me tiny decorations. I've got a shelf of sugar flowers and zero regrets.",
+        "Big Sam ordered forty muffins for his crew and asked for a 'load balanced' box. Somehow I understood him.",
+        "Marcus asked for a low-carb pastry. I gave him a very small pastry. He didn't see the joke, but he ate it.",
+        "Nana Ilse sends me herbs from her garden. My rosemary bread is famous now. Fame has never smelled so good."
+      ],
+      cond: [
+        { t: "Oh, it's late, and you're hungry? Stay, stay! I always bake a few extra for the night owls.", if: { night: true } },
+        { t: "{bosses} bosses! That deserves cake. I'm baking you a small celebration one. Don't tell Priya, she'll want a slice.", if: { bosses: 3 } },
+        { t: "Level {level}! Every level is like another layer in a croissant. Beautiful, flaky, and a bit buttery!", if: { minLevel: 5 } },
+        { t: "{streak} days in a row! That's a streak I'd frame in the bakery window, right next to my best loaf.", if: { streak: 3 } },
+        { t: "A roof party?! Please tell me there's dessert. I'll bring a tray. Actually, I'll bring three.", if: { visited: 'roofA' } },
+        { t: "Ooh, Nova! You look like someone who'd love my strawberry tart. Sweet, bright, and a little bit fancy.", if: { hero: 'nova' } }
+      ]
+    },
+    marcus: {
+      intro: "Hey! Marcus! Don't mind the sweat, it's just my cardio settings. Keep up if you can, I'll teach you Linux while we jog!",
+      more: [
+        "I run the loop around town before sunrise. Same route, every day, and the terminal is exactly like that. Repetition builds power.",
+        "Stretching first, sprinting second. It's the same with scripts: set up the environment before you run anything wild.",
+        "Priya makes me a green smoothie after every run. I pretend to love it. She pretends not to know.",
+        "My headband isn't a fashion statement. It's sweat management. Also, it looks great.",
+        "Ernie stands by the Training Grounds like a rock. I once tried to jog past him with a straight face. Failed.",
+        "The Training Grounds are my second home. Well, my first home is the terminal, but they're neighbours.",
+        "Big Sam lifts serious weights. I lift serious commands. Both need a spotter, though: mine is `man`.",
+        "Kenji said my jogging pace looks like a steady cron job. I've decided that's a compliment.",
+        "Rest days matter, my friend. Even servers need a reboot sometimes.",
+        "Rumour has it there's a forest path running out east. I'm planning a trail run. Bring water.",
+        "I keep a little notebook of my best shell one-liners. It's fatter than my running log. No regrets."
+      ],
+      cond: [
+        { t: "A night run and a night hero, huh? Perfect. Fewer crowds, cooler air, and the terminal looks better in the dark.", if: { night: true } },
+        { t: "{bosses} bosses down! That's some serious cardio for the brain, champ!", if: { bosses: 3 } },
+        { t: "Level {level}! Look at that progress! You're training like a pro, and I'm proud of you.", if: { minLevel: 5 } },
+        { t: "{streak} days in a row! That's the sort of consistency I preach. Daily practice beats heroic bursts.", if: { streak: 3 } },
+        { t: "A party on the tower roof? Sounds like a stair workout with a snack table at the top. Count me in!", if: { visited: 'roofA' } },
+        { t: "Byte! Confident, quick, and sharp. You'd make a great sprinter. Or a great sysadmin. Same energy.", if: { hero: 'byte' } }
+      ]
+    },
+    bigsam: {
+      intro: "Hm. New face. Name's Big Sam, site engineer. I keep the cloud standing up. Ask me something. I'll give you a straight answer.",
+      more: [
+        "Twenty years of pipes, cables, and servers. The cloud's just somebody else's pipes, and they still spring leaks.",
+        "Don't let the cap fool you, I'm good with people. Mostly. Okay, I'm good with people who bring coffee.",
+        "Priya makes my coffee strong enough to hold up a beam. That's the best compliment I know.",
+        "I check every gauge twice and every alert three times. Sleep is for people whose services never page them.",
+        "Ernie and I share a nod every morning. That's our entire friendship, and it's a solid one.",
+        "Chidi rode past with a delivery and shouted a latency number at me. I didn't understand, but I nodded like I did.",
+        "The Bank has a very sturdy vault. Best-designed redundancy in town. I might steal the idea. Legally.",
+        "I keep a hard hat on the shelf. A real one. Because in tech, you never know when something's about to drop.",
+        "Big machines are simple. Big systems are simple. It's the small things that leak, and they leak at 3 AM.",
+        "Word is the New City towers have their own generator floor. I'd pay good money to see that room.",
+        "Sofia sent me a box of muffins with a note that said 'load balanced.' Best thing I've ever been sent."
+      ],
+      cond: [
+        { t: "Late shift, eh? Good. Night's when the real engineers work. Watch your metrics, {hero}.", if: { night: true } },
+        { t: "{bosses} bosses. Not bad. In my day, we'd have called that a solid week of on-call.", if: { bosses: 3 } },
+        { t: "Level {level}. You're building something sturdy. I can tell. Keep the foundation sound.", if: { minLevel: 5 } },
+        { t: "{streak} days straight. Consistent. That's what I look for in a colleague, and a load balancer.", if: { streak: 3 } },
+        { t: "Roof party? Hm. Somebody should check the guard rails. I'll bring a hard hat. And a cake.", if: { visited: 'roofA' } },
+        { t: "You've got {coins} coins in your pocket. Smart. A little buffer is good engineering.", if: { coins: 500 } }
+      ]
+    },
+    chidi: {
+      intro: "Hey hey! Chidi! Delivery cyclist, part-time tinkerer, full-time dashboard fan! I measure everything. Even this conversation!",
+      more: [
+        "I put a tiny sensor on my bike. It tells me my speed, my heart rate, and how many times Marcus has waved at me.",
+        "Every delivery is a distributed system. Restaurant, rider, customer: three services, one very hungry user.",
+        "I'm tinkering with a bell that also pings a dashboard. It's ridiculous, and I can't stop ringing it.",
+        "Priya's coffee order takes four minutes on average. I've plotted it. She doesn't know.",
+        "Ravi's food cart has the best latency in town. Ask, receive, eat. Under ninety seconds!",
+        "I once mapped every shortcut in town. Then a road closed and my entire route table exploded. Good learning day.",
+        "My bike chain squeaks at exactly 440 hertz. I've decided it's an A. My bike is in tune.",
+        "Big Sam says I go too fast. I say I'm just a very optimised request.",
+        "Kenji stops me for tips on lo-fi playlists. I tell him: cache, cache, cache. He nods like it's about music.",
+        "The forest path is where I test my bike. The gravel makes wonderful noise data.",
+        "If the New City ever needs a rider, I'm ready. Two towers means at least four floors of hungry people."
+      ],
+      cond: [
+        { t: "Night rides are the best. Fewer requests, cleaner data, and the town glows like a dashboard.", if: { night: true } },
+        { t: "{bosses} bosses! That's a peak on my graph! I'm adding a green line just for you.", if: { bosses: 3 } },
+        { t: "Level {level}! Your progress chart is going up and to the right. That's the good direction!", if: { minLevel: 5 } },
+        { t: "{streak} days in a row! That's not a spike, that's a trend. I love trends!", if: { streak: 3 } },
+        { t: "There's a party on the tower roof?! I have to measure the crowd. And the snacks. Mostly the snacks.", if: { visited: 'roofB' } },
+        { t: "Nova! High energy, bright eyes. You'd look great in my delivery jacket. Green, like a healthy status page!", if: { hero: 'nova' } }
+      ]
+    },
+    ernie: {
+      intro: "Name's Ernie. I stand here. It's the job. You want to pass, you talk to me first. Ask about networks. That's the toll.",
+      more: [
+        "I've been standing here since noon. My feet have opinions. I've told them to stay professional.",
+        "People say I look intimidating. I say I look well-configured.",
+        "The earpiece is mostly for show. Nobody's called me in eight months. I like it that way.",
+        "Marcus jogs past four times an hour. I've stopped counting. I have not stopped noticing.",
+        "Sofia once handed me a cupcake. I said no. Then I said yes. Then I said nothing. It was excellent.",
+        "A locked door is a promise. An open door with a guard is a conversation. I prefer conversation. Mostly.",
+        "Lily asked why I never smile. I said it's a firewall. She said 'a friendly one?' I let it slide.",
+        "Nobody ever compliments the bouncer. Except Priya. She gave me a free refill once. I'll remember that forever.",
+        "The Training Grounds are safe with me around. The pigeons are another story. I'm watching them.",
+        "I don't chase trouble. I just make it very inconvenient to try.",
+        "My hobby is birdwatching. Yes. Really. Don't make it weird."
+      ],
+      cond: [
+        { t: "Night shift. My favourite. Quiet streets, sharp ears. You should be careful out here, {hero}.", if: { night: true } },
+        { t: "{bosses} bosses. Impressive. I've let far less accomplished people through this gate.", if: { bosses: 3 } },
+        { t: "Level {level}. I'll allow it. You've got the look of someone who reads the logs.", if: { minLevel: 5 } },
+        { t: "{streak} days straight. Reliable. I like reliable. It's why I'm still standing here.", if: { streak: 3 } },
+        { t: "A party on the tower roof. Sounds like a security nightmare. I'd be there in a heartbeat. Off duty. Maybe.", if: { visited: 'roofA' } },
+        { t: "Byte. You walk like you know where you're going. Suspicious. Also, respectable.", if: { hero: 'byte' } }
+      ]
+    },
+    nanailse: {
+      intro: "Well, hello there, dear! I'm Nana Ilse, and this is my garden. Sit a moment. I've got advice for you, and it's mostly free.",
+      more: [
+        "Good plants and good careers both need patience, sunshine, and a little bit of pruning now and then.",
+        "The tomatoes are coming along beautifully this year. The slugs are also coming along beautifully. I'm negotiating.",
+        "I've been gardening since before half this town was built. The roses know me better than my neighbours do.",
+        "Sofia sends me buttery pastries and I send her herbs. It's an old-fashioned barter, and it works beautifully.",
+        "In my day, we wrote our resumes by hand. Then we walked them across town. Your generation has it easy, dear.",
+        "Lily helps me water the flowers. Half goes on the flowers, the other half on her dog. Everybody's happy.",
+        "Walt and Old Tom sit on those benches and argue about the good old days. I bring them tea. They stop arguing. It's very effective.",
+        "A garden teaches you to be kind to slow things. Careers do too. Nobody sprouts overnight, sweetheart.",
+        "I keep seed packets in my apron pockets, just in case. You never know when a bare patch will need a friend.",
+        "Ana brings me the neighbourhood gossip along with her dogs. I brew the tea. It's an arrangement.",
+        "Someone told me about the New City's two towers. Grand, I'm sure. But I do hope they've got a proper garden."
+      ],
+      cond: [
+        { t: "It's late, dear! The flowers are asleep and you should be too. Well, a bit of moonlight never hurt anyone.", if: { night: true } },
+        { t: "{bosses} bosses! Goodness, you've been busy. Come, sit. I'll get you a cup of tea and a slice of pride.", if: { bosses: 3 } },
+        { t: "Level {level}! Like watching a seedling become a tree. I'm so proud, dear.", if: { minLevel: 5 } },
+        { t: "{streak} days of showing up. That's how you grow anything worth having, dear.", if: { streak: 3 } },
+        { t: "A party on the tower roof, they say! In my day we called that a picnic. Do take a shawl, it's windy up there.", if: { visited: 'roofA' } },
+        { t: "Sage, isn't it? What a lovely name for a gardener's friend. Calm and useful, just like the herb.", if: { hero: 'sage' } }
+      ]
+    },
+    walt: {
+      intro: "Hmph. Sit down or move along, kid. Name's Walt. Retired engineer. I've got a lifetime of outages to tell you about. Ready?",
+      more: [
+        "Back in my day, a server had a name, a personality, and a bad temper. Now they're numbers on a dashboard. Progress.",
+        "I've spent more nights in server rooms than in my own bed. The chairs were worse. The coffee was terrible. I miss it.",
+        "Old Tom over there thinks he tells better stories. He doesn't. His endings never land.",
+        "Nana Ilse brings us tea. I'd never say it out loud, but it's the highlight of my week.",
+        "Kids these days have dashboards, alerts, and fancy pipelines. We had a pager and a prayer.",
+        "I once fixed a server outage with a paperclip and a lot of shouting. Don't ask. Don't try it.",
+        "Retirement is fine. Nobody pages me. The pigeons are the only ones who bother me, and they don't even have an SLA.",
+        "Zoe walks by and sighs. I know that sigh. That's the sound of a good engineer in a bad meeting.",
+        "Big Sam keeps things running. Good man. Doesn't talk much. My kind of colleague.",
+        "The bench is comfortable. That's all you can ask of a retirement plan.",
+        "I hear there's a new city out east. Two towers. Sounds like a very tall outage waiting to happen. Don't tell them I said that."
+      ],
+      cond: [
+        { t: "Night, and you're out wandering? Hmph. Reminds me of my old pager days. Get some sleep, kid.", if: { night: true } },
+        { t: "{bosses} bosses? Not bad, kid. I fought bigger ones with worse tools. But not by much.", if: { bosses: 3 } },
+        { t: "Level {level}. Hmph. Fine. You're doing better than I did at that age. Don't let it go to your head.", if: { minLevel: 5 } },
+        { t: "{streak} days without missing one. That's how you build good habits, kid. Same as maintaining a server.", if: { streak: 3 } },
+        { t: "A party on a roof? In my day, we'd have called that a fire drill. Enjoy it, though.", if: { visited: 'roofA' } },
+        { t: "You've saved {coins} coins? Hmph. Sensible. Always keep a reserve. Outages are expensive.", if: { coins: 400 } }
+      ]
+    },
+    oldtom: {
+      intro: "Ahh, a fresh listener! Sit, sit! They call me Old Tom. Now, where was I? Oh yes, bash. Let me tell you a story that begins with a shebang...",
+      more: [
+        "I once wrote a script so long it needed its own table of contents. I've never been prouder. Or more confused.",
+        "Walt tells outage stories. I tell script stories. Between us, we've covered every way a computer can go wrong.",
+        "There was a Tuesday, back when I worked nights, when a single missing quote deleted a whole folder. That's how I learned to quote.",
+        "The trick to a good story is timing. And the trick to a good script is also timing. And also quotes.",
+        "I named my first script 'do_stuff.sh.' Twenty years later, I still don't know what it does. It still runs.",
+        "The regular on this bench is me, in case you were wondering. I've been here since before the paint dried.",
+        "Nana Ilse's tea is a treat. It's also the reason I forget half my stories. Very relaxing.",
+        "Ana walks by with the dogs and I always say hello to them first. The dogs are better listeners than most people.",
+        "You know, a good bash loop is like a good song. You just keep going until someone stops you.",
+        "Once, a colleague asked me to explain a script. I said, 'Give me a moment.' That was 2009. I'm nearly ready.",
+        "Lily asked why I always wear the cap. I said it holds my best ideas in. She believed me, bless her."
+      ],
+      cond: [
+        { t: "Night-time storytelling is the best kind! Pull up a bit of bench, {hero}. Mind the crickets, they're heckling.", if: { night: true } },
+        { t: "{bosses} bosses? Oh, that reminds me of a story. Or was it a script? Well, either way, congratulations!", if: { bosses: 3 } },
+        { t: "Level {level}! Why, that's a bigger number than my first script had lines. And mine had many.", if: { minLevel: 5 } },
+        { t: "{streak} days running, eh? Like a good cron job. Set it, forget it, keep showing up.", if: { streak: 3 } },
+        { t: "A party on the tower roof! Now that reminds me of a rooftop story. But it's long. Do you have an hour? Two?", if: { visited: 'roofA' } },
+        { t: "Byte! Now there's a name I'd put in a shebang. Sharp, snappy, and ready to run.", if: { hero: 'byte' } }
+      ]
+    },
+    ana: {
+      intro: "Hi there! I'm Ana, and these are my walking buddies! Say hi! I could talk about Terraform all day, and the dogs never complain!",
+      more: [
+        "I walk seven dogs a day. Each has a different personality, a different pace, and a different opinion about squirrels.",
+        "Every dog is like a resource. You have to name them clearly, or you'll lose track by lunchtime.",
+        "Nana Ilse always gives the dogs a biscuit. They now believe her garden is a five-star restaurant.",
+        "Lily and her dog wave at me every day. Her dog is the most polite one in town. Hers, not mine.",
+        "Ravi's cart smells amazing. I try not to look. The dogs do not try at all.",
+        "The forest path is my favourite route. Lots of sniffing, lots of sunshine, minimal barking. Mostly.",
+        "I keep a list of every dog's favourite park bench. It's basically a state file for happy walks.",
+        "Sunny days are the best. Even the grumpiest dog wags a little in the sunshine.",
+        "Walt and Old Tom are both very good with dogs. They just pretend they aren't.",
+        "Terraform plans your infrastructure. I plan my walks. Both go wrong if a squirrel appears.",
+        "Someday I'd like to walk dogs in the New City. Imagine the views from those towers! And the elevators!"
+      ],
+      cond: [
+        { t: "A night walk is nice, but the dogs are all asleep. So it's just us. Isn't that peaceful?", if: { night: true } },
+        { t: "{bosses} bosses! That's amazing! The dogs are wagging for you, I promise!", if: { bosses: 3 } },
+        { t: "Level {level}! You're growing so fast! It's like watching a puppy become a very capable dog!", if: { minLevel: 5 } },
+        { t: "{streak} days in a row! That's dedication. Just like walking the dogs, rain or shine!", if: { streak: 3 } },
+        { t: "A party on the tower roof?! Can I bring the dogs? They're very well behaved. Mostly. Sort of.", if: { visited: 'roofA' } },
+        { t: "Nova! The dogs love you already. That ponytail is basically a chew toy from their point of view.", if: { hero: 'nova' } }
+      ]
+    },
+    ravi: {
+      intro: "Oh! A customer? Or a friend? Either way, welcome! I'm Ravi, I run this cart. Be careful, I might talk about Kubernetes until the food gets cold.",
+      more: [
+        "Four burners, one griddle, seven orders. Somehow I keep it all running. It's basically my own tiny cluster.",
+        "If a pod crashes, Kubernetes restarts it. If my griddle crashes, I cry for a moment and then restart it.",
+        "I'm always worried I've forgotten an ingredient. Then I check. Then I check again. It's a health check, really.",
+        "Sofia trades me pastries for samosas. It's the most delicious deployment strategy I've ever seen.",
+        "Customers ask what's in the special sauce. I say 'a secret.' It's a Secret. Not a ConfigMap. Get it?",
+        "Big Sam orders the spiciest option every time. Then he sweats, nods, and says 'not bad.' Legend.",
+        "Chidi rides past and yells, 'Latency!' I yell back, 'Food's coming!' We're both correct.",
+        "My cart has a small fan, but what it really needs is auto-scaling. Lunch rush is brutal.",
+        "I keep worrying about tomorrow's queue. Then I remember: rolling updates. Take it one customer at a time.",
+        "Ana's dogs stare at me like I'm a deity. I've never met more loyal customers. Only one small tip per day, though.",
+        "Zoe calls my lunch special 'a mini mercy.' I've had it printed on the menu."
+      ],
+      cond: [
+        { t: "It's late, and I'm still frying! Night customers are my favourite. Everyone's a little more honest after dark.", if: { night: true } },
+        { t: "{bosses} bosses?! Oh my, that's incredible! Should I be nervous? I'm a little nervous. Happy nervous!", if: { bosses: 3 } },
+        { t: "Level {level}! Oh no, oh wow. Everything's scaling perfectly! No, wait, that's good. Yes. Good!", if: { minLevel: 5 } },
+        { t: "{streak} days in a row! That's what I call a healthy pod. Consistently ready, every time.", if: { streak: 3 } },
+        { t: "A party on the tower roof?! I'd cater! Oh, but what if the cart doesn't fit in the lift? I should measure. Twice.", if: { visited: 'roofA' } },
+        { t: "Sage! So calm. I need that energy. Please, just stand near me for a minute. Free samosa.", if: { hero: 'sage' } }
+      ]
+    },
+    lily: {
+      intro: "Hi! I'm Lily! This is my dog. He's the best. Do you know any cool commands? I know 'sit.' That's a command. It counts!",
+      more: [
+        "My dog can do three tricks. Sit, stay, and 'pretend he didn't hear me.' The last one is the hardest.",
+        "Grown-ups say 'it's complicated' when they don't know. I say 'I don't know.' It's so much faster.",
+        "Ernie never smiles. I'm running an experiment. So far I've made him twitch once.",
+        "Nana Ilse's garden is the best. She lets me water the flowers. Sometimes I water the dog. Whoops.",
+        "I asked Yuki if the Library has any books about dogs learning code. She said no. Somebody should write one.",
+        "Marcus is really fast. I tried to race him. My dog won. Don't tell Marcus.",
+        "Big Sam has the biggest boots I've ever seen. I tried one on. I got lost inside.",
+        "I found a really cool stick today. It has three branches. That's basically a git repo, right?",
+        "Kenji says containers are like lunchboxes. I love lunchboxes. Now I love containers too.",
+        "Old Tom told me a story about a talking script. It went on for an hour. I still don't know how it ended.",
+        "Someone said there's a forest path and a New City with towers. Can we go? Please? I'll bring snacks. And the dog."
+      ],
+      cond: [
+        { t: "It's past my bedtime! Shh, don't tell. My dog is asleep on my shoes. Isn't it magic outside at night?", if: { night: true } },
+        { t: "{bosses} bosses?! That's so many! You're like a knight! A knight with a laptop!", if: { bosses: 3 } },
+        { t: "Level {level}! That's a huge number! I'm only level, um, seven? Years old. Is that a level?", if: { minLevel: 5 } },
+        { t: "{streak} days in a row? I haven't even brushed my teeth that many days in a row. Wow!", if: { streak: 3 } },
+        { t: "There's a party on the tower roof! Can I come? My dog wants to see the stars. And the cake.", if: { visited: 'roofA' } },
+        { t: "Byte! That's such a cool name. It sounds like something my dog might do to a shoe.", if: { hero: 'byte' } }
+      ]
+    }
+  };
+
+  /* ============================================================
+     // === DIALOGUE ENGINE ===
+     Generic, DOM-free "never the same line twice" picker. Used by the
+     city NPCs now; house residents / roof people can call it later.
+     A character record has  dialogue: { intro, lines }  (a plain array is
+     still accepted and treated as `lines`). Each entry of `lines` is a
+     string, or { t:"text {hero} {level} {coins} {bosses} {streak}",
+     if:{ minLevel, maxLevel, bosses, streak, coins, night, hero, visited,
+     firstMeet }, once:true }. Conditional lines (those with `if`) fire
+     when their condition matches and they are unused (once is the default);
+     plain lines come out of a shuffled bag that never repeats until every
+     plain line has been heard.
+     State (persisted in save): dialogueBag[charId] = { used:[plain idx],
+     condUsed:[cond idx], seen:[every idx heard, -1 = intro], last:idx },
+     talked[charId] = number of conversations, visited[key] = true.
+     ============================================================ */
+  function markVisited(key) {
+    if (!save.visited || typeof save.visited !== 'object') save.visited = {};
+    if (!save.visited[key]) { save.visited[key] = true; persist(); }
+  }
+  function dialogueStateFor(charId) {
+    var bag = (save.dialogueBag && save.dialogueBag[charId]) || {};
+    return {
+      talked: (save.talked && save.talked[charId]) || 0,
+      used: (bag.used || []).slice(),
+      condUsed: (bag.condUsed || []).slice(),
+      seen: (bag.seen || []).slice(),
+      last: typeof bag.last === 'number' ? bag.last : null
+    };
+  }
+  function dlgContext() {
+    var h = new Date().getHours();
+    var cid = save.selectedCharacterId;
+    return {
+      level: save.level || 1,
+      coins: save.coins || 0,
+      bosses: (save.bossesDefeated || []).length,
+      streak: save.currentDailyStreak || 0,
+      night: (h >= 19 || h < 5),
+      hero: (typeof HERO_CHARACTERS !== 'undefined' && cid && HERO_CHARACTERS[cid]) ? cid : null,
+      heroName: (typeof HERO_CHARACTERS !== 'undefined' && cid && HERO_CHARACTERS[cid]) ? HERO_CHARACTERS[cid].name : 'friend',
+      visited: save.visited || {}
+    };
+  }
+  // Declarative condition check — no eval. Every key present must hold.
+  function dlgCondMatches(cond, ctx, talked) {
+    for (var k in cond) {
+      if (!Object.prototype.hasOwnProperty.call(cond, k)) continue;
+      var v = cond[k];
+      if (k === 'minLevel') { if (!(ctx.level >= v)) return false; }
+      else if (k === 'maxLevel') { if (!(ctx.level <= v)) return false; }
+      else if (k === 'bosses') { if (!(ctx.bosses >= v)) return false; }
+      else if (k === 'streak') { if (!(ctx.streak >= v)) return false; }
+      else if (k === 'coins') { if (!(ctx.coins >= v)) return false; }
+      else if (k === 'night') { if (!!v !== ctx.night) return false; }
+      else if (k === 'hero') { if (ctx.hero !== v) return false; }
+      else if (k === 'visited') { if (!ctx.visited[v]) return false; }
+      else if (k === 'firstMeet') { if (!!v !== !talked) return false; }
+      else return false; // unknown key never matches
+    }
+    return true;
+  }
+  function dlgFill(text, ctx) {
+    return String(text).replace(/\{(hero|level|coins|bosses|streak)\}/g, function (m, key) {
+      return key === 'hero' ? ctx.heroName : String(ctx[key]);
+    });
+  }
+  function dlgPool(def) {
+    var d = def.dialogue;
+    var lines = Array.isArray(d) ? d : ((d && d.lines) || []);
+    var pool = { intro: (!Array.isArray(d) && d && d.intro) ? d.intro : null, plain: [], cond: [], lines: lines };
+    lines.forEach(function (ln, i) {
+      if (typeof ln === 'string') pool.plain.push(i);
+      else if (ln && ln.if) pool.cond.push(i);
+      else if (ln) pool.plain.push(i);
+    });
+    return pool;
+  }
+  function dlgText(pool, i) {
+    var ln = pool.lines[i];
+    return typeof ln === 'string' ? ln : ln.t;
+  }
+  // opts (optional, for tests): { rng:fn, ctx:obj }
+  function pickLine(charId, def, opts) {
+    opts = opts || {};
+    var rng = opts.rng || Math.random;
+    var ctx = opts.ctx || dlgContext();
+    var pool = dlgPool(def);
+    if (!save.dialogueBag || typeof save.dialogueBag !== 'object') save.dialogueBag = {};
+    if (!save.talked || typeof save.talked !== 'object') save.talked = {};
+    var bag = save.dialogueBag[charId];
+    if (!bag || typeof bag !== 'object') bag = save.dialogueBag[charId] = {};
+    if (!Array.isArray(bag.used)) bag.used = [];
+    if (!Array.isArray(bag.condUsed)) bag.condUsed = [];
+    if (!Array.isArray(bag.seen)) bag.seen = [];
+    if (typeof bag.last !== 'number') bag.last = null;
+    var talked = save.talked[charId] || 0;
+    var idx = null, isIntro = false, reactive = false, i;
+
+    if (!talked && pool.intro) {
+      isIntro = true; idx = -1;
+    } else {
+      // (2) an unused conditional line whose condition matches right now
+      var matches = pool.cond.filter(function (ci) {
+        var ln = pool.lines[ci];
+        var once = ln.once !== false;
+        if (once && bag.condUsed.indexOf(ci) !== -1) return false;
+        if (ci === bag.last) return false;
+        return dlgCondMatches(ln.if, ctx, talked);
+      });
+      if (matches.length) {
+        idx = matches[Math.floor(rng() * matches.length)];
+        reactive = true;
+        if (pool.lines[idx].once !== false) bag.condUsed.push(idx);
+      } else if (pool.plain.length) {
+        // (3) shuffled bag of plain lines
+        var unused = pool.plain.filter(function (pi) { return bag.used.indexOf(pi) === -1; });
+        if (!unused.length) {
+          bag.used = [];
+          unused = pool.plain.filter(function (pi) { return pi !== bag.last; });
+          if (!unused.length) unused = pool.plain.slice();
+        }
+        idx = unused[Math.floor(rng() * unused.length)];
+        bag.used.push(idx);
+      }
+    }
+    if (idx === null) { idx = -1; isIntro = false; }
+    if (bag.seen.indexOf(idx) === -1) bag.seen.push(idx);
+    bag.last = idx;
+    save.talked[charId] = talked + 1;
+    if (!save.npcLastLineIndex || typeof save.npcLastLineIndex !== 'object') save.npcLastLineIndex = {};
+    save.npcLastLineIndex[charId] = Math.max(0, idx);
+    if (!opts.noPersist) persist();
+    var text = isIntro ? pool.intro : (idx >= 0 ? dlgText(pool, idx) : '...');
+    var total = pool.lines.length + (pool.intro ? 1 : 0);
+    return { text: dlgFill(text, ctx), index: idx, total: total, heard: bag.seen.length, isIntro: isIntro, reactive: reactive };
+  }
+  // Merge NPC_DIALOGUE_DATA into NPC_ROSTER: existing 8 tip lines stay first.
+  NPC_ROSTER.forEach(function (npc) {
+    var extra = NPC_DIALOGUE_DATA[npc.id];
+    if (!extra || !Array.isArray(npc.dialogue)) return;
+    npc.dialogue = { intro: extra.intro, lines: npc.dialogue.concat(extra.more, extra.cond) };
+  });
+  // === END DIALOGUE ENGINE ===
 
   var chibiIdCounter = 0;
   function chibiRoot(kind) {
@@ -21175,7 +21745,36 @@
     telescope: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAACYCAYAAAAbWexMAAAB1ElEQVR42u3dsW3CQBQGYM9BSSJKlNplKpQBaNgAUqTPBpSpskB2SToqCqZgA6hNd7HPfr77nvT36P+Enuyz5aYpfHbt8jZmGgMAgAEQpvDzTztqqgcBAAAAgMAAi+fNoAEAAAAAAPMBuZ4+Ovn93iTluH/pROEAAAAAoHADAIABAAAAAAAAAAAAAAAAAAAKBwAAAAAA+Qo/7hejxlMPAAAAAFDP0rWEAQAAAMCFlwEAwAAAAAAAAAAAFA4AAAAAAPIXDgAAAAAA6incITsAAAAAWMKWLgAAAAAoXOEAAAAAAAAAAAAAAJRXOAAAAAAAqKdwBy4AAAAAYAlP9aK1fwQAAAAAlFP42/bQK8WDAAAAAMCEN9dyAzx+TLN93SYFAAAAAAD8v+C+SxAAAAAAAMQBePxBT6t11qQWnlowAAAAAADIt4T7AgxdKAAAAAAAiHszLjV/p0sn759fSSn+UB4AAAAACj7EHxpAwwAAGAAADAAABgAAAwCAAQDAAABgAAAAAAAAAAD5Co12KO+pCQAAAADIV3hqYdEyOxAAAAAACLRk+77IPXXCL2kAAAAAmLDw3C9yR8/oIAAAAAAAAAAAAAAArONdF9SW2Z94AQAAoGaAO6VP/zJ9lrlQAAAAAElFTkSuQmCC',
     starMap: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAABICAYAAAAasLCXAAABUUlEQVR42u3dvW3CQACAUU9AmSKlyxSpUkSMwAiJxAJZIEpFDWuwBBt4BEoGSJneqe9QZJ3O54vtZ+nrbED3kDgb/zRNtLxv2171aoYWgwRIgBYEFK9wOe2DuvNBBfvYPQfdgQECJEArBto8vKpggAAJEKB6QI9P+6Tal6+sUt8PECBAgADNF6j0gJeuNCAgQIAAARoPKBfg7bML+vm+Bo0N0N+OQbmAgAABAgRoOqBUkHhAYpBUwKHtc9cf+jzxFygVDBAgQIAATQdUutxJRSpQ7qQBECBAgAAtB6g2OCBAgAAB+j9AuQcjax9MXfwkARAgQIDsB/35o5y74wgIECBAgADVaugPwrEnHYAAAQIEaL4nLs6t1Z1ZCggQIEAu4HIBFyBAgAABciMLQIAAAQLkhn5u6CdAgAAtDih+AZUNECABWhOQBzx5ApcAAVIloF91nYRthH7+/wAAAABJRU5ErkJggg==',
     orrery: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABQCAYAAAC6aDOxAAABPUlEQVR42u3bsW3CQBQGYM9BmQEYgBRpEStkAKSkoc4INKxAwwYsQZeKmhFQFoAaR/LpdL6zff6e9Fegw/6Kp3eH3TSF63P19khJU3sBAgQoK8j9d5eU6sAAAQI0KFCoKQMCBAhQTpDS6wECBKguoNxNNrXJAwIEaNpAoQu4nladyQ0U+v3sgIAAAeoVKBYgtUnHJna92OsHBAhQWaD2F37O986EFoy9ocff8TW3/UtSB8/255f1e2f+rQcIEKC6gVoggAABmheQQdEkDQjQmIAcmAECBGhMQKmAuR+gmvw/q4AAAfIgOSBAgKoFCoHtvxadmf0bh4AAASratHs/0AIECNCsgEKbx1BTjm3ak9+cAgIEqFeQw/Zj0Iz+RBEQIEBZgb43y0EDCBCgeQHFDoq5M/lJGhAgQEopVaqe/u8m+SmkGggAAAAASUVORK5CYII=',
-    starryWindow: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAABwCAYAAADi1bnOAAACpklEQVR42u3dL28UQRjA4ZMESEMqKhpSQSpQFVUEAwqBQJOQEByCL1ENAo+u6EcAj6jHIFEEgUDgS07u2z/L7Du7O3v3TPJT15vuvfOIbS/trVZhvXr84EIa2qpvGZIAE2AC7EpQXz687nR+eiJd27vnR50ugQNMgAkwATYI2Me3T6RrA0yACTBpGmB3d4+3KvPoBhhggAEGmIECBhhg5Z19/dOp9HHAAAMMMMAAA2weYDt7j2YtrjiQ4v1+feoUH8/OI3t9rQUYYIABBhhggAG2XqXPLz3w1ubx9/f3GwMMMMAAAwwwwDYT2L39p6niyu5Xu7jGnkdpWWDZ7w8YYIABBhhggC0DWLypbg1UX60Dy/6QAxhggAEGGGCALQPY7sGzrco8ugEGGGCAAWaggAG2Lt60AjbufAADDDDAAAMMsHmAbVvm4T8cAgYYYIABBlgLwPYOX1QtrvR+4Q9ps/tNPY/WAwwwwAADDDDA5gG2//BlUXGVPv/SfgFQdr++as8j+3prz7M0wAADDDDAAAOsDWBTH/jUjQ1safMDDDDAAAMMMMDmAXZw9Gajiwe+7fOIAQYYYIABBhhggI0BKj5eOo9bd+6nAgwwwAADDDDAALtqoLd3DquWPZDa1xMrnUe8vosf7ztN/XpqzxcwwAADDDDAAAOsxoH07Z8FVgpu7PlmwQMGGGCAAQYYYG0AywKZ+0CmBlZ6oK3NFzDAAAMMMMAAaxNY6U1k6206sMXd5AMGGGCAAQYYYFV+sTj1TeumARt7voABBhhggAEGWBvAllY8AB+e4JM+AAMMMAEG2BKAxQ2kmwJMgAkwaRiwn98+S4MDTIAJMGkYsPPTE2lwgAkwASYNA+YNXGUCTIAJMOn/gMUVv0AqadW3DEmACTABtl7/ADQo28R1n8uMAAAAAElFTkSuQmCC'
+    starryWindow: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAABwCAYAAADi1bnOAAACpklEQVR42u3dL28UQRjA4ZMESEMqKhpSQSpQFVUEAwqBQJOQEByCL1ENAo+u6EcAj6jHIFEEgUDgS07u2z/L7Du7O3v3TPJT15vuvfOIbS/trVZhvXr84EIa2qpvGZIAE2AC7EpQXz687nR+eiJd27vnR50ugQNMgAkwATYI2Me3T6RrA0yACTBpGmB3d4+3KvPoBhhggAEGmIECBhhg5Z19/dOp9HHAAAMMMMAAA2weYDt7j2YtrjiQ4v1+feoUH8/OI3t9rQUYYIABBhhggAG2XqXPLz3w1ubx9/f3GwMMMMAAAwwwwDYT2L39p6niyu5Xu7jGnkdpWWDZ7w8YYIABBhhggC0DWLypbg1UX60Dy/6QAxhggAEGGGCALQPY7sGzrco8ugEGGGCAAWaggAG2Lt60AjbufAADDDDAAAMMsHmAbVvm4T8cAgYYYIABBlgLwPYOX1QtrvR+4Q9ps/tNPY/WAwwwwAADDDDA5gG2//BlUXGVPv/SfgFQdr++as8j+3prz7M0wAADDDDAAAOsDWBTH/jUjQ1safMDDDDAAAMMMMDmAXZw9Gajiwe+7fOIAQYYYIABBhhggI0BKj5eOo9bd+6nAgwwwAADDDDAALtqoLd3DquWPZDa1xMrnUe8vosf7ztN/XpqzxcwwAADDDDAAAOsxoH07Z8FVgpu7PlmwQMGGGCAAQYYYG0AywKZ+0CmBlZ6oK3NFzDAAAMMMMAAaxNY6U1k6206sMXd5AMGGGCAAQYYYFV+sTj1TeumARt7voABBhhggAEGWBvAllY8AB+e4JM+AAMMMAEG2BKAxQ2kmwJMgAkwaRiwn98+S4MDTIAJMGkYsPPTE2lwgAkwASYNA+YNXGUCTIAJMOn/gMUVv0AqadW3DEmACTABtl7/ADQo28R1n8uMAAAAAElFTkSuQmCC',
+    // ---- ROOF SPRITES (Plan F stage 2) ----
+    moon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABCklEQVR42u3YMQoCMRCF4RzdI9h4hT3DYqmNoGChIDYW2tpYWWqdKXYYMpON8Q+8bmHzviIkk1LldbuuP1NJvS8AAOgMQCsUHQAAAKCtwu/XMTTyf+fDkAUAAACILRxdUGY7LiYjv3cHAQCAPwOwHnLaBrUNe0cCmEEAAAAA06F32i1NiQZ4PsYsAAAAQCxAawEAAABsAHMPOLwvVhrAfrPKAgAAAJQ9frwBSi9WAAAAgA2gtYuQFUAWllELAwAAAK4AtYeiAAAAQCyA95C0dmEAAADABiCXfEzUHoBohe+XIUtxYQAAAMAEIqNtuDTuhxwAAAAQCmKNVnD2wgAAAEDR6q4QAAD8NsAXlxQoKi2LSfMAAAAASUVORK5CYII=',
+    skylineNight: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAABgCAYAAACNFsOIAAAFSUlEQVR42u3cvVErTRCGUTLAIwQCwCIGQiAAgsAhD6IgFMiAGEhgcbVgdG2NZna65zxVr3Xr+0FajY5uabm5kSRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJUoruH163y3lEJFVpe37aLucRkSQAlASAkgSAACgJACUJACUJACUJACUpR7d3j9vlPCKSBICSAFCSABAAJQGgJAGgJAGgJJ0NtGwDXnl+6gBq9gGgJAAEQMAAQAEgAEoCQAAEDAAUAEoSAAKgPD8CQEkCQACcueq/2Lb1+XG9AyAASgJAAARAAARAAARASQAIgAAIgAAIgJIEgAAIgAAIgAAob3jVXvAen7VfD7MdyNXecEa/nqL/vvN7rvMu2/Ucbft62e3fn79/7nb0n6++aq9HAARAAARAAARAAARAAARAAARAAARAAARAAARAAARAAARAASAAAiAAAiAAAqADZMwTMjsAR3+pPduX6LOBb7UBoPN7JQDa3OdF+r9QgzgABEAAdKADIACa8wIADQABEAABEAAB0JwXAGgACIAACIAACIDmvCgDwOwHNAAee0Ma/SXZbL8YFAAbv7T+87EbAAJgZgCufhPF6J8/uqkFAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAPMDsPcb8NkAXP0Nx5fUc81zaG4CAUAABEAABEADQDMABEAABEAABEADQDMABEAABEAABEADQDMAnA+Ab9/bbtUPtOoXJAC6CWTkl7Sjm0Ci86X3TSQAeGx/f5E7AM51U1T0gTH888Gvt2vf5AGAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAAAiAa94E4lCya17fbvI4d60fWFvfsELQBs93tvOy9fpvfbx6P9/mAxYAAqAZAAIgAAKgASAAAqAZAAIgAAKgASAAAqABIAACIAACoAHgCgCsdqCZjQRgdlAB7NofmLNd/9lvKup900Q2UB99PKqd19f+eQDQDAABEAABEAABEAAB0AwAARAAARAAARAAAdAMAAEQAAEQAAFwXQCudhNItje83v+/R//91X6xrw8Ui/0i385vwABo5rw+awAIgADoQDEABEADQAAEQAAEQAeKASAAmvMaAAEQAAHQgQKAAOj6N+f1ugCM3tDdBGIOlIXB5CYRc717PU3y8/T+C6DWm2jOfn4B0AwAvWGZASAAAiAAmgGgNywzAARAAARAMwAEQDMABMB1AVjuBRyAtvVL4KOf4NkOjGoHWHSg9L5pALCOLfzF1sHzVe0mptlvmomub9e/+cAOgAAIgADoDRAAAdAMAAEQAAEQAA0AAdAMAAEQAAEQAAEQAAHQABAAYwD2fgMzc6AAgPX5AND7A62bOIp9ACr+FxS9bwJp/YB49usRAM0AEAAB0OMJgAAIgA4IMwAEQAD0eAIgAAKgmQEgAAIgAAIgANYF4OgL8OwL5uwv7R/9+aILbrYXfO+bdKa7CcSX1G3h6yG8qQZAzQf2ac4XAARAAARAA0AANAAEQAAEQAAEQANAADQABEAABEAABEADQAA0AKwLQG9gZm4CcRNI0een8QMkgJvzus4A0MyBAoAACIDmvAZALxgzBwoAAiAAmvMaAM3MgQKAAAiA5ryuC0Azc6CYmTmvAdDMHChmZs5rADRzoDhQzMyc1wBo5kAxMzPndYr9Alh9XGL7FZbQAAAAAElFTkSuQmCC',
+    skylineWarm: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAABgCAYAAACNFsOIAAAFU0lEQVR42u3dsW3jShCAYdfgGhw5cBsCnDh3FY5dgipRrmqcqhE6FQUY68VyyZnd7wcmeriHA8UdfjqYd09PkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkqbr/fVjuR9XRJIkCQAlSZIEgJIkSQJASYrWy/Pb0nNcYUlb7ScAlCQAlASAAChJACgJAAFQkgBQEgACoCQLtS/4gFFSFgA+Aq91fGKSABAAJQGgJAEgAEoCQEkCQACUBICS1HvBAaAkAOwDwKNntOeVE6CR9g0AAqAkAARAABQAAiAASgJAAARAASAAShIAAqAEgL0AuFxPq6kFW+uvfxwLU9pugUX/Anf07w8AATBSy/fncj82WmwAhv8DLQAEQAEgAAIgAAKgABAAAVAACIAACIAAKAAEQAkAARAAARAA7c9pABhtLEwpD/iyTTYAZr/e9nlfgGQHfrQvTABoYUgACIAAaJ8DIAACoIUhASAAAqB9DoAACIAWhgSAAAiA9jkAAmDal0Bul9VUvwRy/lrN3guj9dfPfiAtkNwPpNGA1rqPABAAM++jo6+f+3+wf9gCAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAEQAAHQ/Q+AAAiAAAiAAOgBCIAA6P6fBoDZFwYA7guCre9HANz38y59YesNMC+BAKDr9ff1yQZAL5YBIAACIAACIAB6wAIgABoABEAABEAABEAAdL0AEAABEAABEAABEAAB0PUCQAAM8hLI9bSa2v8OgGODr/cDd3QAWsCVQO28bwAQAE0/sBoABEAABEAPPAD0+bpeAAiAAAiAAAiAHngACICuFwACIAACIAACoAceAAKg6wWAAOglEDP+wmgFOvT1Pc97f+EbHSQAGPt6bf0PGez9/48GwNH3BwAaA4AACCQACIAACIAAaAwAAiCQACAAAiAAAqAxAAiAAAiAAAiA8wIw+kJZfs6rgRYz0g8NA+BcU3oA+XyNGfclkKM987h/ANBYGAAICADo8zX2OQACoLEwABAQANDna+xzAARAY2EAICAAoM/X2OcAaKHM+UO2Fsbcf3Fp9x96b1yQzlvu+7X4F//fLqvxmZiql0D8gVKul0AA0AAgADpvAAiABgABEAANAAKg8waAPhMDgAAIgAYAAdB5A0Dj/gRAAPzvQvEXQ8YCc2HBF/975efZDJaNfz9m7pdAfGGK/fmUvmDMft6PBrqXlAAQAAEQAA0AesACIAAaAARAAARAA4AesAAIgAYAHVgABEADgB6wAAiAswLQRRj7JRE/9GphGF+otnogOy+xvhC0Pj9GA6v7EwABEAAtDGMAEAAB0AAgAAKghWEA0HkBQAA0AAiAxsIwAOi8ACAAAqAxOyy8AkiLP2S9MWi7v4RUuaCBPfn9W3opKPnnO/1LIIN/vtnBGP3+bH3+AaABQAA0AOgBC4AACIAAaAAQAA0AesACIAACIAAaAARAA4AACIAACIAAmPOBEv0llb1vWA80LyV4SeC4B3b4B2yylxqO/v1m39+196f9A4AACIAACIAACIAACIAAaAAQAAEQAAEQAAEQAAHQACAAGgAEQAAEQAAEQAfajHc/AGDlD8E7j1PP7OfF+ej8haURpPZ53fUFQAOAFoYHnHFenA8ABEAANADo+nrAGefF+QBAAARAA4Cur/MIgADofAAgABrjgWaM82KM+9NLIMZYGMY4L8a4PwHQGAvDGOfFGPcnABpjYRjjvBjj/jx0fgFwBofFpYTknAAAAABJRU5ErkJggg==',
+    parapet: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAAAsCAYAAADivbOOAAAA1UlEQVR42u3boQ3CUBSG0U5Zg6ipIiEk1WAQiCYYHBswQQUrMAMJA7DDxeILuby+I74F/hx332sez1dIWTVGEIACUEoBON3uIWUFoAAUgFIOwNP5GlJWAApAASjlAFxvj/HZ/nCRfhaAAlAAAigABSCAAlAAAqj/BNj1u6qbO7j9AAQQQADtByCAJQLcDGPVzQVoPwABBBBA+wEIIIAAAggggAACCCCAAJYAsPZPM98+vte+H4AAAggggAACWAZAyYtoASgBqOUBbFdDSFkBKAAFoJTSG4Nnu2idRDBkAAAAAElFTkSuQmCC',
+    rooftopLiftHouse: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACYCAYAAAALFWDVAAAChElEQVR42u3cIU7EQBSA4V4CheME6DUoLoBYU4EhBIFhJSFBYVZiICiCArN6PScAwRFIOEURqA4Zmml3oB2+TX4Fy0v6PjE7AaoqeNWznUaKVXW9PCQBJIA0EUDhN7y+vUvRvoECSAAJIBUC6Gn1LEUDSAAJIJUK6Pp2JUUDSAAJIJUKaF4vpGgACSABpFIB3d2vW10tH0bdbP9k0o39+Z6eLVsBBBBAAAEEEED9Or+8aTX0521t7ybVvBy3Sn1/18/rKnz/2J4nQAABBBBAAAFUBqChC84NFCCAAAIIIIAAAug3DtFjCyCAAAIIIIAAAihH5gFkHkAWCpAHDBBA5gFkHkAWCpAHDBBA5gFkHkAWCpCFAtQXUOof51to3nmp+wAIIIAAAggggPoBmu0dJAVQ3nmp+wAIIIAAAggggDYDqPl4bAXQ3wLq2gdAAAEEEEAAAQQQQAABBBBAAAEEkItEF4kAAQQQQAABBJCF+qV6gMwDyDyALBQgDxgggMwDyDyALBQgCwUIIPMAMg8gCy0f0OHRxUaz0GHl3gdAAAEEEEAAAfRV+PWhATSs3PsACCCAAAIIIIAcoh2iAQIIIIAAAsg9kEO0QzRAAAEEEEAAuQdyiHaIBggggAACCCD3QA7RDtEAAQQQQAAB5B7IIdohGiCAAAIIIIDcAzlE+xQGEEAAAQQQQO6BHKJ9CgMIIIAAAggg90AA+RQGEEAAAQQQQGMFZKH+0ThA5gFkHkAWCpAHDBBA5gFkHkAWCpCFAgSQeQCZB5B5AFkoQAABBJB5AJk3HUDhGySABJAA0n8ANK8XUjSABJAAEkACCCABJIA0XUDhK/wG6UcwAAkgAaRpAvoE/cRjm6Ocj38AAAAASUVORK5CYII=',
+    stairDoor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAACYCAYAAAA8922kAAACYUlEQVR42u3bIU/jUADA8WnEORSo0wj0EKjTJAgQ4wOQQMId8swUCZkiGMgUQYFBIUiQGDSCYO6CIuAIX2DoPsK6pu+1j/F7yd+1fe37ibXb2ukEo9f9OVK+dcqGRQIogJoYMNzg7v5JGfcBFCBAAVQ0wPOLG2UcQIACqHSAh8cXyjiAAAVQ6QDXervKOIAABVDpAIcnV4X2Bqdqse0/g0IAAQqg0gF2f20q4wACFEClA5ydWxxb/3E0tqrbl+1fdry651v3/Mvmj308gAABAgTYHGDdE44NkPp4seePvX4AAQIECLA5wNgn1PRNSOr5U18/QIAAAQLMB/Cr3UTkNn/d/QECBAgQYHOAbX+Ix36Qrvtlduz5G/8mBiBAgAABfgo482NeGQcQoAAqHWDql1v+9o8KpX455KvPl93bSQABAgQIMJsL7C6v1gogQIAAAQKcFsDRy9nYAAIECBAgQA/yHuQBAgQIEGCzgHUfvHMPIECAAAECnBRwZXBQaGN4knULq+uFAAIECBAgwFiAS1u/sw4gQIAAAQJsCvD29a1SO5fXharuHwYQIECAAAG2BTh8+F+pELDq/mEAAQIECBAgQIAAAQIECBAgQIAAAQIE2ATgcn+/1QACBAgQIEB/agIIECBAgAABAgQIECBAgNMIGA6AAAECBAiwLcBwwVL38O+5EECAAAECBPhdbmIAAgQIECBANzEAAQIECBCgH3QBAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABApwWwLXerjIOIEABFECAAAEKoOoChiPcQHnVKRsWCaAAalLAd037MjegfFxVAAAAAElFTkSuQmCC',
+    neonSignA: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAAAoCAYAAAACCDNUAAAA+0lEQVR42u3csQ2CQBSAYTawp3QAB2AJey3sncwxHMkNjh4NF3l3x5F8JH8FeAl8JI9ChmGx3adzkrY25DYXSYAJMAH2E1S6vqTNfYEDTIAJMGkTsGm8Va31eqp7/wATYAIMMJUBNp4uqz0+qWi59Zal53u13PGt90evZ/T3Sq8PGGCAAQYYYIDtAywKLgqq9Pm9Aet9P2CAAQYYYIAB1gew6JBZG9y/LwW1wZce8qMPePdDPmCAAQYYYIABtsuQv/cQ3xqYIR8wwAADDDDAAOuh6JB+NGDRIR8wwAADDDDAADsmMMk/uwWYAANM5YH5AJ184VCASYCpObAZSymrb6oXdnIAAAAASUVORK5CYII=',
+    neonSignB: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAABTUlEQVR42u3csRGCMBQGYDawt3QMVrGws7JxDUewsnQEx3ETrEXF4yCPkHy5+ys5IC9f8S54aZre2Le7TspN828oEgAKBYBUA6B/weHeScH5AAEAAAAAAAAAPwBstq2sOAAAAAAAAAAQBaB7Ht9iEQAQAAQAKRNAf8H/ZeqExt5/7vebev3Ueoy9HwAAAAAAAADMBWBsQaMLnnoBc/s9vAkEAAAAAACgWgC5NYHRAOZuQlO/PwAAAAAAAABEAYj+OBS9kZNbk5fdTiAAAAAAAADVAEidpZuo3DaCsmsCAQAAAAAAAED8K1gAEACkKADihBABQACQMgGkPijyensMpvaDG6PrE35SKAAAAAAAAKsBMHX0H3g6XwYT/oILj+LrAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAdfVZ/OOE+pig+pig+pig+nwbL0Joju3sQ1MMAAAAAElFTkSuQmCC',
+    heaterLamp: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABwCAYAAABYWvPrAAABB0lEQVR42u3cIQ7CMBgG0J0FyRFmkHgEZh6FQnAIEhIUh0CRYDgCigSJwKC5A2g6QUpXOpLX5HPL8j3Zv92q6sNq6sGzZKrUBQCQWPh0vhZNNAgAIBIQPnC7P3qdFggAoGPA/njqdQAAAAAA8gLmy02vAwDQNSB2E/9cDd9zmaUleF/yJh8AIPOcqAXoONkncwAAXYMO46RkLwwA8GNAOJxdb3dvAQD4d0DsgUgIKF4YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODrwqmA4je2AAAiC0+bRdZkv70OAAAAABBVuPcffwIAZAbUo0nRAAD8GhC7gfGnP4A/B7wANYmkVDwpBMAAAAAASUVORK5CYII=',
+    cocktailTable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAABYCAYAAACzpXSwAAABB0lEQVR42u3aLw7CMBTH8Z6FY8xwBwRmHoVCILkBCYpD4EFxABISEhwoDAKBgvmiW5K9NK//kn2b/NSW7X22LO32Zoww2mZkNTGlBwAAyoIfX6tKKEh9AQAAiPwM+Qe0q0NvtAXb68xJ9DsCAEBhgL+9e996AwBAboC0OAsFSAEAoDTA3+H5+lSdPxAAAJEB++O56gAAEBsgzQvz5aZo1DMxAACRX2iknC53J+vtzkn2j8MAAGTuJ4QCquvgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADEgmM3OAAAqA3gn2DaLpImeZcSAIDAgvlbBcDQAc14UjQAAOQGhC7eUif56hPA0AE/58nVO5W0bAIAAAAASUVORK5CYII=',
+    daybed: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABICAYAAAAJZ/BjAAABRUlEQVR42u3doU4DMRzA4T4LBjk/A3qPMMTcBAY/hSZ4JAlPsEdAoSEhhBfAT8wf+iq4dO2OXu9r8rP/3PVTTZq7EAbWzfKi0+mF3GUTAQDQiADxgJ+HT2WUDAIAAAAAFQG8bvbKCAAAAABaBni8uu+V+8CtzQMAAACAlgHi4oNI7gtPfR4AAAAAzAlAAAAIQDsA8cHj+XAsWjx/7LrDvmjxfAAAAACoGWBow792b702799Fi+ePXfexLVo8fxAEAAAAACoGeFk99SoNEM8fu9IA8XwAAAAAaAlAaQEAAAAAAAAAAAAAMEWAu8VWGQEAAADAlABu1zudMQAAAACoGWC1XOuMAQAAAEBNAEN3RReX138294/ype5P8u1oAAAAAJgQQGh8AQAAAAAAAAAAAADQIkDqDxzCzNe//0EDAAAAAE7fn1+biU4rZf7EGAAAAABJRU5ErkJggg==',
+    danceFloor: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAABYCAYAAAAJKj6VAAACGElEQVR42u3coUoEQRgH8EuGKz6BIioIB6JFgwqiRQTBF7AJh5xNgxhsajEJRoMWsVsUfAAtBpPxLD6A9cJab5ZjhuWUFeYX/m3vvp3ZX5qP+RpFt130Z7TZqpRhfz9s1K+3fup9GoCpD5j6gPnAgA0EVvUPPtfugvQ2n6K5bO0HOdp4C3K2/RXN1uxpkIXn7yDL70U0k8fXQXoPi0GKl5Vobg+nguS+/qpeAAMMMMAAAwywvwH2unQVTWqDO6uP0aQ2eO7+I5rUBndv5qNJActt/YABBhhggAEGGGCAAQYYYIABBhhguQI7md6JJrXB6zMH0aQ2eGzvPJrUBl/sjkeTApbb+gEDDDDAAAMMsHqAaTbnvX7AAAMMMMAAA+x/AHPQmdf6AQMMMMAAAwwwwAADDDDAAAMMMMByBabZnNf6AQMMMMAAAwyweoBpNht+AhhggAEGGGCAuXjroNfNbsAAAwwwwAADDDDAAAMMMMAAAwwww080203XAQwwwAADDDDzwTSbDT8BDDDAAAMMMMBcvHXQ62Y3YIABBhhggAEGGGCAAQYYYIABBpjhJ5rtpusABhhggAEGmPlgms2m6wAGGGCAAQYYYA46XbwFDDDAAAMMMMAAAwwwwAADDDDAADMfTLPZ8BPAAAMMMMAAAywOrOi2i/6UH2iOTERT/n3q+d+O+vXWL3spvw9g6gOmPmA+MGADgf0AB21O7YEF5wMAAAAASUVORK5CYII=',
+    cocktailPink: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAgCAYAAAABtRhCAAAAdUlEQVR42mNgoBBEWyn9R8YMtAajFpJsACFsv84LBZPsgFELKbYQXcGzL/9R8P85J0jC6PoxHDBqIdUtJDlO4xehYJItGLWQ5haS6gCq1xajFtLcwhN3PqDgUQsHn4WELCCEKS5pRi2keZwSwlRPpaMWEjIPAEbs+u2QSLnZAAAAAElFTkSuQmCC',
+    cocktailBlue: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAgCAYAAAABtRhCAAAAdUlEQVR42mNgoBBEWyn9R8YMtAajFpJsACH8/2IaCibZAaMWUmwhuoJnX/6j4P47pGF0/RgOGLWQ6haSGqf22z6gYJItGLWQ5haS6gCq1xajFtLcwhN3PqDgUQsHn4WELCCEKS5pRi2keZwSwlRPpaMWEjIPAHM/CoylwaESAAAAAElFTkSuQmCC',
+    cocktailGold: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAgCAYAAAABtRhCAAAAbUlEQVR42mNgoBBEWyn9x4cZqA1GLaTYAHT8P8oLLybogFELKbYQXeDEnQ8o+NmX/3gxhiVdWih41MKBt/D/hQKSMLqDRi0cBBYu0yYJj1o4auGohdS38EGXFEl41EL6W0hpI4ruDeFRC9HNBwD21pmKzCgbswAAAABJRU5ErkJggg==',
+    wineGlass: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAgCAYAAAABtRhCAAAAaklEQVR42mNgQAPRVkr/qYkZCIFRCym2EF3Bsy//qYoxHDBqId0tPGAVTxIetXDwWdgnb08SHrWQ/haSWnifuPMBBdO8thi1kGQLCTmAkIUMlIJRC2keZ4Qwxal01EKaxynVM/qohZRaCACul26bla5KAgAAAABJRU5ErkJggg==',
+    beerBottle: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAgCAYAAAASYli2AAAAXklEQVR42mNgIACirZT+I2MGSsEIMBDdgA8HHFAwyRaMGvhfv8oeBY8a+J+gAflHqlCw/Sx/FEzQglED/395cwMvHjWQdANPelij4FEDR7MeLQwkVD4SwiSX2MPPQAC8eO6upG1bdQAAAABJRU5ErkJggg==',
+    mug: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAXklEQVR42mNgQAPRVkr/KcEMpIJRCym2EF0DpYCgA0YtpL2FNwoowicv3ELBGA4YtZDmFn7YYYWC/79cgILR5dHxqIWjFo5aSLmFB7oUKMIkF96jFlJs4WgzcchbCABnn4J73aZeKwAAAABJRU5ErkJggg==',
+    shaker: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAgCAYAAAASYli2AAAAVklEQVR42mNgIACirZT+I2MGSsEIMBDdgPYpG1AwyRaMAAPRFVy784IkjGHBqIH/n73+jIIXrdmNgnPKJqDgUQNHDRw1cNTA4WIgoTqGECa51ht+BgIANCfejaAE8sgAAAAASUVORK5CYII=',
+    // ---- ROOF B SPRITES (Plan F stage 3) ----
+    firePit: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAACRUlEQVR42u3coU7DUBTG8T0CekEQMlUJhmCQOELIFCSAIEPgkBMYhqAGxNRICG+AwPAGgCJY1HBoXqDo+y27Zye3Tbf1f5NP0a635/zEzW1pq9WwcbS9XsTSYgCAAQAGABhL2fAiz6IBBAAAAAAAAAAAzWg4IAAAAAAAAAAAWI6G/3bb0RQvu9FY5wMCAAAAAAAAAIB6Guxu+CgLM87jkeO9IHjYBAAAAAAAAADAbA20ohsz1/ljkLoBDB+eg+h89e+p9QAAAAAAAAAAYFEa+j3+cyW/fwpSfPWCaAP2u6dBqgag85u4nsz38PgiiJ7vrU/tYAAAAAAAAACNAaA/qIsaKze3Q1eytU4QXVRpwfX4j612NNogjXW+Xm8CgMxXj9d466OLYCvJIAAAAAAAAACNAaAn6KJFFzVWrAJo8s5KNP2DzWiKflZprOtb8/fWQ6OLXisAAAAAAAAAAEwDYDX87fPHFe8NjV8HQd5HvSB35zvRaAOs471J/X29H00qCG9/JkAAAAAAAAAAADAFQP8qd0U3IqwbsAq0t7G60CkbgHcjTvsDAAAAAAAAAMA0ACdnl9F4NyK8LzykLoqsjZjUpM5P462PdyNO+wcAAAAAAAAAwKzPBrxAdBHpfeFBz/cuespukBXvCxqp9bHqn/ySKAAAAAAAAKCxAKoG4o130aMFTn24Zf2ed1GcWo/a/3kUAAAAAAAA0FgAVX8QomxAGu/DrbKvv/RfCAEAAAAAAAA0FkDdgOY9fPoTAAwAMAAwJ+Mfo9h0NPrPWTwAAAAASUVORK5CYII=',
+    logBench: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAAAkCAYAAABlhn+2AAAA50lEQVR42u3aIQ7CQBBA0T0EElXRA4Crqa8gBItA4glB9ABYDFcoN+AOaE7BLcCXMJNmuizL/E2+Iw0zrwmIDaF31lXxpHQF7bAkgAigPwLqf+BxO4t1+4YMaft9AwMIIALIEdD9shM7bWsypO0XIIAIIM9A1+NSrF3NB7WpS7Ghz8s9bb8AAQQQQJ6BtB8xK4gVzPr81C9I9H9xAAEEEECOgWI3NtC3wQACCCCAAPoM1B0ascVsSoa0/QIEEAHkCWjsi4tVORHL/WJh7Pmi3ywFCCCAAPphIOtJ/gWYDyCAmI8BcpnvBfaW+sikhyE/AAAAAElFTkSuQmCC',
+    stump: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAAwCAYAAABE1blzAAAAw0lEQVR42u3aIQ6DMBTG8R4CiZpAIpAY/ASZR8wNwR2Q2PldY9kddojdZehW0DQflKb5N/lUm+b9nmqTZ8zOa2gvfyUm9QUQYOIFf18PKdEbAhBgYkC14N97lqI2BCDA3IG+Aj/LTUpoAwACBAgQIMCYQF4yAAHGBT7HbjP3rrKifnina22lb8rNAAQI0Aa6BbrxnXf3AQIECBAgwCOB7gHfhW1VnJpgMECAmQHVIQM1AAHmBgwdOkh90Oj4CwAC3LW+FVnHUFC9VbtLAAAAAElFTkSuQmCC',
+    tastingTable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALgAAABACAYAAACp8r2zAAACN0lEQVR42u3drU4cURiA4bmIyk1IKhBFtGndmqmuqCCpqqCpaBMMaC6hovWrGi6AC0CtxBUcorJBkCZdgapZLDMkM/ly5u8MzySvIXuS+c55RkwCbFEMfH1cPt8+bOj1U7/q88193mLuBwg44IADDjjggLsmcGCXp+8qtR1g6vrc9md79aWx3Obt+4EdfT8ABxxwwAEHHHDAMwC+2FtUigKPrk89gOj9pa7ffnvRWHTeoefr+4Gtf351cF5pcPCAAw444IADDjjgHQBPfSmof/7g7KjSy6Oysfr6n8sPlQ53XjUWPbCbu22ortc/AvH/trHc5os+oG37c1KuGgMccMABBxxwwAHPAXj9B5vL48aiN3j39zpU1+ujAL7vlJWiAK7XnypFgU99vuj66Dyb9dvGAAcccMABBxxwwOcI/MfXMlTbgY39khnt4vem0tDroyCmPl90nqi/No+AAw444IADDjjgOQC/Wn3utCjw+voo8K7vX3kFuAAHXIADrhyBnx6Xodp+OUhKKeoRcAEOuAAHXE8B+L8/F1JvAS7AARfggAvwx/1ar6TeAlyAAy7AAddTAH6y/0bKNsAFuAS4lCPw1D/6lMYMcAEuAS7lCPz964WUbYALcAlwKQfg0S8BWu4+C5X6zyKn3tAHNre69pT8zb+AAw444IADDjjgIwBvA596Q0Xm19jA57Z/o3sCHHDAAQcccMABz8BT9CWimPnV90uY/Rt4PxwQ4IA7IMABB9z+9e/pHtNG8+y+MN3TAAAAAElFTkSuQmCC',
+    blanket: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAAAsCAYAAACKTjG2AAAA5ElEQVR42u3csRGCQBBA0auFBsyJjC1BMkNLsB0SmzC3BUIqoASMOQc23uMx86O9+cHxA/QYSqmuoe9WYI8SXTYJAoKAkCSgesH38QR2+QtKQBAQBIRGAlrmz4bXpT+kXh/Bl9snID4B8QmIr9WA3tfbhmm8H1Kvj+DL7RMQn4D4BMQnIBsqIAHxCYhPQHwCcoMEJCA+AfEJiC9zQA4X+ZzG8wmIT0BukPeBPFTy+RXGJyA+AfEJyIbyCYhPQHwC4ms1oOiPJZwbAUFAEBBaDSg6PDM/9zz8yKYNNBeQuYDMcwT0A+e//KcjKPJbAAAAAElFTkSuQmCC',
+    loungerB: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAABECAYAAABtcnDsAAABRElEQVR42u3crU4DQRSA0X0IngCB5AFqQKOQJAhwCET7CEgclqBIMFUoSJArW08acIgKHDgkWHaS3clSbn92zySfmkkmucffokjO8WD7+3eFE3pazxsQIAdQh4DSB+cHu5XSe/1vuXkDAiRAfQb6mJcKDBAgAQJUD/Q6vW3s5uUttNz/X5Pn0HL/LxogQIAAAfo70PChDC33//vdY2iAAAECBAgQIECAAAHqH9D4eqTAAAESIED1QPPZvQIDBEiAANUDTZ4uN6vRSaXP8rRSer/q94AAAQIEqDtA48P9SulA0vtVvwcECBAgQIAAAQIECND6AV1dHGmBcmCAAAkQoAagsz0FBgiQAAGqB9JyAwRIgPoElNthOtjZasxSvubazq/1FlpAgAABAmQR+rLmBwgQIEAdBsp9CGTN5gcIECBAmwv0A0NFMkZjjjR7AAAAAElFTkSuQmCC',
+    trellisLights: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABoCAYAAAA5KfgkAAAChklEQVR42u3dPU7DQBAG0BwECYmCFgQdTXoKkChBgg4uQMURoOAKNEiUtByDY9Bxg9DQeBAMg/+C/Vb6qjixd/ZFWtmbzWIR2tnB1kqmm0XWFAkAhQJAZgMgHvBydy4TzhcQAAAAAAAAAPCZ+6ulTDgAAAAAAAAA8B2Ai+W2TDgAAAAAAAAA8B2Ax+vDRm5O9htZvT01EicZxw+njcTjs4cV8fisA9nnx/e3vZ6D28NGsv72ff2x/nG8jvY2GgEAAAAAAACAvwLIChYLEjuwebH7Y7ICVBdApJOgZH1EfH8EkPUnO392o6ba/1j/GAAAAAAAAADoC0AswOr1spGuAXRdwC+TtPfnRroG0BYwAAAAAAAAAKwrgGyAqwPQdQGzG1lZAdPrD1+A6oBVAVTrDwAAAAAAAAC/BRAnQTE7N8sfU/3xYnw9O391ANpOorJJaNvzVb8AAAAAAAAAAPBfAFQLWAVQ3SGj7fmqn5/1v3r+3heEAAAAAAAAMFsAXU+C1j1twfV9/tEXhQIAAAAAADAbANmNi3i89Jvsxg8AAAAAAAAADAXAhszdJhtgAAAAAAAAABgKQOt/pNBKD4uqAz76BhGGEAANAG02AKp/OmWIuwUw+oIQAAAAAAAAJgugusizvEGB1ukfeQIAAAAAAADAUACyAQdgWCAAAAAAAAAAMNbvAiziGDcAAAAAAAAA0BcAWa9kk3QAAAAAAAAAGGpRqAwbAAAAAAAAABgLgMcxM3sYBAAAAAAAAAAAzGNRKAAAAAAAAAAAMMqAVxfgAAAAAAAAAAAAAAAAAAAAAAAAAP8XQHWDDgAAAAAAAAD4LYDqwwdDNC6I3jfqBAAAAAAAYC4APgBbXP6Idub9BQAAAABJRU5ErkJggg==',
+    lanternPost: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAABgCAYAAAB8InCYAAAAs0lEQVR42u3asQ3CMBAFUM/CAjRUaWiYgIImSyCmYhQ65kjLAqGOkRJZF6xg3km/O1mv9J2d0kL13W6MJEULoDogP6A7nie59LfZ5P3FIIDqgLxhfzh9NR8ggM0DxuEeCkADgOd1mtdjPlk/AAAAAECDgMIA/D7Arbh9QOlConQYDU/HANUBS6DVNyIAAAAAAAAAAAAAAAAAAAAAAAAAAACbA6z9gBHelgMAAFQH+Fn9d4A3RdSb0SeYiGcAAAAASUVORK5CYII='
     // ---- PHASE2 SPRITES END ----
   };
   // Front-door centre, as an x offset from the house anchor. Measured from the 148px sprite PNGs (door centre x=91 for houseA/D, x=57 for houseB/C; anchor x=74) scaled x0.878 to the 130px display size. The door base sits ~y+6.
@@ -21563,17 +22162,14 @@
   function openNpcDialogue(npcId) {
     var npc = NPC_ROSTER.filter(function (n) { return n.id === npcId; })[0];
     if (!npc) return;
-    var lastIdx = typeof save.npcLastLineIndex[npcId] === 'number' ? save.npcLastLineIndex[npcId] : -1;
-    var nextIdx = (lastIdx + 1) % npc.dialogue.length;
-    save.npcLastLineIndex[npcId] = nextIdx;
-    persist();
+    var picked = pickLine(npcId, npc);
     var portrait = $('dgcDialoguePortrait');
     portrait.innerHTML = npcChibiRoot(npc);
-    setExpression(portrait, npc.expr.talk);
+    setExpression(portrait, (picked.isIntro || picked.reactive) ? npc.expr.react : npc.expr.talk);
     $('dgcDialogueName').textContent = npc.name;
     $('dgcDialogueRole').textContent = npc.role + ' · ' + npc.topic;
-    $('dgcDialogueText').textContent = npc.dialogue[nextIdx];
-    $('dgcDialogueProgress').textContent = (nextIdx + 1) + ' / ' + npc.dialogue.length;
+    $('dgcDialogueText').textContent = picked.text;
+    $('dgcDialogueProgress').textContent = picked.isIntro ? 'First chat!' : ('heard ' + picked.heard + ' / ' + picked.total);
     $('dgcDialogueBox').hidden = false;
     playSfx('click');
   }
@@ -22118,7 +22714,7 @@
     houseWanderPick(w);
     houseWanderers.push(w);
   }
-  // Ambient particle effects (steam puffs, floating music notes): { kind:'steam'|'notes', x, y, n, z }
+  // Ambient particle effects: { kind:'steam'|'notes'|'hearts'|'sparkle'|'speech'|'shoot', x, y, n, z, delay? } (stage coords)
   function houseBuildFx(home) {
     var stage = $('dgcHouseStage');
     if (!stage) return;
@@ -22127,21 +22723,48 @@
       box.className = 'dgc-house-fx';
       box.style.left = f.x + 'px'; box.style.top = f.y + 'px'; box.style.zIndex = f.z !== undefined ? f.z : 990;
       var n = f.n || 3, glyphs = ['♪', '♫', '♬', '♪'], cols = ['#fff3c4', '#ffb0d0', '#9bd6f5', '#b8f0a0'];
-      for (var k = 0; k < n; k++) {
-        var sp = document.createElement('span');
-        if (f.kind === 'notes') {
-          sp.className = 'dgc-fx-note'; sp.textContent = glyphs[k % 4]; sp.style.color = cols[k % 4];
-          sp.style.left = ((k % 2 ? 10 : -12) + k * 3) + 'px'; sp.style.animationDelay = (-(k * 3.4 / n)) + 's';
-        } else {
-          sp.className = 'dgc-fx-puff';
-          sp.style.left = ((k % 3) * 6 - 6) + 'px'; sp.style.animationDelay = (-(k * 2.6 / n)) + 's'; sp.style.setProperty('--dx', ((k % 2 ? 7 : -5)) + 'px');
+      if (f.kind === 'speech') {
+        var sb = document.createElement('div');
+        sb.className = 'dgc-fx-speech'; sb.innerHTML = '<i></i><i></i><i></i>';
+        sb.style.animationDelay = (f.delay || 0) + 's';
+        box.appendChild(sb);
+      } else if (f.kind === 'shoot') {
+        var st = document.createElement('div');
+        st.className = 'dgc-fx-shoot'; st.style.animationDelay = (-(f.delay || 3)) + 's';
+        box.appendChild(st);
+      } else {
+        for (var k = 0; k < n; k++) {
+          var sp = document.createElement('span');
+          if (f.kind === 'notes') {
+            sp.className = 'dgc-fx-note'; sp.textContent = glyphs[k % 4]; sp.style.color = cols[k % 4];
+            sp.style.left = ((k % 2 ? 10 : -12) + k * 3) + 'px'; sp.style.animationDelay = (-(k * 3.4 / n)) + 's';
+          } else if (f.kind === 'hearts') {
+            sp.className = 'dgc-fx-heart'; sp.textContent = '♥';
+            sp.style.left = ((k % 2 ? 8 : -8) + (k % 3) * 3) + 'px'; sp.style.setProperty('--dx', ((k % 2 ? 6 : -6)) + 'px'); sp.style.animationDelay = (-(k * 3.6 / n)) + 's';
+          } else if (f.kind === 'embers') {
+            sp.className = 'dgc-fx-ember';
+            sp.style.left = ((k % 3) * 12 - 12 + (k % 2) * 4) + 'px'; sp.style.animationDelay = (-(k * 3.1 / n)) + 's'; sp.style.animationDuration = (2.6 + (k % 3) * 0.7) + 's'; sp.style.setProperty('--dx', ((k % 2 ? 9 : -8) + k) + 'px');
+          } else if (f.kind === 'sparkle') {
+            sp.className = 'dgc-fx-spark'; sp.textContent = '✦'; if (k % 2) sp.style.color = '#8fe8ff';
+            sp.style.left = ((k % 2 ? 14 : -14) + (k % 3) * 9 - 6) + 'px'; sp.style.top = (-(k * 9) % 26) + 'px'; sp.style.animationDelay = (-(k * 2.4 / n)) + 's';
+          } else {
+            sp.className = 'dgc-fx-puff';
+            sp.style.left = ((k % 3) * 6 - 6) + 'px'; sp.style.animationDelay = (-(k * 2.6 / n)) + 's'; sp.style.setProperty('--dx', ((k % 2 ? 7 : -5)) + 'px');
+          }
+          box.appendChild(sp);
         }
-        box.appendChild(sp);
       }
       stage.appendChild(box);
     });
   }
 
+  // Roof activities (Plan F stage 2): r.act may be several space-separated names; residents using any new activity get .dgc-res-x (shoulder-pivot arms).
+  var ROOF_NEW_ACTS = { stargaze: 1, point: 1, chat: 1, laughchat: 1, kiss: 1, hug: 1, flirt: 1, drink: 1, tipsy: 1, dance: 1, mix: 1 };
+  function roofActClasses(act) {
+    var names = String(act || 'still').split(' '), out = [], x = false;
+    names.forEach(function (a) { if (a) { out.push('dgc-act-' + a); if (ROOF_NEW_ACTS[a]) x = true; } });
+    return out.join(' ') + (x ? ' dgc-res-x' : '');
+  }
   function buildHouseResidents(home) {
     var stage = $('dgcHouseStage');
     if (!stage) return;
@@ -22163,11 +22786,12 @@
       r._lx = undefined; r._ly = undefined;
       var sc = r.scale || 0.9;
       var el = document.createElement('div');
-      el.className = 'dgc-house-res dgc-act-' + (r.act || 'still') + (r.pose === 'sit' ? ' dgc-res-sit' : '') + (r.back ? ' dgc-res-back' : '');
+      el.className = 'dgc-house-res ' + roofActClasses(r.act) + (r.pose === 'sit' ? ' dgc-res-sit' : '') + (r.back ? ' dgc-res-back' : '');
       el.setAttribute('data-res', r.id);
       el.style.left = r.x + 'px'; el.style.top = r.y + 'px';
       el.style.marginLeft = '-32px'; el.style.marginTop = '-82px';
-      el.style.transform = 'scale(' + sc + ')';
+      el.style.transform = (r.lean ? 'rotate(' + r.lean + 'deg) ' : '') + (r.flip ? 'scale(' + (-sc) + ',' + sc + ')' : 'scale(' + sc + ')');
+      if (r.lean || r.flip || r.prop || r.dialogue) el.style.setProperty('--dl', (-((r.x * 7 + r.y * 3) % 60) / 10) + 's');
       el.style.zIndex = r.z !== undefined ? r.z : Math.round(r.y);
       var sp = document.createElement('div');
       sp.className = 'dgc-sprite dgc-house-res-sprite';
@@ -22177,6 +22801,13 @@
       sp.innerHTML = svg;
       el.appendChild(sp);
       if (!r.back) setExpression(sp, r.expr.idle);
+      if (r.prop) {
+        var pr = document.createElement('span');
+        pr.className = 'dgc-res-prop' + (r.prop.cls ? ' ' + r.prop.cls : '');
+        pr.style.cssText = 'left:' + r.prop.x + 'px;top:' + r.prop.y + 'px;width:' + r.prop.w + 'px;height:' + r.prop.h + 'px;';
+        pr.innerHTML = '<img alt="" draggable="false" src="' + HOUSE_INTERIOR_SPRITES[r.prop.spr] + '"' + (r.prop.flip ? ' style="transform:scaleX(-1)"' : '') + '>';
+        sp.appendChild(pr);
+      }
       if (r.act === 'sleep') houseAddZs(el, 3, 46, 8);
       stage.appendChild(el);
       if (r.wander) houseRegisterWander(r, el, false);
@@ -22192,17 +22823,19 @@
     // wipe the previous room (never the hero token or the bubble)
     Array.prototype.forEach.call(stage.querySelectorAll('.dgc-house-wall,.dgc-house-floor,.dgc-house-sidewall,.dgc-house-frontwall,.dgc-house-door,.dgc-house-furn,.dgc-house-tvglow,.dgc-house-res,.dgc-house-pet,.dgc-house-fx,.dgc-house-tag'), function (n) { n.parentNode.removeChild(n); });
     var th = home.theme || {};
-    [['--room-wall', th.wall], ['--room-wall2', th.wall2], ['--room-wainscot', th.wainscot], ['--room-wainscot-border', th.wainscotBorder], ['--room-sidewall', th.sidewall], ['--room-floor-filter', th.floorFilter]].forEach(function (kv) {
+    [['--room-wall', th.wall], ['--room-wall2', th.wall2], ['--room-wainscot', th.wainscot], ['--room-wainscot-border', th.wainscotBorder], ['--room-sidewall', th.sidewall], ['--room-floor-filter', th.floorFilter], ['--sky-top', th.skyTop], ['--sky-bot', th.skyBot], ['--sky-glow', th.skyGlow]].forEach(function (kv) {
       if (kv[1]) stage.style.setProperty(kv[0], kv[1]); else stage.style.removeProperty(kv[0]);
     });
     var hd = $('dgcHouseHeading'), sb = $('dgcHouseSub');
     if (hd) hd.textContent = home.heading || 'HOME';
     if (sb) sb.textContent = home.subtitle || DEFAULT_HOME.subtitle;
     var S = HOUSE_INTERIOR_SPRITES;
-    var html = '<div class="dgc-house-wall"><div class="dgc-house-wainscot"></div></div>' +
-      '<div class="dgc-house-floor" style="background-image:url(' + (S[th.floor] || S.floor) + ')"></div>' +
-      '<div class="dgc-house-sidewall" style="left:0"></div><div class="dgc-house-sidewall" style="right:0"></div>' +
-      '<div class="dgc-house-frontwall"></div>' + (home.noDoor ? '' : '<div class="dgc-house-door"></div>');
+    // home.outdoor (roofs): sky band instead of a wall, no wainscot / front wall / door, side walls are a low parapet
+    var od = !!home.outdoor;
+    var html = '<div class="dgc-house-wall' + (od ? ' dgc-sky' : '') + '">' + (od ? '' : '<div class="dgc-house-wainscot"></div>') + '</div>' +
+      '<div class="dgc-house-floor' + (od ? ' dgc-deck' : '') + '" style="background-image:url(' + (S[th.floor] || S.floor) + ')"></div>' +
+      '<div class="dgc-house-sidewall' + (od ? ' dgc-side-parapet' : '') + '" style="left:0"></div><div class="dgc-house-sidewall' + (od ? ' dgc-side-parapet' : '') + '" style="right:0"></div>' +
+      (od ? '' : '<div class="dgc-house-frontwall"></div>') + (home.noDoor ? '' : '<div class="dgc-house-door"></div>');
     home.furniture.forEach(function (f) { html += houseFurnHTML(f); });
     (home.labels || []).forEach(function (t) { html += '<div class="dgc-house-tag' + (t.cls ? ' ' + t.cls : '') + '" style="left:' + t.x + 'px;top:' + t.y + 'px;width:' + t.w + 'px;height:' + t.h + 'px;z-index:' + (t.z || 3) + ';">' + t.text + '</div>'; });
     stage.insertAdjacentHTML('afterbegin', html);
@@ -22275,7 +22908,9 @@
       var bax = houseBubbleAnchor ? houseBubbleAnchor.x : houseHero.x;
       var bay = houseBubbleAnchor ? houseBubbleAnchor.y : houseHero.y - 58;
       b.style.left = Math.max(110, Math.min(houseRoomActive.w - 110, bax)) + 'px';
-      b.style.top = Math.max(60, bay) + 'px';
+      var bbelow = houseBubbleAnchor && houseBubbleAnchor.below;
+      b.style.transform = bbelow ? 'translate(-50%,0)' : '';
+      b.style.top = (bbelow ? bay : Math.max(60, bay)) + 'px';
     }
   }
 
@@ -22389,16 +23024,27 @@
     try { playSfx('click'); } catch (e) { /* sfx optional */ }
   }
 
-  function houseShowBubble(text, anchor) {
+  function houseShowBubble(text, anchor, ms) {
     var b = $('dgcHouseBubble');
     if (!b) return;
     houseBubbleAnchor = anchor || null;
     b.textContent = text;
     b.hidden = false;
-    houseBubbleUntil = Date.now() + 2600;
+    houseBubbleUntil = Date.now() + (ms || 2600);
     renderHouseHero();
   }
 
+  // roof people: flash the talk (or react, for reactive lines) expression for a moment
+  function houseResReact(e, reactive) {
+    if (!e.expr || e.back) return;
+    var el = document.querySelector('#dgcHouseStage .dgc-house-res[data-res="' + e.id + '"]');
+    var sp = el && el.querySelector('.dgc-house-res-sprite');
+    var nm = reactive ? (e.expr.react || e.expr.talk) : e.expr.talk;
+    if (!sp || !nm) return;
+    setExpression(sp, nm);
+    clearTimeout(el._exprT);
+    el._exprT = setTimeout(function () { setExpression(sp, e.expr.idle); }, 2600);
+  }
   function houseInteract() {
     if (Date.now() < houseLockUntil) return;
     if (houseInputLock) return;
@@ -22413,7 +23059,12 @@
       houseLineIdx[e.id] = (k + 1) % ls.length;
       if (n.kind === 'res') {
         var rp = houseEntPos(e);
-        houseShowBubble(e.name + ': ' + ls[k % ls.length], { x: rp.x, y: rp.y - 82 * (e.scale || 0.9) - 4 });
+        if (e.dialogue) {
+          // roof people: the never-repeat dialogue engine (pickLine), talk / react expression flash
+          var pl = pickLine(e.id, e);
+          houseShowBubble(e.name + ': ' + pl.text, (rp.y - 82 * (e.scale || 0.9) - 4 < 84) ? { x: rp.x, y: rp.y + 6, below: true } : { x: rp.x, y: rp.y - 82 * (e.scale || 0.9) - 4 }, Math.min(6500, 2600 + 45 * pl.text.length));
+          houseResReact(e, pl.reactive);
+        } else houseShowBubble(e.name + ': ' + ls[k % ls.length], { x: rp.x, y: rp.y - 82 * (e.scale || 0.9) - 4 });
       } else {
         var pp = houseEntPos(e);
         houseShowBubble(ls[k % ls.length], { x: e.wander ? pp.x : e.x + e.w / 2, y: (e.wander ? pp.y - e.h : e.y) - 4 });
@@ -22494,7 +23145,7 @@
   document.addEventListener('keydown', function (e) {
     if (!houseScreenIsLive()) return;
     var k = e.key.toLowerCase();
-    if (liftPanelOpen && !liftRiding && (k === 'g' || (k.length === 1 && k >= '0' && k <= String(TOWER_FLOORS)))) { e.preventDefault(); liftRide(k === 'g' ? 0 : parseInt(k, 10)); return; }
+    if (liftPanelOpen && !liftRiding && (k === 'g' || k === 'r' || (k.length === 1 && k >= '0' && k <= String(TOWER_ROOF)))) { e.preventDefault(); liftRide(k === 'g' ? 0 : (k === 'r' ? TOWER_ROOF : parseInt(k, 10))); return; }
     if (k === 'arrowup' || k === 'w') { cityKeys.up = true; e.preventDefault(); }
     else if (k === 'arrowdown' || k === 's') { cityKeys.down = true; e.preventDefault(); }
     else if (k === 'arrowleft' || k === 'a') { cityKeys.left = true; e.preventDefault(); }
@@ -22522,7 +23173,7 @@
      Scene hierarchy (Esc / Back = one level up): room -> hallway -> lobby -> outside.
 
      HOOKS FOR THE LIFT / STAIRS ANIMATIONS (stage 5):
-       goFloor(towerIdx, floor, arrival)   floor 0 = lobby, 1..TOWER_FLOORS = hallways.
+       goFloor(towerIdx, floor, arrival)   floor 0 = lobby, 1..TOWER_FLOORS = hallways, TOWER_ROOF = the rooftop (arrivals 'lift' / 'stairsDown').
             arrival: 'lift' (in front of that floor's lift), 'stairsUp' (foot of the up stairs),
             'stairsDown' (top landing of the down stairs / foot of the lobby stairs), 'default',
             or { room: n } (hallway, in front of room door n).
@@ -22530,7 +23181,7 @@
        houseInputLock  while true the hero cannot move / use exits (prompts and bubbles still refresh).
        tower = { i, floor }  is the current tower + floor.
      ============================================================ */
-  var TOWER_COUNT = 2, TOWER_FLOORS = 5, ROOMS_PER_FLOOR = 3;
+  var TOWER_COUNT = 2, TOWER_FLOORS = 5, TOWER_ROOF = 6, ROOMS_PER_FLOOR = 3; // TOWER_ROOF = floor index of each tower's rooftop scene (see ROOFS)
   var tower = { i: 0, floor: 0 };
   var TOWER_LOOK = [
     { name: 'TOWER A', sign: 'lobbySignA', door: 'roomDoorA', wall: '#cdd6e4', wainscot: '#5f6b7f', wainscotBorder: '#3f4a5c', sidewall: '#3f4a5c', lobbyFloor: 'floorGrey', hallFloor: 'floorCarpet', roomFloor: 'floorGrey', runner: 'filter:hue-rotate(205deg) saturate(0.85);' },
@@ -22577,7 +23228,7 @@
   var STAIRS_DOWN_BOTTOM_Y = 416, STAIRS_DOWN_DUR = 1200, STAIRS_DOWN_SCALE = 0.8, STAIRS_FADE_MS = 250;
   var STAIRS_ARRIVE_FOOT = { x: 522, y: 200, facing: 'down' };  // came DOWN a flight: standing at the foot of this floor's up flight
   var STAIRS_ARRIVE_TOP = { x: 526, y: 322, facing: 'down' };   // came UP: standing just behind the back edge of this floor's down opening
-  function liftLabel(f) { return f === 0 ? 'G' : String(f); }
+  function liftLabel(f) { return f === 0 ? 'G' : (f === TOWER_ROOF ? 'R' : String(f)); }
   function liftLater(fn, ms) {
     var h = setTimeout(function () { try { fn(); } catch (e) { towerFxReset(); houseInputLock = false; } }, ms);
     liftTimers.push(h);
@@ -22618,7 +23269,7 @@
     var box = $('dgcLiftBtns');
     if (!box) return;
     var cur = tower.floor, html = '';
-    for (var f = TOWER_FLOORS; f >= 0; f--) html += '<button type="button" tabindex="-1" class="dgc-lift-btn' + (f === cur ? ' dgc-lit' : '') + '" data-floor="' + f + '">' + liftLabel(f) + '</button>';
+    for (var f = TOWER_ROOF; f >= 0; f--) html += '<button type="button" tabindex="-1" class="dgc-lift-btn' + (f === cur ? ' dgc-lit' : '') + '" data-floor="' + f + '">' + liftLabel(f) + '</button>';
     box.innerHTML = html;
     liftShowFloor(cur, '', false);
     liftPanelOpen = true; houseInputLock = true;
@@ -22635,7 +23286,7 @@
     if (wasOpen) liftSetDoors(false, true);
   }
   function liftRide(target) {
-    if (!liftPanelOpen || liftRiding || !(target >= 0 && target <= TOWER_FLOORS)) return;
+    if (!liftPanelOpen || liftRiding || !(target >= 0 && target <= TOWER_ROOF)) return;
     var from = tower.floor, t = tower.i;
     if (target === from) { closeLiftPanel(); houseShowBubble("You're already here.", null); return; }
     liftRiding = true; houseInputLock = true;
@@ -22665,10 +23316,7 @@
   function towerStairsUse(dir) {
     if (houseInputLock || stairsAnim || liftPanelOpen || liftRiding) return;
     var f = tower.floor, t = tower.i;
-    if (dir === 'up' && f >= TOWER_FLOORS) {
-      if (Date.now() >= stairsMsgUntil) { stairsMsgUntil = Date.now() + 2000; houseShowBubble('Roof access is locked.', null); }
-      return;
-    }
+    if (dir === 'up' && f >= TOWER_ROOF) return; // nothing above the roof
     if (dir === 'down' && f <= 0) return;
     var S = { x: houseHero.x, y: houseHero.y + HERO_FOOT_DY }, up = dir === 'up';
     var to = { x: up ? STAIRS_UP_CX : STAIRS_DOWN_CX, y: up ? STAIRS_UP_TOP_Y : STAIRS_DOWN_BOTTOM_Y };
@@ -22778,7 +23426,18 @@
      propChest: [72, 56], roundTable: [72, 64], kitchenPass: [192, 104],
      barCounter: [232, 80], barStool: [40, 64], backBarShelf: [184, 80],
      neonBar: [88, 40], telescope: [96, 152], starMap: [104, 72],
-     orrery: [72, 80], starryWindow: [152, 112]
+     orrery: [72, 80], starryWindow: [152, 112],
+    moon: [64, 64], skylineNight: [640, 96], skylineWarm: [640, 96],
+     parapet: [160, 44], rooftopLiftHouse: [144, 152], stairDoor: [112, 152],
+     neonSignA: [152, 40], neonSignB: [128, 64], heaterLamp: [48, 112],
+     cocktailTable: [48, 88], daybed: [96, 72], danceFloor: [152, 88],
+     cocktailPink: [28, 32], cocktailBlue: [28, 32], cocktailGold: [28, 32],
+     wineGlass: [28, 32], beerBottle: [20, 32], mug: [28, 28],
+     shaker: [20, 32],
+     firePit: [128, 64], logBench: [104, 36],
+      stump: [56, 48], tastingTable: [184, 64],
+      blanket: [144, 44], loungerB: [104, 68],
+      trellisLights: [128, 104], lanternPost: [32, 96]
   };
   // footprint depth (px above the sprite's bottom edge) that blocks the hero, for deep pieces such as tables and desks (default 14)
   var TOWER_FOOT = { conferenceTable: 60, boardroomTable: 60, longTable: 44, prepTable: 40, workbench: 48, draftTable: 44, executiveDesk: 48, foosball: 40, controlDesk: 48, consoleDesk: 48, mixDesk: 30, deskDual: 60, coffeeCart: 34, podBooth: 30,
@@ -23463,6 +24122,1855 @@
     };
   }
 
+  /* ============================================================
+     ROOFS (Plan F stage 2): one open-air night scene above floor 5 of each tower (floor index TOWER_ROOF = 6).
+     Reached by the floor-5 stairs (walk-through, arrival 'stairsDown' at the stair door) or the lift's R button (arrival 'lift' in front of the rooftop lift doors).
+     Esc / Back / walking into the stair door goes down to floor 5 (arrival 'stairsUp').
+     A roof is DATA: TOWER_ROOFS[t] = {
+         heading, subtitle, hint,
+         theme:{ skyTop, skyBot, skyGlow, sidewall, floor:'floorDeck', floorFilter },     (outdoor palette: sky gradient behind the parapet)
+         tint:'night'|'nightwarm',                                                          (multiply overlay over the whole scene)
+         sky:{ seed, stars:n, moon:{x,y,css?}, skyline:'skylineNight'|'skylineWarm', clouds:[{x,y,w,dur,delay}] },
+         lights:[x,...]  (string-light segments across the top),   stairX (centre x of the stair door, arrival x),
+         furniture:[tf(...) ...], glows:[tg(...) ...] (lit pools drawn above the tint), fx:[{kind,x,y,n,z}...],
+         people: function () -> [resident, ...]   (fresh objects each visit; see "ROOF PEOPLE" below) }
+     The scene is built by towerRoofDef(t, arrival) + roofFrame(R) (stars, moon, skyline, clouds, parapet, lift house, stair door, string lights, night tint).
+     Home flag outdoor:true (buildHouseRoom) = sky wall band, no front wall / door / wainscot, side walls become a low parapet.
+     ROOF PEOPLE (buildHouseResidents extras; houses never use them): resident fields
+         flip:true (mirror), lean:deg (rotate about the feet), prop:{spr,x,y,w,h,flip?} (hand-held sprite inside the sprite, default rest pos x:42,y:45 for a 21x24 glass at the right hand),
+         act: one or more space-separated names: stargaze point chat laughchat kiss hug flirt tipsy dance mix drink (+ the old ones),
+         expr:{idle,talk,happy,react} may use the new expressions kiss love tipsy flirty stargaze laugh,
+         dialogue:{intro,lines} -> talking uses pickLine (never repeats; talk / react expression flashes).
+       fx kinds (houseBuildFx): steam notes hearts sparkle speech shoot embers.
+     ============================================================ */
+  // ==== ROOFS BEGIN ====
+  function roofRng(seed) { var a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  // invisible 1x1 furniture piece that only carries glow rects (glow z = z + 1)
+  function roofGlowLayer(list, z) { return { spr: 'mat', x: -64, y: -64, w: 1, h: 1, z: z, css: 'opacity:0;', glow: list }; }
+  function roofStars(sk) {
+    var rn = roofRng(sk.seed), out = [], k;
+    var moon = sk.moon || { x: -99, y: -99 };
+    for (k = 0; k < sk.stars; k++) {
+      var x = 14 + Math.floor(rn() * 610), y = 4 + Math.floor(rn() * 92), r = rn(), size = r < 0.2 ? 4 : (r < 0.6 ? 3 : 2), c = rn();
+      if (x > moon.x - 6 && x < moon.x + 70 && y > moon.y - 6 && y < moon.y + 70) continue;
+      var cls = c < 0.28 ? 'twy' : (c < 0.5 ? 'twb' : (c < 0.58 ? 'twp' : (c < 0.7 ? 'twy2' : (c < 0.8 ? 'twb2' : 'star'))));
+      out.push(tg(x, y, size, size, cls, (rn() * 3).toFixed(2)));
+    }
+    return out;
+  }
+  function roofFrame(R) {
+    var sk = R.sky, out = [], k;
+    out.push(roofGlowLayer(roofStars(sk), 0));
+    out.push({ spr: 'moon', x: sk.moon.x, y: sk.moon.y, w: 64, h: 64, z: 1, css: sk.moon.css || '', glow: [tg(sk.moon.x - 40, sk.moon.y - 40, 144, 144, 'moonhalo')] });
+    (sk.clouds || []).forEach(function (c) { out.push({ spr: 'cloud', x: c.x, y: c.y, w: c.w, h: Math.round(c.w * 32 / 88), z: 1, cls: 'dgc-roof-cloud', css: 'animation-duration:' + c.dur + 's;animation-delay:-' + c.delay + 's;' }); });
+    out.push({ spr: sk.skyline, x: 0, y: 46, w: 640, h: 96, z: 2 });
+    for (k = 0; k < 4; k++) out.push({ spr: 'parapet', x: k * 160, y: 106, w: 160, h: 44, z: 3 });
+    // rooftop lift house (left) and stair door house (right)
+    out.push({ spr: 'rooftopLiftHouse', x: 12, y: 0, w: 144, h: 152, z: 4 });
+    out.push({ spr: 'liftDoorsClosed', x: 40, y: 32, w: 88, h: 120, z: 5, cls: 'dgc-lift-doors', label: 'lift', say: 'The rooftop lift. Walk into the doorway, or tap it, to pick a floor.' });
+    out.push({ spr: 'stairDoor', x: R.stairX - 56, y: 0, w: 112, h: 152, z: 4 });
+    // string lights across the sky, bulbs glow above the night tint
+    var bulbs = [];
+    (R.lights || []).forEach(function (lx, i) {
+      out.push(tf('stringLights', lx, 2, { wall: true, z: 4 }));
+      [[16, 22, 'twy'], [66, 32, 'twb'], [116, 34, 'twp'], [150, 28, 'twy']].forEach(function (b, j) { bulbs.push(tg(lx + b[0], 2 + b[1], 5, 7, b[2], ((i * 0.37 + j * 0.53) % 1.9).toFixed(2))); });
+    });
+    out.push(roofGlowLayer(bulbs.concat([tg(24, 46, 28, 32, 'pool-amber'), tg(120, 46, 28, 32, 'pool-amber'), tg(R.stairX - 16, 50, 34, 28, 'pool-amber')]).concat(R.glows || []), 850));
+    out.push(roofGlowLayer([[0, 0, 640, 460, R.tint || 'night']], 800));
+    return out;
+  }
+  function rf(spr, x, y, label, say, o) { o = o || {}; o.label = label; o.say = say; return tf(spr, x, y, o); }
+
+  // ---- TOWER A roof crowd (14 adults). ids rfA_*: dialogue state lives in save.dialogueBag / save.talked under these ids. ----
+  var ROOF_PROP_BOX = { cocktailPink: [42, 45, 21, 24], cocktailBlue: [42, 45, 21, 24], cocktailGold: [42, 45, 21, 24], wineGlass: [42, 45, 21, 24], beerBottle: [45, 45, 15, 24], mug: [42, 48, 21, 21], shaker: [45, 45, 15, 24] };
+  function roofProp(spr, flip) { var b = ROOF_PROP_BOX[spr]; return { spr: spr, x: b[0], y: b[1], w: b[2], h: b[3], flip: !!flip }; }
+  function roofPeopleA() {
+    var D = ROOF_DIALOGUE_A;
+    function P(key, o) { o.id = 'rfA_' + key; o.scale = 0.9; o.pose = o.pose || 'stand'; o.dialogue = D[key]; return o; }
+    return [
+      // bartender behind the bar
+      P('dex', { name: 'Dex Romano', hair: 'slick', hairColor: '#1c1416', skinColor: '#c98d5f', bodyColor: '#efe8d6', trimColor: '#8a7a62', accessory: 'bowtie', accColor: '#c9483b',
+        expr: { idle: 'confident', talk: 'laugh', happy: 'flirty', react: 'smug' }, x: 292, y: 140, act: 'mix', prop: roofProp('shaker'), wander: { x: 268, y: 139, w: 48, h: 3 }, hit: [258, 118, 68, 66] }),
+      // kissing couple at the parapet
+      P('mara', { name: 'Mara Lindqvist', hair: 'long', hairColor: '#8a3b1e', skinColor: '#f3d0b0', bodyColor: '#8a5fd0', trimColor: '#5f3f9a', accessory: 'necklace', accColor: '#f4ecd8',
+        expr: { idle: 'kiss', talk: 'embarrassed', happy: 'love', react: 'surprised' }, x: 444, y: 166, act: 'kiss', lean: 5 }),
+      P('jonas', { name: 'Jonas Weber', hair: 'byte', hairColor: '#2a1f18', skinColor: '#e8b98a', bodyColor: '#2f4a7a', trimColor: '#1c2f52', accessory: 'tie', accColor: '#e0b83a',
+        expr: { idle: 'kiss', talk: 'embarrassed', happy: 'love', react: 'surprised' }, x: 476, y: 166, act: 'kiss', lean: -5, flip: true }),
+      // flirting at the bar
+      P('lena', { name: 'Lena Okoro', hair: 'bob', hairColor: '#1b1416', skinColor: '#8a5a3a', bodyColor: '#e0457a', trimColor: '#a02c58', accessory: 'flower', accColor: '#ffd166',
+        expr: { idle: 'flirty', talk: 'laugh', happy: 'love', react: 'surprised' }, x: 340, y: 206, act: 'flirt drink', lean: 3, prop: roofProp('cocktailPink') }),
+      P('theo', { name: 'Theo Marchetti', hair: 'curly', hairColor: '#3a2414', skinColor: '#f0c9a0', bodyColor: '#2fa4a0', trimColor: '#1f6f6c', accessory: 'shades', accColor: '#23262e',
+        expr: { idle: 'flirty', talk: 'laugh', happy: 'excited', react: 'embarrassed' }, x: 388, y: 206, act: 'flirt drink', lean: -3, flip: true, prop: roofProp('cocktailBlue') }),
+      // stargazers by the telescope
+      P('astrid', { name: 'Astrid Holm', hair: 'bun', hairColor: '#d9a441', skinColor: '#f6dcc0', bodyColor: '#3a4a8a', trimColor: '#242f5f', accessory: 'scarf', accColor: '#e0703a',
+        expr: { idle: 'stargaze', talk: 'happy', happy: 'excited', react: 'curious' }, x: 546, y: 346, act: 'stargaze', lean: -2 }),
+      P('kofi', { name: 'Kofi Mensah', hair: 'buzzcut', hairColor: '#171215', skinColor: '#6f4426', bodyColor: '#d8a03a', trimColor: '#a0761f', accessory: 'none', accColor: '#d8a03a',
+        expr: { idle: 'stargaze', talk: 'excited', happy: 'happy', react: 'surprised' }, x: 508, y: 352, act: 'point', flip: true }),
+      // three friends on the sofa
+      P('ravi', { name: 'Ravi Nair', hair: 'byte', hairColor: '#171215', skinColor: '#b97a4e', bodyColor: '#c8443a', trimColor: '#8f2a24', accessory: 'none', accColor: '#c8443a',
+        expr: { idle: 'laugh', talk: 'happy', happy: 'excited', react: 'confident' }, x: 62, y: 285, act: 'laughchat', prop: roofProp('beerBottle'), hit: [36, 258, 52, 76] }),
+      P('noor', { name: 'Noor Haddad', hair: 'nova', hairColor: '#2a1a12', skinColor: '#d7a074', bodyColor: '#2f8fd0', trimColor: '#1f5f96', accessory: 'headband', accColor: '#ffd166',
+        expr: { idle: 'happy', talk: 'laugh', happy: 'flirty', react: 'curious' }, x: 110, y: 285, act: 'chat drink', prop: roofProp('cocktailGold'), hit: [84, 258, 52, 76] }),
+      P('ben', { name: 'Ben Achterberg', hair: 'sage', hairColor: '#8a4a1e', skinColor: '#f3d3b8', bodyColor: '#5a6f3a', trimColor: '#3f4f28', accessory: 'cap', accColor: '#e8b04a',
+        expr: { idle: 'happy', talk: 'laugh', happy: 'excited', react: 'worried' }, x: 158, y: 285, act: 'laughchat', prop: roofProp('mug'), hit: [132, 258, 52, 76] }),
+      // tipsy soloist at the ledge
+      P('oli', { name: 'Oli Fairweather', hair: 'curly', hairColor: '#9a4a24', skinColor: '#f0c9a0', bodyColor: '#d8c060', trimColor: '#a08a30', accessory: 'tie', accColor: '#c9483b',
+        expr: { idle: 'tipsy', talk: 'laugh', happy: 'excited', react: 'confused' }, x: 172, y: 166, act: 'tipsy', lean: -2, prop: roofProp('beerBottle'), wander: { x: 162, y: 164, w: 20, h: 5 } }),
+      // slow dancers
+      P('sam', { name: 'Sam Ortega', hair: 'slick', hairColor: '#241a16', skinColor: '#c98d5f', bodyColor: '#8391e0', trimColor: '#4a58b0', accessory: 'bowtie', accColor: '#ff7ab0',
+        expr: { idle: 'love', talk: 'embarrassed', happy: 'kiss', react: 'surprised' }, x: 326, y: 352, act: 'dance', lean: 4 }),
+      P('ivy', { name: 'Ivy Chen', hair: 'pigtails', hairColor: '#3a2414', skinColor: '#f0d0a8', bodyColor: '#e8a03a', trimColor: '#b07a20', accessory: 'none', accColor: '#e8a03a',
+        expr: { idle: 'love', talk: 'embarrassed', happy: 'kiss', react: 'surprised' }, x: 380, y: 352, act: 'dance', lean: -4, flip: true }),
+      // stargazing on the daybed with a glass of wine
+      P('yara', { name: 'Yara Petrova', hair: 'bun', hairColor: '#c9c9d4', skinColor: '#e0b088', bodyColor: '#3f8f5c', trimColor: '#2a6640', accessory: 'scarf', accColor: '#e8a3b5',
+        expr: { idle: 'stargaze', talk: 'calm', happy: 'happy', react: 'curious' }, x: 526, y: 408, act: 'stargaze drink', lean: -6, prop: roofProp('wineGlass'), hit: [496, 380, 60, 66] })
+    ];
+  }
+  // ---- Tower A roof dialogue: { intro, lines:[string | {t, if:{...}, once?}] } per person key (generated from dialogue_roofA.js) ----
+  var ROOF_DIALOGUE_A = {
+    "dex": {
+      "intro": "Welcome to the Skyline Bar! I'm Dex. Sit anywhere, order anything, and never ask what's in the Kernel Panic.",
+      "lines": [
+        "Tonight's special: the Rollback. It tastes like yesterday, before everything broke.",
+        "I only shake my drinks. Stirring is for people who don't mind a queue.",
+        "Ice, lime, gin, and a small prayer. That's basically my whole deployment strategy.",
+        "The Kernel Panic has three ingredients and a warning label. The label is mostly decorative.",
+        "A good bartender is like good monitoring. You only notice when something's about to spill.",
+        "That neon sign cost more than my first car. It says two words. Worth every watt.",
+        "People tell bartenders everything. I'm basically an on-call therapist with a garnish tray.",
+        "See the couple by the wall? Been there since sunset. I stopped charging them for the view.",
+        "Priya sends me her old coffee beans for my espresso martini. Her secret is safe. I only pour.",
+        "Rule one of this bar: no talking about work. Rule two: everybody talks about work by midnight.",
+        "Somebody asked for a whisky neat and a pipeline plain. I gave them both a lemon wedge and a look.",
+        "I can smell a bad idea from across the roof. Usually it's Oli, holding a bottle and a plan.",
+        "The stars are free, the view is free, and the peanuts are free. The peanuts are mostly shells.",
+        "Between us, the top shelf is very expensive water. But the bottles do sparkle nicely.",
+        "I once made a drink so blue it filed a support ticket. Never again. Well. Maybe on Friday.",
+        "If it rains, I'll still be serving. Umbrellas cost extra. Drinks with umbrellas are free.",
+        "Lena's flirting with Theo, and I'm the only witness. I take notes. I sell nothing. Mostly.",
+        {
+          "t": "Working late, {hero}? Perfect. The night crowd always tips in stories.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! That's a house-special kind of level. Pick a drink, hero. It's on the shaker.",
+          "if": {
+            "minLevel": 8
+          }
+        },
+        {
+          "t": "{bosses} bosses down and you still made it to my roof? Fine, the first round is on me, {hero}.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "A {streak}-day streak? You're more regular than my regulars. Have some olives.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Byte, huh? The smug one. I like smug. Smug tips well, and it pours its own ice.",
+          "if": {
+            "hero": "byte"
+          }
+        },
+        {
+          "t": "Careful with {coins} coins on this roof, {hero}. My cocktails have a way of finding a wallet.",
+          "if": {
+            "coins": 400
+          }
+        }
+      ]
+    },
+    "mara": {
+      "intro": "Oh! Hello! Mmph, sorry. We were just admiring the skyline. Very closely. Very, very closely.",
+      "lines": [
+        "Jonas says the view is beautiful. I looked, and he was looking at me. Cheesy, but I'll allow it.",
+        "We met at a hackathon. He fixed my build and I broke his heart. Then he fixed that too.",
+        "I know we should stop kissing, but the moon is watching. It would be rude to leave halfway.",
+        "Please don't tell the bartender we're still here. We paid for one drink four hours ago.",
+        "Do you ever get that feeling when the whole city goes quiet? That's the feeling. I'm holding onto it.",
+        "Jonas writes me commit messages on sticky notes. 'Fix: missed you.' I keep every one.",
+        "Yes, we're being dramatic. But you only get one first rooftop kiss. Two, if you're persistent.",
+        "Everything is better with a skyline behind it. Even Mondays. Especially Mondays.",
+        "He's terrible at parallel parking and wonderful at everything that matters. Don't tell him the first bit.",
+        "Stargazing is easy when you're not looking at the stars. Shh. It's a secret.",
+        "I'm blushing so hard that the neon sign is jealous.",
+        "We came up for one quick look at the lights. That was a good hour and a half ago.",
+        "If a couple kisses on a roof and nobody deploys anything, did it really happen? Yes. Yes it did.",
+        "My favourite part of this tower is the lift. Twelve seconds of nothing but his hand in mine.",
+        "I asked him what he was thinking. He said 'nothing'. Best answer anyone has ever given me.",
+        "A kiss is like a good rollback: quick, comforting, and everything is safe again.",
+        "Don't mind us. We're professionals. Well. Amateurs with tremendous enthusiasm.",
+        {
+          "t": "It's the middle of the night and the sky is showing off. So are we, {hero}.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Nova! Aw, you have such an honest face. You'd make a wonderful witness at a wedding.",
+          "if": {
+            "hero": "nova"
+          }
+        },
+        {
+          "t": "{bosses} bosses? Jonas, did you hear? An actual hero. Try not to be jealous, darling.",
+          "if": {
+            "bosses": 5
+          }
+        },
+        {
+          "t": "Level {level}, and you're still climbing towers to visit lovebirds. That's dedication.",
+          "if": {
+            "minLevel": 6
+          }
+        },
+        {
+          "t": "A {streak}-day streak! Jonas and I have a kiss streak. We stopped counting. Then we lost count.",
+          "if": {
+            "streak": 2
+          }
+        },
+        {
+          "t": "Careful with those {coins} coins. Jonas spent all of ours on tonight's cocktails.",
+          "if": {
+            "coins": 100
+          }
+        }
+      ]
+    },
+    "jonas": {
+      "intro": "Ah! Hi. Yes. Hello. We're testing the parapet. For structural romance. It holds up fine.",
+      "lines": [
+        "I planned this evening for two weeks. Then Mara laughed at my first joke and the rest was a bonus.",
+        "I'm supposed to be an engineer. Right now I'm an idiot with a very happy heart.",
+        "The wall is exactly sixty centimetres thick. I measured, twice, while she was watching the stars.",
+        "I proposed a toast to the sunset. Mara said the sunset left an hour ago. We toasted anyway.",
+        "Never bring a laptop to a rooftop date. I brought two and forgot both. Best decision ever.",
+        "I wrote a script that sends her a heart at nine each night. It's the only thing of mine that never times out.",
+        "Somebody told me never to fall for a colleague. So I fell for a hackathon rival. Take that, advice.",
+        "Her kiss is like an instant merge. No conflicts, no review, just approved.",
+        "The lift ride up was eleven floors of me practising a speech. I remembered none of it.",
+        "I'd say something profound now, but my brain has been replaced by fireworks.",
+        "If you see a shooting star, make a wish. I already used mine in the lift on the way up.",
+        "My mum says the moon is only a big rock. Mum has clearly never seen Mara in the moonlight.",
+        "A confession: I'm afraid of heights. I'm up here anyway. That's how serious this is.",
+        "She says I'm terrible at small talk. I've been practising. So far it has mostly been kissing.",
+        "I keep a tiny spare ring in my jacket for emergencies. Don't tell her. Also, we're in no hurry.",
+        "Please stand a little to the left. Mara is blocking your view. Actually, she's blocking mine. Perfect.",
+        "Kissing and DevOps are alike: both work better with small, frequent, consistent releases.",
+        {
+          "t": "It's late, and I still don't want to leave. {hero}, that's how you know it's serious.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Byte! Confident as ever. Teach me some of that. I say 'um' in front of Mara's parents.",
+          "if": {
+            "hero": "byte"
+          }
+        },
+        {
+          "t": "{bosses} bosses, {hero}? And I panic over a wedding toast. Please share your courage.",
+          "if": {
+            "bosses": 4
+          }
+        },
+        {
+          "t": "Level {level}. A proper senior. If you ever design a romantic pipeline, send me the YAML.",
+          "if": {
+            "minLevel": 10
+          }
+        },
+        {
+          "t": "Tower B has a quiet garden terrace, I hear. A calmer roof for a calmer kiss. We might visit.",
+          "if": {
+            "visited": "roofB"
+          }
+        }
+      ]
+    },
+    "lena": {
+      "intro": "Well, hello there. I'm Lena. Don't mind Theo, he's mid-wink. He's been mid-wink for ten minutes.",
+      "lines": [
+        "Flirting is just polite debugging. You poke, you prod, you see if anything lights up.",
+        "Theo thinks he's smooth. I think he's a very nice puddle in a good shirt.",
+        "I asked the bartender for something strong and something sweet. He pointed at Theo. Cheeky.",
+        "My rule for rooftops: never trust a man who says 'nice view' while looking at your earrings.",
+        "Cocktail number three is when I become honest. Cocktail number four is when I become poetry.",
+        "I like a person who laughs at his own jokes. Theo can't. But he laughs at mine, which is better.",
+        "Two straws, one glass. A classic for a reason. Or a health hazard. Either way, romantic.",
+        "You can tell a lot from a drink order. Theo orders blue. Blue is a lot of drama.",
+        "If he asks for my number, I'll say it's in the cloud. He'll have to authenticate first.",
+        "Winking is my second language. My first is sarcasm. My third is 'another round, please'.",
+        "The moon is being nosy tonight. It hasn't looked away from our table once.",
+        "Dex, another round! And put a cherry on Theo's. He's had a difficult evening. He was outclassed.",
+        "Don't look at me like that. It was one gentle compliment, a toast and a very short dance.",
+        "My last date wanted to talk about deployments. Theo wants to talk about me. Guess who wins.",
+        "Every good night has one dangerous idea. Mine is staying until they turn off the neon.",
+        "They say love is a leap of faith. I say it's a rooftop with a very sturdy railing.",
+        "Sparkle is not a personality. But on a Saturday, up here, it makes a decent wardrobe.",
+        {
+          "t": "It's night and I'm on a roof with a cocktail. {hero}, this is what winning feels like.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Sage! You look far too calm for a rooftop. Have a drink and loosen that collar clip.",
+          "if": {
+            "hero": "sage"
+          }
+        },
+        {
+          "t": "{bosses} bosses defeated? Oh my. Theo, take notes. That's how you impress somebody.",
+          "if": {
+            "bosses": 6
+          }
+        },
+        {
+          "t": "Level {level}? A hero with prospects. Fancy a cocktail? A mocktail, obviously. I'm not a monster.",
+          "if": {
+            "minLevel": 4
+          }
+        },
+        {
+          "t": "{coins} coins in your pocket, {hero}? Careful. I might flirt with your wallet.",
+          "if": {
+            "coins": 500
+          }
+        }
+      ]
+    },
+    "theo": {
+      "intro": "Ciao! I'm Theo. The sunglasses? They're for the neon. It's very bright. It's not because I'm nervous.",
+      "lines": [
+        "Lena laughed at my joke. It's the first time anyone has laughed on purpose. I'm framing the moment.",
+        "I wear sunglasses at night for confidence. Lena says they make me look like a polite raccoon.",
+        "I'm trying a smooth line: 'Are you a cloud server? Because I feel like you scale.' Pray for me.",
+        "She winked. I winked back. Now we've winked for so long it's practically a contract.",
+        "My grandmother says love is like pasta: it takes patience, salt and someone worth feeding.",
+        "The blue cocktail tastes like a swimming pool wearing a tuxedo. I love it.",
+        "I asked Lena to dance. She said 'ask again after the third drink'. I'm on the second. Wish me stamina.",
+        "Never let a bartender give you advice. Dex told me to 'be myself'. Look how well that's going.",
+        "There's a tiny star that keeps flickering over there. Either it's nervous, or it's watching us.",
+        "I practised my compliments in the mirror. In the mirror I was more confident. And taller.",
+        "You're a hero, right? Any advice for heroes who freeze when somebody pretty says hello?",
+        "This roof should have a rule: no work talk. Lena and I just discussed a rollback. I blame the moon.",
+        "I asked for a cocktail with an umbrella. Dex handed me an actual umbrella. I still love it.",
+        "Lena says she likes a man with confidence. I told her I have plenty. She asked to see it. I coughed.",
+        "I'm not saying it's love. I'm saying my heart just did a full reboot. Twice. With a splash screen.",
+        "They say don't drink and flirt. I say flirting is the only thing stopping me from drinking too much.",
+        "Whatever you do, don't order what Oli is having. It comes with a story and two regrets.",
+        {
+          "t": "A rooftop at night with Lena and a cocktail? {hero}, my life just hit its final boss. In a good way.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Byte, my friend! Teach me the smirk. Lena keeps laughing when I try mine.",
+          "if": {
+            "hero": "byte"
+          }
+        },
+        {
+          "t": "Two bosses already? Nice. I'm still working on the boss of small talk.",
+          "if": {
+            "bosses": 2
+          }
+        },
+        {
+          "t": "A {streak}-day streak? Can I borrow some of that discipline? I keep forgetting to reply to Lena's texts.",
+          "if": {
+            "streak": 4
+          }
+        },
+        {
+          "t": "Level {level}! You're basically royalty. May I offer you a drink and a very nervous handshake?",
+          "if": {
+            "minLevel": 12
+          }
+        }
+      ]
+    },
+    "astrid": {
+      "intro": "Shh, look! There, just above the moon. That's Jupiter, not a plane. I'm Astrid. Do you like stars?",
+      "lines": [
+        "Some of this starlight left before the first pipeline ever ran. It's still deploying to your eyes.",
+        "That bright one is Vega. One of the brightest stars in the sky, and it isn't even showing off.",
+        "The Moon drifts about four centimetres further away every year. Slow release, sturdy roadmap.",
+        "Orion is easy to spot. Three stars in a row for the belt. Three commits in a row for a clean feature.",
+        "Every star up there is a sun. The universe basically runs an infinite number of tiny data centres.",
+        "Astronomers measure distance in light years. Engineers measure it in 'hops to production'.",
+        "The North Star hardly moves. That's why sailors trusted it. Everyone needs one reliable reference.",
+        "Space isn't quiet because it's empty. It's quiet because there's no air to carry sound.",
+        "I lug this telescope everywhere. Once up a mountain. Never again. The lift is my new hero.",
+        "Shooting stars are tiny bits of dust burning up. Romantic, and also how most of my side projects end.",
+        "That faint smudge is the Milky Way. You can't see it properly from the city. The neon is rude.",
+        "A day on Venus is longer than a year on Venus. Ask Kofi to explain. He'll draw it on a napkin.",
+        "Kofi swears that constellation is a whale. I see a pretzel. We've agreed to disagree.",
+        "The Moon is tidally locked. It always shows us the same face. Like a very committed mascot.",
+        "Look through the eyepiece. Gently. That jagged edge is where the moon's day meets its night.",
+        "Stars twinkle because of Earth's air, not because of the stars. It's basically network jitter for light.",
+        "The oldest light I've ever seen came from a galaxy far away. A very long deploy. No rollbacks.",
+        {
+          "t": "It's a clear night and you're outside, {hero}. That's already better than most astronomers manage.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Sage, you have the calm of someone who watches stars. Come. The eyepiece is free.",
+          "if": {
+            "hero": "sage"
+          }
+        },
+        {
+          "t": "Level {level}? Impressive. You're climbing almost as fast as the space station orbits.",
+          "if": {
+            "minLevel": 5
+          }
+        },
+        {
+          "t": "{bosses} bosses down. Even a supernova only explodes once. You do it every day.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "Tower B's roof is quieter. Less neon, better stars. I go there when I want silence.",
+          "if": {
+            "visited": "roofB"
+          }
+        }
+      ]
+    },
+    "kofi": {
+      "intro": "There! Do you see it? The Moon is a giant cheese wheel! I'm Kofi. Astrid says it's rock. Astrid is no fun.",
+      "lines": [
+        "I point at things and she names them. Perfect system. She's the API, I'm the enthusiastic frontend.",
+        "That constellation is clearly a whale. Astrid says it's Cetus. Same thing, different logo.",
+        "I read that the Sun is a star. So every morning we get the local star for free. Wow.",
+        "Look up long enough and your neck complains, but your brain relaxes. Fair trade.",
+        "I wanted to be an astronaut. Then I read about the training. Now I'm a professional pointer.",
+        "Every star is somebody's favourite. Even the faint ones. Especially the faint ones. They try so hard.",
+        "My gran said the stars are the eyes of everyone who loves us. I wave at them sometimes.",
+        "That one, right there. No, further left. Your other left. Perfect. It's a satellite.",
+        "Mars is red because of rust. The whole planet is a very dramatic old bicycle.",
+        "The Moon is my favourite. It never gets tired. Even on Mondays it shows up on time.",
+        "My dream superpower: pointing at stars and having them wave back. It's a modest wish.",
+        "A sunset is the sky doing a deployment. The stars are the logs. Endless, beautiful logs.",
+        "I brought a flask of hot cocoa. Astrid drank half. She said it was 'for science'. Uh-huh.",
+        "Do you think anyone on another planet is looking back? I hope they're pointing too. That'd be nice.",
+        "We came to stargaze. We stayed for the music, the lights and cocktails with tiny umbrellas.",
+        "That blinking light is an aeroplane. That blinking light is a star. That one is Oli waving. Hard to tell.",
+        "I once saw a shooting star and wished for a sandwich. It came true. Best night ever.",
+        {
+          "t": "Night sky, {hero}! The only place where 'looking at the ceiling' counts as a hobby.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Nova! Your ponytail is a comet's tail. Never cut it. It matches the sky.",
+          "if": {
+            "hero": "nova"
+          }
+        },
+        {
+          "t": "{bosses} bosses! You're like a comet: bright, fast and slightly dangerous to stand next to.",
+          "if": {
+            "bosses": 4
+          }
+        },
+        {
+          "t": "{streak} days in a row? The Sun shows up every day too. You two should hang out.",
+          "if": {
+            "streak": 5
+          }
+        },
+        {
+          "t": "{coins} coins? Enough for a very small star. Or a very large pretzel. Choose wisely.",
+          "if": {
+            "coins": 300
+          }
+        }
+      ]
+    },
+    "ravi": {
+      "intro": "Oi, hero! Sit! No wait, there's no room. Stand, then. I'm Ravi. That's Noor and Ben. We were mid-laugh.",
+      "lines": [
+        "Ben just told a joke about a load balancer. It was so bad it timed out on the punchline.",
+        "Noor's cocktail is ninety per cent ice, ten per cent optimism. She calls it rustic.",
+        "My phone says I have three unread alerts. I told it to page somebody who cares. It paged Ben.",
+        "The secret to a good night: bad jokes, great friends and no laptops. We have exactly one of those.",
+        "We did a pub quiz last week. Team name: 'Git Happens'. We lost by one point and gained a hangover.",
+        "My best story is about a Friday deploy. Nobody believes it. I've framed the incident report.",
+        "I don't drink much, but tonight it's a beer and a bad idea. The bad idea is karaoke.",
+        "Ben says he can play the piano. Noor says he can play 'Chopsticks'. The truth lies somewhere between.",
+        "Every rooftop needs a sofa. Every sofa needs three friends. Every friend needs a snack. Where are the snacks?",
+        "I once fixed a production outage in my pyjamas. Dinosaur pyjamas. Nobody knew. Until now.",
+        "I laugh like a broken laptop fan. Everyone says it's endearing. Everyone is lying, but kindly.",
+        "Noor keeps saying 'one more round'. We're on round seven. Round seven has a cherry.",
+        "The sofa's so comfy I've decided to live here. My rent is one bowl of nuts a week.",
+        "Life is about balance: one drink for me, one for the sofa, none for my calendar.",
+        "Can we talk about how good this view is? No? Fine. Ben, tell the load balancer joke again.",
+        "They call me the life of the party. Mostly because I'm the only one still awake at ten.",
+        "If you find a lost lanyard, it's mine. If you find lost dignity, also mine. Thanks.",
+        {
+          "t": "It's night, we're on a sofa, and the drinks are cold. {hero}, that's a solved problem.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Byte! Smug as ever. Come, tell Ben how to be smug. He's been practising in the mirror.",
+          "if": {
+            "hero": "byte"
+          }
+        },
+        {
+          "t": "{bosses} bosses? Noor, Ben, listen up! We're next to a legend. Somebody buy them a mocktail!",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "{streak} days in a row? I can't even keep a plant alive for that long. Respect, {hero}.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Level {level}? I'm still on level one of adulting. Any tips? Preferably cheap ones.",
+          "if": {
+            "minLevel": 7
+          }
+        }
+      ]
+    },
+    "noor": {
+      "intro": "Hi. I'm Noor. Ravi is loud, Ben is quiet, and I'm the one who knows where the exit is. Nice to meet you.",
+      "lines": [
+        "Ravi thinks he's hilarious. I think he's a very well-meaning smoke alarm.",
+        "The trick to a good night out: sit near the drinks, away from the speakers, and never volunteer for karaoke.",
+        "I work in incident response. My idea of a fun Friday is when nothing goes wrong. I'm having a lovely time.",
+        "This is a Sunset Spritz. Orange, cold, and it has fewer bugs than any release I've ever shipped.",
+        "Ben looks like he's listening. He's actually calculating the tab. He does it every time.",
+        "I love this roof. The skyline looks like a dashboard where everything is green. And beautiful.",
+        "Fun fact: I've never lost an argument on this sofa. Nobody has ever tried.",
+        "When Ravi laughs, the whole roof feels tremors. I've stopped checking the parapet.",
+        "Small talk is like a health check: quick, shallow and mostly there to confirm we're all still alive.",
+        "I don't have a favourite star. I have a favourite bartender. He garnishes my drinks with sarcasm.",
+        "Life hack: sit on the sofa long enough and somebody brings snacks. It's called scheduled hospitality.",
+        "There's a couple by the wall who haven't stopped kissing. Sweet. Distracting. Mostly sweet.",
+        "Somebody asked what I'd wish for on a shooting star. Quiet on-call weeks. Very modest.",
+        "I laughed so hard earlier that my drink went up my nose. Nobody saw. Ravi did. Ravi always does.",
+        "Ben's cap is older than his phone. His phone is older than his car. His car is a bicycle.",
+        "Sometimes all you need is a rooftop, three friends and the emotional support of a cocktail umbrella.",
+        "I'd tell you a secret, but Ravi would repeat it and Ben would confirm it. That's our gossip pipeline.",
+        {
+          "t": "Nice night for it, {hero}. The city looks calmer when it's dark. Like a server after hours.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Nova! Sit. You look like you've seen more than three bugs today. Cheers.",
+          "if": {
+            "hero": "nova"
+          }
+        },
+        {
+          "t": "Two bosses? Not bad. I've defeated two bosses too. Both had the title 'Manager'.",
+          "if": {
+            "bosses": 2
+          }
+        },
+        {
+          "t": "A {streak}-day streak? That's more commitment than my gym membership. Well done, {hero}.",
+          "if": {
+            "streak": 7
+          }
+        },
+        {
+          "t": "{coins} coins? Ravi would already have spent half of them. And blamed Ben.",
+          "if": {
+            "coins": 250
+          }
+        }
+      ]
+    },
+    "ben": {
+      "intro": "Oh. Hi. I'm Ben. I don't say much. When I do, Ravi laughs and Noor rolls her eyes. It's a good system.",
+      "lines": [
+        "I'm drinking something warm from a mug. Cocktail. Cocoa. A mystery. I trust the bartender.",
+        "They laugh at my jokes because they're afraid I'll explain them.",
+        "I've worn this cap for six years. It's technically vintage. Noor says it's a health hazard.",
+        "My hobby is cycling. You go a long way, get sweaty, and end up at a very good pastry shop.",
+        "I like the rooftop at night. Nobody asks me anything. Even the stars just glow and leave me alone.",
+        "When the lift is slow, I take the stairs. Five flights. Then I sit here for an hour to recover.",
+        "Ravi says I'm a man of few words. Right now it's roughly eleven. Twelve. Thirteen.",
+        "I once watched a whole meeting on mute and nodded at the right moments. I got promoted.",
+        "The sofa has exactly three cushions. We've claimed them by right of arrival.",
+        "I've been told I have a poker face. It's just my face. It doesn't do anything else.",
+        "If you squint, the lit windows down there look like tiny status lights. All green. Mostly.",
+        "Noor is the smart one, Ravi is the loud one, and I'm the one who remembers where we parked.",
+        "I'm not shy. I'm conserving energy. Like a laptop on eco mode.",
+        "Want a joke about a server that never went down? Me neither. That server is imaginary.",
+        "I tried karaoke here once. Dex turned the speakers off mid-song. He said technical issue. It was mercy.",
+        "This mug says 'World's Okayest Engineer'. Accurate. Humble. Warm.",
+        "Every building should have a rooftop. Everybody deserves a place to look up and say nothing.",
+        {
+          "t": "Ah, night. My favourite shift. Nobody expects me to talk at night, {hero}. It's a pleasure.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Sage. You and I are the same, I think. Quiet, cool, slightly tired. Cheers.",
+          "if": {
+            "hero": "sage"
+          }
+        },
+        {
+          "t": "{bosses} bosses. That's about {bosses} more than I've met in person. Impressive, {hero}.",
+          "if": {
+            "bosses": 5
+          }
+        },
+        {
+          "t": "Level {level}. I still can't level up my chair. It came with one setting: 'slouch'.",
+          "if": {
+            "minLevel": 9
+          }
+        },
+        {
+          "t": "{streak} days without a break? I'd sleep for {streak} days after that. Respect.",
+          "if": {
+            "streak": 6
+          }
+        }
+      ]
+    },
+    "oli": {
+      "intro": "Hic! Oh, hello! I'm Oli. I'm not drunk. I'm just emotionally lubricated. Hic. Sorry.",
+      "lines": [
+        "Evening, city! Yes, you, with your lights! You look absolutely lovely tonight.",
+        "I'd like to raise a toast to that tall building. It's very tall. Hic. Good job, building.",
+        "I've been talking to the skyline for an hour. Best listener I've ever had. Zero interruptions.",
+        "I love you, moon. I said it. Out loud. Don't tell my ex. Or the moon.",
+        "Ooh, that one's moving! Star or plane or Kofi's hand? Hic. I'm not sure of anything.",
+        "I once tried to deploy on a Friday. In a suit. At a wedding. It's a long story. It has a swan in it.",
+        "You look like someone who'd enjoy a very long story. Have a seat. Or a bench. Or a parapet.",
+        "The bartender says I'm cut off. I say I'm just leaning. It's a lifestyle choice.",
+        "I'm only leaning on this wall because it's holding me up. Emotionally. Also physically.",
+        "Everything is fine. Everything is beautiful. Everything is slightly spinning. Cosmic disco, hic.",
+        "Did you know that if you stare at a light long enough, it stares back? Science. I read it on a napkin.",
+        "I'm not sad. I'm sentimental. There's a difference. I think. Probably. Hic.",
+        "My tie's gone missing. Oh wait, I'm wearing it. Relief! Where did I put my knees?",
+        "The lift is my favourite thing here. Up, down, up, down. It knows exactly where it's going. I envy it.",
+        "Three rules for rooftop parties: don't lean too far, don't sing too loud, don't propose to the moon.",
+        "I dropped my phone from a roof once. Not this one. I'm not that reckless. I'm very reckless. Hic.",
+        "It's not a bottle, it's a personal lighthouse. It guides me home. Well, towards more lighthouses.",
+        {
+          "t": "It's night! Hic! The best time to talk to buildings, {hero}. They're less busy.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Nova! Hic! You have such a nice ponytail. I'd salute it, but I'd miss.",
+          "if": {
+            "hero": "nova"
+          }
+        },
+        {
+          "t": "{bosses} boss?! Hic! You're a legend! I'd shake your hand, but I'd probably shake the wrong one.",
+          "if": {
+            "bosses": 1
+          }
+        },
+        {
+          "t": "Level {level}? Brilliant! I'm level... hic... what's the level for 'standing upright'?",
+          "if": {
+            "minLevel": 3
+          }
+        },
+        {
+          "t": "{coins} coins? Hic! Buy me a water. A big one. With ice. And a tiny umbrella.",
+          "if": {
+            "coins": 150
+          }
+        }
+      ]
+    },
+    "sam": {
+      "intro": "Shh, this is the good part of the song. I'm Sam. That's Ivy. Dance with us? Well. Near us. Slowly.",
+      "lines": [
+        "Slow dancing has no bugs. Only feelings. And the occasional stepped-on toe.",
+        "This is a jazz ballad from a decade I wasn't born in. It sounds like a very kind rain.",
+        "Ivy and I dance every Friday. It's our standing meeting. Best agenda in the company.",
+        "You don't need to know the steps. You only need to know who you're holding.",
+        "I'm wearing a bow tie because Ivy said it looks like a small, friendly butterfly. So it stays.",
+        "I've tried disco. I've tried tango. But the slow sway is the only style that never crashes.",
+        "You can hear the city from up here: distant traffic, distant laughter. Somehow it works as a drum.",
+        "My favourite instrument is the metronome. It never complains. It never solos.",
+        "When the music fades, I keep dancing. Ivy says it's romantic. My feet say it's overtime.",
+        "Ivy's hair smells like rain and jasmine. I'll deny saying that. Then I'll say it again.",
+        "The trick to dancing is looking like you've decided nothing. The trick to love is the same.",
+        "I asked the speakers for a slower song. They said nothing. They played a slower song.",
+        "People say romance is dead. Clearly they haven't visited the dance floor on the roof of Tower A.",
+        "If you ask nicely, we'll teach you a step. It's called the 'one, two, three, look at her'.",
+        "We come here every week. The moon has started to recognise us.",
+        "Every song has a bridge. Every couple has one too. Ours has fairy lights.",
+        "The lights change colour with every beat. It's like dancing inside a very polite rainbow.",
+        {
+          "t": "Late-night dancing, {hero}? Best time. The floor is empty and the music is honest.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Sage, you'd be a natural at slow dancing. Calm feet, steady heart. Give it a go.",
+          "if": {
+            "hero": "sage"
+          }
+        },
+        {
+          "t": "{bosses} bosses down? Then you've earned a dance. Ivy, do we have a spare song?",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "A {streak}-day streak. Ivy and I have a dance streak: two hundred Fridays and counting.",
+          "if": {
+            "streak": 2
+          }
+        },
+        {
+          "t": "Level {level}, {hero}? That's a serious rank. You'd lead a very elegant waltz.",
+          "if": {
+            "minLevel": 15
+          }
+        }
+      ]
+    },
+    "ivy": {
+      "intro": "Oh! Hi! Sorry, I'm Ivy. I'm slow-dancing, so I can't wave. Consider this a very slow wave.",
+      "lines": [
+        "Sam steps on my toes every third beat. It's his signature move. We call it the Ortega Shuffle.",
+        "I love how the dance floor turns pink, then blue, then gold. It's like a friendly weather forecast.",
+        "He hums off-key in my ear. It's the most beautiful sound I've ever heard. Don't tell the neighbours.",
+        "We started dancing in a lift. On a random floor. When the doors opened, everyone clapped.",
+        "Slow dancing is meditation with a hug. My therapist would approve. She's probably at the bar.",
+        "I don't need fireworks. Just a quiet song and someone who holds my hand like it's important.",
+        "The moon looks tonight like a coin somebody tossed for luck. I think it landed heads.",
+        "I can't stop smiling. My cheeks hurt. It's the best pain. I'll ask Dex for an ice pack. Much later.",
+        "If we're the last ones on the roof, promise me you'll turn the neon off gently. It's had a long night.",
+        "My friends say we're 'sickeningly sweet'. I say thanks. I put it on my business card.",
+        "You should try slow dancing. It's like walking, but with more meaning and slightly worse balance.",
+        "The best thing about this dance floor: nobody cares if you're good. They only care that you're there.",
+        "When the song ends, Sam always says 'one more'. Then it's twelve more. I love it.",
+        "I once danced in the rain with a newspaper umbrella. It fell apart. So did I, laughing.",
+        "I asked Sam what he wanted for our anniversary. He said a nap. The romance is unstoppable.",
+        "He says I dance like a butterfly. I say I dance like a person who owns three left shoes.",
+        "This roof is ridiculous. Ridiculous in the best way. Like a birthday cake designed by a committee of stars.",
+        {
+          "t": "Night-time and a slow song, {hero}. If that's not a perfect combination, I'll eat the disco ball.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Nova! Your ponytail swings like a metronome. You have natural rhythm. Come dance!",
+          "if": {
+            "hero": "nova"
+          }
+        },
+        {
+          "t": "{bosses} bosses?! A real hero, on our dance floor. Sam, adjust your bow tie!",
+          "if": {
+            "bosses": 4
+          }
+        },
+        {
+          "t": "A {streak}-day streak, {hero}? That's a lot of showing up. Sam and I would applaud, but our hands are busy.",
+          "if": {
+            "streak": 4
+          }
+        },
+        {
+          "t": "Level {level}? A newcomer! Welcome to the best rooftop in town. The dance floor is open to everyone.",
+          "if": {
+            "maxLevel": 3
+          }
+        }
+      ]
+    },
+    "yara": {
+      "intro": "Ah, a visitor. Come, sit for a moment. I'm Yara. I've been counting stars. I lost count around the third.",
+      "lines": [
+        "I used to think the sky was far away. Now I think it's simply the largest room in the house.",
+        "Wine is like time. Give it a little patience, and it becomes something worth remembering.",
+        "I've climbed a great many stairs in my life. Tonight I took the lift. Age, it turns out, has perks.",
+        "Everyone rushes up here for the view. Nobody notices the real view is the silence between songs.",
+        "When I was young, I deployed at midnight. Now I sip wine at midnight. Both are acts of faith.",
+        "Look at those lights. Each window is somebody's evening. A tiny universe, nicely framed.",
+        "If you're worried about tomorrow, look up. The stars have been worried for billions of years and still shine.",
+        "There's a strange comfort in knowing that the moon has seen everything and told no one.",
+        "I raised three children, four cats and a Kubernetes cluster. The cluster was the loudest.",
+        "A good rooftop is a cathedral with no ceiling. You pray by looking. You confess by sighing.",
+        "Youth is a race. Age is a bench. I prefer the bench. The view is superior.",
+        "Ask yourself: what would you do tonight if no one were counting? Then go and do that.",
+        "The couple by the wall remind me of a summer long ago. It smelled of jasmine and diesel.",
+        "One glass of red is enough. The second is for the stories. The third is for the stars.",
+        "I can't tell you the meaning of life. But it usually involves a chair, a view and a friend.",
+        "Don't let anyone say late is too late. The stars come out late, and they're the best of us.",
+        "You have restless shoulders, dear. Sit. The tower isn't going anywhere. Neither is the sky.",
+        {
+          "t": "Night is when the sky finally tells the truth, {hero}. Stay a while and listen.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Sage. A calm soul. You and the stars have a lot in common. Sit. Sip. Say nothing.",
+          "if": {
+            "hero": "sage"
+          }
+        },
+        {
+          "t": "Level {level}. An old hand, then. You will remember this evening long after the stairs are forgotten.",
+          "if": {
+            "minLevel": 20
+          }
+        },
+        {
+          "t": "{bosses} bosses, and here you are, sitting with an old woman and her wine. I like you already.",
+          "if": {
+            "bosses": 7
+          }
+        },
+        {
+          "t": "{streak} days in a row. Discipline is a quiet kind of love, {hero}. Keep it up.",
+          "if": {
+            "streak": 9
+          }
+        },
+        {
+          "t": "A beginner, and already on the roof? Good. Look up first, worry later.",
+          "if": {
+            "maxLevel": 4
+          }
+        }
+      ]
+    }
+  };
+
+  // ---- TOWER B roof crowd "Starlight Terrace" (14 adults). ids rfB_*. ----
+  function roofPeopleB() {
+    var D = ROOF_DIALOGUE_B;
+    function P(key, o) { o.id = 'rfB_' + key; o.scale = 0.9; o.pose = o.pose || 'stand'; o.dialogue = D[key]; return o; }
+    return [
+      // hugging at the parapet, looking at the city lights
+      P('hugo', { name: 'Hugo Castellan', hair: 'curly', hairColor: '#8c8c96', skinColor: '#e0b088', bodyColor: '#2f7f78', trimColor: '#1f5550', accessory: 'scarf', accColor: '#d9a441',
+        expr: { idle: 'love', talk: 'embarrassed', happy: 'happy', react: 'surprised' }, x: 233, y: 168, act: 'hug', lean: 7 }),
+      P('wren', { name: 'Wren Castellan', hair: 'bob', hairColor: '#9a4a24', skinColor: '#f0c9a0', bodyColor: '#d9a63a', trimColor: '#a07a1f', accessory: 'headband', accColor: '#c9483b',
+        expr: { idle: 'love', talk: 'laugh', happy: 'kiss', react: 'surprised' }, x: 262, y: 169, act: 'hug', lean: -7, flip: true }),
+      // kissing under the string lights
+      P('elio', { name: 'Elio Marchetti', hair: 'nova', hairColor: '#231810', skinColor: '#d9a878', bodyColor: '#8a2f45', trimColor: '#5f1f30', accessory: 'bowtie', accColor: '#f4ecd8',
+        expr: { idle: 'kiss', talk: 'embarrassed', happy: 'love', react: 'surprised' }, x: 340, y: 170, act: 'kiss', lean: 5 }),
+      P('sasha', { name: 'Sasha Reyes', hair: 'long', hairColor: '#1d2040', skinColor: '#c98d5f', bodyColor: '#efe4c8', trimColor: '#a89870', accessory: 'flower', accColor: '#e8709a',
+        expr: { idle: 'kiss', talk: 'embarrassed', happy: 'love', react: 'surprised' }, x: 374, y: 170, act: 'kiss', lean: -5, flip: true }),
+      // poet at the parapet with a glass of wine
+      P('ines', { name: 'Odalys Vaughn', hair: 'long', hairColor: '#4a3a52', skinColor: '#a5683f', bodyColor: '#3b3f8a', trimColor: '#252a5f', accessory: 'scarf', accColor: '#b48ad8',
+        expr: { idle: 'stargaze', talk: 'happy', happy: 'excited', react: 'curious' }, x: 424, y: 168, act: 'stargaze drink', lean: -3, prop: roofProp('wineGlass'), wander: { x: 414, y: 167, w: 22, h: 3 } }),
+      // wine tasting at the long table (they stand behind it)
+      P('boris', { name: 'Boris Wolkow', hair: 'slick', hairColor: '#a3a3ae', skinColor: '#e8b98a', bodyColor: '#7a2a3a', trimColor: '#4f1a26', accessory: 'bowtie', accColor: '#d9b14a',
+        expr: { idle: 'confident', talk: 'smug', happy: 'flirty', react: 'confused' }, x: 340, y: 252, act: 'drink', prop: roofProp('wineGlass'), hit: [310, 226, 60, 60] }),
+      P('mirela', { name: 'Mirela Costa', hair: 'bun', hairColor: '#2a1a22', skinColor: '#f0d0a8', bodyColor: '#2c2f45', trimColor: '#161828', accessory: 'necklace', accColor: '#f4ecd8',
+        expr: { idle: 'flirty', talk: 'laugh', happy: 'love', react: 'embarrassed' }, x: 402, y: 252, act: 'flirt drink', lean: -3, flip: true, prop: roofProp('wineGlass'), hit: [372, 226, 60, 60] }),
+      // fire pit: the wine-sharing flirts on the back log, the storyteller and his listener on stumps
+      P('nadia', { name: 'Nadia Okoye', hair: 'bun', hairColor: '#171215', skinColor: '#6f4426', bodyColor: '#1f8a5f', trimColor: '#145a3d', accessory: 'necklace', accColor: '#e0b83a',
+        expr: { idle: 'flirty', talk: 'laugh', happy: 'love', react: 'embarrassed' }, x: 196, y: 316, act: 'flirt drink', lean: 3, prop: roofProp('wineGlass') }),
+      P('petra', { name: 'Petra Lindgren', hair: 'long', hairColor: '#e2cf8f', skinColor: '#f6dcc0', bodyColor: '#7a3f8f', trimColor: '#522a62', accessory: 'flower', accColor: '#ffd166',
+        expr: { idle: 'flirty', talk: 'happy', happy: 'love', react: 'surprised' }, x: 248, y: 316, act: 'flirt drink', lean: -3, flip: true, prop: roofProp('wineGlass') }),
+      P('gus', { name: 'Gus Fennimore', hair: 'buzzcut', hairColor: '#e6e6ee', skinColor: '#d8a884', bodyColor: '#7a5a3a', trimColor: '#4f3a24', accessory: 'bowtie', accColor: '#c9483b',
+        expr: { idle: 'happy', talk: 'excited', happy: 'laugh', react: 'smug' }, x: 138, y: 338, act: 'chat' }),
+      P('fenn', { name: 'Fenn Ashdown', hair: 'slick', hairColor: '#b8843a', skinColor: '#f0c9a0', bodyColor: '#3f6f4a', trimColor: '#28492f', accessory: 'none', accColor: '#3f6f4a',
+        expr: { idle: 'laugh', talk: 'happy', happy: 'excited', react: 'confused' }, x: 330, y: 350, act: 'laughchat', flip: true, prop: roofProp('beerBottle') }),
+      // stargazers on the picnic blanket
+      P('tariq', { name: 'Tariq Rahimi', hair: 'sage', hairColor: '#1b1416', skinColor: '#b97a4e', bodyColor: '#d9702f', trimColor: '#9a4a1a', accessory: 'cap', accColor: '#2f3a5a',
+        expr: { idle: 'stargaze', talk: 'excited', happy: 'happy', react: 'curious' }, x: 492, y: 398, act: 'stargaze drink', lean: -2, prop: roofProp('mug') }),
+      P('lucia', { name: 'Marisol Ferrer', hair: 'curly', hairColor: '#2a1a12', skinColor: '#d7a074', bodyColor: '#e0708a', trimColor: '#a04058', accessory: 'flower', accColor: '#ffd166',
+        expr: { idle: 'stargaze', talk: 'excited', happy: 'happy', react: 'curious' }, x: 546, y: 400, act: 'point', flip: true }),
+      // solo lounger
+      P('kit', { name: 'Kit Marlowe', hair: 'sage', hairColor: '#3f8f9a', skinColor: '#d0a078', bodyColor: '#7a808f', trimColor: '#4f5462', accessory: 'headphones', accColor: '#23262e',
+        expr: { idle: 'tipsy', talk: 'calm', happy: 'happy', react: 'confused' }, x: 64, y: 396, act: 'tipsy', lean: -3, prop: roofProp('beerBottle') })
+    ];
+  }
+  // ---- Tower B roof dialogue (Starlight Terrace): same format as ROOF_DIALOGUE_A (generated from dialogue_roofB.js) ----
+  var ROOF_DIALOGUE_B = {
+    "hugo": {
+      "intro": "Oh! Hello. Sorry, we're mid-hug. It's a long one. Forty seconds is the minimum, according to Wren.",
+      "lines": [
+        "Twenty years married and she still steals the warm side of the hug. I let her. That's the secret.",
+        "See those city lights? Every window is somebody's evening. Ours just happens to have a wonderful view.",
+        "I'm a plumber by trade. Pressure, flow, keeping things sealed. Marriage works about the same way.",
+        "Wren says I hug like a man returning a library book. Slowly, carefully, and a little guilty.",
+        "We came up for some fresh air and stayed for the hugging. The cat can wait. The cat will complain.",
+        "The best deployments are the boring ones. So is the best marriage. Mostly quiet, sometimes fireworks.",
+        "I proposed to Wren on a ferry. She said yes, then asked if the ferry had wifi. It did not.",
+        "Sometimes I just stand here and let the wind do the talking. It has better material than I do.",
+        "She's far cleverer than me, you know. I carry the umbrella and sound reassuring. It's a system.",
+        "Somebody down there just switched a light off. Somebody else switched one on. The town is breathing.",
+        "I keep our anniversary in three calendars, two alarms and a sticky note. That's what I call high availability.",
+        "The forest path is lovely at dusk. We took the long way, holding hands and going nowhere in particular.",
+        "She fell asleep on my shoulder in the lift once. I rode up and down four times so she could finish.",
+        "Hugs are underrated infrastructure. Cheap, low latency, and no licence fee.",
+        "Whatever you're building, be it code or a shed, leave a bit of room for the wind. Things need to sway.",
+        "Wren's cold hands are legendary. They've been on my neck for twenty years. It's how I know I'm alive.",
+        "If I could bottle this moment I'd keep it beside the good olive oil. Somewhere I can find it quickly.",
+        {
+          "t": "It's nearly midnight and we're still up here. Either a good evening, {hero}, or a very stubborn hip.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! Well done. Whatever you're fixing, come up here and hug someone afterwards.",
+          "if": {
+            "minLevel": 10
+          }
+        },
+        {
+          "t": "{bosses} bosses? You should hug someone after each one. Doctor's orders. Well, plumber's orders.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "The neon bar on Tower A? We peeked in. Too loud for a hug this slow. Wren loved the dance floor, though.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! That's like a very long hug, one day at a time. Keep holding on.",
+          "if": {
+            "streak": 5
+          }
+        },
+        {
+          "t": "Byte! Wren says you look like a lad who'll one day hug something enormous. Perhaps a server rack.",
+          "if": {
+            "hero": "byte"
+          }
+        },
+        {
+          "t": "You're new here, {hero}. Take it slowly. Good things, and good hugs, are best done unhurried.",
+          "if": {
+            "maxLevel": 4
+          }
+        }
+      ]
+    },
+    "wren": {
+      "intro": "Shh! Give us a minute. Hugo's been saving this hug since Tuesday. I'm Wren. Ask me anything. Slowly.",
+      "lines": [
+        "He smells of pine soap and toast. Honestly, the best cologne money can't buy. Don't tell him it's free.",
+        "I told Hugo I'd stay for one more minute. That was the ninth 'one more minute'. We're doing fine.",
+        "People always say marriage is work. Mostly it's just remembering whose turn it is to hold the umbrella.",
+        "We come to this roof every anniversary. It's the only place where he stops fixing things and looks up.",
+        "Hugo has never once lost an argument he's tried to win. He hasn't tried to win one in twenty years.",
+        "Cold nose, warm hug, good view. If I could deploy this every night I'd never write another ticket.",
+        "Somebody will fetch us a blanket eventually. Until then his jumper is my blanket, and a good one.",
+        "A hug is basically a checksum. You hold on, you feel the heartbeat, you confirm everything is intact.",
+        "I teach maths at the school by the harbour. I can prove that hugs beat homework. It's a short proof.",
+        "The moon is showing off tonight. Hugo says it's just a rock. I say it's a rock with good timing.",
+        "He tried to write me a poem once. It rhymed 'darling' with 'Kubernetes'. I still have it. It's perfect.",
+        "You don't need a big gesture, you know. A steady arm around the shoulders is worth a thousand fireworks.",
+        "The lights in the town are like a huge dashboard. Everything green. I could look at this dashboard all night.",
+        "Twenty years ago he asked to borrow a pen. I never got it back. He's been borrowing it ever since.",
+        "The lift stopped on the way up and we just stood there smiling. I checked. The cable was fine. So were we.",
+        "I always say hello to the stars. They never answer, but they've stayed up for me every night since 1999.",
+        "Long hugs make the world quiet. Try it sometime. Even the wind gives up and goes off to be busy elsewhere.",
+        {
+          "t": "Midnight, {hero}, and the city's finally quiet. Come back at sunrise. We'll still be here. Different snacks.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}, is it? Then you deserve a hug from a stranger. There. Free, no strings, no subscription.",
+          "if": {
+            "minLevel": 8
+          }
+        },
+        {
+          "t": "You've beaten {bosses} bosses and you're still polite? Hugo, take notes. Take fewer notes, take a hug.",
+          "if": {
+            "bosses": 4
+          }
+        },
+        {
+          "t": "The neon lounge on Tower A is fun, but the music was too loud to hear him breathe. So we came here.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "{streak} days in a row! That's commitment. Hugo and I have a hug streak. It's been running since spring.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Nova, love, you look tired. Sit down. Have a sip of something. Then tell us all about it.",
+          "if": {
+            "hero": "nova"
+          }
+        }
+      ]
+    },
+    "elio": {
+      "intro": "Mmph! Ah. Buonasera. Forgive me. I was in the middle of a very important, very long, very romantic conversation.",
+      "lines": [
+        "I'm Elio, and I make pasta for a living. I make kisses for love. The second one has better margins.",
+        "Sasha tastes like strawberries and mischief. I'd say more, but she is tapping my shoulder. Mmm. Later.",
+        "Look at the lights. All those little windows. And here, on this roof, there is only one that matters.",
+        "In Italy we say a kiss without a view is a handshake. That's why I bribed the lift operator for this roof.",
+        "My nonna always said, 'Elio, kiss slowly, cook slowly, and never rush a ragù.' Sasha loves the ragù.",
+        "It is cold up here, so we hold each other. It is warm up here, so we stay. Everything is a good reason.",
+        "The string lights are very kind. They make everyone look like a film. Even me, and I burn toast.",
+        "Every good recipe needs patience, heat and one perfect ingredient. Tonight the ingredient is Sasha.",
+        "We're on our third glass of wine, and my Italian gets quite dramatic. I apologise to the neighbours.",
+        "I wrote her a song on the guitar. It has four chords and three verses. She said it was her favourite. Amore!",
+        "A romantic tip: never propose in the middle of a busy pipeline. Wait for the quiet part.",
+        "We met at the market, arguing over the last aubergine. I gave up. She gave me her number. Better deal.",
+        "That star up there, the bright one? I named it Sasha last week. Officially. I filed the paperwork.",
+        "Do you know how quiet a rooftop can be? You can hear a heart. Mine is going like a fast pipeline.",
+        "The lift ride up took twelve seconds. I used all twelve to hold her hand. Best twelve seconds of the week.",
+        "Some people count sheep. I count the kisses between two cups of wine. I lose count every time. It's wonderful.",
+        "If you see a shooting star, wish for someone to kiss under it. Or wish for extra cheese. Either works.",
+        {
+          "t": "A late hour, {hero}, and here we are, happy. The night belongs to people who don't check the clock.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! Bravo! You climb like a mountain goat. Let me kiss both your cheeks. It's tradition.",
+          "if": {
+            "minLevel": 6
+          }
+        },
+        {
+          "t": "{bosses} bosses defeated! In Italy you'd get a statue. Here you get a compliment and a cold breeze.",
+          "if": {
+            "bosses": 2
+          }
+        },
+        {
+          "t": "You've been to the neon roof on Tower A? Molto rumoroso. Too much bass, not enough basil.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! Discipline! Like a good sourdough. Feed it every day and it loves you back.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Sage, my friend! You have the eyes of a man who has seen a great sunset and stayed for the encore.",
+          "if": {
+            "hero": "sage"
+          }
+        }
+      ]
+    },
+    "sasha": {
+      "intro": "Oh, hi! Hello! We weren't... well, we were. Yes. Elio has a lot to say, and he says it best by kissing.",
+      "lines": [
+        "I came up for five minutes. That was eleven kisses ago. I've stopped tracking. The build is still green.",
+        "Elio kisses like he cooks. Slowly, with far too much attention to detail. I'm the only taster.",
+        "He says he's romantic. I say he just really likes strawberries. Both can be true. Mostly it's the second.",
+        "We shared a scarf on the walk up. Then a glass. Then, well, the rest is a very unstructured retrospective.",
+        "I work in customer support. All day, complaints. Up here, only wind and one happy heartbeat.",
+        "I can't tell what's spinning: the wine, the stars, or my head. I'm not going to debug it tonight.",
+        "The moon is looking. Let it look. It's been stuck in orbit for four billion years without so much as a date.",
+        "Kissing is like a great code review. Careful, attentive, and someone always ends up blushing.",
+        "My best friend says I fall too fast. I say Elio fell at exactly the correct speed. It was terminal velocity.",
+        "Have you ever leaned against a parapet and felt like the whole city was applauding? I'm doing that now.",
+        "I'm not going to tell you what he whispered. I will say it involved the word 'cheese', and I said yes.",
+        "Rule up here: phones stay in pockets. Lovely. My battery is at nine per cent, so is my patience.",
+        "The city glitters down there like a night-time server room. So many tiny lights. Every one of them a person.",
+        "We had a small argument about who's the better kisser. We're still testing. It's slow, careful science.",
+        "I love how the fairy lights make him glow. He says it's the lights. I say it's the wine. We're both wrong.",
+        "My mum warned me about handsome cooks. I'm here to report: she was right. She'd love him, though.",
+        "When someone's kissing you on a rooftop, time doesn't stop. It just decides to run on a very slow queue.",
+        {
+          "t": "It's late and I'm not leaving. {hero}, if you see a taxi, tell it we're busy for the next century.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}? You must have a lot of stories. Tell me one, but only if Elio isn't listening. Mmm.",
+          "if": {
+            "minLevel": 7
+          }
+        },
+        {
+          "t": "{bosses} bosses? You could write a book. Just leave out the parts where you were scared. Those are best.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "The Skyline Bar next door is loud and glittery. We tried. Our ears begged to come back here.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! I have a streak of my own. Elio's kisses. It's day forty. No sign of a bug.",
+          "if": {
+            "streak": 4
+          }
+        },
+        {
+          "t": "Byte! Do me a favour. Look away for ten seconds. Then come back and pretend you saw nothing at all.",
+          "if": {
+            "hero": "byte"
+          }
+        }
+      ]
+    },
+    "ines": {
+      "intro": "Shh. Listen. The night is writing a poem, and I'm only taking dictation. I'm Odalys. Sit if you like. Don't rhyme.",
+      "lines": [
+        "The city below is a circuit board of small warm decisions. Every window a wish. Every wish on a timer.",
+        "A glass of red, a cold hand, the moon leaning on the roof like an old friend who forgot to knock.",
+        "I write one line every night. By dawn it's usually the worst line I've ever written. Then it's mine.",
+        "Poetry is just logging with better metaphors. 'Error at midnight' becomes 'the moon lost its keys again'.",
+        "Stars are the oldest server logs in the universe. Nobody has finished reading them. I'm still on page one.",
+        "There's a difference between silence and quiet. Silence is empty. Quiet is full, like this terrace tonight.",
+        "The fire sighs, the couples sigh, the wine sighs when it leaves the bottle. Everything up here is a sigh.",
+        "The lanterns look like small, patient planets. They orbit no one, but they've all agreed to stay lit.",
+        "I once rhymed 'deploy' with 'destroy'. My editor said it was too honest. Poetry is honesty with wine.",
+        "Somebody's kissing behind me. I'm not looking. Even a poet knows when to leave a stanza alone.",
+        "Every star I see was a message written long ago. I'm just the last person to receive it, and reply late.",
+        "Clouds are the sky's drafts. It writes them, hates them, and lets the wind erase them by morning.",
+        "I read poems aloud to the city. Nobody claps. That's how I know they're listening.",
+        "My glass is half full, my notebook half empty, and the moon is gloriously the right amount of full.",
+        "Do you hear that? A very faint guitar from somewhere. That's the sound of a good evening not being rushed.",
+        "The forest path glows in the dark if you look at it right. It's just moss and moonlight. Everything is.",
+        "Some nights the words come like a gentle rollout. Other nights, like a hotfix at three a.m. Tonight: gentle.",
+        {
+          "t": "After midnight the poems get shorter and the wine gets longer. Sit, {hero}. I'll read you something brief.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}? Even a hero climbs in verses. First a beginning, then a struggle, then a really long lift ride.",
+          "if": {
+            "minLevel": 6
+          }
+        },
+        {
+          "t": "{bosses} bosses. That's a full sonnet's worth of fighting. Fourteen lines, and each one bitter.",
+          "if": {
+            "bosses": 5
+          }
+        },
+        {
+          "t": "The bar on Tower A was all neon and noise. Lovely, but a poem needs room to breathe. So do I.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak? That's a refrain. The best poems repeat until they mean something new.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Sage. A calm name. It tastes like a herb and a quiet afternoon. I'll put you in a stanza, if you'll allow it.",
+          "if": {
+            "hero": "sage"
+          }
+        }
+      ]
+    },
+    "boris": {
+      "intro": "Ah, a guest! Boris Wolkow, sommelier. Please, sniff first, sip second, judge third. Never judge first.",
+      "lines": [
+        "This vintage? Notes of dark cherry, damp cellar and the slight regret of a well-loved container.",
+        "The first rule of tasting: swirl. It's like a rolling update. Slowly, and with tremendous confidence.",
+        "Do not ask for ice. I once saw a man ask for ice in a Burgundy. We do not talk about that man.",
+        "I have tasted four thousand wines and I remember every one. The other memories fell out to make room.",
+        "A good red is a slow deploy. Give it time to breathe. Rush it and everything spills. Usually on me.",
+        "The label says 'oaky'. I say 'tastefully lumberjack'. Take a sip and tell me you don't see the forest.",
+        "This white is crisp, cold and a little judgemental. Rather like my last on-call rotation.",
+        "One does not 'chug' a Bordeaux. One accompanies it, tenderly, like a nervous cousin at a wedding.",
+        "Mirela finds my speeches long. I find her enthusiasm unrefined. We are perfectly matched, obviously.",
+        "In my cellar I keep the bottles at fourteen degrees. Like my temper. One tiny spike and everything turns.",
+        "A great wine tastes of where it grew. This one tastes of a hillside, a cold morning and mild disappointment.",
+        "Cheese goes with everything. Except a bad mood. And, for some reason, cheap merlot. I've stopped asking.",
+        "Never trust a wine with a cartoon animal on the label. I trust this one. It has a very serious owl.",
+        "The candle is for atmosphere. The wine is for feelings. The cheese is for the sensible part of the evening.",
+        "To taste properly you must first close your eyes. Second, stop talking. Third, stop talking. It's very hard.",
+        "The trick to wine is confidence. Say 'earthy' firmly enough and no one will ask what it means.",
+        "If the cork breaks, we do not panic. We say 'rustic', pour it through a coffee filter, and continue.",
+        {
+          "t": "It is late, and the tannins are yawning. But a true sommelier never yawns. Only, occasionally, sighs.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! A palate developed at speed. Let me pour you something bold. Not too bold. You're new to it.",
+          "if": {
+            "minLevel": 9
+          }
+        },
+        {
+          "t": "{bosses} bosses? You have something in common with a well-aged Barolo: stubborn, and worth the wait.",
+          "if": {
+            "bosses": 6
+          }
+        },
+        {
+          "t": "The bar over on Tower A serves cocktails with sparklers. Very festive. Very loud. I wept for the gin.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! Consistency is the soul of a vineyard. Same soil, same sun, same excellent fuss.",
+          "if": {
+            "streak": 5
+          }
+        },
+        {
+          "t": "Nova! A bright name. Bright, and a touch fizzy, like a good prosecco. Come, taste something with bubbles.",
+          "if": {
+            "hero": "nova"
+          }
+        },
+        {
+          "t": "You have {coins} coins? Then permit me to suggest a rather modest wine and a very tasteful conversation.",
+          "if": {
+            "coins": 300
+          }
+        }
+      ]
+    },
+    "mirela": {
+      "intro": "Hello, darling! Boris is being Boris, so I'll do the pouring. I'm Mirela. Taste this. Don't tell him it's the cheap one.",
+      "lines": [
+        "Boris talks ten minutes about a wine, I sip and say 'lovely'. That's our whole marriage. It works.",
+        "If it's red, sip it. If it's white, chill it. If it's pink, you're on a rooftop. Enjoy. That's my guide.",
+        "Boris thinks he taught me everything about wine. I let him. I actually learned it from his mother.",
+        "I like a wine with character. Boris just calls those 'complicated'. I call them 'a good evening'.",
+        "Look at the cheese board! Someone left the good brie. Someone will regret it. It's me. I'm the someone.",
+        "I once sent a bottle back to the kitchen. Then I realised I was in someone's living room. Still tasted good.",
+        "I'm not flirting with the sommelier, I'm just complimenting his tannins. Please do the same.",
+        "A glass of wine is a tiny holiday in stem form. Two glasses is a weekend. Three is a really loud opinion.",
+        "The fairy lights make everyone twenty years younger. I tell Boris hourly. He pretends not to notice.",
+        "My cardigan, my glass, my husband, and the moon. That's all I need. Also a snack. Also, another snack.",
+        "Boris named our first wine cask 'Trevor'. We've stayed loyal. Trevor is still ageing gracefully.",
+        "The trick to a good tasting is to spit. I never do. Boris says that's why I'm having such a nice time.",
+        "Have you tried the little dark chocolate with the blue cheese? It's a bit strange. It's also a bit wonderful.",
+        "Boris and I met at a vineyard. He corrected my pronunciation. I corrected his dance. Still learning.",
+        "The best sound on a rooftop is a cork popping. It's the sound of 'no more meetings for the night'.",
+        "Yes, the wine is expensive. No, I won't tell you how much. My husband is standing right there.",
+        "I always sniff the cork. I don't know why. It just makes me feel like a very glamorous detective.",
+        {
+          "t": "It's the middle of the night, love, and the wine's tasting better. That's the thing about wine. And night.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! You've earned a proper glass. Let me pour. Boris, stop hovering. I said pour, not grade.",
+          "if": {
+            "minLevel": 5
+          }
+        },
+        {
+          "t": "{bosses} bosses. Bravo! Boris only tackled one, and it was a corkscrew. He's still recovering.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "The neon place on Tower A does cocktails with lightning inside. We ordered two. Boris cried a little.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "{streak} days in a row! I have a streak too. Boris hasn't lost an argument with a cheese since Tuesday.",
+          "if": {
+            "streak": 2
+          }
+        },
+        {
+          "t": "Sage, honey, you look like you need a glass and a chair. Take the good chair. Boris will pretend not to mind.",
+          "if": {
+            "hero": "sage"
+          }
+        }
+      ]
+    },
+    "nadia": {
+      "intro": "Well, hello there. Nadia. That's Petra, next to me, and this is our bottle. It was full when we sat down.",
+      "lines": [
+        "I'm a paramedic. I'm calm in emergencies. Petra's smile is the only thing that's ever made my pulse jump.",
+        "One bottle, two glasses. Petra insists on separate glasses. I insist on sitting very close. Compromise.",
+        "The fire crackles, the wine warms, and Petra laughs at my jokes. A statistically improbable night.",
+        "She doesn't do small talk. So I asked about her favourite constellation. She talked for an hour. Gold.",
+        "I've never seen someone hold a wine glass so gracefully. She treats it like a tiny, fragile star.",
+        "People say fire is dangerous. Yes. I'm sitting next to it, and it's only the second most dangerous thing.",
+        "Petra lets me pick the wine. I pick the cheapest one with the prettiest label. It's worked for years.",
+        "Fireside date rule one: sit where the light catches her face. Rule two: don't stare. I broke two.",
+        "The wine's from a vineyard I can't pronounce. It tastes like warm plums and a very confident dinner guest.",
+        "I fixed her bike once. That was the first time she smiled at me. I've been leaving my chain loose ever since.",
+        "In emergencies I check breathing. On dates I check whether she's laughing. Both count as vital signs.",
+        "When the fire pops, Petra jumps and grabs my arm. I've started stoking the fire a lot. For safety, obviously.",
+        "I'd like to say I'm smooth, but I've dropped my glass twice. She just refilled it and winked. Best wink ever.",
+        "Fire and stars together make you brave. Or it's the wine. Or Petra's laugh. Or all three.",
+        "Look at the sky. No, look at Petra. No, look at the sky. Sorry. I'm having a difficult time choosing.",
+        "The best part about a rooftop date is nobody's in a hurry. The city sleeps. We whisper. The fire listens.",
+        "My grandmother said: never trust a person who won't share their wine. Petra shares everything. I'm in trouble.",
+        {
+          "t": "It's the middle of the night, and this wine is still half full. That's love, {hero}. Or poor planning.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! Come, sit with us. The log is big enough for a hero. But only a small one. We like this spot.",
+          "if": {
+            "minLevel": 7
+          }
+        },
+        {
+          "t": "{bosses} bosses? Nothing scares you, then. Come, meet Petra. She might scare you a little. In a good way.",
+          "if": {
+            "bosses": 4
+          }
+        },
+        {
+          "t": "The neon bar on Tower A had a lovely bartender. But no fire. Some evenings need a fire.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! That's how long it took Petra to say yes to a drink. Persistence. It pays.",
+          "if": {
+            "streak": 6
+          }
+        },
+        {
+          "t": "Nova! You have a good name for a night like this. Bright, warm, and a little bit dangerous.",
+          "if": {
+            "hero": "nova"
+          }
+        }
+      ]
+    },
+    "petra": {
+      "intro": "Hello. I am Petra. I do not talk much. Nadia talks. I hold the glass, and I nod. It works very well.",
+      "lines": [
+        "I come from the north, where it is dark for months. Here I sit near a fire and a very warm person. Ideal.",
+        "In Sweden we say 'fika' for coffee and cake. Nadia says 'wine' for wine and cheese. New language.",
+        "She is loud, brave and terribly kind. I am quiet, careful, a little afraid. Together, one whole person.",
+        "The stars here are fewer than in Lapland. But the company is warmer. I am not sure I mind the trade.",
+        "I once counted every star I could see. I got to sixty and looked at Nadia instead. It seemed wiser.",
+        "I keep my emotions in tidy folders. Nadia keeps opening them. Somehow, none of the files are corrupted.",
+        "I work as a translator. Nadia says something charming, and I translate it into 'yes'. It is a short job.",
+        "She refills my glass before I ask. I noticed the second time. I have decided to allow it. Permanently.",
+        "The fire is warm on my left side. Nadia is warm on my right. I am in a very well-heated sandwich.",
+        "I do not believe in love at first sight. I believe in love at the fourth glass, if the company is right.",
+        "Sometimes when she laughs, I forget what I was saying. Which is fine. It was probably about spreadsheets.",
+        "We took the forest path to get here. She held the lantern. I held her sleeve. We only got a little lost.",
+        "You should try the wine. It is red, strong, and quite honest. Like her. Do not tell her I said honest.",
+        "Friends said 'take it slow'. I said, 'I am Swedish. Slow is all I know.' Then Nadia laughed. Quicker.",
+        "The stars are always still. That is why I trust them. Nadia never is. That is why I trust her more.",
+        "I wear a scarf even by the fire. Nadia offered me her hand. I now have both. It is quite efficient.",
+        "A good evening needs no plan. Only a bottle, a fire, and someone who remembers how you take your tea.",
+        {
+          "t": "It is well after midnight, and I am still here, still smiling. Please tell no one. It will ruin my reputation.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}? That is more than my patience. Sit down. Stay a while. Nadia will find you a glass.",
+          "if": {
+            "minLevel": 6
+          }
+        },
+        {
+          "t": "{bosses} bosses. I cannot beat a single spreadsheet. You are a very impressive person. Slightly terrifying.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "There is a lively rooftop bar on Tower A? Too many lights. My eyes prefer a fire and one face.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak. We Swedes admire routine. Also cinnamon buns. You have the first. I have the second.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Sage. Quiet name. Peaceful. You and I will get along. Do not feel obliged to speak. I certainly will not.",
+          "if": {
+            "hero": "sage"
+          }
+        }
+      ]
+    },
+    "gus": {
+      "intro": "Ha! Come closer, young one, the fire's better than the cushions. I'm Gus. Ever heard the one about the lift that went sideways?",
+      "lines": [
+        "Sixty years I've told stories by fires. Every one gets a little bigger. This one is only slightly true.",
+        "In my day the whole town was one big forest. The path to this tower was a deer track and a rumour.",
+        "I met a bear on the forest path once. He asked directions. I said: 'Past the pond, left at Kubernetes.'",
+        "This fire's older than half the people here. It's a very patient fire. It has heard every joke twice.",
+        "Father said: 'Gus, a good story needs a fire, a friend and a fib.' I've collected all three.",
+        "Back when I was young, we deployed by hand and prayed to the tape drive. The tape drive never listened.",
+        "Once I climbed all five hundred stairs of this tower on a wager. It was only forty. It felt like five hundred.",
+        "The best listeners are folk who've had a small glass of something warm. Fenn's on his second. Ideal.",
+        "A story's like a fire, lad. You feed it slow, you poke it now and then, and you never leave it alone.",
+        "I once cooked a whole fish on this pit. A very small fish. My first, and it was proud.",
+        "Look at those stars! My grandmother said each one is a candle for someone who's finished their supper.",
+        "There's a great story about the moon coming down for tea. It ends badly for the biscuits. I'll tell it later.",
+        "I've outlived four pairs of spectacles, two knees and one stubborn horse. All good company.",
+        "Everything worth doing takes a quiet evening, a warm seat and someone asking 'and then what happened?'",
+        "I've known Walt on his bench and Old Tom on the other one since we were lads. Still arguing about a cat.",
+        "The old ferrymen used to say: 'A tale that's true is a tale that's told twice.' So I tell mine every night.",
+        "Lost in the woods? Follow the woodsmoke. Nine times in ten it's me. The tenth time, dinner.",
+        {
+          "t": "Up past midnight? Good for you, {hero}. The best tales only wake up after the clocks go quiet.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! By my stars, that's a tall tale of its own. Sit. Tell me how you did it, and I'll embroider.",
+          "if": {
+            "minLevel": 10
+          }
+        },
+        {
+          "t": "{bosses} bosses, eh? I fought one dragon in my life. Turned out it was a very angry goose.",
+          "if": {
+            "bosses": 5
+          }
+        },
+        {
+          "t": "The neon roof on Tower A? Heard the music from here. Sounds like the bass drum is trying to leave.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak? Ha! Discipline! Keep it up, and one day you'll have a goose story too.",
+          "if": {
+            "streak": 7
+          }
+        },
+        {
+          "t": "Byte! Come, sit. You've got the look of somebody who's escaped from a story and hasn't found the next.",
+          "if": {
+            "hero": "byte"
+          }
+        },
+        {
+          "t": "Only level {level}? Perfect. The best listeners are the ones with all their adventures ahead of them.",
+          "if": {
+            "maxLevel": 3
+          }
+        }
+      ]
+    },
+    "fenn": {
+      "intro": "Ha ha ha! Oh, hello! Don't mind me, I'm just heckling Gus. He's on his fifth telling of the goose. I'm Fenn.",
+      "lines": [
+        "Every time Gus tells the bear story, the bear grows. Tonight it's a small mountain with opinions.",
+        "I've heard this one before. It's different every time. That's the genius. No arguing with a moving target.",
+        "Gus says he once wrestled a moose. Gus says a lot of things. I keep a list. It's a long list.",
+        "This is my favourite spot. Warm fire, cold drink, and an old man who lies beautifully.",
+        "I write documentation for a living. Nothing in it is half as entertaining as one of Gus's fibs.",
+        "I asked him for the moral of the story. He said, 'always bring a spare sandwich.' Hard to argue.",
+        "He swears the fire pit was built by giants. It's from a garden centre. I checked the receipt.",
+        "Whenever Gus stops for breath I refill his cup. Best investment I ever made. Free stories, forever.",
+        "If you want the truth, ask Nana Ilse in the garden. If you want a good story, ask Gus. Rarely the same person.",
+        "I once told Gus a story. He said, 'that's nice, lad, but the goose was bigger.' It was not about a goose.",
+        "The trick to listening: nod at the right moments, laugh at the wrong ones. It keeps Gus going.",
+        "Priya at the cafe swears his stories improve with coffee. I say with an audience. Or a bench.",
+        "I sat by this fire four hours and forgot dinner. Gus said a story would fill me up. It did.",
+        "Laughter makes the fire pop. Scientific fact. Well, I said it, and nobody has proved me wrong.",
+        "Gus is like a very old pipeline. Slow, clunky, and everyone quietly relies on him. I'd never let him retire.",
+        "Never ask Gus what happened next. You'll be here till Thursday. I'm on Tuesday's story right now.",
+        "Somebody has to stay awake for the ending. Usually me. Usually a disappointing ending. I love it.",
+        {
+          "t": "It's dead of night and Gus is still going. {hero}, if I nod off, please prod me gently. Or give me a biscuit.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! Higher than Gus's stories. Not by much. Come sit. The stump is warm, if slightly suspicious.",
+          "if": {
+            "minLevel": 8
+          }
+        },
+        {
+          "t": "{bosses} bosses? Gus, did you hear that? A real hero. Quick, add it to the goose story.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "There's a big party on Tower A? Sounds fun. We're staying. Gus hasn't finished the goose.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! That's how many nights I've stayed by this fire. I'm not saying I have a problem.",
+          "if": {
+            "streak": 4
+          }
+        },
+        {
+          "t": "Sage! You look like someone who appreciates a fib. Sit down. Gus will fit you into the plot.",
+          "if": {
+            "hero": "sage"
+          }
+        }
+      ]
+    },
+    "tariq": {
+      "intro": "Shh, look up! There, near the moon, that's Jupiter. I'm Tariq. I brought tea, a blanket and far too many star charts.",
+      "lines": [
+        "Three stars in a row? Orion's belt. Marisol says it's a very short ironing board. She's not wrong.",
+        "Light from that faint one left before the first pyramid. It's still on its way. Like my last pull request.",
+        "I work nights in a data centre. Up here I can watch something that runs without me.",
+        "Tea, stars and a blanket. Add one good friend and you don't need a single dashboard. Not even a green one.",
+        "The Milky Way is right there, if you look away from the lantern. It's faint, like the memory of a good idea.",
+        "In this part of the town, the sky is darker than anywhere else. The forest swallows the light. It's beautiful.",
+        "Every star is a sun. Every sun has a story. Astronomy is just the longest, best set of release notes.",
+        "I log every shooting star I see. Forty-one so far. I've never wished for anything sensible.",
+        "Do you know the Moon is drifting away from Earth by a few centimetres every year? Very slow, very polite exit.",
+        "The mug's chipped, the tea is lukewarm, and Marisol keeps stealing my biscuit. This is heaven, honestly.",
+        "Stargazing teaches patience. You wait, you watch, and something wonderful crosses the sky for four seconds.",
+        "Astrid on Tower A has a real telescope. Mine is a pair of binoculars and a lot of optimism.",
+        "There's a satellite! See it? Tiny, steady, not blinking. That's somebody's internet. Isn't that lovely?",
+        "Kenji once told me that the best time to look up is right after a deploy fails. Two minutes of perspective.",
+        "The constellation over there is a bear. Marisol calls it a large dog. We call it 'Bearly Dog'.",
+        "On clear nights the sky is a status page. Everything green. Nothing on fire. Well, technically.",
+        "Some stars are gone by the time their light arrives. We're basically looking at historic backups.",
+        {
+          "t": "Late enough that the sky is showing its best stars. {hero}, this is the good stuff. Lie down. Look up.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}? You must have seen some extraordinary things. Tell me one, and I'll tell you a star.",
+          "if": {
+            "minLevel": 8
+          }
+        },
+        {
+          "t": "{bosses} bosses down. In astronomy terms, that's about half a supernova. Impressive, honestly.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "The bar on Tower A has a telescope, right? Astrid's? Lovely. Mine has a better view. Mostly of my thumb.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! I've come up here just as often. The sky never repeats. Try it.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Nova! Also a kind of star. An exploding one, mind you. Pull up the blanket, share my tea.",
+          "if": {
+            "hero": "nova"
+          }
+        }
+      ]
+    },
+    "lucia": {
+      "intro": "Look, look, look! That one there is the Lopsided Teapot, and I found it! I'm Marisol. Lie down, the sky's much bigger sideways.",
+      "lines": [
+        "That cluster is the Sleepy Hedgehog. That one, the Angry Toaster. I name them faster than Tariq googles.",
+        "The official name for those stars is 'Ursa Major'. Mine is 'Big Spoon'. It works better at picnics.",
+        "I count shooting stars and make a wish for each. So far I've wished for pasta forty-one times. No regrets.",
+        "The blanket's from my grandmother. The tea's from Tariq. The stars are from a truly generous universe.",
+        "My best theory is that the stars are just the universe's fairy lights. It throws a party every night.",
+        "A plane is a 'slow star'. That's what I tell kids. Tariq says that's not science. It's poetry.",
+        "I once fell asleep under the stars and woke up with a hedgehog on my shoulder. We're still friends.",
+        "Everything looks smaller from up here. Even my exams. Even my landlord. Even the lift queue.",
+        "My favourite thing about a night sky is that it doesn't ask what you've accomplished. It just shines with you.",
+        "Point at a star and give it a name. Instantly it's yours. Nobody can argue. I've got seventy-two now.",
+        "There's a bright light near the moon! It's either Venus or a very ambitious drone. I'm voting for Venus.",
+        "The lanterns and the stars are having a competition. So far it's a draw, but the stars have a longer runway.",
+        "I always bring extra socks to rooftops. Cold feet ruin stargazing. Warm feet make you philosophical.",
+        "Tariq gets all technical. I get all soppy. Together we're a very well-balanced telescope.",
+        "I read that the stars we see are a bit like old photos. It's a big, gorgeous archive of the past.",
+        "I've been on this roof since sunset. My back hurts, my neck hurts, my heart is great. Best evening this month.",
+        "Some people count sheep to sleep. I count stars until I run out of numbers. It always ends with a smile.",
+        {
+          "t": "Midnight! The sky's at its very best. {hero}, come and lie down. I'll show you the Cosmic Teapot.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}! You've climbed higher than the Big Spoon. Well, nearly. Come look at the sky with us.",
+          "if": {
+            "minLevel": 6
+          }
+        },
+        {
+          "t": "{bosses} bosses? I'd name a constellation after you. The Brave Snail. It's a compliment. Really.",
+          "if": {
+            "bosses": 4
+          }
+        },
+        {
+          "t": "The bar on Tower A is glittery. We looked at it from here. It looks like a small, loud galaxy.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak! That's how long I've kept a stargazing diary. It has nine pages and four doodles.",
+          "if": {
+            "streak": 4
+          }
+        },
+        {
+          "t": "Byte! You'd make a lovely constellation. The Smirking Fox. Look up. It's over there. Just to the left.",
+          "if": {
+            "hero": "byte"
+          }
+        }
+      ]
+    },
+    "kit": {
+      "intro": "Mmm? Oh. Hi. I'm Kit. Don't mind me. I'm just lying here, considering the universe and finishing my beer.",
+      "lines": [
+        "Have you ever noticed that a lounger is just a tiny bed with ambition? I respect that a lot.",
+        "I'm on a break from thinking. It's going great. I've thought about nothing for eleven whole minutes.",
+        "If a server falls in the forest and nobody's on call, does it make a sound? Asking for me.",
+        "Everything's a pipeline if you squint. Stars, clouds, this beer. Input, transform, output, sleep.",
+        "The moon's just a big cache. It stores sunlight and serves it at night. Efficient, lazy. I relate.",
+        "I only get philosophical after the second beer. It's a strict, deeply unprofessional policy.",
+        "Time works differently up here. The clock says ten. My body says it's next Tuesday. I don't argue.",
+        "One day I'll start a company that just naps. We'll call it 'Idle Systems'. Nobody will notice for months.",
+        "I love how the city's lights blink like a huge dashboard. Everything's green. Nothing's my problem tonight.",
+        "The beauty of a hammock, or lounger, is that it forces you to stop. Gravity takes over the meeting.",
+        "Sometimes I close my eyes and hear the fire, the guitar, and a distant laugh. That's my favourite playlist.",
+        "I once meditated for an hour. Turned out I was asleep. Same result, less effort. Highly recommend.",
+        "Somebody's hugging over there, somebody's kissing over there. I'm here for the ambience and crisps.",
+        "Be honest: is the moon following us, or are we following the moon? I'll wait. I've got nowhere to be.",
+        "You know what nobody says? 'Thank you, rooftop.' So, thank you, rooftop. You've been very supportive.",
+        "My biggest regret is not bringing a blanket. My second is not bringing two. I've a tendency to under-plan.",
+        "Nothing gets fixed at night. Everything just gets moved to the morning. I've made peace with this.",
+        {
+          "t": "It's ridiculously late, {hero}, and here I am, horizontal. Somebody wake me at sunrise, or at lunch.",
+          "if": {
+            "night": true
+          }
+        },
+        {
+          "t": "Level {level}? Sounds exhausting. Sit down. Have a sip. The lounger is big enough for a philosopher and a hero.",
+          "if": {
+            "minLevel": 8
+          }
+        },
+        {
+          "t": "{bosses} bosses? Please, don't tell me how. I'll only hear the word 'effort'. I'm on a break.",
+          "if": {
+            "bosses": 3
+          }
+        },
+        {
+          "t": "The bar on Tower A is loud. I went. I left. My eardrums filed a bug report against the bass.",
+          "if": {
+            "visited": "roofA"
+          }
+        },
+        {
+          "t": "A {streak}-day streak? Ah, consistency. I have one of those. It's called napping. Day one thousand.",
+          "if": {
+            "streak": 3
+          }
+        },
+        {
+          "t": "Sage. Ah, a fellow drifter. Take the other end of the lounger. We'll say nothing, together, very loudly.",
+          "if": {
+            "hero": "sage"
+          }
+        }
+      ]
+    }
+  };
+
+  var TOWER_ROOFS = [
+    /* ---------------- TOWER A: SKYLINE BAR (neon cocktail rooftop, cool blue / magenta) ---------------- */
+    {
+      heading: 'TOWER A · ROOF — SKYLINE BAR', subtitle: 'Neon, cocktails and a very large sky. Lift on the left, stairs on the right.',
+      hint: 'Arrow keys / WASD to walk. Enter talks to people and looks at things. Walk into the lift or the stair door to go down. Esc goes back down.',
+      theme: { skyTop: '#0a1032', skyBot: '#33419a', skyGlow: 'rgba(255,110,200,0.28)', sidewall: '#7d8299', floor: 'floorDeck', floorFilter: 'brightness(0.62) saturate(0.75) hue-rotate(-12deg)' },
+      tint: 'night', stairX: 584, lights: [0, 168, 336, 504],
+      sky: { seed: 4242, stars: 70, moon: { x: 430, y: 12 }, skyline: 'skylineNight', clouds: [{ x: 30, y: 26, w: 110, dur: 150, delay: 40 }, { x: 240, y: 60, w: 90, dur: 190, delay: 120 }, { x: 420, y: 30, w: 100, dur: 170, delay: 15 }] },
+      glows: [tg(196, 92, 232, 120, 'pool-pink'), tg(262, 296, 168, 110, 'pool-violet'), tg(474, 176, 100, 130, 'pool-cyan'), tg(150, 314, 36, 60, 'pool-amber'), tg(590, 340, 36, 60, 'pool-amber'), tg(230, 12, 152, 40, 'neon')],
+      furniture: [
+        // back bar
+        tf('backBarShelf', 214, 58, { z: 6 }),
+        tf('neonSignA', 230, 12, { wall: true, z: 7 }),
+        rf('barCounter', 190, 104, 'bar counter', 'Menu: Sky-High Spritz, Kernel Panic Martini, and tap water for the brave.', { foot: 34 }),
+        rf('barStool', 214, 184, 'bar stool', 'A tall stool with a very good view of the bartender.'),
+        rf('barStool', 326, 184, 'bar stool', 'The cushion is still warm. Someone left in a hurry, or in love.'),
+        // sofa corner
+        tf('sofa', 22, 236, 176, 81, { z: 262, front: 38, zf: 300, solid: [26, 242, 168, 76], label: 'sofa', say: 'A velvet sofa the colour of a sunset. Not for sleeping. Mostly not.' }),
+        rf('coffeetable', 50, 336, 'low table', 'Three empty glasses, a bowl of olives and a very optimistic coaster.'),
+        // dance floor + speakers
+        tf('danceFloor', 268, 300, { z: 1, glow: [tg(268, 300, 152, 88, 'disco')] }),
+        rf('speaker', 210, 296, 'speaker', 'Bass you can feel in your fillings. Currently playing: slow jazz for fast hearts.'),
+        rf('speaker', 424, 296, 'speaker', 'The other speaker. It has opinions about the first one.'),
+        // telescope + sign
+        rf('telescope', 474, 176, 'telescope', 'Aimed at the moon. The lens cap is in the bar, obviously.', { flip: true, foot: 26 }),
+        // lounge bits
+        rf('cocktailTable', 232, 392, 'cocktail table', 'A tall table with a candle. The candle is doing its best.'),
+        rf('cocktailTable', 430, 396, 'cocktail table', 'Two straws in one glass. That is a message.'),
+        tf('daybed', 488, 372, { z: 390, front: 26, zf: 410, solid: [492, 388, 88, 52], label: 'daybed', say: 'A magenta daybed. The best seat in the house for looking straight up.' }),
+        rf('heaterLamp', 150, 330, 'patio heater', 'Warm orange, like a small friendly sun on a stick.', { foot: 14 }),
+        rf('heaterLamp', 584, 340, 'patio heater', 'It hums a little tune. Somewhere between a fridge and a choir.', { foot: 14 }),
+        rf('planterBox', 26, 396, 'planter', 'Lavender. It is supposed to calm people down. Mostly it just smells nice.', { foot: 16 })
+      ],
+      fx: [
+        { kind: 'hearts', x: 472, y: 98, n: 4, z: 990 }, { kind: 'hearts', x: 352, y: 284, n: 3, z: 990 },
+        { kind: 'sparkle', x: 366, y: 140, n: 4, z: 990 },
+        { kind: 'speech', x: 66, y: 196, n: 1, z: 990 }, { kind: 'speech', x: 158, y: 198, n: 1, delay: 1.9, z: 990 },
+        { kind: 'notes', x: 238, y: 282, n: 3, z: 990 }, { kind: 'notes', x: 452, y: 282, n: 3, z: 990 },
+        { kind: 'shoot', x: 230, y: 6, z: 990 }
+      ],
+      people: function () { return roofPeopleA(); }
+    },
+    /* ---------------- TOWER B: STARLIGHT TERRACE (quiet romantic garden terrace: teal-indigo night, amber string lights, fire pit) ---------------- */
+    {
+      heading: 'TOWER B · ROOF — STARLIGHT TERRACE', subtitle: 'Fairy lights, a fire pit and a very good view. Lift on the left, stairs on the right.',
+      hint: 'Arrow keys / WASD to walk. Enter talks to people and looks at things. Walk into the lift or the stair door to go down. Esc goes back down.',
+      theme: { skyTop: '#06182a', skyBot: '#1d5566', skyGlow: 'rgba(255,170,90,0.24)', sidewall: '#8d8794', floor: 'floorDeck', floorFilter: 'brightness(0.74) sepia(0.42) saturate(1.1) hue-rotate(-16deg)' },
+      tint: 'nightteal', stairX: 584, lights: [0, 168, 336, 504],
+      sky: { seed: 1717, stars: 96, moon: { x: 462, y: 2, css: 'filter:sepia(0.5) saturate(1.5) brightness(1.02);' }, skyline: 'skylineWarm', clouds: [{ x: 60, y: 30, w: 96, dur: 210, delay: 90 }, { x: 420, y: 22, w: 84, dur: 170, delay: 30 }] },
+      glows: [tg(126, 292, 214, 128, 'pool-fire'), tg(14, 262, 60, 56, 'pool-amber'), tg(268, 214, 200, 60, 'pool-amber'), tg(440, 396, 36, 30, 'pool-amber'), tg(570, 402, 36, 30, 'pool-amber'),
+        tg(150, 44, 36, 54, 'pool-amber'), tg(298, 44, 36, 54, 'pool-amber'), tg(446, 44, 36, 54, 'pool-amber')],
+      furniture: [
+        // trellises with fairy lights and ivy + lantern posts along the parapet
+        tf('trellisLights', 176, 46, { wall: true, z: 6, glow: [tg(190, 52, 5, 6, 'twy'), tg(214, 54, 5, 6, 'twp', '0.6'), tg(242, 52, 5, 6, 'twy', '1.1'), tg(266, 55, 5, 6, 'twb', '0.3'), tg(286, 52, 5, 6, 'twy', '1.6')] }),
+        tf('trellisLights', 320, 46, { wall: true, z: 6, glow: [tg(334, 52, 5, 6, 'twp', '0.4'), tg(358, 54, 5, 6, 'twy', '0.9'), tg(386, 52, 5, 6, 'twb'), tg(410, 55, 5, 6, 'twy', '1.4'), tg(430, 52, 5, 6, 'twp', '0.7')] }),
+        tf('lanternPost', 152, 58, { wall: true, z: 6 }), tf('lanternPost', 300, 58, { wall: true, z: 6 }), tf('lanternPost', 450, 58, { wall: true, z: 6 }),
+        rf('plantFern', 476, 100, 'fern', 'A fern with ambitions. It has already climbed the ledge and is looking at the view.', { wall: true, z: 6 }),
+        // fire pit circle
+        tf('logBench', 164, 296, { foot: 12, z: 324, label: 'log bench', say: 'A sawn log worn smooth by a thousand cosy evenings. Splinter-free, mostly.' }),
+        rf('firePit', 168, 318, 'fire pit', 'Crackling. Somebody keeps feeding it small logs and big stories.', { foot: 24, z: 383, glow: [tg(206, 318, 44, 36, 'flame'), tg(214, 336, 28, 22, 'flame', '0.35')] }),
+        rf('stump', 110, 318, 'stump', 'A stump with a cushion-shaped dent. It has heard this story before.', { foot: 12, z: 300, front: 26, zf: 372 }),
+        rf('stump', 302, 330, 'stump', 'A tree stump, retired from forestry and now in hospitality.', { foot: 12, z: 300, front: 26, zf: 384 }),
+        tf('logBench', 172, 386, { foot: 12, z: 424, label: 'log bench', say: 'A front-row seat for the fire. Bring a jumper and an anecdote.' }),
+        // wine tasting table
+        rf('tastingTable', 276, 214, 'tasting table', 'Six wines, one candle and a cheese board with strong opinions. The label says: sip, do not gulp.', { foot: 36, z: 278, glow: [tg(300, 214, 30, 34, 'pool-amber'), tg(420, 224, 26, 28, 'pool-amber')] }),
+        // picnic blanket for stargazers
+        tf('blanket', 452, 374, { z: 2 }),
+        tf('cushion', 458, 398, { z: 420 }), tf('cushion', 512, 402, { z: 424 }),
+        rf('speaker', 392, 336, 'speaker', 'Soft guitar, turned low. Somebody chose the playlist very, very carefully.', { foot: 16 }),
+        rf('telescope', 452, 172, 'telescope', 'Pointed at a smudge that Tariq swears is a galaxy. It might be a fingerprint.', { flip: true, foot: 26 }),
+        // corners: lounger, heater, candles, planters
+        rf('loungerB', 22, 364, 'double lounger', 'A double lounger with a plaid throw. Room for two, or one very thoughtful person.', { foot: 20, z: 380, front: 24, zf: 440 }),
+        rf('heaterLamp', 20, 204, 'patio heater', 'A gentle amber hum. It has warmed more hands tonight than any handshake.', { foot: 14 }),
+        rf('candle', 446, 408, 'candle', 'A little flame in a jar. The wind keeps trying to blow it out and losing.', { foot: 10, z: 430 }),
+        rf('candle', 590, 414, 'candle', 'A candle on the deck. It is the smallest star on the terrace.', { foot: 10, z: 434 }),
+        rf('plantFern', 572, 232, 'fern', 'A potted fern that has never been to a forest and behaves like it has.', { foot: 14 })
+      ],
+      fx: [
+        { kind: 'hearts', x: 356, y: 98, n: 4, z: 990 }, { kind: 'hearts', x: 244, y: 96, n: 3, z: 990 },
+        { kind: 'sparkle', x: 222, y: 252, n: 4, z: 990 },
+        { kind: 'embers', x: 232, y: 318, n: 6, z: 990 },
+        { kind: 'speech', x: 132, y: 262, n: 1, z: 990 }, { kind: 'speech', x: 324, y: 272, n: 1, delay: 1.9, z: 990 },
+        { kind: 'notes', x: 424, y: 326, n: 3, z: 990 },
+        { kind: 'shoot', x: 360, y: 10, z: 990 }
+      ],
+      people: function () { return roofPeopleB(); }
+    }
+  ];
+
+  function towerRoofDef(t, arrival) {
+    var R = TOWER_ROOFS[t], L = TOWER_LOOK[t];
+    var furn = roofFrame(R).concat(R.furniture);
+    var sp = { x: 320, y: 408, facing: 'up' };
+    if (arrival === 'lift') sp = { x: 84, y: 214, facing: 'down' };
+    else if (arrival === 'stairsDown' || arrival === 'stairsUp') sp = { x: R.stairX, y: 196, facing: 'down' };
+    return {
+      home: { name: 'Roof', sign: L.name + ' roof', heading: R.heading, subtitle: R.subtitle, theme: R.theme, furniture: furn, residents: R.people(), pets: [], noDoor: true, outdoor: true, labels: [], fx: R.fx || [] },
+      exits: [
+        { x: 52, y: 158, w: 64, h: 14, text: 'Use the lift', reuse: true, go: function () { towerLiftUse(); } },
+        { x: R.stairX - 22, y: 158, w: 44, h: 14, text: 'Stairs ▼ to floor 5', go: function () { towerRoofStairsDown(); } }
+      ],
+      spawn: sp, hint: R.hint, backLabel: '← Back to floor 5', back: function () { goFloor(t, TOWER_FLOORS, 'stairsUp'); }
+    };
+  }
+  // walking into the stair door: a short walk into the doorway, fade, arrive at the foot of the floor-5 stairs
+  function towerRoofStairsDown() {
+    if (houseInputLock || stairsAnim || liftPanelOpen || liftRiding) return;
+    var t = tower.i, R = TOWER_ROOFS[t];
+    houseInputLock = true;
+    var bb = $('dgcHouseBubble'); if (bb) bb.hidden = true;
+    stairsAnim = {
+      t: 0, dur: 700, from: { x: houseHero.x, y: houseHero.y + HERO_FOOT_DY }, to: { x: R.stairX, y: 150 }, dir: 'roofDoor', sc: 0.86, fading: false,
+      next: function () { goFloor(t, TOWER_FLOORS, 'stairsUp'); }
+    };
+    houseHero.facing = 'up'; houseHero.moving = true; renderHouseHero();
+    try { playSfx('click'); } catch (e) { /* sfx optional */ }
+  }
+  // ==== ROOFS END ====
+
   function towerLobbyDef(t, arrival) {
     var L = TOWER_LOOK[t];
     var furn = [
@@ -23523,7 +26031,7 @@
     labels.push({ x: 36, y: 2, w: 96, h: 26, text: look.sign, cls: 'dgc-house-tag-floor' + (look.sign.length > 8 ? ' dgc-tag-sm' : ''), z: 3 });
     (look.labels || []).forEach(function (lb) { labels.push(lb); });
     exits.push({ x: 52, y: 158, w: 64, h: 14, text: 'Use the lift', reuse: true, go: function () { towerLiftUse(); } });
-    exits.push({ x: STAIRS_UP_ZONE.x, y: STAIRS_UP_ZONE.y, w: STAIRS_UP_ZONE.w, h: STAIRS_UP_ZONE.h, text: f >= TOWER_FLOORS ? 'Try the stairs ▲' : 'Climb stairs ▲', go: function () { towerStairsUse('up'); } });
+    exits.push({ x: STAIRS_UP_ZONE.x, y: STAIRS_UP_ZONE.y, w: STAIRS_UP_ZONE.w, h: STAIRS_UP_ZONE.h, text: f >= TOWER_FLOORS ? 'Stairs ▲ to the roof' : 'Climb stairs ▲', go: function () { towerStairsUse('up'); } });
     exits.push({ x: STAIRS_DOWN_ZONE.x, y: STAIRS_DOWN_ZONE.y, w: STAIRS_DOWN_ZONE.w, h: STAIRS_DOWN_ZONE.h, text: 'Go down stairs ▼', go: function () { towerStairsUse('down'); } });
     var sp = { x: 84, y: 214, facing: 'down' };
     if (arrival === 'stairsUp') sp = STAIRS_ARRIVE_FOOT;
@@ -23556,8 +26064,9 @@
   }
 
   function goFloor(t, f, arrival) {
-    if (!(t >= 0 && t < TOWER_COUNT && f >= 0 && f <= TOWER_FLOORS)) return;
+    if (!(t >= 0 && t < TOWER_COUNT && f >= 0 && f <= TOWER_ROOF)) return;
     tower.i = t; tower.floor = f;
+    if (f === TOWER_ROOF) { markVisited(t === 0 ? 'roofA' : 'roofB'); switchInterior(towerRoofDef(t, arrival)); return; }
     switchInterior(f === 0 ? towerLobbyDef(t, arrival) : towerHallDef(t, f, arrival));
   }
   function goRoom(t, f, n) { tower.i = t; tower.floor = f; switchInterior(towerRoomDef(t, f, n)); }
@@ -23990,6 +26499,8 @@
       equippedHair: 'brown', ownedHair: ['brown'], equippedShoes: 'default', ownedShoes: ['default'],
       equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
       npcLastLineIndex: {},
+      performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0, bossLevelProgress: {},
+      dialogueBag: {}, talked: {}, visited: {},
       practiceMode: keepPracticeMode,
       lastPlayedDate: keepStreak.lastPlayedDate, currentDailyStreak: keepStreak.currentDailyStreak, longestDailyStreak: keepStreak.longestDailyStreak
     };
@@ -25678,8 +28189,15 @@
     else if (k === 'arrowleft' || k === 'a') { cityKeys.left = true; e.preventDefault(); }
     else if (k === 'arrowright' || k === 'd') { cityKeys.right = true; e.preventDefault(); }
     else if (k === 'enter' || k === ' ') {
-      if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId);
-      else if (cityNearNpcId) openNpcDialogue(cityNearNpcId);
+      // Swallow the event so the dialogue-close handler registered later on
+      // `document` cannot see this same keydown and close the box it opens.
+      if (cityNearBuildingId || cityNearNpcId) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (e.repeat) return;
+        if (cityNearBuildingId) enterCityBuilding(cityNearBuildingId);
+        else openNpcDialogue(cityNearNpcId);
+      }
     }
   });
   document.addEventListener('keyup', function (e) {
