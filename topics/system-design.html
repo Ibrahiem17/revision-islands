@@ -4,33 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>System Design — Interview Islands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Lexend:wght@400;500;700;800&family=Oswald:wght@500;600;700&family=Rubik+Mono+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/cards.css">
 <link rel="stylesheet" href="../css/mascot.css">
 <link rel="stylesheet" href="system-design.css">
+<script>
+/* Decide BEFORE first paint whether the ~3 s intro plays (once per session, never with reduced motion).
+   The intro overlay is CSS-hidden unless this flag is set; a CSS failsafe removes it if scripts never load. */
+(function () {
+  try {
+    var rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seen = false;
+    try { seen = sessionStorage.getItem('sd-intro-seen') === '1'; } catch (e) {}
+    if (!rm && !seen) document.documentElement.classList.add('intro-on');
+  } catch (e) {}
+})();
+</script>
+<!-- GSAP + ScrollTrigger: pinned versions with SRI. If they fail to load, the page runs without GSAP animation. -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-<body>
+<body class="sd" id="top">
 
-<div class="page">
-  <a class="back-link" href="../index.html">← Back to the map</a>
-
-  <header class="page-header">
-    <span class="icon">🏗️</span>
-    <h1>System Design</h1>
-    <p>The Architect's Tower — scale one floor at a time, from a single server up to a global, distributed system.</p>
-
-    <div class="progress-row">
-      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <span id="progress-text">0%</span> mastered
-    </div>
-  </header>
-
-  <div class="search-box">
-    <input type="search" id="search" placeholder="Search this island…" aria-label="Search System Design content">
+<!-- vintage film-leader intro (skippable: click or any key) -->
+<div id="intro" class="intro" aria-hidden="true">
+  <div class="intro-leader" id="intro-leader">
+    <svg class="intro-cross" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="86" fill="none" stroke="#141210" stroke-width="5"/><circle cx="100" cy="100" r="62" fill="none" stroke="#141210" stroke-width="3"/><path d="M100 0V200M0 100H200" stroke="#141210" stroke-width="3"/></svg>
+    <span class="intro-num" id="intro-num">3</span>
+    <span class="intro-skip">CLICK TO SKIP</span>
   </div>
-
-  <div id="content"></div>
 </div>
+
+<!-- old-film overlays: grain, vignette, flicker, scratches, dust (all pointer-events:none) -->
+<div class="fx-film" aria-hidden="true"><i class="fx-grain"></i><i class="fx-vignette"></i><i class="fx-flicker"></i><i class="fx-scratch"></i><i class="fx-dust"></i></div>
+
+<!-- shared SVG defs: boiling-line filter + wordmark filter -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="boil" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+      <feTurbulence id="boil-turb" type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="1" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="boil-thin" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence id="boil-turb2" type="fractalNoise" baseFrequency="0.05" numOctaves="1" seed="1" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<a class="skip-link" href="#notes">Skip to the notes</a>
+
+<div class="stage" id="stage">
+  <div class="floaters" id="floaters" aria-hidden="true"></div>
+
+  <div class="stage-in">
+    <!-- layered sheets peeking out behind the frame -->
+    <div class="sheet sheet-a" aria-hidden="true"></div>
+    <div class="sheet sheet-b" aria-hidden="true"></div>
+
+    <div class="frame" id="frame">
+      <i class="fb fb-t" aria-hidden="true"></i><i class="fb fb-r" aria-hidden="true"></i><i class="fb fb-b" aria-hidden="true"></i><i class="fb fb-l" aria-hidden="true"></i>
+      <span class="deco deco-tl" data-art="corner" aria-hidden="true"></span><span class="deco deco-tr" data-art="corner" aria-hidden="true"></span>
+      <span class="deco deco-bl" data-art="corner" aria-hidden="true"></span><span class="deco deco-br" data-art="corner" aria-hidden="true"></span>
+
+      <header class="masthead" id="masthead">
+        <div class="cell cell-art cell-art-l" data-art="rack" data-react></div>
+        <div class="cell cell-title">
+          <i class="sunburst" aria-hidden="true"></i>
+          <p class="tagline" data-c="tagline">INTERVIEW ISLANDS · REVISION NOTES</p>
+          <h1 class="wordmark" id="wordmark" data-c="wordmark">SYSTEM DESIGN</h1>
+        </div>
+        <div class="cell cell-art cell-art-r" data-art="cloud" data-react></div>
+      </header>
+
+      <nav class="navcells" id="navcells" aria-label="Page navigation"></nav>
+      <div class="hatch" aria-hidden="true"></div>
+
+      <main id="main">
+        <div class="board">
+          <div class="col-main">
+            <section class="panel notes-panel" id="notes" aria-labelledby="notes-h">
+              <div class="panel-head">
+                <span class="ribbon-slot" data-art="ribbon" aria-hidden="true"></span>
+                <h2 id="notes-h" class="panel-title" data-c="notesTitle" data-split>THE NOTES</h2>
+              </div>
+              <div class="panel-body">
+                <div class="float-art" data-art="crane" data-react></div>
+                <p class="lede" data-c="lede"></p>
+                <p class="lede" data-c="lede2"></p>
+              </div>
+              <div class="tools">
+                <div class="tool tool-search">
+                  <label for="search" class="lbl" data-c="searchLabel">SEARCH THE ISLAND</label>
+                  <input type="search" id="search" placeholder="Search this island…" aria-label="Search System Design content" autocomplete="off">
+                </div>
+                <div class="tool tool-progress" id="progress" tabindex="-1">
+                  <span class="lbl" data-c="progressLabel">MASTERED</span>
+                  <div class="progress-track" role="presentation"><div class="progress-fill" id="progress-fill"></div></div>
+                  <span class="pct"><span id="progress-text">0%</span></span>
+                </div>
+              </div>
+              <div id="content"></div>
+              <div class="panel-foot" aria-hidden="true"><span class="hand-slot" data-art="hand"></span><span class="foot-text" data-c="footNote">MORE EDITIONS COMING SOON</span><i class="checker"></i></div>
+            </section>
+            <div class="tiers" id="tiers" aria-label="Scaling ladder"></div>
+          </div>
+
+          <aside class="col-cards" id="cards" aria-label="Topic shortcuts"></aside>
+        </div>
+
+        <section class="photos" id="photos" aria-label="Photo strip">
+          <div class="filmstrip" aria-hidden="true"></div>
+          <div class="photo-row" id="photo-row"></div>
+          <div class="filmstrip" aria-hidden="true"></div>
+        </section>
+      </main>
+
+      <div class="tickers" id="tickers" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="the-end" id="the-end">
+  <div class="iris" id="iris">
+    <i class="rings"></i>
+    <div class="end-inner">
+      <p class="end-small" data-c="endSmall">SEE YOU AT THE NEXT ISLAND</p>
+      <p class="end-big" data-c="endBig">THE END</p>
+      <a class="end-top" href="#top" data-c="endTop">BACK TO TOP ↑</a>
+    </div>
+  </div>
+  <p class="legal" data-c="legal">Interview Islands · revision notes</p>
+</footer>
 
 <script type="module" src="/src/topics/system-design.js"></script>
 </body>
