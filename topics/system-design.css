@@ -199,7 +199,7 @@ body.sd .progress-fill[style*="width: 0%"] { border-right: 0; }
 #progress:focus-visible { outline: 3px dashed var(--ink); outline-offset: -6px; }
 
 /* ---------- notes content (render.js output) ---------- */
-#content { counter-reset: floor; border-top: var(--rule); }
+#content { counter-reset: floor fig; border-top: var(--rule); }
 body.sd .section { counter-increment: floor; margin: 0; border-bottom: var(--rule); }
 body.sd .section-title { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 28px; cursor: pointer; border: 0; font: 400 clamp(.9rem, 1.8vw, 1.15rem)/1.2 var(--display); text-transform: uppercase; letter-spacing: .01em; color: var(--ink); transition: background .15s; }
 body.sd .section-title::before { content: counter(floor, decimal-leading-zero); flex: none; font: 700 .85rem/1 var(--label); letter-spacing: .1em; border: 2px solid var(--ink); padding: 5px 7px; background: var(--paper2); }
@@ -468,3 +468,44 @@ body.rm .boil, body.rm .boil-w, body.rm .boil-b { filter: none; }
 /* fill the space under a short notes list with a printed dot screen (panel stretches to the cards column) */
 .panel-foot { flex: 1; align-content: flex-end; background: var(--dots) 0 0 / 9px 9px; }
 .card-art { height: 112px; padding: 8px 24px 6px; }
+
+/* ---------- note diagrams (render.js opts.diagrams; art lives in src/topics/system-design-diagrams.js) ---------- */
+body.sd .note-diagram { position: relative; container-type: inline-size; counter-increment: fig; margin: 22px 0 8px; padding: 0; border: 3px solid var(--ink); background: var(--paper2) var(--paper-grain); box-shadow: 5px 5px 0 rgba(20,18,16,.16); min-width: 0; }
+body.sd .note-diagram::before { content: "FIG. " counter(fig); position: absolute; left: -3px; top: -15px; z-index: 1; background: var(--yellow); border: 2px solid var(--ink); padding: 4px 10px 3px; font: 700 .74rem/1 var(--label); letter-spacing: .18em; }
+body.sd .nd-panels { display: grid; grid-template-columns: 1fr 1fr; align-items: start; padding: 14px 6px 8px; }
+body.sd .nd-panel { min-width: 0; padding: 0 6px; }
+body.sd .nd-panel ~ .nd-panel { border-left: 2px dashed var(--ink); }
+body.sd .nd-panel svg { display: block; width: 100%; height: auto; max-width: 380px; margin: 0 auto; overflow: visible; }
+body.sd .note-diagram figcaption { border-top: 3px solid var(--ink); padding: 8px 12px 7px; background: var(--paper); font: 600 .74rem/1.45 var(--label); letter-spacing: .1em; text-transform: uppercase; }
+@container (max-width: 599px) {
+  body.sd .nd-panels { grid-template-columns: 1fr; }
+  body.sd .nd-panel ~ .nd-panel { border-left: 0; border-top: 2px dashed var(--ink); margin-top: 10px; padding-top: 14px; }
+  body.sd .nd-panel svg { max-width: 340px; }
+  body.sd .nd-panels { padding: 14px 0 8px; } body.sd .nd-panel { padding: 0 4px; }
+}
+/* svg parts (colours from page tokens) */
+.note-diagram .nd-k { fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.note-diagram .nd-k.nd-t2 { stroke-width: 2; }
+.note-diagram .nd-k.nd-p { fill: var(--paper2); }
+.note-diagram .nd-yfill { fill: var(--yellow); }
+.note-diagram .nd-inkfill { fill: var(--ink); }
+.note-diagram .nd-hatchfill { fill: url(#nd-hatch); }
+.note-diagram .nd-hp { fill: var(--paper2); }
+.note-diagram .nd-hl { stroke: var(--ink); stroke-width: 2.4; }
+.note-diagram text { fill: var(--ink); font-family: var(--label); font-weight: 500; font-size: 12.5px; letter-spacing: .02em; }
+.note-diagram .nd-t { font-size: 15.5px; font-weight: 700; letter-spacing: .03em; }
+.note-diagram .nd-b { font-size: 13.5px; font-weight: 700; letter-spacing: .04em; }
+.note-diagram .nd-st { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; }
+.note-diagram .nd-pkt { font-size: 12px; font-weight: 700; }
+.note-diagram text.nd-onink { fill: var(--paper2); }
+.note-diagram .nd-cap { font-weight: 600; }
+.note-diagram .nd-mk { fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.note-diagram .nd-mk-paper { stroke: var(--paper2); }
+.note-diagram .nd-pk, .note-diagram .nd-rp { opacity: 0; }
+.note-diagram .nd-stamp, .note-diagram .nd-redis, .note-diagram .nd-found { transform-box: fill-box; transform-origin: center; }
+.note-diagram .nd-plate { transition: none; }
+.note-diagram .nd-fb, .note-diagram .nd-fbl { transform-box: fill-box; }
+.note-diagram .nd-fb { transform-origin: center; }
+.note-diagram .nd-fbl { transform-origin: left center; }
+body.sd .nd-panels.nd-one { grid-template-columns: 1fr; }
+body.rm .note-diagram * { animation: none !important; }

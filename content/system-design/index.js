@@ -3,19 +3,167 @@ export default {
   icon: "🏗️",
   sections: [
     {
-      title: "Sample Section — Scaling",
+      title: "Topic 1 — Scaling aur Load Balancer",
+      items: [
+        {
+          type: "list",
+          id: "sd-1",
+          title: "Scaling aur Load Balancer — key takeaway",
+          points: [
+            "Ek server kaafi nahi hota — traffic barhe to bara machine khareedne ke bajaye zyada machines lagao, isko horizontal scaling kehte hain.",
+            "Load balancer saamne khara hota hai aur har request ko kisi ek server ko bhej deta hai, aur jo server mar jaye usko khud hi hata deta hai.",
+            "Sabse bara rule: app server apni memory ya apni disk mein kuch bhi save na kare — warna doosra server aate hi sab toot jata hai.",
+            "Session Redis mein rakho, files blob storage mein — phir koi bhi server koi bhi request handle kar sakta hai."
+          ],
+          // animated ink diagram, drawn in src/topics/system-design-diagrams.js
+          diagram: "scalingSessions",
+          diagramCaption: "Left: the session lives inside one server, so the user is logged out 2 times in 3. Right: it lives in shared Redis, so any server works."
+        }
+      ]
+    },
+    {
+      title: "Topic 2 — Caching",
       items: [
         {
           type: "concept",
-          id: "sd-1",
-          title: "Horizontal vs Vertical scaling",
-          body: "Vertical = bigger machine (more CPU/RAM), simple but has a ceiling. Horizontal = more machines, needs load balancing and often a distributed data layer, but scales further."
+          id: "sd-2",
+          title: "The problem",
+          body: [
+            `Your app shows user profiles. Every time someone opens a profile page, your code runs a query against the database.`,
+            `Now think about a popular profile — say a celebrity with 100,000 visitors an hour. Your database answers the exact same question 100,000 times and gives the exact same answer every time. The profile hasn't changed in three weeks.`,
+            `That's the waste. You're paying for the slowest part of your system to repeat identical work.`
+          ],
+          diagram: "cacheRepeat",
+          diagramCaption: "Left: the database answers the same question 100,000 times. Right: it answers once and the cache serves the repeats."
         },
         {
-          type: "qa",
-          id: "sd-2",
-          question: "How would you explain a CDN in one sentence?",
-          answer: "A globally distributed network of caching servers that serve static (and sometimes dynamic) content from a location close to the user to cut latency and origin load."
+          type: "table",
+          id: "sd-3",
+          title: "Here's why the database is the slow part:",
+          headers: ["Where the data is", "Rough time to get it"],
+          rows: [
+            ["Memory (RAM)", "very fast"],
+            ["Disk (SSD)", "about 100× slower"],
+            ["Another datacenter", "about 100× slower again"]
+          ],
+          note: `A database keeps data on disk. A cache keeps data in memory. Same data, ~100× faster. That's the whole idea.`,
+          diagram: "cacheSpeed",
+          diagramCaption: "Each step away from memory costs about 100 times more time."
+        },
+        {
+          type: "list",
+          id: "sd-4",
+          title: "Three words you need to know, all visible in that picture:",
+          points: [
+            `Cache hit — the cache had it. Fast.`,
+            `Cache miss — the cache didn't have it, so you went to the database. Slow.`,
+            `Hit rate — what percentage of requests are hits. A good cache runs at 90–99%. At 95%, your database is doing one-twentieth of the work it used to.`
+          ],
+          diagram: "cacheMissHit",
+          diagramCaption: "Left: the first request misses, goes to the database and leaves a copy in the cache. Right: every request after is a hit and the database is never touched."
+        },
+        {
+          type: "concept",
+          id: "sd-5",
+          title: "How it's used in the real world",
+          body: [
+            `Redis is the answer 90% of the time. It's a separate server that holds data in memory. Memcached is the older alternative — simpler, less capable. If an interviewer asks "which cache", say Redis and you're safe.`
+          ],
+          diagram: "cacheRedis",
+          diagramCaption: "Redis is a separate server holding data in memory; Memcached is the older, simpler alternative."
+        },
+        {
+          type: "list",
+          id: "sd-6",
+          title: "Caching also happens in more places than most beginners realise:",
+          points: [
+            `Browser cache — your browser keeps images and CSS locally`,
+            `CDN — the thing from Topic 1, which is really a cache for files, placed near users`,
+            `Application cache — Redis, the one we just drew. This is the one interviews mean.`,
+            `Database's own cache — databases keep recently-used pages in memory automatically`
+          ],
+          diagram: "cacheLayers",
+          diagramCaption: "A request is checked against each cache in turn and stops at the first layer that has the answer."
+        }
+      ]
+    },
+    {
+      title: "Topic 3 — SQL vs NoSQL",
+      items: [
+        {
+          type: "concept",
+          id: "sd-7",
+          title: "SQL (relational) — the key idea",
+          body: [
+            `The key idea: data is split up and never repeated. Ali's name is stored in exactly one place. If he changes his name, you edit one row and every order automatically shows the new name.`
+          ],
+          diagram: "sqlTables",
+          diagramCaption: "Left: users and orders are two tables linked by Ali's id, 55. Right: what each word means."
+        },
+        {
+          type: "concept",
+          id: "sd-8",
+          title: "SQL's superpower: transactions.",
+          body: [
+            `A transaction means a group of changes that either all happen or none happen. There is no half-way.`,
+            `The classic example is a bank transfer. Moving 500 rupees from Ali to Sara is two steps: subtract 500 from Ali, add 500 to Sara. If the power dies between step one and step two, 500 rupees vanish from the world. A transaction makes that impossible — if step two fails, step one is undone automatically.`
+          ],
+          diagram: "sqlTransfer",
+          diagramCaption: "Left: without a transaction the power cut loses the 500. Right: with one, step one is rolled back."
+        },
+        {
+          type: "list",
+          id: "sd-9",
+          title: "You'll hear the word ACID for the guarantees SQL databases give you. In plain terms:",
+          points: [
+            `Atomic — all steps happen or none do (the transfer above)`,
+            `Consistent — the data never ends up in an illegal state`,
+            `Isolated — two people acting at the same time don't corrupt each other`,
+            `Durable — once the database says "saved", it survives a power cut`
+          ],
+          note: `You don't need to recite this. You need to know that SQL gives you these and NoSQL usually gives you less.`,
+          diagram: "sqlAcid",
+          diagramCaption: "The four ACID guarantees, one tile each."
+        },
+        {
+          type: "concept",
+          id: "sd-10",
+          title: "Family 2: NoSQL",
+          body: [
+            `Examples: MongoDB, DynamoDB, Cassandra. "NoSQL" just means "not the table thing." Instead of splitting data across tables, you keep related data together in one blob.`
+          ],
+          diagram: "nosqlDoc",
+          diagramCaption: "Left: Ali and his orders in one document. Right: what changed compared with SQL."
+        },
+        {
+          type: "concept",
+          id: "sd-11",
+          title: "Why NoSQL exists at all",
+          body: [
+            `Two real reasons, and knowing them is what makes your answer sound experienced:`,
+            `1. Reading is one trip instead of many. In SQL, showing Ali's order history means reading the users table, then the orders table, then stitching them (a join). In NoSQL you read one document and you're done. At Facebook scale, that difference is enormous.`,
+            `2. It splits across machines more easily. Remember horizontal scaling from Topic 1 — more machines instead of one big one. Splitting a database across machines is called sharding (I'll cover it properly later; for now: user IDs 1–1000 on machine A, 1001–2000 on machine B). SQL hates this, because a join now has to reach across two machines over the network. NoSQL documents are self-contained, so they split cleanly.`,
+            `The cost you pay: duplicated data. Ali's name might be copied into a hundred documents. Change his name and you must find and update all hundred. SQL wouldn't have that problem — but SQL wouldn't scale as easily either. That's the trade.`
+          ],
+          diagram: "nosqlWhy",
+          diagramCaption: "Left: one read instead of a join, and the price of duplicated data. Right: a join crossing two machines, versus self-contained documents."
+        },
+        {
+          type: "concept",
+          id: "sd-12",
+          title: "Interview question",
+          body: [
+            `"We're building a system where users write posts and other users comment on them. Which database would you choose?"`,
+            `This question is a trap. The trap is answering immediately. The interviewer wants to see if you ask about scale and requirements first.`,
+            `A good answer:`,
+            `"It depends on two things I'd want to know: how much data, and whether anything here needs to be exactly correct.`,
+            `At normal scale — say under ten million posts — I'd use PostgreSQL, a SQL database. Posts and comments are naturally related data, joins are cheap at that size, and I get transactions for free, which matters for anything like payments or account changes I might add later. Starting with SQL is the boring, correct default, and 'we outgrew Postgres' is a nice problem to have.`,
+            `If we're at social-network scale — hundreds of millions of posts, feeds read far more often than written — I'd think differently. There, the read pattern is 'give me this post and its comments', and I'd want that to be one lookup rather than a join across sharded machines. A document store like MongoDB or a wide-column store like Cassandra fits that better.`,
+            `I'd also point out that it doesn't have to be one or the other. A common real setup is SQL for accounts and payments where correctness is critical, plus a NoSQL store for the high-volume feed data. Different data, different tool."`,
+            `What makes that answer work: you asked about scale, you named the boring default and defended it, you said when you'd switch, and you mentioned using both. Interviewers hear "MongoDB because it's web scale" all day. Hearing "Postgres until it hurts, and here's what hurting looks like" is refreshing and correct.`
+          ],
+          diagram: "pickDb",
+          diagramCaption: "So which one do I pick? Left: SQL is the default when being wrong is unacceptable. Right: NoSQL when being slow is. A common real setup uses both."
         }
       ]
     }

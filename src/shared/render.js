@@ -11,6 +11,10 @@
 import { escapeHtml, richText } from "./text.js";
 import { getLearnedSet, saveLearnedSet, progressFor } from "./progress.js";
 
+// escapeHtml for a double-quoted attribute value: a literal " in the note text would otherwise cut the
+// attribute (and its searchable text) short
+const attr = (str) => escapeHtml(str).replace(/"/g, "&quot;");
+
 // ---------- note-block renderers ----------
 
 // "body" / "note" fields may be a single string or an array of
@@ -24,7 +28,21 @@ function bodyToSearchText(body) {
   return (Array.isArray(body) ? body.join(" ") : body).toLowerCase();
 }
 
-function renderItem(item, learnedSet) {
+// optional `diagram` (key) + `diagramCaption` on an item: rendered only when opts.diagrams[key]
+// exists (a string or a function returning markup) — pages that pass no registry are untouched.
+function diagramFor(item, opts) {
+  const src = item.diagram && opts && opts.diagrams && opts.diagrams[item.diagram];
+  if (!src) return { html: "", search: "" };
+  const markup = typeof src === "function" ? src() : src;
+  const cap = item.diagramCaption || "";
+  return {
+    html: `<figure class="note-diagram" data-diagram="${escapeHtml(item.diagram)}">${markup}${cap ? `<figcaption>${richText(cap)}</figcaption>` : ""}</figure>`,
+    search: " " + cap.toLowerCase(),
+  };
+}
+
+function renderItem(item, learnedSet, opts) {
+  const dg = diagramFor(item, opts);
   const isLearned = learnedSet.has(item.id);
   const learnedClass = isLearned ? " learned" : "";
   // optional "important: true" on any item type -> gets the glow treatment
@@ -35,7 +53,7 @@ function renderItem(item, learnedSet) {
   switch (item.type) {
     case "qa":
       return `
-        <div class="note-block qa-block${stateClasses}" data-searchable="${escapeHtml((item.question + " " + item.answer).toLowerCase())}">
+        <div class="note-block qa-block${stateClasses}" data-searchable="${attr((item.question + " " + item.answer).toLowerCase())}">
           <div class="note-head">
             ${checkbox}
             <button type="button" class="qa-toggle">❓ ${richText(item.question)}</button>
@@ -45,30 +63,31 @@ function renderItem(item, learnedSet) {
 
     case "concept":
       return `
-        <div class="note-block${stateClasses}" data-searchable="${escapeHtml(item.title.toLowerCase() + " " + bodyToSearchText(item.body))}">
+        <div class="note-block${stateClasses}" data-searchable="${attr(item.title.toLowerCase() + " " + bodyToSearchText(item.body) + dg.search)}">
           <div class="note-head">${checkbox}<h4><span class="type-icon">📌</span>${escapeHtml(item.title)}</h4></div>
-          ${bodyToHtml(item.body)}
+          ${bodyToHtml(item.body)}${dg.html}
         </div>`;
 
     case "list":
       return `
-        <div class="note-block${stateClasses}" data-searchable="${escapeHtml((item.title + " " + item.points.join(" ")).toLowerCase())}">
+        <div class="note-block${stateClasses}" data-searchable="${attr((item.title + " " + item.points.join(" ") + " " + (item.note ? bodyToSearchText(item.note) : "")).toLowerCase() + dg.search)}">
           <div class="note-head">${checkbox}<h4><span class="type-icon">📋</span>${escapeHtml(item.title)}</h4></div>
           <ul>${item.points.map(p => `<li>${richText(p)}</li>`).join("")}</ul>
+          ${item.note ? bodyToHtml(item.note) : ""}${dg.html}
         </div>`;
 
     case "code":
       return `
-        <div class="note-block${stateClasses}" data-searchable="${escapeHtml((item.title + " " + item.code + " " + (item.note || "")).toLowerCase())}">
+        <div class="note-block${stateClasses}" data-searchable="${attr((item.title + " " + item.code + " " + (item.note || "")).toLowerCase() + dg.search)}">
           <div class="note-head">${checkbox}<h4><span class="type-icon">💻</span>${escapeHtml(item.title)}</h4></div>
           <pre><code>${escapeHtml(item.code)}</code></pre>
-          ${item.note ? bodyToHtml(item.note) : ""}
+          ${item.note ? bodyToHtml(item.note) : ""}${dg.html}
         </div>`;
 
     case "table": {
-      const searchBits = [item.title, ...item.headers, ...item.rows.flat(), item.note || ""].join(" ").toLowerCase();
+      const searchBits = [item.title, ...item.headers, ...item.rows.flat(), item.note || ""].join(" ").toLowerCase() + dg.search;
       return `
-        <div class="note-block${stateClasses}" data-searchable="${escapeHtml(searchBits)}">
+        <div class="note-block${stateClasses}" data-searchable="${attr(searchBits)}">
           <div class="note-head">${checkbox}<h4><span class="type-icon">🗂️</span>${escapeHtml(item.title)}</h4></div>
           <div class="table-scroll">
             <table>
@@ -78,7 +97,7 @@ function renderItem(item, learnedSet) {
               </tbody>
             </table>
           </div>
-          ${item.note ? bodyToHtml(item.note) : ""}
+          ${item.note ? bodyToHtml(item.note) : ""}${dg.html}
         </div>`;
     }
 
@@ -146,7 +165,7 @@ export function renderPage(topicKey, topicData, opts) {
         <span class="chevron">▾</span> ${escapeHtml(section.title)}
       </button>
       <div class="notes-flow">
-        ${section.items.map(item => renderItem(item, learnedSet)).join("")}
+        ${section.items.map(item => renderItem(item, learnedSet, opts)).join("")}
       </div>
     </section>
   `).join("");
@@ -183,6 +202,22 @@ export function renderPage(topicKey, topicData, opts) {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
       });
     });
+  }
+
+  // optional (opts.diagrams): animated figures only play while on screen, the tab is visible and
+  // motion is allowed (.is-playing); otherwise they stay a complete static picture.
+  const figs = opts.contentEl.querySelectorAll(".note-diagram");
+  if (figs.length && typeof IntersectionObserver === "function") {
+    const seen = new Set();
+    const canPlay = () => !document.hidden && !document.body.classList.contains("rm") &&
+      !(typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const sync = () => figs.forEach(f => f.classList.toggle("is-playing", seen.has(f) && canPlay()));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)));
+      sync();
+    }, { rootMargin: "60px" });
+    figs.forEach(f => io.observe(f));
+    document.addEventListener("visibilitychange", sync);
   }
 
   // interview-question reveal (click question, answer folds open below)

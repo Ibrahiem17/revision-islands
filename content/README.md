@@ -66,3 +66,23 @@ Inside any body/note/answer/point string, wrap a phrase in
 **double asterisks** to give it a steady text-glow.
 ============================================================
 ```
+
+Adding a note with a diagram (System Design page only, opt-in)
+--------------------------------------------------------------
+Any concept / list / code / table item may carry
+  diagram: "<key>"            // key in src/topics/system-design-diagrams.js
+  diagramCaption: "..."       // optional caption strip under the figure
+The renderer draws a <figure class="note-diagram"> after the note body ONLY
+when the page passes a `diagrams` registry (system-design does; other topics
+ignore the field). The caption is searchable. Notes start folded, so the
+figure appears when the note is opened.
+To add one: write a function in system-design-diagrams.js that returns the
+markup (one or two <svg role="img"> with <title>/<desc>) and register it as
+`export default { myKey: () => ... }`. Ink style: thick black round-join
+strokes (class nd-k), flat fills, paper background, mustard (--yellow) as the
+ONLY accent, no faces; express good/bad with hatching, stamps and ticks, not
+red/green. Use viewBox width ~300 so text stays >= 12 units (about 11px on a
+340px phone; two panels sit side by side on desktop and stack on phones).
+Animate with CSS keyframes only, bound to `.note-diagram.is-playing ...` so
+they run only while on screen and never with reduced motion; the diagram must
+be a complete picture with animation off.

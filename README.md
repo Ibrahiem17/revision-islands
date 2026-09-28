@@ -41,6 +41,13 @@ vercel.json                    cache headers
 5. If the localStorage key differs from the folder name, add it to `KEYS` in `scripts/build-manifest.mjs` (e.g. `system-design` -> `systemDesign`), and use the same key in step 3.
 6. Run `npm run build`; the manifest (used by the home page for progress badges) regenerates automatically. Add a link/island for it on `index.html` if desired.
 
+## Adding a note with a diagram (System Design page)
+1. In `content/system-design/index.js` give the note `diagram: "<key>"` (and optionally `diagramCaption: "..."`, which is searchable).
+2. In `src/topics/system-design-diagrams.js` register `<key>: () => "<markup>"` (see `scalingSessions`). `src/topics/system-design.js` passes the registry to `mountTopic` as `{ collapsibleNotes: true, diagrams }`; `src/shared/render.js` renders it as `<figure class="note-diagram">` only when that registry has the key, so other topics are unaffected.
+3. Draw in the ink style: inline SVG, `role="img"` + `<title>`/`<desc>`, thick black round-join strokes (`class="nd-k"`), flat fills, paper `#f8f4e8`/`#f0ebdd`, ink `#141210`, and mustard `#F2B01E` as the only accent (use the page CSS variables, never new colours). No faces. Show good/bad with hatching, stamps and ticks. Keep the viewBox ~300 units wide with text >= 12 units so it stays legible on a 340px phone (panels sit side by side on desktop, stack on phones).
+4. Animate with CSS keyframes scoped to `.note-diagram.is-playing` (render.js adds it only while the figure is on screen, the tab is visible and motion is allowed). With the class absent the SVG must already be a complete static picture.
+5. Frame, `FIG. n` tab and caption strip are styled in `topics/system-design.css` (`.note-diagram`); SVG part classes (`nd-*`) live there too.
+
 ## Adding a DevOps lesson
 1. In `topics/devops.html` add the tab button (`<div class="tab" onclick="showTab('NAME',this)">`) and an empty panel wrapper `<div class="panel" id="tab-NAME"><div class="lesson-status" role="status">Loading…</div></div>`.
 2. Create `content/devops/lessons/NAME.html` with the panel's inner HTML. Inline `onclick` handlers and `<script>` tags work. CSS is page-wide, so put `<style>` in `topics/devops.html`, not in the fragment.
