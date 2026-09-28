@@ -6,9 +6,10 @@ import { init as initMascot } from "./mascot.js";
  * import -> its own chunk), render it, and start the mascot.
  * Expects #content, #search, #progress-fill, #progress-text in the page.
  */
-export async function mountTopic(topicKey, loadContent) {
+export async function mountTopic(topicKey, loadContent, extraOpts = {}) {
   const data = (await loadContent()).default;
   renderPage(topicKey, data, {
+    ...extraOpts,
     contentEl: document.getElementById("content"),
     searchEl: document.getElementById("search"),
     progressFillEl: document.getElementById("progress-fill"),

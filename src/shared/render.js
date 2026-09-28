@@ -98,7 +98,14 @@ function filterContent(contentEl, query) {
   const q = query.trim().toLowerCase();
   contentEl.querySelectorAll(".note-block").forEach(block => {
     const hay = block.getAttribute("data-searchable") || "";
-    block.classList.toggle("hidden-search", q.length > 0 && !hay.includes(q));
+    const match = q.length === 0 || hay.includes(q);
+    block.classList.toggle("hidden-search", !match);
+    // folded notes (opts.collapsibleNotes) open up when they match a search
+    if (q.length > 0 && match && block.classList.contains("note-collapsed")) {
+      block.classList.remove("note-collapsed");
+      const head = block.querySelector(".note-head");
+      if (head) head.setAttribute("aria-expanded", "true");
+    }
   });
   contentEl.querySelectorAll(".section").forEach(section => {
     const visible = [...section.querySelectorAll(".note-block")].some(b => !b.classList.contains("hidden-search"));
@@ -155,6 +162,28 @@ export function renderPage(topicKey, topicData, opts) {
       btn.setAttribute("aria-expanded", String(!collapsed));
     });
   });
+
+  // optional (opts.collapsibleNotes): every non-Q&A note starts folded to
+  // just its title; click the title (or Enter/Space) to open it. Search
+  // auto-opens matches (see filterContent). Q&A blocks already fold.
+  if (opts.collapsibleNotes) {
+    opts.contentEl.querySelectorAll(".note-block:not(.qa-block)").forEach(block => {
+      const head = block.querySelector(".note-head");
+      if (!head || !head.querySelector("h4")) return;
+      block.classList.add("note-collapsible", "note-collapsed");
+      head.setAttribute("role", "button");
+      head.setAttribute("tabindex", "0");
+      head.setAttribute("aria-expanded", "false");
+      const toggle = () => {
+        const folded = block.classList.toggle("note-collapsed");
+        head.setAttribute("aria-expanded", String(!folded));
+      };
+      head.addEventListener("click", toggle);
+      head.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      });
+    });
+  }
 
   // interview-question reveal (click question, answer folds open below)
   opts.contentEl.querySelectorAll(".qa-toggle").forEach(btn => {

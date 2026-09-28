@@ -5,7 +5,7 @@ import { buildPage, startFx } from "./system-design-fx.js";
 buildPage();
 
 // 2) notes, search, progress, mascot (shared engine; needs #content #search #progress-fill #progress-text)
-mountTopic("systemDesign", () => import("../../content/system-design/index.js"))
+mountTopic("systemDesign", () => import("../../content/system-design/index.js"), { collapsibleNotes: true })
   .catch((e) => console.error(e))
   .finally(() => {
     // 3) motion + live counts (must never block the notes)

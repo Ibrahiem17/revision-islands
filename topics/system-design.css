@@ -238,6 +238,14 @@ body.sd .note-block table { font-size: .86rem; }
 body.sd .note-block th { background: var(--ink); color: var(--paper2); font: 600 .8rem var(--label); letter-spacing: .12em; text-transform: uppercase; padding: 9px 12px; }
 body.sd .note-block td { border-bottom: 1px solid var(--ink); border-right: 1px solid rgba(20,18,16,.4); padding: 9px 12px; }
 body.sd .note-block td:last-child { border-right: 0; }
+/* folded notes: only the title row shows until you click it */
+body.sd .note-collapsible .note-head { margin-bottom: 0; align-items: center; cursor: pointer; }
+body.sd .note-collapsible .note-head:hover h4 { text-decoration: underline; text-decoration-thickness: 3px; text-decoration-color: var(--yellow); text-underline-offset: 4px; }
+body.sd .note-collapsible .note-head:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
+body.sd .note-collapsible .note-head::after { content: "▾"; order: 3; margin-left: auto; flex: none; width: 30px; height: 30px; display: grid; place-items: center; background: var(--yellow); border: 2px solid var(--ink); font-size: 1rem; line-height: 1; transition: transform .25s cubic-bezier(.3, 1.6, .5, 1); }
+body.sd .note-collapsible.note-collapsed .note-head::after { transform: rotate(-90deg); }
+body.sd .note-collapsible:not(.note-collapsed) .note-head { margin-bottom: 8px; }
+body.sd .note-collapsible.note-collapsed > :not(.note-head) { display: none; }
 body.sd .note-block.note-important { border-left: 0; box-shadow: inset 9px 0 0 var(--yellow); animation: none; }
 body.sd .note-block.note-important h4::after { content: "★"; color: var(--ink); opacity: 1; margin-left: 8px; }
 body.sd .empty-state { opacity: 1; margin: 0; padding: 30px 28px; text-align: left; font: 500 .95rem/1.6 var(--body); }
