@@ -111,22 +111,41 @@ export function buildPage() {
     )
     .join("");
 
-  // stacked topic cards
-  $("#cards").innerHTML =
-    content.cards
-      .map(
-        (c, i) => `
-    <article class="card" data-term="${esc(c.term)}" style="--n:${i}">
-      <h3 class="card-title">${esc(c.title)}</h3>
-      <p class="card-sub">${esc(c.sub)}</p>
-      <div class="card-art" data-react>${art[c.art]}</div>
-      <div class="card-bar">
-        <span class="card-val"><b class="cnt" data-count="0">00</b><small>${esc(content.cardUnit)}</small></span>
-        <button type="button" class="go" data-term="${esc(c.term)}" aria-label="Filter notes for ${esc(c.title)}">${arrowBtn("")}</button>
-      </div>
-    </article>`
-      )
-      .join("") + `<div class="col-filler"><span class="ticket-slot">${art.ticket}</span><i class="checker"></i></div>`;
+  // stacked topic cards, behind a collapsible toggle (collapsed by default —
+  // more room for the notes; the open/closed state is remembered per visitor)
+  const cardsOpen = (() => {
+    try { return localStorage.getItem("sd_cards_open") === "1"; } catch { return false; }
+  })();
+  $("#cards").classList.toggle("cards-open", cardsOpen);
+  $("#cards").innerHTML = `
+    <button type="button" class="cards-toggle" id="cardsToggle" aria-expanded="${cardsOpen}" aria-controls="cardsList">
+      <span class="cards-toggle-text"><span class="cards-toggle-label">TOPIC SHORTCUTS</span><span class="cards-toggle-sub">${cardsOpen ? "tap to hide" : "tap to show the cards"}</span></span>
+      <span class="cards-toggle-arrow" aria-hidden="true">▸</span>
+    </button>
+    <div class="cards-list" id="cardsList">${
+      content.cards
+        .map(
+          (c, i) => `
+      <article class="card" data-term="${esc(c.term)}" style="--n:${i}">
+        <h3 class="card-title">${esc(c.title)}</h3>
+        <p class="card-sub">${esc(c.sub)}</p>
+        <div class="card-art" data-react>${art[c.art]}</div>
+        <div class="card-bar">
+          <span class="card-val"><b class="cnt" data-count="0">00</b><small>${esc(content.cardUnit)}</small></span>
+          <button type="button" class="go" data-term="${esc(c.term)}" aria-label="Filter notes for ${esc(c.title)}">${arrowBtn("")}</button>
+        </div>
+      </article>`
+        )
+        .join("") + `<div class="col-filler"><span class="ticket-slot">${art.ticket}</span><i class="checker"></i></div>`
+    }</div>`;
+
+  $("#cardsToggle").addEventListener("click", () => {
+    const open = !$("#cards").classList.contains("cards-open");
+    $("#cards").classList.toggle("cards-open", open);
+    $("#cardsToggle").setAttribute("aria-expanded", String(open));
+    $(".cards-toggle-sub").textContent = open ? "tap to hide" : "tap to show the cards";
+    try { localStorage.setItem("sd_cards_open", open ? "1" : "0"); } catch {}
+  });
 
   // three tier boxes
   $("#tiers").innerHTML = content.tiers

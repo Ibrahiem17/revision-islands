@@ -170,6 +170,24 @@ body.sd :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .col-main { display: flex; flex-direction: column; min-width: 0; border-right: var(--rule); }
 .col-cards { display: flex; flex-direction: column; min-width: 0; }
 
+/* topic-cards column: collapsed by default so the notes get the room —
+   click the toggle bar to reveal the cards */
+.cards-toggle { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; padding: 16px 18px; cursor: pointer; border-bottom: var(--rule); background: var(--paper2); transition: background .15s; }
+.cards-toggle:hover, .cards-toggle:focus-visible { background: var(--yellow); }
+.cards-toggle:focus-visible { outline: 3px dashed var(--ink); outline-offset: -6px; }
+.cards-toggle-text { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+.cards-toggle-label { font: 700 .82rem/1.1 var(--label); letter-spacing: .14em; text-transform: uppercase; }
+.cards-toggle-sub { font: 500 .68rem/1 var(--body); opacity: .75; }
+.cards-toggle-arrow { margin-left: auto; flex: none; width: 30px; height: 30px; display: grid; place-items: center; background: var(--yellow); border: 2px solid var(--ink); transition: transform .25s cubic-bezier(.3, 1.6, .5, 1), background .15s; }
+.cards-toggle:hover .cards-toggle-arrow, .cards-toggle:focus-visible .cards-toggle-arrow { background: var(--paper2); }
+#cards.cards-open .cards-toggle-arrow { transform: rotate(90deg); }
+.cards-list { display: none; }
+#cards.cards-open .cards-list { display: flex; flex-direction: column; flex: 1; animation: cardsIn .3s cubic-bezier(.3, 1.2, .5, 1); }
+@keyframes cardsIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+body.rm #cards.cards-open .cards-list { animation: none; }
+/* while collapsed, let the notes column take the freed-up width */
+.board:has(#cards:not(.cards-open)) { grid-template-columns: minmax(0, 1fr) auto; }
+
 /* ---------- notes panel ---------- */
 .notes-panel { flex: 1; display: flex; flex-direction: column; }
 .panel-head { position: relative; padding: 26px 28px 0; }
