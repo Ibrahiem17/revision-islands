@@ -32,18 +32,6 @@
   <div id="content"></div>
 </div>
 
-<script src="../js/data.js"></script>
-<script src="../js/render.js"></script>
-<script src="../js/mascot.js"></script>
-<script>
-  Revision.renderPage("systemDesign", {
-    contentEl: document.getElementById("content"),
-    searchEl: document.getElementById("search"),
-    progressFillEl: document.getElementById("progress-fill"),
-    progressTextEl: document.getElementById("progress-text")
-  });
-
-  Mascot.init("systemDesign");
-</script>
+<script type="module" src="/src/topics/system-design.js"></script>
 </body>
 </html>

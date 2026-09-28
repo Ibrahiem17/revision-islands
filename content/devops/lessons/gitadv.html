@@ -1,0 +1,58 @@
+
+  <div class="section-title">🏛️ The .git Directory — What's Inside</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(251,191,36,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#fbbf24;font-weight:700;width:160px;">PATH</th><th style="text-align:left;padding:8px 12px;color:#fbbf24;font-weight:700;">WHAT IT STORES</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">.git/objects/</td><td style="padding:7px 12px;color:#94a3b8;">All commits, trees (directories), blobs (file versions) as SHA-1 hashed files. Every version of every file ever committed.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">.git/refs/</td><td style="padding:7px 12px;color:#94a3b8;">Branches and tags are just files containing a commit hash. <code style="color:#fbbf24;">refs/heads/main</code> = SHA of latest main commit.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">.git/HEAD</td><td style="padding:7px 12px;color:#94a3b8;">Points to current branch. Usually: <code>ref: refs/heads/main</code>. In detached state: direct commit hash.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">.git/index</td><td style="padding:7px 12px;color:#94a3b8;">The staging area. <code>git add</code> puts changes here. What Git compares against during <code>git status</code>.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">.git/config</td><td style="padding:7px 12px;color:#94a3b8;">Repo-level config: remote URLs, branch tracking, user settings.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">.git/hooks/</td><td style="padding:7px 12px;color:#94a3b8;">Scripts that run at Git events: pre-commit, commit-msg, pre-push, post-receive.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="section-title">🔍 git bisect — Binary Search for Bugs</div>
+  <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.15);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;margin-bottom:13px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#e2e8f0;">Problem:</strong> A bug exists. 500 commits could have introduced it.<br>
+    <strong style="color:#e2e8f0;">Solution:</strong> Mark "bad" commit + "good" commit. Git checks midpoint. You test. Git narrows down. Finds culprit in ~9 steps instead of 500.
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
+    <span style="color:#fbbf24;">git bisect start</span><br>
+    <span style="color:#fbbf24;">git bisect bad</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# current commit has bug</span><br>
+    <span style="color:#fbbf24;">git bisect good v2.1.0</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# v2.1.0 was clean</span><br>
+    <span style="color:#64748b;"># → Git checks out midpoint. You test.</span><br>
+    <span style="color:#fbbf24;">git bisect bad</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# still has bug</span><br>
+    <span style="color:#fbbf24;">git bisect good</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# no bug here</span><br>
+    <span style="color:#64748b;"># → Repeat until: "first bad commit is a3f9d2c"</span><br>
+    <span style="color:#fbbf24;">git bisect reset</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# end session</span>
+  </div>
+  <div class="section-title">🌿 Branching Strategies</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;font-size:13px;margin-bottom:8px;">Git Flow</div>
+      Main branches: <code style="color:#fbbf24;">main</code> + <code style="color:#fbbf24;">develop</code>. Supporting: <code>feature/</code>, <code>release/</code>, <code>hotfix/</code>.<br><br><strong style="color:#e2e8f0;">Good for:</strong> Scheduled releases, larger teams, versioned/packaged software.
+    </div>
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;font-size:13px;margin-bottom:8px;">Trunk-Based Development</div>
+      Single main branch. Short-lived feature branches (merged within hours). Feature flags hide incomplete work. Google/Netflix/Facebook model.<br><br><strong style="color:#e2e8f0;">Good for:</strong> Continuous deployment, SaaS products.
+    </div>
+  </div>
+  <div class="section-title">🆚 Git vs GitHub & Git vs SVN</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#38bdf8;font-weight:700;width:130px;text-align:left;">FEATURE</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;">GIT</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;">GITHUB / SVN</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">GitHub</td><td style="padding:7px 12px;color:#94a3b8;">Installed locally, works offline</td><td style="padding:7px 12px;color:#94a3b8;">Cloud platform for hosting Git repos. Needs internet.</td></tr>
+        <tr><td style="padding:7px 12px;color:#e2e8f0;">vs SVN</td><td style="padding:7px 12px;color:#94a3b8;">Distributed: full history on every machine. Fast branches. No single point of failure.</td><td style="padding:7px 12px;color:#94a3b8;">Centralized: history only on server. Slow branches. Server dies = history gone.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="section-title">⚙️ Configuration Management (Ansible)</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));">
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">Playbook</span><span class="cmd-tag">YAML config</span></div><div class="cmd-desc">YAML file declaring desired state across servers. "Nginx should be installed and running. User deploy_bot should exist."</div></div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">Inventory</span><span class="cmd-tag">target list</span></div><div class="cmd-desc">File listing servers Ansible should manage. Group them: [web], [db]. Run playbooks against specific groups.</div></div>
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">Idempotent</span><span class="cmd-tag">safe to repeat</span></div><div class="cmd-desc">Run the same playbook 10 times = same result as once. If Nginx is already installed, Ansible skips it.</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">Agentless</span><span class="cmd-tag">SSH only</span></div><div class="cmd-desc">No agent to install. Connects via SSH, runs tasks, disconnects. Works with any server that has Python + SSH.</div></div>
+  </div>

@@ -1,0 +1,92 @@
+
+
+  <div class="section-title">🔐 Docker Security Best Practices</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#f43f5e;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#f43f5e;background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.2);">Run as non-root</span><span class="cmd-tag">critical</span></div>
+      <div class="cmd-desc">Default: containers run as root. If the container is compromised, the attacker has root on the host. Always add a <code>USER</code> instruction in your Dockerfile.</div>
+      <div class="cmd-ex">RUN adduser --disabled-password appuser
+USER appuser</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#f43f5e;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#f43f5e;background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.2);">Use specific tags</span><span class="cmd-tag">critical</span></div>
+      <div class="cmd-desc">Never use <code>FROM node:latest</code> in production. A new "latest" push can break your build silently. Pin exact versions: <code>FROM node:18.17.1-alpine3.18</code> for reproducible, auditable builds.</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#eab308;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">.dockerignore</span><span class="cmd-tag">important</span></div>
+      <div class="cmd-desc">Exclude files from the Docker build context: <code>node_modules</code>, <code>.git</code>, <code>.env</code>, test files, docs. Smaller build context = faster builds + no accidental secret inclusion.</div>
+      <div class="cmd-ex">.git
+node_modules
+.env
+*.test.js
+README.md</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#eab308;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">Scan images</span><span class="cmd-tag">important</span></div>
+      <div class="cmd-desc">Use <code>docker scout cves myapp:latest</code> or Trivy/Snyk to scan images for CVEs (known vulnerabilities). Run in CI — block deploys if critical vulns are found.</div>
+      <div class="cmd-ex">$ trivy image myapp:v2.0
+$ docker scout cves myapp:latest</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#22c55e;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">Resource limits</span><span class="cmd-tag">good practice</span></div>
+      <div class="cmd-desc">Without limits, one container can consume all host resources and starve others. Set memory and CPU limits on every container in production.</div>
+      <div class="cmd-ex">$ docker run --memory="512m" --cpus="0.5" myapp
+# K8s: resources.limits.memory: 512Mi</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#22c55e;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">Distroless images</span><span class="cmd-tag">good practice</span></div>
+      <div class="cmd-desc">Images with no shell, no package manager, no OS utilities — only your app + its runtime. Dramatically smaller attack surface. Google Distroless, Alpine, scratch. Use in final stage of multi-stage builds.</div>
+    </div>
+  </div>
+
+  <div class="section-title">🏥 Docker HEALTHCHECK</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.9;overflow-x:auto;">
+    <span style="color:#64748b;"># In Dockerfile — Docker monitors container health</span><br>
+    <span style="color:#38bdf8;">HEALTHCHECK</span> <span style="color:#e2e8f0;">--interval=30s --timeout=5s --retries=3</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">CMD</span> <span style="color:#fbbf24;">curl -f http://localhost:3000/health || exit 1</span><br><br>
+    <span style="color:#64748b;"># Docker marks container: healthy / unhealthy / starting</span><br>
+    <span style="color:#fbbf24;">docker ps</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# shows (healthy) or (unhealthy) status</span><br>
+    <span style="color:#fbbf24;">docker inspect --format='{{json .State.Health}}' &lt;id&gt;</span>
+  </div>
+
+  <div class="section-title">📦 ARG vs ENV — Build vs Runtime</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:5px;">ARG — Build-time only</div>
+      Available only during <code>docker build</code>. NOT in the running container. Pass with <code>--build-arg</code>.<br><br>Use for: build-time configs (Node version, build flags). <strong>Not for secrets</strong> — ARG values are visible in image history.
+      <div class="cmd-ex">ARG NODE_VERSION=18
+FROM node:${NODE_VERSION}</div>
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:5px;">ENV — Runtime variable</div>
+      Available in the running container. Persists into the image. Set at build time, accessible at runtime.<br><br>Use for: <code>NODE_ENV=production</code>, app configs. Override at <code>docker run -e KEY=val</code>. <strong>Still not for secrets</strong> — use secrets manager.
+    </div>
+  </div>
+
+  <div class="section-title">🌐 Docker Networking Deep Dive</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
+    <span style="color:#64748b;"># Create a custom network — containers communicate by name</span><br>
+    <span style="color:#fbbf24;">docker network create mynet</span><br>
+    <span style="color:#fbbf24;">docker run --network mynet --name db postgres</span><br>
+    <span style="color:#fbbf24;">docker run --network mynet --name app myapp</span><br>
+    <span style="color:#64748b;"># app container can reach db with hostname "db"</span><br><br>
+    <span style="color:#64748b;"># Port mapping: host:container</span><br>
+    <span style="color:#fbbf24;">docker run -p 8080:3000 myapp</span><span style="color:#475569;"> &nbsp;&nbsp;# host:8080 → container:3000</span><br>
+    <span style="color:#fbbf24;">docker run -p 127.0.0.1:8080:3000 myapp</span><span style="color:#475569;"> # bind only to localhost</span>
+  </div>
+
+  <div class="section-title">📋 Container Logging</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;width:160px;">DRIVER</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;">WHERE LOGS GO</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">json-file (default)</td><td style="padding:7px 12px;color:#94a3b8;">JSON files on the host. Accessible via <code>docker logs</code>. Can fill disk if not rotated.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">awslogs</td><td style="padding:7px 12px;color:#94a3b8;">Ships directly to AWS CloudWatch Logs. Standard for ECS tasks.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">fluentd</td><td style="padding:7px 12px;color:#94a3b8;">Ships to Fluentd/Fluent Bit → ELK or any aggregator. Standard for K8s.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:4px;padding:10px;margin-bottom:20px;font-size:11px;color:#94a3b8;">
+    💡 <strong style="color:#38bdf8;">12-Factor principle:</strong> Treat logs as streams. Apps should write to stdout/stderr. The container runtime or an agent collects and ships them. Never write log files inside a container.
+  </div>
+

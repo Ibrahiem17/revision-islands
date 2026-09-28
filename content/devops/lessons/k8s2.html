@@ -1,0 +1,76 @@
+
+
+  <div class="section-title">📦 More Kubernetes Objects</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(129,140,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;width:140px;">OBJECT</th><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;">WHAT IT DOES</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">DaemonSet</td><td style="padding:7px 12px;color:#94a3b8;">Ensures one pod runs on <em>every</em> node. Used for cluster-wide agents: log collectors (Fluentd), monitoring agents (Prometheus node-exporter), network plugins (CNI). New node added → DaemonSet pod automatically scheduled on it.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Job</td><td style="padding:7px 12px;color:#94a3b8;">Runs a pod to completion — not continuously. Once the pod succeeds (exit 0), the Job is done. Use for: database migrations, batch data processing, one-off scripts.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">CronJob</td><td style="padding:7px 12px;color:#94a3b8;">Creates Jobs on a cron schedule. Like Linux cron but in Kubernetes. Use for: nightly DB backups, periodic cleanup, scheduled reports.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">NetworkPolicy</td><td style="padding:7px 12px;color:#94a3b8;">Firewall rules for pod-to-pod traffic. By default, all pods can talk to all pods. NetworkPolicy restricts this. "Only the API pods can reach the DB pods." Requires a CNI plugin that supports it (Calico, Cilium).</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">PodDisruptionBudget</td><td style="padding:7px 12px;color:#94a3b8;">Guarantees minimum available pods during voluntary disruptions (node drain, cluster upgrade). "At least 2 replicas must stay running during maintenance." Prevents downtime during K8s upgrades.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">ResourceQuota</td><td style="padding:7px 12px;color:#94a3b8;">Limits total resources (CPU, memory, pod count) consumed by all pods in a namespace. Prevents one team's workload from starving another's in a shared cluster.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">📏 Resource Requests vs Limits</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:5px;">requests</div>
+      The <strong style="color:#e2e8f0;">minimum guaranteed</strong> resources. The Scheduler uses this to decide which node the pod goes on. "I need at least 250m CPU and 256Mi RAM to run."
+    </div>
+    <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:5px;">limits</div>
+      The <strong style="color:#e2e8f0;">hard maximum</strong>. If the container exceeds the memory limit → <strong>OOMKilled</strong>. If it exceeds CPU limit → throttled (slowed down, not killed). Always set both.
+    </div>
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.9;">
+    <span style="color:#38bdf8;">resources</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">requests</span><span style="color:#e2e8f0;">: { cpu: "250m", memory: "256Mi" }</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">limits</span><span style="color:#e2e8f0;">: &nbsp;&nbsp;{ cpu: "500m", memory: "512Mi" }</span>
+  </div>
+
+  <div class="section-title">🏷️ Taints & Tolerations + Node Affinity</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:6px;">Taints & Tolerations</div>
+      <strong style="color:#e2e8f0;">Taint</strong> a node = "repel all pods unless they tolerate this." Use to dedicate nodes: "only GPU workloads on GPU nodes."<br><br>
+      <code style="color:#fbbf24;">kubectl taint nodes gpu-node gpu=true:NoSchedule</code><br>
+      Add a matching <strong>toleration</strong> to the pod spec to allow it on that node.
+    </div>
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:6px;">Node Affinity</div>
+      <strong style="color:#e2e8f0;">Pull pods toward certain nodes</strong> (vs taints which push pods away). Use to place pods on specific node types (SSD nodes, spot nodes, high-memory nodes) based on node labels.<br><br>
+      <code style="color:#fbbf24;">requiredDuringScheduling...</code> = hard rule.<br>
+      <code style="color:#fbbf24;">preferredDuringScheduling...</code> = soft preference.
+    </div>
+  </div>
+
+  <div class="section-title">🔄 Init Containers & Sidecar Containers</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.2);border-left:3px solid #a855f7;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#a855f7;margin-bottom:5px;">Init Containers</div>
+      Run to completion <strong style="color:#e2e8f0;">before the main container starts</strong>. Used for: waiting for a DB to be ready, downloading config files, running DB migrations. If init container fails → main container never starts.
+    </div>
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:5px;">Sidecar Containers</div>
+      Run <strong style="color:#e2e8f0;">alongside the main container</strong> in the same pod. Shared network and storage. Used for: log shippers (Fluent Bit), service mesh proxies (Envoy/Istio), secret injection.
+    </div>
+  </div>
+
+  <div class="section-title">⌨️ More Essential kubectl</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2;overflow-x:auto;">
+    <span style="color:#fbbf24;">kubectl top pods -n production</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# live CPU/memory usage per pod</span><br>
+    <span style="color:#fbbf24;">kubectl top nodes</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# live CPU/memory usage per node</span><br>
+    <span style="color:#fbbf24;">kubectl get events --sort-by=.lastTimestamp</span> <span style="color:#475569;"># recent cluster events</span><br>
+    <span style="color:#fbbf24;">kubectl drain &lt;node&gt; --ignore-daemonsets</span> <span style="color:#475569;"># evict all pods from node (maintenance)</span><br>
+    <span style="color:#fbbf24;">kubectl cordon &lt;node&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# mark node unschedulable (no new pods)</span><br>
+    <span style="color:#fbbf24;">kubectl uncordon &lt;node&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# re-enable scheduling</span><br>
+    <span style="color:#fbbf24;">kubectl get pod &lt;name&gt; -o yaml</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# full YAML of running pod</span><br>
+    <span style="color:#fbbf24;">kubectl edit deployment myapp</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# live-edit (opens vim, saves = applies)</span><br>
+    <span style="color:#fbbf24;">kubectl diff -f deploy.yaml</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# preview changes before apply</span><br>
+    <span style="color:#fbbf24;">kubectl rollout history deploy/myapp</span><span style="color:#475569;"> &nbsp;&nbsp;# list all revisions</span>
+  </div>
+

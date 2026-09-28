@@ -1,0 +1,595 @@
+
+
+  <details class="found-details">
+    <summary>🧱 Foundation for Networking</summary>
+    <div class="found-body">
+
+      <div class="found-p">Before OSI layers and TCP handshakes — let's build this from true zero: what networking actually is, the complete journey a request takes when someone uses your app, the real commands you'll type, and what a DevOps engineer actually spends their day doing with all of this.</div>
+
+      <div class="found-h" style="font-size:14px;">Networking — Complete Foundation for DevOps</div>
+
+      <div class="found-sub">1. First: What even is "networking"?</div>
+      <div class="found-p">Two computers that want to talk to each other need a way to send information back and forth. That's it — that's the whole idea. "Networking" is just the set of rules and infrastructure that lets that happen reliably, at scale, across the entire planet.</div>
+      <div class="found-pre">Computer A 💻 ── wants to send data ──→ Computer B 🖥️</div>
+      <div class="found-p">Everything else — IP addresses, ports, DNS, firewalls, load balancers — exists to answer one of three questions: <em>who are you talking to, how do you find them, and are they allowed to talk to you?</em></div>
+
+      <div class="found-sub">2. Why does DevOps even need to know this?</div>
+      <div class="found-p">Because every single thing DevOps builds — servers, containers, Kubernetes pods, load balancers, databases — is genuinely useless if it can't talk to the things it needs to talk to.</div>
+      <div class="found-p">You can write flawless application code, have a perfect CI/CD pipeline, and a beautifully automated deploy — and the app can still be completely unreachable because one security group rule blocks port 443, or one DNS record points at the wrong IP.</div>
+      <div class="found-key">🔑 The uncomfortable truth: most real production incidents aren't "the code is broken." They're "the code is fine, but something in the network between the user and the code is broken." That's exactly why DevOps engineers need to actually understand this, not just memorize command names.</div>
+
+      <div class="found-sub">3. The complete flow — what actually happens when someone visits your website</div>
+      <div class="found-p">This is the single most important mental model in this whole section. Walk through it slowly:</div>
+      <div class="found-pre">User types: myapp.com
+        │
+        ↓
+   DNS Lookup 🌍
+   "What's the IP address for myapp.com?"
+        │
+        ↓
+   Answer: 203.0.113.10
+        │
+        ↓
+   Browser connects to 203.0.113.10 on port 443 (HTTPS)
+        │
+        ↓
+┌───────────────────────┐
+│    Load Balancer       │  ← spreads traffic across servers
+└───────────┬─────────────┘
+            │
+            ↓
+   Security Group / Firewall
+   "Is port 443 allowed in? ✅"
+            │
+            ↓
+┌───────────────────────┐
+│   App Server (EC2/Pod) │
+└───────────┬─────────────┘
+            │
+            ↓
+   Application code runs
+            │
+            ↓
+   Needs data? → Database (private, internal network only)
+            │
+            ↓
+   Response flows back through the exact same path
+            │
+            ↓
+   User sees the website 🎉</div>
+      <div class="found-p">Every single arrow in that diagram is something a DevOps engineer configures, monitors, and eventually has to debug. That's the whole job, condensed into one picture.</div>
+
+      <div class="found-sub">4. IP addresses — the foundation of "who"</div>
+      <div class="found-p">Every device on a network gets an IP address so other devices can find it.</div>
+      <div class="found-pre">House address
+     ↓
+123 Main Street
+
+Server address
+     ↓
+203.0.113.10</div>
+      <div class="found-p">In DevOps, you'll deal with two very different kinds:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Public IP</strong> — reachable from the internet. Your load balancer usually has one.<br><strong style="color:#e2e8f0;">Private IP</strong> — only reachable from inside the same private network (like <span class="found-code">10.0.1.5</span>). Your database almost always has only this — on purpose, so the internet can never reach it directly.</div>
+
+      <div class="found-sub">5. Ports — the apartment number at that address</div>
+      <div class="found-p">One server can run many different services at once. The IP gets you to the building; the port tells you which apartment.</div>
+      <div class="found-pre">203.0.113.10:22    → SSH
+203.0.113.10:80    → HTTP
+203.0.113.10:443   → HTTPS
+203.0.113.10:5432  → PostgreSQL</div>
+      <div class="found-p">This is exactly why a security group rule says something like "allow port 443 from anywhere" — it's not opening the whole server, just that one specific "apartment."</div>
+
+      <div class="found-sub">6. TCP vs UDP — two ways to send data</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">TCP</strong> — checks every packet arrived, in order, and resends anything lost. Slower, but reliable. Used for web traffic, SSH, databases — anywhere a dropped byte would actually break something.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">UDP</strong> — fires packets and doesn't look back. Faster, but nothing is guaranteed to arrive. Used for DNS lookups, video calls, live streaming — anywhere speed matters more than perfection.</div>
+
+      <div class="found-sub">7. DNS — the internet's phonebook</div>
+      <div class="found-p">Nobody wants to remember <span class="found-code">203.0.113.10</span>. DNS is the system that turns a name into that number.</div>
+      <div class="found-pre">myapp.com  ──DNS lookup──→  203.0.113.10</div>
+      <div class="found-p">In DevOps, you'll manage DNS records constantly — pointing a new subdomain at a load balancer, fixing a record that's pointing at a server you already decommissioned, or waiting out a TTL after changing one.</div>
+
+      <div class="found-sub">8. Firewalls & Security Groups — the bouncer at the door</div>
+      <div class="found-p">A firewall (or in AWS, a "Security Group") decides what traffic is allowed in or out, based on port and source IP.</div>
+      <div class="found-pre">Incoming traffic on port 443 from anywhere   → ✅ ALLOWED
+Incoming traffic on port 5432 from anywhere  → ❌ BLOCKED
+Incoming traffic on port 5432 from the app server only → ✅ ALLOWED</div>
+      <div class="found-p">This single idea — only open exactly the ports that need to be open, to exactly the sources that need them — is one of the most repeated concepts across every DevOps interview and every real production setup.</div>
+
+      <div class="found-sub">9. Load Balancers — spreading the traffic around</div>
+      <div class="found-p">Instead of one server handling every single user, a load balancer sits in front of several servers and spreads requests across them.</div>
+      <div class="found-pre">                ┌──→ Server 1
+User ──→ Load Balancer ──┼──→ Server 2
+                └──→ Server 3</div>
+      <div class="found-p">It also constantly health-checks each server — if one stops responding, the load balancer quietly stops sending it traffic until it recovers.</div>
+
+      <div class="found-sub">10. Commands you actually type</div>
+      <div class="found-p">Theory is nothing without the terminal. These are the commands you will genuinely reach for, in the order you'd actually reach for them during a real problem.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">ping — "is it even reachable at all?"</div>
+      <div class="found-pre">ping myapp.com</div>
+      <div class="found-pre">PING myapp.com (203.0.113.10): 56 data bytes
+64 bytes from 203.0.113.10: icmp_seq=0 time=12.4 ms
+64 bytes from 203.0.113.10: icmp_seq=1 time=11.9 ms</div>
+      <div class="found-p">If this fails, the problem is at a very basic network level — before you even get to whether the app itself works.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">curl -I — "is the actual web server responding?"</div>
+      <div class="found-pre">curl -I https://myapp.com</div>
+      <div class="found-pre">HTTP/1.1 200 OK
+Server: nginx
+Content-Type: text/html</div>
+      <div class="found-p"><span class="found-code">-I</span> means "just give me the headers" — quick way to check status without downloading the whole page.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">dig — "what IP does this domain actually resolve to?"</div>
+      <div class="found-pre">dig myapp.com</div>
+      <div class="found-pre">;; ANSWER SECTION:
+myapp.com.   300   IN   A   203.0.113.10</div>
+      <div class="found-p">Confirms whether DNS is pointing where you think it's pointing — one of the most common sources of "why is nobody reaching my new server" confusion.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">traceroute / mtr — "where along the way is it breaking?"</div>
+      <div class="found-pre">traceroute myapp.com</div>
+      <div class="found-pre"> 1  gateway (192.168.1.1)   1.1 ms
+ 2  isp-router               8.3 ms
+ 3  * * *  (timeout — this hop is the problem)
+ 4  203.0.113.10             40.2 ms</div>
+      <div class="found-p">Shows every hop between you and the server, so you can see exactly where the connection is slowing down or dropping.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">ss -tulpn — "what's actually listening on this server?"</div>
+      <div class="found-pre">ss -tulpn</div>
+      <div class="found-pre">Netid  Local Address:Port   Process
+tcp    0.0.0.0:443          nginx
+tcp    127.0.0.1:5432       postgres</div>
+      <div class="found-p">Notice <span class="found-code">127.0.0.1:5432</span> — that means Postgres only listens locally, unreachable from outside. Very common thing to check when something "should" be reachable but isn't.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">ip addr show — "what's my own IP address?"</div>
+      <div class="found-pre">ip addr show</div>
+      <div class="found-pre">eth0: 10.0.1.5/24</div>
+      <div class="found-p">The modern replacement for the older <span class="found-code">ifconfig</span> command — shows every network interface on the machine and its assigned IP.</div>
+
+      <div class="found-sub">11. What does a DevOps engineer actually DO with all of this, day to day?</div>
+      <div class="found-p">This is the part most tutorials skip. Here's what it actually looks like in a real job:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Opening exactly the right ports</strong> — a new service needs port 8080 reachable from the load balancer only, never from the whole internet. You write that security group rule.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Setting up load balancers and target groups</strong> — pointing a load balancer at a new set of servers, configuring its health check path so it knows when a server is actually broken.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Debugging "the site is down" incidents</strong> — this is where <span class="found-code">ping</span>, <span class="found-code">curl</span>, <span class="found-code">dig</span>, and <span class="found-code">traceroute</span> get used together, in order, to figure out exactly which layer actually broke.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Managing DNS records</strong> — adding a subdomain for a new service, fixing a record still pointing at a server that was already replaced.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Setting up private networking</strong> — making sure a database is only reachable from the app server's private IP, never from the public internet, using VPCs and subnets.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Debugging container/Kubernetes networking</strong> — two containers that should be able to reach each other, but can't, because they're not actually on the same network.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Monitoring latency and packet loss</strong> — noticing a slow creep in response times before it becomes a real outage, not after.</div>
+
+      <div class="found-sub">12. The full picture, one more time</div>
+      <div class="found-pre">                    INTERNET 🌍
+                        │
+                        ↓
+                  DNS: myapp.com → IP
+                        │
+                        ↓
+             ┌─────────────────────┐
+             │    Load Balancer     │
+             └──────────┬────────────┘
+                        │
+              Security Group checks port
+                        │
+                        ↓
+             ┌─────────────────────┐
+             │   App Servers        │
+             └──────────┬────────────┘
+                        │
+              Private network only
+                        │
+                        ↓
+             ┌─────────────────────┐
+             │    Database           │
+             └─────────────────────┘</div>
+      <div class="found-p">Every box is something you'll configure. Every arrow is something you'll eventually have to debug when it stops working.</div>
+
+      <div class="found-h">🧠 Networking cheat sheet</div>
+      <table class="found-table">
+        <thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>IP address</td><td>A machine's address on the network</td></tr>
+          <tr><td>Port</td><td>Which specific service on that machine you're reaching</td></tr>
+          <tr><td>TCP</td><td>Reliable, ordered delivery — web, SSH, databases</td></tr>
+          <tr><td>UDP</td><td>Fast, no delivery guarantee — DNS, video, streaming</td></tr>
+          <tr><td>DNS</td><td>Turns a domain name into an IP address</td></tr>
+          <tr><td>Security Group / Firewall</td><td>Decides what traffic is allowed in or out</td></tr>
+          <tr><td>Load Balancer</td><td>Spreads traffic across multiple servers</td></tr>
+          <tr><td>ping</td><td>Is this address even reachable</td></tr>
+          <tr><td>curl -I</td><td>Is the web server actually responding</td></tr>
+          <tr><td>dig</td><td>What IP does this domain resolve to</td></tr>
+          <tr><td>traceroute / mtr</td><td>Which hop along the way is broken</td></tr>
+          <tr><td>ss -tulpn</td><td>What's listening on this machine right now</td></tr>
+          <tr><td>ip addr show</td><td>What's this machine's own IP</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 Kid-friendly memory trick</div>
+      <div class="found-p">Think of visiting a website like mailing a letter:</div>
+      <div class="found-pre">Domain name (myapp.com)
+ ↓
+Like knowing someone's NAME
+
+DNS
+ ↓
+Like looking their name up in a PHONEBOOK to get their ADDRESS
+
+IP address
+ ↓
+The actual ADDRESS you mail it to
+
+Port
+ ↓
+The APARTMENT NUMBER at that address
+
+Firewall
+ ↓
+The BUILDING'S FRONT DESK deciding if your letter is allowed up</div>
+
+      <div class="found-key">🔑 Key takeaway<br><br>Every network problem in DevOps is really just one question, asked at a different layer: <em>"can this thing reach that thing, on the right port, and is it allowed to?"</em> Learn to ask that question one layer at a time — DNS, then IP, then port, then firewall, then app — and you can debug almost anything.</div>
+
+    </div>
+  </details>
+
+  <div class="analogy">
+    <div><div class="analogy-label">🌐 Networking for DevOps</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📦</span><div class="analogy-text"><strong>OSI Model</strong><br>7 layers of how data travels</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔌</span><div class="analogy-text"><strong>TCP vs UDP</strong><br>Reliable vs fast</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🌍</span><div class="analogy-text"><strong>DNS → HTTP → TLS</strong><br>How the web actually works</div></div>
+  </div>
+
+  <div class="section-title">📚 OSI Model — The 7 Layers</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#38bdf8;font-weight:700;width:40px;text-align:left;">#</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;width:130px;text-align:left;">LAYER</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;">WHAT IT DOES</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;width:160px;">DEVOPS RELEVANCE</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#f43f5e;font-weight:700;">7</td><td style="padding:7px 12px;color:#fbbf24;">Application</td><td style="padding:7px 12px;color:#94a3b8;">HTTP, HTTPS, DNS, SSH, FTP — what apps use</td><td style="padding:7px 12px;color:#64748b;">ALB, API endpoints, CDN</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#f97316;font-weight:700;">6</td><td style="padding:7px 12px;color:#fbbf24;">Presentation</td><td style="padding:7px 12px;color:#94a3b8;">Encryption/decryption, encoding (TLS/SSL)</td><td style="padding:7px 12px;color:#64748b;">TLS certificates, HTTPS</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#eab308;font-weight:700;">5</td><td style="padding:7px 12px;color:#fbbf24;">Session</td><td style="padding:7px 12px;color:#94a3b8;">Manages sessions between applications</td><td style="padding:7px 12px;color:#64748b;">Auth sessions, cookies</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#22c55e;font-weight:700;">4</td><td style="padding:7px 12px;color:#fbbf24;">Transport</td><td style="padding:7px 12px;color:#94a3b8;">TCP (reliable) and UDP (fast). Port numbers live here.</td><td style="padding:7px 12px;color:#64748b;">NLB, Security Groups, ports</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#38bdf8;font-weight:700;">3</td><td style="padding:7px 12px;color:#fbbf24;">Network</td><td style="padding:7px 12px;color:#94a3b8;">IP addressing and routing. How packets find their destination.</td><td style="padding:7px 12px;color:#64748b;">VPC, subnets, route tables, NAT</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#818cf8;font-weight:700;">2</td><td style="padding:7px 12px;color:#fbbf24;">Data Link</td><td style="padding:7px 12px;color:#94a3b8;">MAC addresses, switches, frames within a network</td><td style="padding:7px 12px;color:#64748b;">VLANs, network interfaces</td></tr>
+        <tr><td style="padding:7px 12px;color:#a855f7;font-weight:700;">1</td><td style="padding:7px 12px;color:#fbbf24;">Physical</td><td style="padding:7px 12px;color:#94a3b8;">Cables, hardware, electrical signals</td><td style="padding:7px 12px;color:#64748b;">AWS data centers (abstracted away)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:4px;padding:11px;margin-bottom:20px;font-size:11px;color:#94a3b8;">
+    <strong style="color:#38bdf8;">Memory trick:</strong> <strong style="color:#e2e8f0;">P</strong>lease <strong style="color:#e2e8f0;">D</strong>o <strong style="color:#e2e8f0;">N</strong>ot <strong style="color:#e2e8f0;">T</strong>hrow <strong style="color:#e2e8f0;">S</strong>ausage <strong style="color:#e2e8f0;">P</strong>izza <strong style="color:#e2e8f0;">A</strong>way (Physical, Data, Network, Transport, Session, Presentation, Application — bottom to top)
+  </div>
+
+  <div class="section-title">🔌 TCP vs UDP</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:6px;">🤝 TCP — Transmission Control Protocol</div>
+      <strong style="color:#e2e8f0;">Reliable, ordered, connection-based.</strong><br>3-way handshake: SYN → SYN-ACK → ACK.<br>Guarantees all packets arrive in order. Retransmits lost packets.<br>Slower but guaranteed delivery.<br><br><strong style="color:#e2e8f0;">Use for:</strong> HTTP/HTTPS, SSH, databases, anything that needs reliability.
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:6px;">💨 UDP — User Datagram Protocol</div>
+      <strong style="color:#e2e8f0;">Fast, connectionless, no guarantee.</strong><br>Fire and forget — sends packets without checking if they arrived.<br>No handshake, no retransmission. Lower latency.<br><br><strong style="color:#e2e8f0;">Use for:</strong> DNS lookups, video streaming, gaming, VoIP — where speed > reliability.
+    </div>
+  </div>
+
+  <div class="section-title">🔢 Essential Port Numbers</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(251,191,36,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#fbbf24;font-weight:700;text-align:left;width:80px;">PORT</th><th style="padding:8px 12px;color:#fbbf24;font-weight:700;text-align:left;width:100px;">PROTOCOL</th><th style="padding:8px 12px;color:#fbbf24;font-weight:700;text-align:left;">USED FOR</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">22</td><td style="padding:6px 12px;color:#e2e8f0;">SSH</td><td style="padding:6px 12px;color:#94a3b8;">Secure remote access to Linux servers. First port to lock down — only allow from known IPs.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">80</td><td style="padding:6px 12px;color:#e2e8f0;">HTTP</td><td style="padding:6px 12px;color:#94a3b8;">Unencrypted web traffic. In production, redirect to 443.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">443</td><td style="padding:6px 12px;color:#e2e8f0;">HTTPS</td><td style="padding:6px 12px;color:#94a3b8;">Encrypted web traffic (HTTP over TLS). All production web traffic.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">53</td><td style="padding:6px 12px;color:#e2e8f0;">DNS</td><td style="padding:6px 12px;color:#94a3b8;">Domain name resolution. UDP primarily, TCP for large responses.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">3306</td><td style="padding:6px 12px;color:#e2e8f0;">MySQL/MariaDB</td><td style="padding:6px 12px;color:#94a3b8;">MySQL database. Keep in private subnet — never expose to internet.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">5432</td><td style="padding:6px 12px;color:#e2e8f0;">PostgreSQL</td><td style="padding:6px 12px;color:#94a3b8;">PostgreSQL database. Allow only from app server security group.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">6379</td><td style="padding:6px 12px;color:#e2e8f0;">Redis</td><td style="padding:6px 12px;color:#94a3b8;">Redis cache/message broker.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">8080</td><td style="padding:6px 12px;color:#e2e8f0;">HTTP alt</td><td style="padding:6px 12px;color:#94a3b8;">Common alternative HTTP port for app servers (Jenkins, Tomcat).</td></tr>
+        <tr><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">2376/2377</td><td style="padding:6px 12px;color:#e2e8f0;">Docker</td><td style="padding:6px 12px;color:#94a3b8;">Docker daemon (2376) and Docker Swarm (2377).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🌍 DNS — How It Actually Works</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    When your browser looks up <code style="color:#fbbf24;">api.example.com</code>:<br><br>
+    <strong style="color:#e2e8f0;">1.</strong> Check browser cache → OS cache → <code>/etc/hosts</code><br>
+    <strong style="color:#e2e8f0;">2.</strong> Ask local DNS resolver (your ISP or 8.8.8.8)<br>
+    <strong style="color:#e2e8f0;">3.</strong> Resolver asks Root nameserver → gets .com TLD nameserver address<br>
+    <strong style="color:#e2e8f0;">4.</strong> Root NS → TLD NS (.com) → gets example.com's authoritative NS address<br>
+    <strong style="color:#e2e8f0;">5.</strong> Authoritative NS → returns the IP address for api.example.com<br>
+    <strong style="color:#e2e8f0;">6.</strong> Result cached at each level for the TTL duration<br><br>
+    <strong style="color:#fbbf24;">DNS record types:</strong><br>
+    <strong style="color:#e2e8f0;">A</strong> — domain → IPv4 address. <strong style="color:#e2e8f0;">AAAA</strong> — domain → IPv6. <strong style="color:#e2e8f0;">CNAME</strong> — alias from one domain to another. <strong style="color:#e2e8f0;">MX</strong> — mail server. <strong style="color:#e2e8f0;">TXT</strong> — arbitrary text (SPF, domain verification). <strong style="color:#e2e8f0;">NS</strong> — authoritative nameservers.
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2;overflow-x:auto;">
+    <span style="color:#fbbf24;">nslookup example.com</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# query DNS directly</span><br>
+    <span style="color:#fbbf24;">dig example.com A</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# detailed DNS lookup</span><br>
+    <span style="color:#fbbf24;">dig +trace example.com</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# trace full resolution path</span><br>
+    <span style="color:#fbbf24;">cat /etc/resolv.conf</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# which DNS server the OS uses</span>
+  </div>
+
+  <div class="section-title">🔒 HTTP vs HTTPS — TLS Handshake</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#e2e8f0;">HTTP</strong> — plaintext. Anyone between client and server can read everything. Never use for sensitive data.<br>
+    <strong style="color:#e2e8f0;">HTTPS</strong> — HTTP over TLS/SSL. Encrypted. The TLS handshake happens before any data is sent:<br><br>
+    <strong>1.</strong> Client says "hello" + supported cipher suites.<br>
+    <strong>2.</strong> Server sends its TLS certificate (contains public key + signed by a Certificate Authority).<br>
+    <strong>3.</strong> Client verifies certificate against trusted CAs (built into OS/browser).<br>
+    <strong>4.</strong> Session keys are negotiated using asymmetric encryption.<br>
+    <strong>5.</strong> From now on, all communication is encrypted with symmetric keys (fast).<br><br>
+    <strong style="color:#fbbf24;">DevOps relevance:</strong> SSL termination at the load balancer (ALB/Nginx) — backends use HTTP internally. Use Let's Encrypt or AWS Certificate Manager for free TLS certs.
+  </div>
+
+  <div class="section-title">🛜 Networking Commands Reference</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#64748b;"># ── CONNECTIVITY ──────────────────────────────</span><br>
+    <span style="color:#fbbf24;">ping -c 4 google.com</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# test reachability</span><br>
+    <span style="color:#fbbf24;">traceroute google.com</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# show every hop to destination</span><br>
+    <span style="color:#fbbf24;">nc -zv &lt;host&gt; &lt;port&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# test if port is open (refused or timeout)</span><br>
+    <span style="color:#fbbf24;">telnet &lt;host&gt; &lt;port&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# alternative port test</span><br>
+    <span style="color:#fbbf24;">curl -v https://api.example.com</span><span style="color:#475569;"> &nbsp;&nbsp;# full HTTP request with headers</span><br>
+    <span style="color:#fbbf24;">curl -I https://example.com</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# headers only (HEAD request)</span><br><br>
+    <span style="color:#64748b;"># ── PORTS & LISTENING ─────────────────────────</span><br>
+    <span style="color:#fbbf24;">ss -tlnp</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# what's listening on which ports</span><br>
+    <span style="color:#fbbf24;">netstat -tlnp</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# older equivalent</span><br>
+    <span style="color:#fbbf24;">lsof -i :80</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# which process owns port 80</span><br><br>
+    <span style="color:#64748b;"># ── INTERFACES & IPs ──────────────────────────</span><br>
+    <span style="color:#fbbf24;">ip addr show</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# all network interfaces + IPs</span><br>
+    <span style="color:#fbbf24;">ip route show</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# routing table</span><br>
+    <span style="color:#fbbf24;">hostname -I</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# server's IP addresses</span>
+  </div>
+
+  <div class="section-title">📡 HTTP Status Codes — The Essential Map</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#38bdf8;font-weight:700;width:80px;text-align:left;">CODE</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;">MEANING</th><th style="padding:8px 12px;color:#38bdf8;font-weight:700;text-align:left;">DEVOPS CONTEXT</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#22c55e;font-family:'JetBrains Mono',monospace;">200 OK</td><td style="padding:6px 12px;color:#94a3b8;">Request succeeded</td><td style="padding:6px 12px;color:#64748b;">Health check passing</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#22c55e;font-family:'JetBrains Mono',monospace;">201 Created</td><td style="padding:6px 12px;color:#94a3b8;">Resource created</td><td style="padding:6px 12px;color:#64748b;">POST API success</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#38bdf8;font-family:'JetBrains Mono',monospace;">301/302</td><td style="padding:6px 12px;color:#94a3b8;">Redirect (permanent/temporary)</td><td style="padding:6px 12px;color:#64748b;">HTTP → HTTPS redirect</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">400</td><td style="padding:6px 12px;color:#94a3b8;">Bad Request</td><td style="padding:6px 12px;color:#64748b;">Client sent malformed request</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">401</td><td style="padding:6px 12px;color:#94a3b8;">Unauthorized</td><td style="padding:6px 12px;color:#64748b;">Missing/invalid auth token</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">403</td><td style="padding:6px 12px;color:#94a3b8;">Forbidden</td><td style="padding:6px 12px;color:#64748b;">Auth valid but insufficient permissions (IAM deny)</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">404</td><td style="padding:6px 12px;color:#94a3b8;">Not Found</td><td style="padding:6px 12px;color:#64748b;">Wrong URL, missing route, or resource deleted</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#f43f5e;font-family:'JetBrains Mono',monospace;">500</td><td style="padding:6px 12px;color:#94a3b8;">Internal Server Error</td><td style="padding:6px 12px;color:#64748b;">App crashed — check application logs</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#f43f5e;font-family:'JetBrains Mono',monospace;">502</td><td style="padding:6px 12px;color:#94a3b8;">Bad Gateway</td><td style="padding:6px 12px;color:#64748b;">Proxy (Nginx/ALB) can't reach upstream — upstream is down</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:6px 12px;color:#f43f5e;font-family:'JetBrains Mono',monospace;">503</td><td style="padding:6px 12px;color:#94a3b8;">Service Unavailable</td><td style="padding:6px 12px;color:#64748b;">Server overloaded or in maintenance mode</td></tr>
+        <tr><td style="padding:6px 12px;color:#f43f5e;font-family:'JetBrains Mono',monospace;">504</td><td style="padding:6px 12px;color:#94a3b8;">Gateway Timeout</td><td style="padding:6px 12px;color:#64748b;">Proxy waited too long for upstream response — slow app or DB</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERACTIVE NETWORKING COMMAND SIMULATOR — same pattern as
+       the Linux for DevOps tab's terminal (reuses its .ld-term /
+       .ld-pill / .ld-info CSS, which is already global on this page).
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🖥️ Try It — Click Any Networking Command to "Run" It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same simulator as the Linux for DevOps tab, now for networking specifically — syntax first, then a real example, then output.</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">devops@server: ~</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> <span id="netCmd">click any command below</span></div>
+      <div class="pu-output" id="netOutput"><span class="dim">↳ output shows up here the moment you click something</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="netInfo">
+    <div><strong>🧩 Syntax:</strong> <code id="netSyntax">click a command below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="netDoes">Pick any command below to get started — every networking category a DevOps role touches is here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="netWhere">—</span></div>
+  </div>
+
+  <div class="ld-cat">🔌 Connectivity Testing</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('ping',this)">ping</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlHead',this)">curl -I</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlVerbose',this)">curl -v</button>
+    <button class="ld-pill" onclick="runNetworkCmd('wget',this)">wget</button>
+    <button class="ld-pill" onclick="runNetworkCmd('mtr',this)">mtr</button>
+    <button class="ld-pill" onclick="runNetworkCmd('telnet',this)">telnet</button>
+  </div>
+
+  <div class="ld-cat">🌍 DNS Tools</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('dig',this)">dig</button>
+    <button class="ld-pill" onclick="runNetworkCmd('digTrace',this)">dig +trace</button>
+    <button class="ld-pill" onclick="runNetworkCmd('nslookup',this)">nslookup</button>
+    <button class="ld-pill" onclick="runNetworkCmd('host',this)">host</button>
+    <button class="ld-pill" onclick="runNetworkCmd('resolvConf',this)">cat /etc/resolv.conf</button>
+    <button class="ld-pill" onclick="runNetworkCmd('etcHosts',this)">cat /etc/hosts</button>
+  </div>
+
+  <div class="ld-cat">🔍 Ports &amp; Listening</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('ssTulpn',this)">ss -tulpn</button>
+    <button class="ld-pill" onclick="runNetworkCmd('netstat',this)">netstat -tlnp</button>
+    <button class="ld-pill" onclick="runNetworkCmd('lsofPort',this)">lsof -i :port</button>
+    <button class="ld-pill" onclick="runNetworkCmd('ncZv',this)">nc -zv</button>
+    <button class="ld-pill" onclick="runNetworkCmd('ssS',this)">ss -s</button>
+  </div>
+
+  <div class="ld-cat">🖧 Interfaces &amp; Routing</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('ipAddr',this)">ip addr show</button>
+    <button class="ld-pill" onclick="runNetworkCmd('ipRoute',this)">ip route show</button>
+    <button class="ld-pill" onclick="runNetworkCmd('ipLink',this)">ip link show</button>
+    <button class="ld-pill" onclick="runNetworkCmd('hostnameI',this)">hostname -I</button>
+    <button class="ld-pill" onclick="runNetworkCmd('ifconfig',this)">ifconfig</button>
+    <button class="ld-pill" onclick="runNetworkCmd('routeN',this)">route -n</button>
+  </div>
+
+  <div class="ld-cat">🔒 TLS &amp; Certificates</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('opensslConnect',this)">openssl s_client</button>
+    <button class="ld-pill" onclick="runNetworkCmd('opensslX509',this)">openssl x509</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlVi',this)">curl -vI</button>
+  </div>
+
+  <div class="ld-cat">📡 Packet Capture &amp; Diagnosis</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('tcpdump',this)">tcpdump</button>
+    <button class="ld-pill" onclick="runNetworkCmd('traceroute',this)">traceroute</button>
+    <button class="ld-pill" onclick="runNetworkCmd('arp',this)">arp -a</button>
+  </div>
+
+  <div class="ld-cat">🔥 Firewall</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('iptablesL',this)">iptables -L -n</button>
+    <button class="ld-pill" onclick="runNetworkCmd('ufwStatus',this)">ufw status verbose</button>
+    <button class="ld-pill" onclick="runNetworkCmd('iptablesAdd',this)">iptables -A INPUT</button>
+  </div>
+
+  <div class="ld-cat">🌐 HTTP / API Testing</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetworkCmd('curlPost',this)">curl -X POST</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlHeader',this)">curl -H</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlL',this)">curl -L</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlOutput',this)">curl -o</button>
+    <button class="ld-pill" onclick="runNetworkCmd('curlResolve',this)">curl --resolve</button>
+    <button class="ld-pill" onclick="runNetworkCmd('nmapPort',this)">nmap -p</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       REAL SCENARIOS — problem first, command second. Same idea and
+       CSS (.scenario-card etc.) as the Linux for DevOps tab.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn Networking by Solving the Problem First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually run, then click ▶ Run to reveal the command and its real output.</div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> Your app can't reach the database. Is this a network problem, or is the app itself misconfigured?</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">nc -zv db.internal 5432</div>
+      <div class="pu-output"><span class="err">nc: connect to db.internal port 5432 (tcp) failed: Connection refused</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> "Connection refused" (not a timeout) proves the network path is fine but nothing is listening on that port yet — the problem is on the database side, not the network. A timeout instead would point to a firewall/security group blocking it.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> You just pointed your domain at a new server's IP, but visitors still land on the old server, hours later.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">dig example.com A</div>
+      <div class="pu-output">;; ANSWER SECTION:
+example.com.  <span class="warn">3542</span>  IN  A  <span class="err">203.0.113.9</span>  <span class="dim">← still the OLD IP</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> That number next to the IP is the remaining TTL in seconds — resolvers around the world are still serving the cached old answer until it expires. This isn't broken, it's DNS propagation working exactly as designed; a lower TTL set in advance would've made this faster.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> Your site's HTTPS certificate expires soon and you need to know exactly when, without waiting for a browser warning.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">curl -vI https://example.com 2>&1 | grep -i expire</div>
+      <div class="pu-output"><span class="warn">*  expire date: Sep 12 08:00:00 2026 GMT</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> curl's verbose TLS handshake output includes the certificate's expiry date directly — no need to open a browser or wait for a warning. Automate this check with a cron job and alert a week before expiry.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> A service works perfectly when you curl it from the same server, but every other server gets "connection refused."</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">ss -tulpn | grep 8080</div>
+      <div class="pu-output">tcp  LISTEN  0  128  <span class="err">127.0.0.1:8080</span>  0.0.0.0:*  users:(("node",pid=4821))</div>
+      <div class="scenario-why"><strong>Why this command:</strong> It's bound to <code>127.0.0.1</code> (localhost only), not <code>0.0.0.0</code> (all interfaces) — that's why it only answers requests originating from the same machine. This is one of the most common "works for me, not for anyone else" bugs.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> Users in Europe report the site feels sluggish, but your own tests from the US look completely fine.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">mtr example.com</div>
+      <div class="pu-output">HOST                    Loss%   Avg
+1. gateway                0.0%   0.8ms
+2. isp-edge-router        0.0%   4.2ms
+3. transit-hop-7          <span class="err">18.0%</span>  <span class="err">210ms</span>
+4. example-com-edge       0.0%  38ms</div>
+      <div class="scenario-why"><strong>Why this command:</strong> Unlike a one-shot traceroute, mtr keeps pinging every hop continuously and shows real packet loss per hop — hop 3 here is clearly the problem, likely a congested transit link along that specific regional path.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> Your load balancer keeps marking a healthy-looking server as unhealthy and pulling it out of rotation.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">curl -I http://localhost:3000/health</div>
+      <div class="pu-output"><span class="err">HTTP/1.1 500 Internal Server Error</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Reproduce exactly what the load balancer's health check does — hit the same endpoint yourself. A 500 here means the app itself is failing its own health check; the load balancer was actually right to pull it.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> A teammate says an API returns 401 Unauthorized for them, but works fine for you. You need to reproduce their exact request.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">curl -H "Authorization: Bearer &lt;their-token&gt;" https://api.example.com/me</div>
+      <div class="pu-output"><span class="err">HTTP/1.1 401 Unauthorized</span>
+{"error": "token expired"}</div>
+      <div class="scenario-why"><strong>Why this command:</strong> Reproducing their exact request with their exact token, from the command line, removes every other variable (their client code, their environment) and isolates the problem to the token itself — here, simply expired.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> You opened a port in your app's config, but external connections still can't reach it — and you've confirmed the app IS listening.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">sudo iptables -L -n | grep 8080</div>
+      <div class="pu-output"><span class="err">REJECT  tcp  --  0.0.0.0/0  0.0.0.0/0  tcp dpt:8080</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> The app listening and the OS allowing traffic to reach it are two completely separate things. A local firewall rule (or a cloud Security Group, same idea) can silently block a port even though the process itself is running fine.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       QUIZ — same reusable engine as Linux for DevOps / Shell Scripting.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎮 Test Yourself — Networking Quiz</div>
+  <div class="quiz-game" id="quiz-networking">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">🌐</div>
+      <div class="quiz-start-title">Networking Quiz</div>
+      <div class="quiz-start-desc">50 questions across the OSI model, TCP/UDP, DNS, ports, TLS, HTTP status codes, and every command and scenario above — shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-networking', NETWORKING_QUIZ_JOKES, NETWORKING_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
+      </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+    </div>
+
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-networking')">↻ Play Again</button>
+    </div>
+  </div>
+

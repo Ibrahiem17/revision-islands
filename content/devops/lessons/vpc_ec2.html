@@ -1,0 +1,584 @@
+
+
+
+<!-- ══ SECTION: VPC CONCEPTUAL ══ -->
+<div class="analogy">
+  <div><div class="analogy-label">🌐 The 3am Insight</div></div>
+  <div class="analogy-item"><span class="analogy-icon">💻</span><div class="analogy-text"><strong>Your Laptop</strong><br>sends a packet</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🚪</span><div class="analogy-text"><strong>Internet Gateway</strong><br>Layer 1: the front door</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🗺️</span><div class="analogy-text"><strong>Route Table</strong><br>Layer 2: the map</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🔒</span><div class="analogy-text"><strong>Security Group</strong><br>Layer 3: the bouncer</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🖥️</span><div class="analogy-text"><strong>Your EC2</strong><br>finally reached</div></div>
+</div>
+
+<!-- The 3am story -->
+<div class="section-title">🌑 The 3:00 AM Mindset — Why VPC Matters</div>
+<div class="narrative-block" style="--nb-color:#f43f5e;">
+  <p>To truly understand a VPC practically, you have to look at it the way a DevOps engineer does at <strong>3:00 AM when a server suddenly goes offline.</strong></p>
+  <p>When you launch a server in AWS and it cannot connect to the internet — or you cannot connect to it — <strong>99% of the time it is a VPC configuration issue.</strong></p>
+  <p>A VPC isn't just a container; it's a <strong>series of checkpoints</strong>. For a packet of data to travel from your laptop to your AWS server, it must successfully pass through three distinct layers of networking. <strong>Fail any one layer and traffic dies silently.</strong> No error message. Just timeout.</p>
+</div>
+
+<!-- 3 Layers -->
+<div class="section-title">🔗 The 3 Checkpoint Layers — Practical Breakdown</div>
+
+<div class="layer-card">
+  <div class="layer-card-head" style="background:rgba(249,115,22,0.06);">
+    <div class="layer-num" style="background:rgba(249,115,22,0.15);color:#f97316;">1</div>
+    <div>
+      <div class="layer-title" style="color:#f97316;">Internet Gateway (IGW) — The Front Door</div>
+    </div>
+    <span class="layer-subtitle">VPC → Internet</span>
+  </div>
+  <div class="layer-card-body">
+    By default, a VPC is <strong>completely sealed off from the outside world</strong>. It is a private island. If you want any server inside that VPC to talk to the internet, you must create an Internet Gateway and attach it to the VPC.<br><br>
+    <strong>What it does:</strong> Acts as the bridge between your VPC and the public internet. Without it, no traffic can flow in or out — regardless of any other setting.<br><br>
+    <strong>How to fix it:</strong> EC2 → VPC → Internet Gateways → Create → Attach to your VPC. Then your VPC has a door.<br><br>
+    <div class="analogy-inline">🏠 Practical equivalent: <strong style="color:#e2e8f0;margin-left:4px;">Plugging the modem into the wall of your house.</strong></div>
+  </div>
+</div>
+
+<div class="layer-card">
+  <div class="layer-card-head" style="background:rgba(56,189,248,0.06);">
+    <div class="layer-num" style="background:rgba(56,189,248,0.15);color:#38bdf8;">2</div>
+    <div>
+      <div class="layer-title" style="color:#38bdf8;">Route Table — The Map</div>
+    </div>
+    <span class="layer-subtitle">Subnet routing rules</span>
+  </div>
+  <div class="layer-card-body">
+    Just because the house has a modem doesn't mean your laptop knows how to use it. A Route Table is a <strong>literal list of rules attached to your Subnet</strong>. You have to explicitly add a rule that says: <em style="color:#fbbf24;">"If a packet is trying to go to the public internet (represented as <code>0.0.0.0/0</code>), send it to the Internet Gateway."</em><br><br>
+    <strong>What it does:</strong> Determines where traffic goes. Local traffic stays in the VPC. Internet-bound traffic must have a route to the IGW.<br><br>
+    <strong>How to fix it:</strong> VPC → Route Tables → Select your subnet's table → Routes → Add route: Destination <code>0.0.0.0/0</code>, Target = your IGW.<br><br>
+    <div class="analogy-inline">📶 Practical equivalent: <strong style="color:#e2e8f0;margin-left:4px;">Telling your devices the Wi-Fi password and router IP address.</strong></div>
+  </div>
+</div>
+
+<div class="layer-card">
+  <div class="layer-card-head" style="background:rgba(34,197,94,0.06);">
+    <div class="layer-num" style="background:rgba(34,197,94,0.15);color:#22c55e;">3</div>
+    <div>
+      <div class="layer-title" style="color:#22c55e;">Security Group (SG) — The Bouncer</div>
+    </div>
+    <span class="layer-subtitle">Per-instance firewall</span>
+  </div>
+  <div class="layer-card-body">
+    Even if traffic makes it into the VPC and knows where to go, every single EC2 server has a <strong>personal firewall wrapped around it</strong> called a Security Group. By default, Security Groups <strong>deny all incoming traffic</strong>. You must write a rule allowing specific traffic — like Port 80 for web traffic, or Port 22 for SSH.<br><br>
+    <strong>What it does:</strong> Controls exactly which ports and protocols can reach your specific instance. Stateful — if you allow inbound port 80, the response traffic is automatically allowed back out.<br><br>
+    <strong>How to fix it:</strong> EC2 → Security Groups → Inbound Rules → Add rule: Port 80, Source <code>0.0.0.0/0</code> for HTTP. Port 22 restricted to your IP only for SSH.<br><br>
+    <div class="analogy-inline">🔐 Practical equivalent: <strong style="color:#e2e8f0;margin-left:4px;">The lock on your specific bedroom door.</strong></div>
+  </div>
+</div>
+
+<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:4px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#94a3b8;line-height:1.8;">
+  <strong style="color:#fbbf24;">The 3am checklist when a server is unreachable:</strong><br>
+  ① Does the VPC have an <strong style="color:#e2e8f0;">Internet Gateway attached</strong>?<br>
+  ② Does the subnet's Route Table have a route <strong style="color:#e2e8f0;"><code>0.0.0.0/0 → IGW</code></strong>?<br>
+  ③ Does the Security Group have an <strong style="color:#e2e8f0;">inbound rule for the port you're trying to reach</strong>?<br>
+  ④ Does the EC2 instance have a <strong style="color:#e2e8f0;">public IP or Elastic IP assigned</strong>?<br>
+  If all four are yes and it still doesn't work — check your local firewall, or try <code>nc -zv IP PORT</code> to test port reachability.
+</div>
+
+<!-- ══ VPC SIMULATOR ══ -->
+<div class="section-title">🎮 The VPC Troubleshooting Simulator</div>
+<p style="font-size:11.5px;color:#64748b;margin-bottom:14px;line-height:1.7;">The server below is completely isolated. Toggle the three VPC layers and click "Send Traffic" to see exactly where packets get dropped and why.</p>
+
+<div class="sim-wrapper">
+  <div class="sim-header">
+    <span style="font-size:16px;">🌐</span>
+    <span class="sim-title">VPC Packet Journey Simulator</span>
+    <span class="sim-badge" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">Interactive</span>
+  </div>
+  <div class="sim-body">
+
+    <!-- Diagram -->
+    <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:4px;margin-bottom:20px;overflow-x:auto;">
+
+      <!-- Internet -->
+      <div class="vpc-component" id="vpc-node-internet">
+        <span class="vc-icon">🌍</span>
+        <span class="vc-name" style="color:#94a3b8;">Internet</span>
+        <span class="vc-status" style="color:#475569;">Your laptop</span>
+      </div>
+
+      <div class="vpc-arrow" id="vpc-arr-1">→</div>
+
+      <!-- IGW -->
+      <div class="vpc-component" id="vpc-node-igw">
+        <span class="vc-icon">🚪</span>
+        <span class="vc-name" style="color:#94a3b8;">IGW</span>
+        <span class="vc-status" id="vpc-igw-status" style="color:#475569;">not attached</span>
+      </div>
+
+      <div class="vpc-arrow" id="vpc-arr-2">→</div>
+
+      <!-- Route Table -->
+      <div class="vpc-component" id="vpc-node-rt">
+        <span class="vc-icon">🗺️</span>
+        <span class="vc-name" style="color:#94a3b8;">Route Table</span>
+        <span class="vc-status" id="vpc-rt-status" style="color:#475569;">no route</span>
+      </div>
+
+      <div class="vpc-arrow" id="vpc-arr-3">→</div>
+
+      <!-- Security Group -->
+      <div class="vpc-component" id="vpc-node-sg">
+        <span class="vc-icon">🔒</span>
+        <span class="vc-name" style="color:#94a3b8;">Security Group</span>
+        <span class="vc-status" id="vpc-sg-status" style="color:#475569;">deny all</span>
+      </div>
+
+      <div class="vpc-arrow" id="vpc-arr-4">→</div>
+
+      <!-- EC2 -->
+      <div class="vpc-component" id="vpc-node-ec2">
+        <span class="vc-icon">🖥️</span>
+        <span class="vc-name" style="color:#94a3b8;">EC2 Server</span>
+        <span class="vc-status" id="vpc-ec2-status" style="color:#475569;">unreachable</span>
+      </div>
+    </div>
+
+    <!-- Packet trail -->
+    <div class="packet-trail" id="vpc-packet-trail">
+      <span class="packet" id="vpc-packet">📦</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="vpc-controls">
+      <div class="vpc-toggle" onclick="vpcToggle('igw', this)">
+        <div class="vpc-toggle-info">
+          <span class="vpc-toggle-name" style="color:#f97316;">① Internet Gateway</span>
+          <span class="vpc-toggle-desc">Attach IGW to the VPC — opens the front door</span>
+        </div>
+        <div class="vpc-switch" id="vpc-sw-igw"></div>
+      </div>
+      <div class="vpc-toggle" onclick="vpcToggle('rt', this)">
+        <div class="vpc-toggle-info">
+          <span class="vpc-toggle-name" style="color:#38bdf8;">② Route Table Rule</span>
+          <span class="vpc-toggle-desc">Add route: 0.0.0.0/0 → IGW — gives traffic a map</span>
+        </div>
+        <div class="vpc-switch" id="vpc-sw-rt"></div>
+      </div>
+      <div class="vpc-toggle" onclick="vpcToggle('sg', this)">
+        <div class="vpc-toggle-info">
+          <span class="vpc-toggle-name" style="color:#22c55e;">③ Security Group Rule</span>
+          <span class="vpc-toggle-desc">Allow inbound Port 80 from 0.0.0.0/0 — opens the bouncer</span>
+        </div>
+        <div class="vpc-switch" id="vpc-sw-sg"></div>
+      </div>
+    </div>
+
+    <button class="send-btn" onclick="vpcSendTraffic()">📦 Send Traffic to Server</button>
+
+    <div class="vpc-result" id="vpc-result" style="display:none;margin-top:12px;"></div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var state = { igw: false, rt: false, sg: false };
+
+  window.vpcToggle = function(layer, el) {
+    state[layer] = !state[layer];
+    var sw = document.getElementById('vpc-sw-' + layer);
+    sw.classList.toggle('on', state[layer]);
+
+    var igwSt = document.getElementById('vpc-igw-status');
+    var rtSt  = document.getElementById('vpc-rt-status');
+    var sgSt  = document.getElementById('vpc-sg-status');
+    var ec2St = document.getElementById('vpc-ec2-status');
+
+    igwSt.textContent = state.igw ? 'attached ✓' : 'not attached';
+    igwSt.style.color = state.igw ? '#22c55e' : '#475569';
+    rtSt.textContent  = state.rt  ? '0.0.0.0/0 → IGW ✓' : 'no route';
+    rtSt.style.color  = state.rt  ? '#22c55e' : '#475569';
+    sgSt.textContent  = state.sg  ? 'port 80 open ✓' : 'deny all';
+    sgSt.style.color  = state.sg  ? '#22c55e' : '#475569';
+
+    var allOk = state.igw && state.rt && state.sg;
+    ec2St.textContent = allOk ? 'reachable ✓' : 'unreachable';
+    ec2St.style.color = allOk ? '#22c55e' : '#475569';
+  };
+
+  window.vpcSendTraffic = function() {
+    var result = document.getElementById('vpc-result');
+    var packet = document.getElementById('vpc-packet');
+    var trail  = document.getElementById('vpc-packet-trail');
+
+    // reset arrows
+    ['vpc-arr-1','vpc-arr-2','vpc-arr-3','vpc-arr-4'].forEach(function(id){
+      var el = document.getElementById(id);
+      el.classList.remove('active','blocked');
+      el.textContent = '→';
+    });
+    result.style.display = 'none';
+    packet.className = 'packet';
+    packet.style.left = '-30px';
+
+    setTimeout(function(){
+      if (!state.igw) {
+        // blocked at IGW
+        animatePacketStop('20%', function(){
+          document.getElementById('vpc-arr-1').classList.add('blocked');
+          document.getElementById('vpc-arr-1').textContent = '✕';
+          result.className = 'vpc-result fail';
+          result.innerHTML = '<strong style="color:#f43f5e;">❌ BLOCKED at Layer 1 — No Internet Gateway</strong><br><br>Your packet left your laptop and hit the VPC perimeter, but there\'s no front door. The VPC has no IGW attached, so the packet simply drops into the void.<br><br><strong style="color:#e2e8f0;">Fix:</strong> VPC → Internet Gateways → Create → Attach to this VPC.';
+          result.style.display = 'block';
+        });
+      } else if (!state.rt) {
+        // blocked at Route Table
+        document.getElementById('vpc-arr-1').classList.add('active');
+        animatePacketStop('42%', function(){
+          document.getElementById('vpc-arr-2').classList.add('blocked');
+          document.getElementById('vpc-arr-2').textContent = '✕';
+          result.className = 'vpc-result fail';
+          result.innerHTML = '<strong style="color:#f43f5e;">❌ BLOCKED at Layer 2 — No Route to Internet Gateway</strong><br><br>The IGW exists and your packet entered the VPC, but the Route Table has no rule pointing <code>0.0.0.0/0</code> to the IGW. The packet doesn\'t know where to go and is dropped.<br><br><strong style="color:#e2e8f0;">Fix:</strong> Route Tables → Select subnet\'s table → Routes → Add: <code>0.0.0.0/0</code> Target = IGW.';
+          result.style.display = 'block';
+        });
+      } else if (!state.sg) {
+        // blocked at SG
+        document.getElementById('vpc-arr-1').classList.add('active');
+        document.getElementById('vpc-arr-2').classList.add('active');
+        animatePacketStop('65%', function(){
+          document.getElementById('vpc-arr-3').classList.add('blocked');
+          document.getElementById('vpc-arr-3').textContent = '✕';
+          result.className = 'vpc-result fail';
+          result.innerHTML = '<strong style="color:#f43f5e;">❌ BLOCKED at Layer 3 — Security Group Denies Inbound</strong><br><br>Your packet made it through the IGW and was correctly routed — but the Security Group is the last bouncer, and it\'s blocking everything. Default SGs deny all inbound.<br><br><strong style="color:#e2e8f0;">Fix:</strong> Security Groups → Inbound Rules → Add: Type HTTP, Port 80, Source <code>0.0.0.0/0</code>.';
+          result.style.display = 'block';
+        });
+      } else {
+        // all clear!
+        document.getElementById('vpc-arr-1').classList.add('active');
+        document.getElementById('vpc-arr-2').classList.add('active');
+        document.getElementById('vpc-arr-3').classList.add('active');
+        animatePacketFull(function(){
+          document.getElementById('vpc-arr-4').classList.add('active');
+          result.className = 'vpc-result success';
+          result.innerHTML = '<strong style="color:#22c55e;">✅ SUCCESS — Packet reached the EC2 server!</strong><br><br>All three layers passed: IGW attached → Route table routes internet traffic to IGW → Security Group allows port 80 inbound. Your user\'s HTTP request reached the web server. This is exactly what a correctly configured public subnet looks like.';
+          result.style.display = 'block';
+        });
+      }
+    }, 50);
+  };
+
+  function animatePacketStop(stopPct, cb) {
+    var packet = document.getElementById('vpc-packet');
+    var trail  = document.getElementById('vpc-packet-trail');
+    var w = trail.offsetWidth;
+    var stopX = (parseFloat(stopPct)/100) * w;
+    packet.style.transition = 'left 0.8s ease-out, opacity 0.3s 0.7s';
+    packet.style.opacity = '1';
+    packet.style.left = '-30px';
+    setTimeout(function(){
+      packet.style.left = stopX + 'px';
+      setTimeout(function(){
+        packet.style.opacity = '0';
+        packet.style.transform = 'scale(1.5)';
+        setTimeout(function(){ packet.style.transition=''; packet.style.transform=''; cb && cb(); }, 400);
+      }, 800);
+    }, 10);
+  }
+
+  function animatePacketFull(cb) {
+    var packet = document.getElementById('vpc-packet');
+    var trail  = document.getElementById('vpc-packet-trail');
+    packet.style.opacity = '1';
+    packet.style.left = '-30px';
+    packet.style.transition = 'left 1.4s ease-in-out';
+    setTimeout(function(){
+      packet.style.left = (trail.offsetWidth + 30) + 'px';
+      setTimeout(function(){ cb && cb(); }, 1400);
+    }, 10);
+  }
+})();
+</script>
+
+<!-- ══════════════════════ EC2 SECTION ══════════════════════ -->
+<div class="section-title" style="margin-top:32px;">🖥️ EC2 — A Computer in an Amazon Warehouse</div>
+
+<div class="narrative-block" style="--nb-color:#fbbf24;">
+  <p>At its absolute simplest, <strong>EC2 (Elastic Compute Cloud) is just a computer sitting in an Amazon warehouse that you rent by the minute.</strong></p>
+  <p>When you strip away the fancy cloud terminology, launching an EC2 instance is no different than buying a blank Dell laptop, installing Linux on it, and plugging it into the wall.</p>
+  <p>However, how a regular person uses EC2 and how a DevOps engineer uses EC2 are two completely different things.</p>
+</div>
+
+<!-- Two ways comparison -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+  <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f43f5e;margin-bottom:10px;">😓 The Normal Way (Manual)</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.85;">
+      Go into AWS Console → click "Launch EC2" → select <code>t2.micro</code> → AWS gives you an IP and key → SSH in → type commands to install Docker → pull image → run it.<br><br>
+      <strong style="color:#f43f5e;">The problem:</strong> If the server crashes at 3:00 AM, your app is dead until you wake up, click "Launch" again, SSH back in, and type all those commands again. Not scalable. Not automatable. Not DevOps.
+    </div>
+  </div>
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:10px;">✅ The DevOps Way (User Data)</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.85;">
+      When you launch an EC2 instance, there is a hidden feature called <strong style="color:#e2e8f0;">User Data</strong> — a text box where you paste a Bash script.<br><br>
+      When the EC2 server boots for the first time, <strong style="color:#e2e8f0;">before you can even log in</strong>, it automatically runs every command in that script as the root user. Self-configuring, self-deploying, <strong style="color:#22c55e;">zero SSH required.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- User Data example -->
+<div class="section-title">📝 The User Data Script — Practical Code</div>
+<div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:4px;padding:10px 14px;margin-bottom:10px;font-size:11px;color:#64748b;line-height:1.7;">
+  If you were launching an EC2 instance for a Node.js app, this is exactly what your User Data script would look like — pasted into the "User Data" field before clicking Launch:
+</div>
+<pre style="background:rgba(0,0,0,0.5);border:1px solid #1e293b;border-radius:4px;padding:16px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:20px;overflow-x:auto;">#!/bin/bash
+# 1. Update the operating system
+yum update -y
+
+# 2. Install Docker
+yum install -y docker
+
+# 3. Start the Docker background service
+systemctl start docker
+systemctl enable docker
+
+# 4. Pull our application image and run it on Port 80
+docker run -d -p 80:3000 my-company/my-node-api:v1</pre>
+
+<div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:12px 16px;margin-bottom:28px;font-size:11px;color:#94a3b8;line-height:1.8;">
+  <strong style="color:#22c55e;">The DevOps milestone this achieves:</strong> You <strong style="color:#e2e8f0;">never have to SSH into the server.</strong> It boots up, configures itself, downloads your app, and starts serving traffic completely automatically. If the server dies, you just tell AWS to launch a new one with the exact same script. This is the foundation of immutable infrastructure.
+</div>
+
+<!-- ══ EC2 Boot Simulator ══ -->
+<div class="section-title">🚀 The EC2 Boot Simulator</div>
+<p style="font-size:11.5px;color:#64748b;margin-bottom:14px;line-height:1.7;">Launch an EC2 instance with and without a User Data script. Watch the boot sequence live and see the difference in final server state.</p>
+
+<div class="sim-wrapper">
+  <div class="sim-header">
+    <span style="font-size:16px;">🖥️</span>
+    <span class="sim-title">EC2 Boot Sequence Simulator</span>
+    <span class="sim-badge" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">Interactive</span>
+  </div>
+  <div class="sim-body">
+
+    <!-- Mode picker -->
+    <div class="ec2-tabs">
+      <button class="ec2-mode-btn active" id="ec2-btn-manual" onclick="setEc2Mode('manual')">😓 Manual (No User Data)</button>
+      <button class="ec2-mode-btn" id="ec2-btn-devops" onclick="setEc2Mode('devops')">✅ DevOps Way (User Data)</button>
+    </div>
+
+    <!-- User data editor (shown in devops mode) -->
+    <div id="ec2-ud-section" style="display:none;margin-bottom:12px;">
+      <div style="font-size:10px;color:#475569;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">User Data Script (runs on first boot as root):</div>
+      <textarea class="ud-editor" id="ec2-ud-content">#!/bin/bash
+yum update -y
+yum install -y docker
+systemctl start docker
+systemctl enable docker
+docker run -d -p 80:3000 my-company/my-node-api:v1</textarea>
+    </div>
+
+    <!-- Manual note -->
+    <div id="ec2-manual-note" style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-radius:4px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:#94a3b8;">
+      No User Data script. Server will boot bare — just a fresh OS. You will need to SSH in manually and run every setup command yourself.
+    </div>
+
+    <!-- Launch button + instance type -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="ec2-launch-btn" id="ec2-launch-btn" onclick="launchEc2()" style="background:#22c55e;color:#000;">⚡ Launch EC2 Instance</button>
+      <div style="font-size:10px;color:#475569;border:1px solid #1e293b;border-radius:3px;padding:4px 10px;font-family:'JetBrains Mono',monospace;">AMI: Amazon Linux 2 · t2.micro · us-east-1</div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="ec2-terminal" id="ec2-terminal">
+      <span style="color:#334155;font-size:10px;">// Click "Launch EC2 Instance" to start the boot sequence</span>
+    </div>
+
+    <!-- State cards -->
+    <div class="ec2-state" id="ec2-state" style="margin-top:14px;">
+      <div class="ec2-state-item" id="esi-os">
+        <span class="esi-icon">💿</span>
+        <span class="esi-label">OS</span>
+        <span class="esi-val" style="color:#475569;">—</span>
+      </div>
+      <div class="ec2-state-item" id="esi-docker">
+        <span class="esi-icon">🐳</span>
+        <span class="esi-label">Docker</span>
+        <span class="esi-val" style="color:#475569;">—</span>
+      </div>
+      <div class="ec2-state-item" id="esi-app">
+        <span class="esi-icon">📦</span>
+        <span class="esi-label">App Container</span>
+        <span class="esi-val" style="color:#475569;">—</span>
+      </div>
+      <div class="ec2-state-item" id="esi-port">
+        <span class="esi-icon">🌐</span>
+        <span class="esi-label">Port 80</span>
+        <span class="esi-val" style="color:#475569;">—</span>
+      </div>
+      <div class="ec2-state-item" id="esi-ssh">
+        <span class="esi-icon">🔑</span>
+        <span class="esi-label">SSH Required</span>
+        <span class="esi-val" style="color:#475569;">—</span>
+      </div>
+      <div class="ec2-state-item" id="esi-ready">
+        <span class="esi-icon">🚦</span>
+        <span class="esi-label">Serving Traffic</span>
+        <span class="esi-val" style="color:#475569;">—</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var mode = 'manual';
+  var running = false;
+
+  window.setEc2Mode = function(m) {
+    mode = m;
+    document.getElementById('ec2-btn-manual').classList.toggle('active', m==='manual');
+    document.getElementById('ec2-btn-devops').classList.toggle('active', m==='devops');
+    document.getElementById('ec2-ud-section').style.display   = m==='devops' ? 'block' : 'none';
+    document.getElementById('ec2-manual-note').style.display  = m==='manual' ? 'block' : 'none';
+    resetEc2();
+  };
+
+  function resetEc2() {
+    var term = document.getElementById('ec2-terminal');
+    term.innerHTML = '<span style="color:#334155;font-size:10px;">// Click "Launch EC2 Instance" to start the boot sequence</span>';
+    ['esi-os','esi-docker','esi-app','esi-port','esi-ssh','esi-ready'].forEach(function(id){
+      var el = document.getElementById(id);
+      el.className = 'ec2-state-item';
+      el.querySelector('.esi-val').textContent = '—';
+      el.querySelector('.esi-val').style.color = '#475569';
+    });
+    document.getElementById('ec2-launch-btn').disabled = false;
+    running = false;
+  }
+
+  function setCard(id, cls, val) {
+    var el = document.getElementById(id);
+    el.className = 'ec2-state-item ' + cls;
+    el.querySelector('.esi-val').textContent = val;
+  }
+
+  function addLine(term, cls, text, delay) {
+    return new Promise(function(res){
+      setTimeout(function(){
+        var span = document.createElement('span');
+        span.className = 't-line ' + cls;
+        span.innerHTML = text;
+        span.style.animationDelay = '0s';
+        term.appendChild(span);
+        term.scrollTop = term.scrollHeight;
+        res();
+      }, delay);
+    });
+  }
+
+  window.launchEc2 = function() {
+    if(running) return;
+    running = true;
+    document.getElementById('ec2-launch-btn').disabled = true;
+    var term = document.getElementById('ec2-terminal');
+    term.innerHTML = '';
+
+    var lines;
+    if (mode === 'manual') {
+      lines = [
+        {cls:'t-prompt', text:'[AWS] Launching EC2 instance t2.micro...', d:0},
+        {cls:'t-success', text:'[AWS] Instance i-0a3f8c22d91b4 launched ✓', d:600},
+        {cls:'t-prompt', text:'[EC2] Booting Amazon Linux 2...', d:1200},
+        {cls:'t-success', text:'[EC2] Kernel loaded. OS ready.', d:2200},
+        {cls:'t-warn', text:'[EC2] No User Data script found. Skipping automated setup.', d:2800},
+        {cls:'t-success', text:'[EC2] Boot complete. SSH is available.', d:3400},
+        {cls:'', text:'&nbsp;', d:3600},
+        {cls:'t-comment', text:'// Server is running bare Amazon Linux.', d:3700},
+        {cls:'t-comment', text:'// Docker: NOT installed', d:3900},
+        {cls:'t-comment', text:'// App: NOT running', d:4100},
+        {cls:'t-comment', text:'// Port 80: NOT listening', d:4300},
+        {cls:'t-comment', text:'// You must SSH in and configure everything manually.', d:4600},
+        {cls:'t-warn', text:'[YOU] $ ssh -i key.pem ec2-user@54.12.34.56', d:5200},
+        {cls:'t-warn', text:'[YOU] $ sudo yum install docker... (manual step 1 of many)', d:5700},
+      ];
+    } else {
+      lines = [
+        {cls:'t-prompt', text:'[AWS] Launching EC2 instance t2.micro...', d:0},
+        {cls:'t-success', text:'[AWS] Instance i-0b9e2d41f83c7 launched ✓', d:600},
+        {cls:'t-prompt', text:'[EC2] Booting Amazon Linux 2...', d:1200},
+        {cls:'t-success', text:'[EC2] Kernel loaded. OS ready.', d:2000},
+        {cls:'t-prompt', text:'[EC2] User Data script detected. Executing as root...', d:2400},
+        {cls:'t-comment', text:'# Step 1: yum update -y', d:2900},
+        {cls:'t-success', text:'[EC2] OS packages updated ✓', d:3600},
+        {cls:'t-comment', text:'# Step 2: yum install -y docker', d:4000},
+        {cls:'t-success', text:'[EC2] Docker 24.0.5 installed ✓', d:4700},
+        {cls:'t-comment', text:'# Step 3: systemctl start docker && systemctl enable docker', d:5100},
+        {cls:'t-success', text:'[EC2] Docker daemon started. Enabled on boot ✓', d:5700},
+        {cls:'t-comment', text:'# Step 4: docker run -d -p 80:3000 my-company/my-node-api:v1', d:6100},
+        {cls:'t-success', text:'[EC2] Pulling image my-company/my-node-api:v1...', d:6500},
+        {cls:'t-success', text:'[EC2] Container started. Port 80 → 3000 ✓', d:7300},
+        {cls:'', text:'&nbsp;', d:7600},
+        {cls:'t-success', text:'✅ Boot complete. App is live. No SSH ever needed.', d:7900},
+        {cls:'t-prompt', text:'[USER] curl http://54.12.34.56 → 200 OK 🎉', d:8400},
+      ];
+    }
+
+    var delays = {
+      manual: {os:2400, docker:null, app:null, port:null, ssh:'danger', ready:'danger'},
+      devops: {os:2000, docker:4800, app:7400, port:7400, ssh:'warn', ready:'active'}
+    };
+    var d = delays[mode];
+
+    lines.forEach(function(l){ addLine(term, l.cls, l.text, l.d); });
+
+    setTimeout(function(){ setCard('esi-os', 'active', 'Running'); }, d.os + 200);
+
+    if(mode==='devops'){
+      setTimeout(function(){ setCard('esi-docker', 'active', 'v24.0.5'); }, 4900);
+      setTimeout(function(){ setCard('esi-app', 'active', 'Running'); }, 7500);
+      setTimeout(function(){ setCard('esi-port', 'active', 'Listening'); }, 7500);
+      setTimeout(function(){ setCard('esi-ssh', 'warn', 'Not needed'); }, 7800);
+      setTimeout(function(){ setCard('esi-ready', 'active', 'YES ✓'); }, 8200);
+    } else {
+      setTimeout(function(){ setCard('esi-docker', 'danger', 'Not installed'); }, 3600);
+      setTimeout(function(){ setCard('esi-app', 'danger', 'Not running'); }, 3800);
+      setTimeout(function(){ setCard('esi-port', 'danger', 'Not listening'); }, 4000);
+      setTimeout(function(){ setCard('esi-ssh', 'danger', 'REQUIRED'); }, 4200);
+      setTimeout(function(){ setCard('esi-ready', 'danger', 'NO ✗'); }, 4400);
+    }
+  };
+})();
+</script>
+
+<!-- VPC Architecture summary -->
+<div class="section-title" style="margin-top:8px;">🏗️ Full VPC Architecture — Production Pattern</div>
+<pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:16px;font-size:10.5px;color:#94a3b8;line-height:1.9;margin-bottom:16px;overflow-x:auto;">AWS Account
+└── VPC (10.0.0.0/16)
+    │
+    ├── Internet Gateway ◄── attached to VPC
+    │
+    ├── Public Subnet A (10.0.1.0/24) — AZ-1
+    │   ├── Route Table: 0.0.0.0/0 → IGW  ◄── internet access
+    │   ├── ALB (Application Load Balancer)
+    │   └── NAT Gateway  ◄── lets private subnets reach internet (outbound only)
+    │
+    ├── Public Subnet B (10.0.2.0/24) — AZ-2  ◄── multi-AZ for HA
+    │   └── ALB (second AZ)
+    │
+    ├── Private Subnet A (10.0.10.0/24) — AZ-1
+    │   ├── Route Table: 0.0.0.0/0 → NAT GW  ◄── NO direct internet
+    │   └── EC2 App Servers (behind ALB)
+    │       └── Security Group: allow port 3000 from ALB SG only
+    │
+    ├── Private Subnet B (10.0.11.0/24) — AZ-2
+    │   └── EC2 App Servers (same)
+    │
+    └── Private Subnet DB (10.0.20.0/24)
+        └── RDS Postgres
+            └── Security Group: allow port 5432 from App SG only</pre>
+
+<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.8;">
+  <strong style="color:#38bdf8;">Interview gold:</strong> "Public subnets have a route to the IGW — private subnets don't. The NAT Gateway in the public subnet lets private EC2s reach the internet for updates without being exposed. Security Groups reference each other by ID — the database SG only allows traffic from the app SG, not from any IP. This means even if an attacker gets into the VPC, they can't reach the database directly."
+</div>
+

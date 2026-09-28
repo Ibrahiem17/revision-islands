@@ -1,0 +1,972 @@
+
+
+
+<!-- Quick nav -->
+<div class="aws-nav">
+  <a href="#aws-ec2">🖥️ EC2</a>
+  <a href="#aws-s3">🪣 S3</a>
+  <a href="#aws-iam">🔐 IAM</a>
+  <a href="#aws-vpc2">🌐 VPC</a>
+  <a href="#aws-rds">🗄️ RDS</a>
+  <a href="#aws-ecr">📦 ECR</a>
+  <a href="#aws-ecs">🐳 ECS</a>
+  <a href="#aws-lb">⚖️ ALB</a>
+  <a href="#aws-cw">📊 CloudWatch</a>
+  <a href="#aws-lambda">⚡ Lambda</a>
+  <a href="#aws-ssm">🔑 SSM</a>
+  <a href="#aws-route53">🌍 Route 53</a>
+</div>
+
+<!-- ═══════════ EC2 ═══════════ -->
+<div id="aws-ec2">
+<div class="aws-service-header" style="--ash-color:#f97316;">
+  <span class="ash-icon">🖥️</span>
+  <div><div class="ash-title">EC2 — Elastic Compute Cloud</div><div class="ash-sub">Virtual server in AWS. The foundation of everything.</div></div>
+  <span class="ash-tag">Compute</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#f97316;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Your team needs to host a Node.js API. You need a server that's publicly reachable, automatically starts your app on boot, and you can redeploy without touching it manually.</div>
+
+  <div class="real-world-label">Step-by-Step: Launch & Deploy to EC2</div>
+  <div class="step-flow">
+    <div class="step-row">
+      <div class="step-connector"><div class="step-num-circle" style="--step-c:#f97316;">1</div><div class="step-vline"></div></div>
+      <div class="step-content">
+        <div class="step-title" style="--step-c:#f97316;">Launch the instance (AWS Console)</div>
+        <div class="step-body">EC2 → Launch Instance → <strong>Ubuntu 22.04 LTS</strong> → <strong>t2.micro</strong> (free tier) → Key pair: create new → download <code>.pem</code>. Security group: allow SSH (22), HTTP (80), HTTPS (443).</div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-connector"><div class="step-num-circle" style="--step-c:#f97316;">2</div><div class="step-vline"></div></div>
+      <div class="step-content">
+        <div class="step-title" style="--step-c:#f97316;">SSH in and set up the server</div>
+        <div class="code-block">
+<span class="cb-comment"># Fix key permissions (required or SSH refuses it)</span>
+<span class="cb-cmd">chmod 400 my-key.pem</span>
+
+<span class="cb-comment"># Connect to the server</span>
+<span class="cb-cmd">ssh -i my-key.pem ubuntu@&lt;EC2_PUBLIC_IP&gt;</span>
+
+<span class="cb-comment"># On the server: update + install Docker</span>
+<span class="cb-cmd">sudo apt update && sudo apt install docker.io -y</span>
+<span class="cb-cmd">sudo systemctl enable docker && sudo systemctl start docker</span>
+<span class="cb-cmd">sudo usermod -aG docker $USER && newgrp docker</span></div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-connector"><div class="step-num-circle" style="--step-c:#f97316;">3</div><div class="step-vline"></div></div>
+      <div class="step-content">
+        <div class="step-title" style="--step-c:#f97316;">Deploy your app with --restart=always</div>
+        <div class="code-block">
+<span class="cb-comment"># Pull your image and run it</span>
+<span class="cb-cmd">docker pull ibrahiem/my-node-api:latest</span>
+<span class="cb-cmd">docker run -d \
+  -p 80:3000 \
+  --name api \
+  --restart=always \
+  -e NODE_ENV=production \
+  ibrahiem/my-node-api:latest</span>
+
+<span class="cb-comment"># Verify it's running</span>
+<span class="cb-cmd">docker ps</span>
+<span class="cb-cmd">curl http://localhost:80/health</span>
+
+<span class="cb-comment"># Test from outside</span>
+<span class="cb-cmd">curl http://&lt;EC2_PUBLIC_IP&gt;/health</span>
+<span class="cb-ok"># → {"status":"ok"}</span></div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-connector"><div class="step-num-circle" style="--step-c:#f97316;">4</div><div class="step-vline"></div></div>
+      <div class="step-content">
+        <div class="step-title" style="--step-c:#f97316;">The DevOps way: User Data (zero manual setup)</div>
+        <div class="step-body">Paste this in <strong>User Data</strong> when launching the EC2. Server auto-configures itself on first boot. You never SSH in.</div>
+        <div class="code-block">
+<span class="cb-cmd">#!/bin/bash</span>
+<span class="cb-comment"># This runs as root on first boot — before you can even log in</span>
+<span class="cb-cmd">apt update -y</span>
+<span class="cb-cmd">apt install docker.io -y</span>
+<span class="cb-cmd">systemctl start docker</span>
+<span class="cb-cmd">systemctl enable docker</span>
+<span class="cb-cmd">docker run -d -p 80:3000 --name api --restart=always \
+  ibrahiem/my-node-api:latest</span></div>
+      </div>
+    </div>
+    <div class="step-row">
+      <div class="step-connector"><div class="step-num-circle" style="--step-c:#f97316;">5</div><div class="step-vline"></div></div>
+      <div class="step-content">
+        <div class="step-title" style="--step-c:#f97316;">Redeploy new version (zero-downtime approach)</div>
+        <div class="code-block">
+<span class="cb-comment"># SSH in and update the container</span>
+<span class="cb-cmd">docker pull ibrahiem/my-node-api:v2</span>
+<span class="cb-cmd">docker stop api && docker rm api</span>
+<span class="cb-cmd">docker run -d -p 80:3000 --name api --restart=always \
+  ibrahiem/my-node-api:v2</span>
+
+<span class="cb-comment"># Or do it in one line from CI/CD (e.g. GitHub Actions / Jenkins)</span>
+<span class="cb-cmd">ssh ubuntu@EC2_IP 'docker pull ibrahiem/api:latest && \
+  docker stop api || true && docker rm api || true && \
+  docker run -d -p 80:3000 --name api --restart=always ibrahiem/api:latest'</span></div>
+        <div class="warn-inline"><strong>Pro tip:</strong> Add <code>--restart=always</code> so the container auto-restarts if it crashes or the EC2 reboots. Without it, a server restart = dead app until you manually start it again.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mini-grid">
+    <div class="mini-card"><strong>Instance Types</strong><code>t2.micro</code> = free tier dev. <code>t3.small</code> = light prod. <code>c5.large</code> = CPU heavy. <code>r5.large</code> = memory heavy. Always check cost.</div>
+    <div class="mini-card"><strong>Elastic IP</strong>EC2 public IP changes on stop/start. Attach an Elastic IP for a permanent IP. First one free per account.</div>
+    <div class="mini-card"><strong>EBS Volume</strong>EC2's hard drive. Persists after stop. Snapshots = backups. Can detach and attach to another instance.</div>
+    <div class="mini-card"><strong>AMI</strong>A snapshot of an EC2 state. Create AMI from your configured server → launch identical copies instantly. Faster than User Data for complex setups.</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ S3 ═══════════ -->
+<div id="aws-s3">
+<div class="aws-service-header" style="--ash-color:#22c55e;">
+  <span class="ash-icon">🪣</span>
+  <div><div class="ash-title">S3 — Simple Storage Service</div><div class="ash-sub">Infinitely scalable object storage. Files, backups, static sites, Terraform state.</div></div>
+  <span class="ash-tag">Storage</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#22c55e;">
+  <div class="scenario-box"><strong>Real-World Scenario 1:</strong> Host your React app's built files as a static website. No server needed.<br><strong>Real-World Scenario 2:</strong> Store Terraform state file so your whole team shares the same infrastructure state.</div>
+
+  <div class="real-world-label">Use Case A: Host a Static Website on S3</div>
+  <div class="code-block">
+<span class="cb-comment"># 1. Build your React/Next.js app</span>
+<span class="cb-cmd">npm run build</span>
+
+<span class="cb-comment"># 2. Create an S3 bucket (name must be globally unique)</span>
+<span class="cb-cmd">aws s3 mb s3://ibrahiem-portfolio-app</span>
+
+<span class="cb-comment"># 3. Enable static website hosting</span>
+<span class="cb-cmd">aws s3 website s3://ibrahiem-portfolio-app \
+  --index-document index.html \
+  --error-document index.html</span>
+
+<span class="cb-comment"># 4. Upload your build folder</span>
+<span class="cb-cmd">aws s3 sync ./dist s3://ibrahiem-portfolio-app/ --delete</span>
+
+<span class="cb-comment"># 5. Make bucket publicly readable (bucket policy)</span>
+<span class="cb-cmd">aws s3api put-bucket-policy --bucket ibrahiem-portfolio-app \
+  --policy '{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Effect":"Allow",
+      "Principal":"*",
+      "Action":"s3:GetObject",
+      "Resource":"arn:aws:s3:::ibrahiem-portfolio-app/*"
+    }]
+  }'</span>
+
+<span class="cb-comment"># Your site is now live at:</span>
+<span class="cb-ok"># http://ibrahiem-portfolio-app.s3-website-us-east-1.amazonaws.com</span></div>
+
+  <div class="real-world-label">Use Case B: Terraform Remote State in S3</div>
+  <div class="code-block">
+<span class="cb-comment"># 1. Create the state bucket + DynamoDB lock table</span>
+<span class="cb-cmd">aws s3 mb s3://ibrahiem-terraform-state --region us-east-1</span>
+<span class="cb-cmd">aws s3api put-bucket-versioning --bucket ibrahiem-terraform-state \
+  --versioning-configuration Status=Enabled</span>
+
+<span class="cb-cmd">aws dynamodb create-table \
+  --table-name terraform-locks \
+  --attribute-definitions AttributeName=LockID,AttributeType=S \
+  --key-schema AttributeName=LockID,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST</span>
+
+<span class="cb-comment"># 2. In your main.tf — add this backend block</span>
+<span class="cb-key">terraform</span> {
+  <span class="cb-key">backend</span> <span class="cb-val">"s3"</span> {
+    <span class="cb-key">bucket</span>         = <span class="cb-val">"ibrahiem-terraform-state"</span>
+    <span class="cb-key">key</span>            = <span class="cb-val">"prod/terraform.tfstate"</span>
+    <span class="cb-key">region</span>         = <span class="cb-val">"us-east-1"</span>
+    <span class="cb-key">dynamodb_table</span> = <span class="cb-val">"terraform-locks"</span>   <span class="cb-comment"># prevents simultaneous applies</span>
+    <span class="cb-key">encrypt</span>        = <span class="cb-val">true</span>
+  }
+}
+
+<span class="cb-comment"># 3. Init — Terraform now stores state in S3, not locally</span>
+<span class="cb-cmd">terraform init</span></div>
+
+  <div class="real-world-label">Use Case C: Store Build Artifacts from CI/CD</div>
+  <div class="code-block">
+<span class="cb-comment"># In your GitHub Actions / Jenkins pipeline:</span>
+<span class="cb-comment"># After a successful build, upload the artifact to S3</span>
+<span class="cb-cmd">aws s3 cp ./dist/app.tar.gz \
+  s3://ibrahiem-artifacts/builds/${BUILD_NUMBER}/app.tar.gz</span>
+
+<span class="cb-comment"># Later, on the EC2 during deploy:</span>
+<span class="cb-cmd">aws s3 cp s3://ibrahiem-artifacts/builds/47/app.tar.gz .</span>
+<span class="cb-cmd">tar -xzf app.tar.gz && pm2 restart all</span></div>
+
+  <div class="gotcha-box"><strong>Common gotcha:</strong> Forgetting <code>--delete</code> in <code>s3 sync</code>. Without it, old files from previous builds stay in the bucket — users may get stale cached assets. Always use <code>--delete</code> when syncing a fresh build.</div>
+</div>
+</div>
+
+<!-- ═══════════ IAM ═══════════ -->
+<div id="aws-iam">
+<div class="aws-service-header" style="--ash-color:#f43f5e;">
+  <span class="ash-icon">🔐</span>
+  <div><div class="ash-title">IAM — Identity and Access Management</div><div class="ash-sub">Who can do what in your AWS account. The most important security layer.</div></div>
+  <span class="ash-tag">Security</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#f43f5e;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Your EC2 needs to read from S3 and push to ECR. Your GitHub Actions needs to deploy to ECS. A new junior dev needs read-only access to view resources. None of these should have access keys hardcoded anywhere.</div>
+
+  <div class="real-world-label">Pattern 1: EC2 Instance Role (no access keys on server)</div>
+  <div class="code-block">
+<span class="cb-comment"># 1. Create an IAM Role that EC2 can assume</span>
+<span class="cb-cmd">aws iam create-role \
+  --role-name EC2-App-Role \
+  --assume-role-policy-document '{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Effect":"Allow",
+      "Principal":{"Service":"ec2.amazonaws.com"},
+      "Action":"sts:AssumeRole"
+    }]
+  }'</span>
+
+<span class="cb-comment"># 2. Attach policy — allow reading from a specific S3 bucket only</span>
+<span class="cb-cmd">aws iam put-role-policy \
+  --role-name EC2-App-Role \
+  --policy-name S3ReadPolicy \
+  --policy-document '{
+    "Version":"2012-10-17",
+    "Statement":[{
+      "Effect":"Allow",
+      "Action":["s3:GetObject","s3:ListBucket"],
+      "Resource":[
+        "arn:aws:s3:::ibrahiem-app-assets",
+        "arn:aws:s3:::ibrahiem-app-assets/*"
+      ]
+    }]
+  }'</span>
+
+<span class="cb-comment"># 3. Create instance profile and attach role</span>
+<span class="cb-cmd">aws iam create-instance-profile --instance-profile-name EC2-App-Profile</span>
+<span class="cb-cmd">aws iam add-role-to-instance-profile \
+  --instance-profile-name EC2-App-Profile --role-name EC2-App-Role</span>
+
+<span class="cb-comment"># 4. Attach to EC2 at launch time (or associate to running instance)</span>
+<span class="cb-cmd">aws ec2 associate-iam-instance-profile \
+  --instance-id i-1234567890 \
+  --iam-instance-profile Name=EC2-App-Profile</span>
+
+<span class="cb-comment"># Now on the EC2, run AWS CLI commands WITHOUT any access keys</span>
+<span class="cb-cmd">aws s3 ls s3://ibrahiem-app-assets  # ← works because of the role</span></div>
+
+  <div class="real-world-label">Pattern 2: GitHub Actions Deploy Role (OIDC — no long-lived keys)</div>
+  <div class="code-block">
+<span class="cb-comment"># In your GitHub Actions workflow.yml:</span>
+<span class="cb-key">permissions</span>:
+  <span class="cb-key">id-token</span>: <span class="cb-val">write</span>   <span class="cb-comment"># required for OIDC</span>
+  <span class="cb-key">contents</span>: <span class="cb-val">read</span>
+
+<span class="cb-key">steps</span>:
+  - <span class="cb-key">name</span>: <span class="cb-val">Configure AWS credentials (OIDC - no secret keys!)</span>
+    <span class="cb-key">uses</span>: <span class="cb-val">aws-actions/configure-aws-credentials@v4</span>
+    <span class="cb-key">with</span>:
+      <span class="cb-key">role-to-assume</span>: <span class="cb-val">arn:aws:iam::123456789:role/GitHub-Deploy-Role</span>
+      <span class="cb-key">aws-region</span>: <span class="cb-val">us-east-1</span>
+  <span class="cb-comment"># GitHub gets a temp token, assumes the role, no secrets needed</span>
+  - <span class="cb-key">run</span>: <span class="cb-val">aws s3 sync ./dist s3://my-bucket/</span></div>
+
+  <div class="real-world-label">Pattern 3: Create a Read-Only Dev User</div>
+  <div class="code-block">
+<span class="cb-comment"># Create user</span>
+<span class="cb-cmd">aws iam create-user --user-name ahmed-dev</span>
+
+<span class="cb-comment"># Attach AWS-managed ReadOnly policy</span>
+<span class="cb-cmd">aws iam attach-user-policy \
+  --user-name ahmed-dev \
+  --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess</span>
+
+<span class="cb-comment"># Create access keys for CLI use</span>
+<span class="cb-cmd">aws iam create-access-key --user-name ahmed-dev</span>
+<span class="cb-comment"># → Save the SecretAccessKey NOW — it's never shown again</span>
+
+<span class="cb-comment"># NEVER give users AdministratorAccess unless absolutely necessary</span>
+<span class="cb-comment"># Least privilege = only the permissions the role actually needs</span></div>
+
+  <div class="gotcha-box"><strong>Interview gold — say this:</strong> "I never put AWS access keys in code or .env files committed to Git. For EC2 I use instance roles. For CI/CD I use OIDC or service-specific IAM roles. Least privilege — every role only gets the specific actions on the specific resources it needs, nothing more."</div>
+</div>
+</div>
+
+<!-- ═══════════ VPC ═══════════ -->
+<div id="aws-vpc2">
+<div class="aws-service-header" style="--ash-color:#38bdf8;">
+  <span class="ash-icon">🌐</span>
+  <div><div class="ash-title">VPC — Virtual Private Cloud</div><div class="ash-sub">Your private, isolated network inside AWS. Everything runs inside one.</div></div>
+  <span class="ash-tag">Networking</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#38bdf8;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> You need a VPC with public subnets (for the load balancer) and private subnets (for EC2 app servers and RDS database). App servers must reach the internet for package updates but must NOT be directly reachable from the internet.</div>
+
+  <div class="real-world-label">Build a Production VPC with Terraform</div>
+  <div class="code-block">
+<span class="cb-comment"># vpc.tf — production-ready VPC</span>
+
+<span class="cb-section">### VPC ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_vpc" "main"</span> {
+  <span class="cb-key">cidr_block</span>           = <span class="cb-val">"10.0.0.0/16"</span>
+  <span class="cb-key">enable_dns_hostnames</span> = <span class="cb-val">true</span>
+  <span class="cb-key">tags</span> = { <span class="cb-key">Name</span> = <span class="cb-val">"prod-vpc"</span> }
+}
+
+<span class="cb-section">### PUBLIC SUBNETS (for ALB, NAT Gateway) ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_subnet" "public_a"</span> {
+  <span class="cb-key">vpc_id</span>            = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">cidr_block</span>        = <span class="cb-val">"10.0.1.0/24"</span>
+  <span class="cb-key">availability_zone</span> = <span class="cb-val">"us-east-1a"</span>
+  <span class="cb-key">map_public_ip_on_launch</span> = <span class="cb-val">true</span>
+}
+<span class="cb-key">resource</span> <span class="cb-val">"aws_subnet" "public_b"</span> {
+  <span class="cb-key">vpc_id</span>            = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">cidr_block</span>        = <span class="cb-val">"10.0.2.0/24"</span>
+  <span class="cb-key">availability_zone</span> = <span class="cb-val">"us-east-1b"</span>
+  <span class="cb-key">map_public_ip_on_launch</span> = <span class="cb-val">true</span>
+}
+
+<span class="cb-section">### PRIVATE SUBNETS (for EC2 app servers) ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_subnet" "private_a"</span> {
+  <span class="cb-key">vpc_id</span>            = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">cidr_block</span>        = <span class="cb-val">"10.0.10.0/24"</span>
+  <span class="cb-key">availability_zone</span> = <span class="cb-val">"us-east-1a"</span>
+}
+
+<span class="cb-section">### INTERNET GATEWAY (front door for public subnets) ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_internet_gateway" "igw"</span> {
+  <span class="cb-key">vpc_id</span> = <span class="cb-val">aws_vpc.main.id</span>
+}
+
+<span class="cb-section">### NAT GATEWAY (lets private EC2s reach internet for updates) ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_eip" "nat"</span> { <span class="cb-key">domain</span> = <span class="cb-val">"vpc"</span> }
+<span class="cb-key">resource</span> <span class="cb-val">"aws_nat_gateway" "nat"</span> {
+  <span class="cb-key">allocation_id</span> = <span class="cb-val">aws_eip.nat.id</span>
+  <span class="cb-key">subnet_id</span>     = <span class="cb-val">aws_subnet.public_a.id</span>  <span class="cb-comment"># NAT lives in public subnet</span>
+}
+
+<span class="cb-section">### ROUTE TABLES ###</span>
+<span class="cb-comment"># Public: route internet traffic to IGW</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_route_table" "public"</span> {
+  <span class="cb-key">vpc_id</span> = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">route</span> { <span class="cb-key">cidr_block</span> = <span class="cb-val">"0.0.0.0/0"</span>; <span class="cb-key">gateway_id</span> = <span class="cb-val">aws_internet_gateway.igw.id</span> }
+}
+<span class="cb-comment"># Private: route internet traffic to NAT (not IGW)</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_route_table" "private"</span> {
+  <span class="cb-key">vpc_id</span> = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">route</span> { <span class="cb-key">cidr_block</span> = <span class="cb-val">"0.0.0.0/0"</span>; <span class="cb-key">nat_gateway_id</span> = <span class="cb-val">aws_nat_gateway.nat.id</span> }
+}
+
+<span class="cb-section">### SECURITY GROUPS ###</span>
+<span class="cb-comment"># ALB: allow all HTTP/HTTPS from internet</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_security_group" "alb"</span> {
+  <span class="cb-key">vpc_id</span> = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">ingress</span> { <span class="cb-key">from_port</span>=<span class="cb-val">80</span>;  <span class="cb-key">to_port</span>=<span class="cb-val">80</span>;  <span class="cb-key">protocol</span>=<span class="cb-val">"tcp"</span>; <span class="cb-key">cidr_blocks</span>=<span class="cb-val">["0.0.0.0/0"]</span> }
+  <span class="cb-key">ingress</span> { <span class="cb-key">from_port</span>=<span class="cb-val">443</span>; <span class="cb-key">to_port</span>=<span class="cb-val">443</span>; <span class="cb-key">protocol</span>=<span class="cb-val">"tcp"</span>; <span class="cb-key">cidr_blocks</span>=<span class="cb-val">["0.0.0.0/0"]</span> }
+  <span class="cb-key">egress</span>  { <span class="cb-key">from_port</span>=<span class="cb-val">0</span>;   <span class="cb-key">to_port</span>=<span class="cb-val">0</span>;   <span class="cb-key">protocol</span>=<span class="cb-val">"-1"</span>;  <span class="cb-key">cidr_blocks</span>=<span class="cb-val">["0.0.0.0/0"]</span> }
+}
+<span class="cb-comment"># App EC2: ONLY allow traffic from ALB security group</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_security_group" "app"</span> {
+  <span class="cb-key">vpc_id</span> = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">ingress</span> {
+    <span class="cb-key">from_port</span>       = <span class="cb-val">3000</span>
+    <span class="cb-key">to_port</span>         = <span class="cb-val">3000</span>
+    <span class="cb-key">protocol</span>        = <span class="cb-val">"tcp"</span>
+    <span class="cb-key">security_groups</span> = <span class="cb-val">[aws_security_group.alb.id]</span>  <span class="cb-comment"># ← key pattern</span>
+  }
+}</div>
+  <div class="warn-inline"><strong>Interview gold — SG referencing SGs:</strong> Instead of <code>cidr_blocks = ["0.0.0.0/0"]</code> for the app servers, reference the ALB's security group ID. This means ONLY traffic that came through the load balancer can reach the app — even if someone discovers the private IP, they can't hit it directly.</div>
+</div>
+</div>
+
+<!-- ═══════════ RDS ═══════════ -->
+<div id="aws-rds">
+<div class="aws-service-header" style="--ash-color:#818cf8;">
+  <span class="ash-icon">🗄️</span>
+  <div><div class="ash-title">RDS — Relational Database Service</div><div class="ash-sub">Managed Postgres / MySQL. AWS handles backups, patching, failover.</div></div>
+  <span class="ash-tag">Database</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#818cf8;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Provision a PostgreSQL database that your Node.js app connects to. Database must be in a private subnet (not internet-accessible). App servers connect to it via its internal DNS endpoint.</div>
+
+  <div class="real-world-label">Provision RDS with Terraform + Connect from App</div>
+  <div class="code-block">
+<span class="cb-comment"># rds.tf — Postgres in private subnet</span>
+
+<span class="cb-comment"># DB subnet group — RDS needs at least 2 AZs</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_db_subnet_group" "main"</span> {
+  <span class="cb-key">name</span>       = <span class="cb-val">"prod-db-subnets"</span>
+  <span class="cb-key">subnet_ids</span> = <span class="cb-val">[aws_subnet.private_a.id, aws_subnet.private_b.id]</span>
+}
+
+<span class="cb-comment"># Security group — only allow from app servers</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_security_group" "rds"</span> {
+  <span class="cb-key">vpc_id</span> = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">ingress</span> {
+    <span class="cb-key">from_port</span>       = <span class="cb-val">5432</span>
+    <span class="cb-key">to_port</span>         = <span class="cb-val">5432</span>
+    <span class="cb-key">protocol</span>        = <span class="cb-val">"tcp"</span>
+    <span class="cb-key">security_groups</span> = <span class="cb-val">[aws_security_group.app.id]</span>  <span class="cb-comment"># only app EC2s</span>
+  }
+}
+
+<span class="cb-comment"># The RDS instance</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_db_instance" "postgres"</span> {
+  <span class="cb-key">identifier</span>          = <span class="cb-val">"prod-postgres"</span>
+  <span class="cb-key">engine</span>              = <span class="cb-val">"postgres"</span>
+  <span class="cb-key">engine_version</span>      = <span class="cb-val">"15.4"</span>
+  <span class="cb-key">instance_class</span>      = <span class="cb-val">"db.t3.micro"</span>       <span class="cb-comment"># free tier eligible</span>
+  <span class="cb-key">allocated_storage</span>   = <span class="cb-val">20</span>
+  <span class="cb-key">db_name</span>             = <span class="cb-val">"appdb"</span>
+  <span class="cb-key">username</span>            = <span class="cb-val">"appuser"</span>
+  <span class="cb-key">password</span>            = <span class="cb-val">var.db_password</span>      <span class="cb-comment"># from tfvars / Secrets Manager</span>
+  <span class="cb-key">db_subnet_group_name</span>   = <span class="cb-val">aws_db_subnet_group.main.name</span>
+  <span class="cb-key">vpc_security_group_ids</span> = <span class="cb-val">[aws_security_group.rds.id]</span>
+  <span class="cb-key">publicly_accessible</span> = <span class="cb-val">false</span>               <span class="cb-comment"># NEVER true in prod</span>
+  <span class="cb-key">multi_az</span>            = <span class="cb-val">true</span>                <span class="cb-comment"># automatic failover to standby</span>
+  <span class="cb-key">backup_retention_period</span> = <span class="cb-val">7</span>               <span class="cb-comment"># keep 7 days of backups</span>
+  <span class="cb-key">skip_final_snapshot</span> = <span class="cb-val">false</span>              <span class="cb-comment"># snapshot on destroy</span>
+}
+
+<span class="cb-comment"># Output the endpoint so app servers can connect</span>
+<span class="cb-key">output</span> <span class="cb-val">"db_endpoint"</span> {
+  <span class="cb-key">value</span> = <span class="cb-val">aws_db_instance.postgres.endpoint</span>
+  <span class="cb-comment"># → prod-postgres.xxxxx.us-east-1.rds.amazonaws.com:5432</span>
+}
+
+<span class="cb-comment"># In your Node.js app — connect using the endpoint</span>
+<span class="cb-comment"># DATABASE_URL=postgresql://appuser:pass@prod-postgres.xxx.rds.amazonaws.com:5432/appdb</span></div>
+</div>
+</div>
+
+<!-- ═══════════ ECR ═══════════ -->
+<div id="aws-ecr">
+<div class="aws-service-header" style="--ash-color:#f97316;">
+  <span class="ash-icon">📦</span>
+  <div><div class="ash-title">ECR — Elastic Container Registry</div><div class="ash-sub">Private Docker image registry. Like Docker Hub but inside AWS, with IAM auth.</div></div>
+  <span class="ash-tag">Containers</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#f97316;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Your CI/CD pipeline builds a Docker image and pushes it to ECR. Your ECS service pulls from ECR to deploy. No Docker Hub credentials needed — IAM handles auth.</div>
+
+  <div class="real-world-label">Full ECR Workflow: Build → Push → Pull</div>
+  <div class="code-block">
+<span class="cb-comment"># 1. Create the ECR repository</span>
+<span class="cb-cmd">aws ecr create-repository \
+  --repository-name my-node-api \
+  --region us-east-1</span>
+<span class="cb-ok"># Returns: repositoryUri = 123456789.dkr.ecr.us-east-1.amazonaws.com/my-node-api</span>
+
+<span class="cb-comment"># 2. Log Docker into ECR (token valid 12 hours)</span>
+<span class="cb-cmd">aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin \
+  123456789.dkr.ecr.us-east-1.amazonaws.com</span>
+
+<span class="cb-comment"># 3. Build and tag with ECR URI</span>
+<span class="cb-cmd">docker build -t my-node-api:latest .</span>
+<span class="cb-cmd">docker tag my-node-api:latest \
+  123456789.dkr.ecr.us-east-1.amazonaws.com/my-node-api:latest</span>
+<span class="cb-cmd">docker tag my-node-api:latest \
+  123456789.dkr.ecr.us-east-1.amazonaws.com/my-node-api:${BUILD_NUMBER}</span>
+
+<span class="cb-comment"># 4. Push both tags</span>
+<span class="cb-cmd">docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/my-node-api:latest</span>
+<span class="cb-cmd">docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/my-node-api:${BUILD_NUMBER}</span>
+
+<span class="cb-comment"># 5. Enable lifecycle policy — keep only 10 latest images (saves cost)</span>
+<span class="cb-cmd">aws ecr put-lifecycle-policy \
+  --repository-name my-node-api \
+  --lifecycle-policy-text '{
+    "rules":[{
+      "rulePriority":1,
+      "selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":10},
+      "action":{"type":"expire"}
+    }]
+  }'</span>
+
+<span class="cb-comment"># 6. In GitHub Actions — full push step</span>
+<span class="cb-key">- name</span>: <span class="cb-val">Push to ECR</span>
+  <span class="cb-key">env</span>:
+    <span class="cb-key">ECR_REGISTRY</span>: <span class="cb-val">${{ steps.login-ecr.outputs.registry }}</span>
+  <span class="cb-key">run</span>: |
+    <span class="cb-val">docker build -t $ECR_REGISTRY/my-node-api:${{ github.sha }} .</span>
+    <span class="cb-val">docker push $ECR_REGISTRY/my-node-api:${{ github.sha }}</span></div>
+</div>
+</div>
+
+<!-- ═══════════ ECS ═══════════ -->
+<div id="aws-ecs">
+<div class="aws-service-header" style="--ash-color:#818cf8;">
+  <span class="ash-icon">🐳</span>
+  <div><div class="ash-title">ECS — Elastic Container Service</div><div class="ash-sub">Run Docker containers on AWS without managing Kubernetes. Simpler than EKS.</div></div>
+  <span class="ash-tag">Containers</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#818cf8;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Deploy your Dockerized app to ECS Fargate. AWS manages the underlying servers entirely — you just say "run 3 copies of this container with 512MB RAM" and AWS handles the rest.</div>
+
+  <div class="real-world-label">ECS Fargate Deployment with Terraform</div>
+  <div class="code-block">
+<span class="cb-comment"># ecs.tf — deploy container to Fargate (serverless containers)</span>
+
+<span class="cb-section">### CLUSTER ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_ecs_cluster" "main"</span> {
+  <span class="cb-key">name</span> = <span class="cb-val">"prod-cluster"</span>
+}
+
+<span class="cb-section">### TASK DEFINITION — what container to run and how ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_ecs_task_definition" "app"</span> {
+  <span class="cb-key">family</span>                   = <span class="cb-val">"my-node-api"</span>
+  <span class="cb-key">requires_compatibilities</span> = <span class="cb-val">["FARGATE"]</span>
+  <span class="cb-key">network_mode</span>             = <span class="cb-val">"awsvpc"</span>
+  <span class="cb-key">cpu</span>                      = <span class="cb-val">"256"</span>   <span class="cb-comment"># 0.25 vCPU</span>
+  <span class="cb-key">memory</span>                   = <span class="cb-val">"512"</span>   <span class="cb-comment"># 512 MB</span>
+  <span class="cb-key">execution_role_arn</span>       = <span class="cb-val">aws_iam_role.ecs_execution.arn</span>
+
+  <span class="cb-key">container_definitions</span> = <span class="cb-val">jsonencode</span>([{
+    <span class="cb-key">name</span>  = <span class="cb-val">"api"</span>
+    <span class="cb-key">image</span> = <span class="cb-val">"123456789.dkr.ecr.us-east-1.amazonaws.com/my-node-api:latest"</span>
+    <span class="cb-key">portMappings</span> = [{ <span class="cb-key">containerPort</span> = <span class="cb-val">3000</span> }]
+    <span class="cb-key">environment</span> = [
+      { <span class="cb-key">name</span> = <span class="cb-val">"NODE_ENV"</span>, <span class="cb-key">value</span> = <span class="cb-val">"production"</span> }
+    ]
+    <span class="cb-comment"># Secrets from SSM Parameter Store (not hardcoded)</span>
+    <span class="cb-key">secrets</span> = [
+      { <span class="cb-key">name</span> = <span class="cb-val">"DB_PASSWORD"</span>, <span class="cb-key">valueFrom</span> = <span class="cb-val">"/prod/app/db_password"</span> }
+    ]
+    <span class="cb-key">logConfiguration</span> = {
+      <span class="cb-key">logDriver</span> = <span class="cb-val">"awslogs"</span>
+      <span class="cb-key">options</span> = {
+        <span class="cb-key">awslogs-group</span>  = <span class="cb-val">"/ecs/my-node-api"</span>
+        <span class="cb-key">awslogs-region</span> = <span class="cb-val">"us-east-1"</span>
+        <span class="cb-key">awslogs-stream-prefix</span> = <span class="cb-val">"api"</span>
+      }
+    }
+  }])
+}
+
+<span class="cb-section">### SERVICE — keep 3 tasks running at all times ###</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_ecs_service" "app"</span> {
+  <span class="cb-key">name</span>            = <span class="cb-val">"my-node-api"</span>
+  <span class="cb-key">cluster</span>         = <span class="cb-val">aws_ecs_cluster.main.id</span>
+  <span class="cb-key">task_definition</span> = <span class="cb-val">aws_ecs_task_definition.app.arn</span>
+  <span class="cb-key">desired_count</span>   = <span class="cb-val">3</span>
+  <span class="cb-key">launch_type</span>     = <span class="cb-val">"FARGATE"</span>
+
+  <span class="cb-key">network_configuration</span> {
+    <span class="cb-key">subnets</span>          = <span class="cb-val">[aws_subnet.private_a.id, aws_subnet.private_b.id]</span>
+    <span class="cb-key">security_groups</span>  = <span class="cb-val">[aws_security_group.app.id]</span>
+    <span class="cb-key">assign_public_ip</span> = <span class="cb-val">false</span>  <span class="cb-comment"># private subnet — no public IP</span>
+  }
+
+  <span class="cb-key">load_balancer</span> {
+    <span class="cb-key">target_group_arn</span> = <span class="cb-val">aws_lb_target_group.app.arn</span>
+    <span class="cb-key">container_name</span>   = <span class="cb-val">"api"</span>
+    <span class="cb-key">container_port</span>   = <span class="cb-val">3000</span>
+  }
+
+  <span class="cb-comment"># Rolling deployment — replace one task at a time</span>
+  <span class="cb-key">deployment_minimum_healthy_percent</span> = <span class="cb-val">50</span>
+  <span class="cb-key">deployment_maximum_percent</span>         = <span class="cb-val">200</span>
+}
+
+<span class="cb-comment"># Deploy new version from CLI</span>
+<span class="cb-cmd">aws ecs update-service \
+  --cluster prod-cluster \
+  --service my-node-api \
+  --force-new-deployment</span>
+<span class="cb-comment"># ECS pulls new :latest image and does rolling update</span></div>
+</div>
+</div>
+
+<!-- ═══════════ ALB ═══════════ -->
+<div id="aws-lb">
+<div class="aws-service-header" style="--ash-color:#22c55e;">
+  <span class="ash-icon">⚖️</span>
+  <div><div class="ash-title">ALB — Application Load Balancer</div><div class="ash-sub">Distribute HTTP traffic. Health checks. Path-based routing. SSL termination.</div></div>
+  <span class="ash-tag">Networking</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#22c55e;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Route <code>/api/*</code> to your Node.js backend and <code>/*</code> to your React frontend. Terminate SSL at the load balancer so your app servers don't need to handle HTTPS.</div>
+
+  <div class="real-world-label">ALB with Path-Based Routing (Terraform)</div>
+  <div class="code-block">
+<span class="cb-key">resource</span> <span class="cb-val">"aws_lb" "main"</span> {
+  <span class="cb-key">name</span>               = <span class="cb-val">"prod-alb"</span>
+  <span class="cb-key">internal</span>           = <span class="cb-val">false</span>
+  <span class="cb-key">load_balancer_type</span> = <span class="cb-val">"application"</span>
+  <span class="cb-key">security_groups</span>    = <span class="cb-val">[aws_security_group.alb.id]</span>
+  <span class="cb-key">subnets</span>            = <span class="cb-val">[aws_subnet.public_a.id, aws_subnet.public_b.id]</span>
+}
+
+<span class="cb-comment"># Target groups — where to send traffic</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_lb_target_group" "api"</span> {
+  <span class="cb-key">name</span>     = <span class="cb-val">"api-targets"</span>
+  <span class="cb-key">port</span>     = <span class="cb-val">3000</span>
+  <span class="cb-key">protocol</span> = <span class="cb-val">"HTTP"</span>
+  <span class="cb-key">vpc_id</span>   = <span class="cb-val">aws_vpc.main.id</span>
+  <span class="cb-key">target_type</span> = <span class="cb-val">"ip"</span>   <span class="cb-comment"># required for ECS Fargate</span>
+  <span class="cb-key">health_check</span> {
+    <span class="cb-key">path</span>                = <span class="cb-val">"/health"</span>
+    <span class="cb-key">healthy_threshold</span>   = <span class="cb-val">2</span>
+    <span class="cb-key">unhealthy_threshold</span> = <span class="cb-val">3</span>
+    <span class="cb-key">interval</span>            = <span class="cb-val">30</span>
+  }
+}
+
+<span class="cb-comment"># HTTPS listener on port 443</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_lb_listener" "https"</span> {
+  <span class="cb-key">load_balancer_arn</span> = <span class="cb-val">aws_lb.main.arn</span>
+  <span class="cb-key">port</span>              = <span class="cb-val">443</span>
+  <span class="cb-key">protocol</span>          = <span class="cb-val">"HTTPS"</span>
+  <span class="cb-key">certificate_arn</span>   = <span class="cb-val">var.acm_cert_arn</span>   <span class="cb-comment"># SSL cert from ACM</span>
+  <span class="cb-key">default_action</span> { <span class="cb-key">type</span> = <span class="cb-val">"forward"</span>; <span class="cb-key">target_group_arn</span> = <span class="cb-val">aws_lb_target_group.frontend.arn</span> }
+}
+
+<span class="cb-comment"># Path-based rule: /api/* goes to the API target group</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_lb_listener_rule" "api"</span> {
+  <span class="cb-key">listener_arn</span> = <span class="cb-val">aws_lb_listener.https.arn</span>
+  <span class="cb-key">priority</span>     = <span class="cb-val">10</span>
+  <span class="cb-key">action</span>      { <span class="cb-key">type</span> = <span class="cb-val">"forward"</span>; <span class="cb-key">target_group_arn</span> = <span class="cb-val">aws_lb_target_group.api.arn</span> }
+  <span class="cb-key">condition</span>   { <span class="cb-key">path_pattern</span> { <span class="cb-key">values</span> = <span class="cb-val">["/api/*"]</span> } }
+}
+
+<span class="cb-comment"># HTTP → HTTPS redirect (port 80 to 443)</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_lb_listener" "http_redirect"</span> {
+  <span class="cb-key">load_balancer_arn</span> = <span class="cb-val">aws_lb.main.arn</span>
+  <span class="cb-key">port</span>     = <span class="cb-val">80</span>
+  <span class="cb-key">protocol</span> = <span class="cb-val">"HTTP"</span>
+  <span class="cb-key">default_action</span> {
+    <span class="cb-key">type</span> = <span class="cb-val">"redirect"</span>
+    <span class="cb-key">redirect</span> { <span class="cb-key">protocol</span>=<span class="cb-val">"HTTPS"</span>; <span class="cb-key">port</span>=<span class="cb-val">"443"</span>; <span class="cb-key">status_code</span>=<span class="cb-val">"HTTP_301"</span> }
+  }
+}</div>
+</div>
+</div>
+
+<!-- ═══════════ CLOUDWATCH ═══════════ -->
+<div id="aws-cw">
+<div class="aws-service-header" style="--ash-color:#f43f5e;">
+  <span class="ash-icon">📊</span>
+  <div><div class="ash-title">CloudWatch — Monitoring, Logs &amp; Alarms</div><div class="ash-sub">AWS-native observability. Metrics, logs, alarms, dashboards — all in one.</div></div>
+  <span class="ash-tag">Observability</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#f43f5e;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Get alerted on Slack if CPU goes above 80%, if the app starts returning 5xx errors, or if the EC2 runs out of disk space — before your users notice.</div>
+
+  <div class="real-world-label">Set Up Alarms + Log Groups (AWS CLI)</div>
+  <div class="code-block">
+<span class="cb-comment"># 1. Create a log group for your app (ECS sends here automatically)</span>
+<span class="cb-cmd">aws logs create-log-group --log-group-name /ecs/my-node-api</span>
+<span class="cb-cmd">aws logs put-retention-policy \
+  --log-group-name /ecs/my-node-api \
+  --retention-in-days 30</span>
+
+<span class="cb-comment"># 2. Read logs in real-time from CLI</span>
+<span class="cb-cmd">aws logs tail /ecs/my-node-api --follow</span>
+
+<span class="cb-comment"># 3. Search logs for errors</span>
+<span class="cb-cmd">aws logs filter-log-events \
+  --log-group-name /ecs/my-node-api \
+  --filter-pattern '"ERROR"' \
+  --start-time $(date -d '1 hour ago' +%s000)</span>
+
+<span class="cb-comment"># 4. Create CPU alarm — alert when EC2 CPU > 80% for 5 mins</span>
+<span class="cb-cmd">aws cloudwatch put-metric-alarm \
+  --alarm-name "High-CPU-prod-server" \
+  --namespace AWS/EC2 \
+  --metric-name CPUUtilization \
+  --dimensions Name=InstanceId,Value=i-1234567890 \
+  --statistic Average \
+  --period 300 \
+  --threshold 80 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 1 \
+  --alarm-actions arn:aws:sns:us-east-1:123:my-alerts-topic</span>
+
+<span class="cb-comment"># 5. Create ALB 5xx error rate alarm</span>
+<span class="cb-cmd">aws cloudwatch put-metric-alarm \
+  --alarm-name "High-5xx-rate" \
+  --namespace AWS/ApplicationELB \
+  --metric-name HTTPCode_Target_5XX_Count \
+  --dimensions Name=LoadBalancer,Value=app/prod-alb/1234 \
+  --statistic Sum \
+  --period 60 \
+  --threshold 10 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 2 \
+  --alarm-actions arn:aws:sns:us-east-1:123:my-alerts-topic</span>
+
+<span class="cb-comment"># 6. SNS → Slack (subscribe your Slack webhook Lambda to the SNS topic)</span>
+<span class="cb-cmd">aws sns subscribe \
+  --topic-arn arn:aws:sns:us-east-1:123:my-alerts-topic \
+  --protocol email \
+  --notification-endpoint devops-team@company.com</span></div>
+
+  <div class="real-world-label">CloudWatch in Terraform</div>
+  <div class="code-block">
+<span class="cb-key">resource</span> <span class="cb-val">"aws_cloudwatch_metric_alarm" "cpu_high"</span> {
+  <span class="cb-key">alarm_name</span>          = <span class="cb-val">"cpu-high"</span>
+  <span class="cb-key">comparison_operator</span> = <span class="cb-val">"GreaterThanThreshold"</span>
+  <span class="cb-key">evaluation_periods</span>  = <span class="cb-val">2</span>
+  <span class="cb-key">metric_name</span>         = <span class="cb-val">"CPUUtilization"</span>
+  <span class="cb-key">namespace</span>           = <span class="cb-val">"AWS/ECS"</span>
+  <span class="cb-key">period</span>              = <span class="cb-val">300</span>
+  <span class="cb-key">statistic</span>           = <span class="cb-val">"Average"</span>
+  <span class="cb-key">threshold</span>           = <span class="cb-val">80</span>
+  <span class="cb-key">alarm_actions</span>       = <span class="cb-val">[aws_sns_topic.alerts.arn]</span>
+  <span class="cb-key">dimensions</span> = {
+    <span class="cb-key">ClusterName</span> = <span class="cb-val">"prod-cluster"</span>
+    <span class="cb-key">ServiceName</span> = <span class="cb-val">"my-node-api"</span>
+  }
+}</div>
+</div>
+</div>
+
+<!-- ═══════════ LAMBDA ═══════════ -->
+<div id="aws-lambda">
+<div class="aws-service-header" style="--ash-color:#fbbf24;">
+  <span class="ash-icon">⚡</span>
+  <div><div class="ash-title">Lambda — Serverless Functions</div><div class="ash-sub">Run code without servers. Pay per invocation. Perfect for event-driven tasks.</div></div>
+  <span class="ash-tag">Serverless</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#fbbf24;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> When a file is uploaded to S3 (e.g., a profile picture), automatically trigger a Lambda to resize it and store the thumbnail. No server running 24/7 — Lambda wakes up, runs, and dies.</div>
+
+  <div class="real-world-label">Lambda Triggered by S3 Upload</div>
+  <div class="code-block">
+<span class="cb-comment"># handler.js — the Lambda function code</span>
+<span class="cb-key">const</span> <span class="cb-val">AWS</span> = <span class="cb-key">require</span>(<span class="cb-val">'aws-sdk'</span>);
+<span class="cb-key">const</span> <span class="cb-val">s3</span> = <span class="cb-key">new</span> <span class="cb-val">AWS.S3</span>();
+
+<span class="cb-key">exports.handler</span> = <span class="cb-key">async</span> (<span class="cb-val">event</span>) => {
+  <span class="cb-comment">// event.Records contains S3 trigger info</span>
+  <span class="cb-key">const</span> <span class="cb-val">bucket</span> = <span class="cb-val">event.Records[0].s3.bucket.name</span>;
+  <span class="cb-key">const</span> <span class="cb-val">key</span>    = <span class="cb-val">event.Records[0].s3.object.key</span>;
+
+  <span class="cb-key">console</span>.<span class="cb-val">log</span>(<span class="cb-key">`Processing: ${bucket}/${key}`</span>);
+
+  <span class="cb-comment">// Download, process, re-upload thumbnail</span>
+  <span class="cb-key">const</span> <span class="cb-val">obj</span> = <span class="cb-key">await</span> <span class="cb-val">s3.getObject</span>({ <span class="cb-val">Bucket: bucket, Key: key</span> }).<span class="cb-val">promise</span>();
+  <span class="cb-comment">// ... sharp/image processing logic ...</span>
+  <span class="cb-key">await</span> <span class="cb-val">s3.putObject</span>({
+    <span class="cb-val">Bucket: bucket, Key:</span> <span class="cb-key">`thumbnails/${key}`</span>, <span class="cb-val">Body: thumbnail</span>
+  }).<span class="cb-val">promise</span>();
+
+  <span class="cb-key">return</span> { <span class="cb-val">statusCode: 200</span> };
+};</div>
+
+  <div class="code-block">
+<span class="cb-comment"># Deploy Lambda with AWS CLI</span>
+
+<span class="cb-comment"># 1. Zip the code</span>
+<span class="cb-cmd">zip -r function.zip handler.js node_modules/</span>
+
+<span class="cb-comment"># 2. Create the Lambda function</span>
+<span class="cb-cmd">aws lambda create-function \
+  --function-name image-processor \
+  --runtime nodejs18.x \
+  --handler handler.handler \
+  --role arn:aws:iam::123:role/LambdaS3Role \
+  --zip-file fileb://function.zip \
+  --timeout 30 \
+  --memory-size 512</span>
+
+<span class="cb-comment"># 3. Add S3 trigger (allow S3 to invoke Lambda)</span>
+<span class="cb-cmd">aws lambda add-permission \
+  --function-name image-processor \
+  --action lambda:InvokeFunction \
+  --principal s3.amazonaws.com \
+  --source-arn arn:aws:s3:::my-uploads-bucket \
+  --statement-id s3-trigger</span>
+
+<span class="cb-comment"># 4. Configure S3 to notify Lambda on uploads</span>
+<span class="cb-cmd">aws s3api put-bucket-notification-configuration \
+  --bucket my-uploads-bucket \
+  --notification-configuration '{
+    "LambdaFunctionConfigurations":[{
+      "LambdaFunctionArn":"arn:aws:lambda:us-east-1:123:function:image-processor",
+      "Events":["s3:ObjectCreated:*"],
+      "Filter":{"Key":{"FilterRules":[{"Name":"prefix","Value":"uploads/"}]}}
+    }]
+  }'</span>
+
+<span class="cb-comment"># 5. Update function code after changes</span>
+<span class="cb-cmd">zip -r function.zip . && aws lambda update-function-code \
+  --function-name image-processor --zip-file fileb://function.zip</span>
+
+<span class="cb-comment"># 6. Tail logs in real-time</span>
+<span class="cb-cmd">aws logs tail /aws/lambda/image-processor --follow</span></div>
+</div>
+</div>
+
+<!-- ═══════════ SSM ═══════════ -->
+<div id="aws-ssm">
+<div class="aws-service-header" style="--ash-color:#a78bfa;">
+  <span class="ash-icon">🔑</span>
+  <div><div class="ash-title">SSM — Systems Manager</div><div class="ash-sub">Connect to EC2 without SSH. Store secrets in Parameter Store. No open ports.</div></div>
+  <span class="ash-tag">Management</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#a78bfa;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Store your database password, API keys, and config in SSM Parameter Store. Your app reads them at runtime. No secrets in .env files. No secrets in Git. No port 22 open on servers.</div>
+
+  <div class="real-world-label">SSM Parameter Store — Store &amp; Read Secrets</div>
+  <div class="code-block">
+<span class="cb-comment"># Store a secret (SecureString = encrypted with KMS)</span>
+<span class="cb-cmd">aws ssm put-parameter \
+  --name "/prod/myapp/DB_PASSWORD" \
+  --value "super-secret-pass-123" \
+  --type SecureString \
+  --description "Production DB password"</span>
+
+<span class="cb-cmd">aws ssm put-parameter \
+  --name "/prod/myapp/JWT_SECRET" \
+  --value "jwt-secret-abc-xyz" \
+  --type SecureString</span>
+
+<span class="cb-comment"># Read it back (--with-decryption required for SecureString)</span>
+<span class="cb-cmd">aws ssm get-parameter \
+  --name "/prod/myapp/DB_PASSWORD" \
+  --with-decryption \
+  --query 'Parameter.Value' \
+  --output text</span>
+
+<span class="cb-comment"># Read all params under a path prefix</span>
+<span class="cb-cmd">aws ssm get-parameters-by-path \
+  --path "/prod/myapp/" \
+  --with-decryption</span>
+
+<span class="cb-comment"># In your Node.js app — read at startup</span>
+<span class="cb-key">const</span> { <span class="cb-val">SSMClient, GetParameterCommand</span> } = <span class="cb-key">require</span>(<span class="cb-val">"@aws-sdk/client-ssm"</span>);
+<span class="cb-key">const</span> <span class="cb-val">client</span> = <span class="cb-key">new</span> <span class="cb-val">SSMClient</span>({ <span class="cb-val">region: "us-east-1"</span> });
+<span class="cb-key">const</span> { <span class="cb-val">Parameter</span> } = <span class="cb-key">await</span> <span class="cb-val">client.send</span>(<span class="cb-key">new</span> <span class="cb-val">GetParameterCommand</span>({
+  <span class="cb-val">Name: "/prod/myapp/DB_PASSWORD"</span>,
+  <span class="cb-val">WithDecryption: true</span>
+}));
+<span class="cb-key">const</span> <span class="cb-val">DB_PASSWORD</span> = <span class="cb-val">Parameter.Value</span>;
+
+<span class="cb-comment"># In ECS Task Definition — inject as environment variable</span>
+<span class="cb-key">"secrets"</span>: [{
+  <span class="cb-key">"name"</span>: <span class="cb-val">"DB_PASSWORD"</span>,
+  <span class="cb-key">"valueFrom"</span>: <span class="cb-val">"/prod/myapp/DB_PASSWORD"</span>
+}]</div>
+
+  <div class="real-world-label">SSM Session Manager — SSH Without Port 22</div>
+  <div class="code-block">
+<span class="cb-comment"># No SSH key needed, no port 22 open — connect via SSM</span>
+<span class="cb-cmd">aws ssm start-session --target i-1234567890abcdef0</span>
+<span class="cb-ok"># Opens a shell directly in the browser or terminal</span>
+
+<span class="cb-comment"># Run a command without interactive session</span>
+<span class="cb-cmd">aws ssm send-command \
+  --instance-ids i-1234567890 \
+  --document-name "AWS-RunShellScript" \
+  --parameters '{"commands":["docker ps","docker logs api --tail 50"]}'</span>
+
+<span class="cb-comment"># Requirements: SSM Agent installed (default on Amazon Linux),</span>
+<span class="cb-comment"># EC2 instance role with AmazonSSMManagedInstanceCore policy attached</span></div>
+</div>
+</div>
+
+<!-- ═══════════ ROUTE 53 ═══════════ -->
+<div id="aws-route53">
+<div class="aws-service-header" style="--ash-color:#22c55e;">
+  <span class="ash-icon">🌍</span>
+  <div><div class="ash-title">Route 53 — DNS &amp; Domain Management</div><div class="ash-sub">Point your domain to your AWS resources. Health checks. Failover routing.</div></div>
+  <span class="ash-tag">DNS</span>
+</div>
+<div class="aws-service-body" style="--ash-color:#22c55e;">
+  <div class="scenario-box"><strong>Real-World Scenario:</strong> Point <code>api.myapp.com</code> to your ALB. Get a free SSL cert from ACM. Set up health-check-based failover so if your primary region goes down, traffic auto-reroutes to a backup.</div>
+
+  <div class="real-world-label">Point Domain → ALB + Free SSL (AWS CLI)</div>
+  <div class="code-block">
+<span class="cb-comment"># 1. Get your hosted zone ID</span>
+<span class="cb-cmd">aws route53 list-hosted-zones --query 'HostedZones[?Name==`myapp.com.`].Id' --output text</span>
+<span class="cb-ok"># → /hostedzone/Z1234567890ABC</span>
+
+<span class="cb-comment"># 2. Create A record (alias to ALB — no IP hardcoding)</span>
+<span class="cb-cmd">aws route53 change-resource-record-sets \
+  --hosted-zone-id Z1234567890ABC \
+  --change-batch '{
+    "Changes":[{
+      "Action":"UPSERT",
+      "ResourceRecordSet":{
+        "Name":"api.myapp.com",
+        "Type":"A",
+        "AliasTarget":{
+          "HostedZoneId":"Z35SXDOTRQ7X7K",
+          "DNSName":"prod-alb-1234567890.us-east-1.elb.amazonaws.com",
+          "EvaluateTargetHealth":true
+        }
+      }
+    }]
+  }'</span>
+
+<span class="cb-comment"># 3. Request free SSL cert from ACM</span>
+<span class="cb-cmd">aws acm request-certificate \
+  --domain-name "api.myapp.com" \
+  --subject-alternative-names "*.myapp.com" \
+  --validation-method DNS</span>
+
+<span class="cb-comment"># 4. ACM gives you a DNS validation record — add it to Route53</span>
+<span class="cb-comment"># (AWS console does this in 1 click, or automate with Terraform)</span>
+
+<span class="cb-comment"># Terraform: Route 53 + ACM in one block</span>
+<span class="cb-key">resource</span> <span class="cb-val">"aws_acm_certificate" "api"</span> {
+  <span class="cb-key">domain_name</span>       = <span class="cb-val">"api.myapp.com"</span>
+  <span class="cb-key">validation_method</span> = <span class="cb-val">"DNS"</span>
+}
+
+<span class="cb-key">resource</span> <span class="cb-val">"aws_route53_record" "api"</span> {
+  <span class="cb-key">zone_id</span> = <span class="cb-val">data.aws_route53_zone.main.zone_id</span>
+  <span class="cb-key">name</span>    = <span class="cb-val">"api.myapp.com"</span>
+  <span class="cb-key">type</span>    = <span class="cb-val">"A"</span>
+  <span class="cb-key">alias</span> {
+    <span class="cb-key">name</span>                   = <span class="cb-val">aws_lb.main.dns_name</span>
+    <span class="cb-key">zone_id</span>                = <span class="cb-val">aws_lb.main.zone_id</span>
+    <span class="cb-key">evaluate_target_health</span> = <span class="cb-val">true</span>
+  }
+}</div>
+</div>
+</div>
+
+<!-- FULL ARCHITECTURE SUMMARY -->
+<div class="section-title" style="margin-top:8px;">🏗️ How It All Connects — Full Production Stack</div>
+<div class="code-block" style="color:#94a3b8;font-size:10.5px;line-height:2;">
+<span class="cb-ok">User</span>
+  ↓ HTTPS
+<span class="cb-ok">Route 53</span>  →  api.myapp.com  →  ALB DNS alias
+  ↓
+<span class="cb-ok">ACM</span>  →  SSL certificate (free, auto-renews)
+  ↓
+<span class="cb-ok">ALB</span>  →  port 443  →  /api/* rule  →  ECS Target Group
+  ↓
+<span class="cb-ok">ECS Fargate</span>  →  3 tasks (private subnet, no public IPs)
+  ↓   pulls image from ECR
+  ↓   reads secrets from SSM Parameter Store
+  ↓   logs to CloudWatch
+  ↓
+<span class="cb-ok">RDS Postgres</span>  (private subnet, only accessible from ECS security group)
+  ↓
+<span class="cb-ok">S3</span>  →  static assets, user uploads, Terraform state
+  ↓
+<span class="cb-ok">CloudWatch</span>  →  alarms  →  SNS  →  Slack  →  you wake up at 3am
+
+<span class="cb-comment">CI/CD flow:</span>
+<span class="cb-ok">GitHub push</span>  →  Actions/Jenkins  →  docker build  →  ECR push
+  →  aws ecs update-service --force-new-deployment
+  →  ECS rolling update (old containers stay until new ones are healthy)
+  →  CloudWatch confirms 0% error rate on new version
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">☁️</div>
+  <div>
+    <div class="loop-title">The real learning path for AWS</div>
+    <div class="loop-desc">Don't try to learn all services at once. Do this order: EC2 (console) → EC2 (User Data) → S3 + static site → IAM roles → VPC from scratch → RDS → ECR + ECS → ALB → CloudWatch alarms. Each one builds on the last. <strong style="color:#fb923c;">By the time you finish, you've built a production AWS stack from scratch.</strong>
+    </div>
+  </div>
+</div>
+

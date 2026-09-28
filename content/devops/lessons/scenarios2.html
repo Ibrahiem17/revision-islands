@@ -1,0 +1,281 @@
+
+
+  <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.15);border-radius:4px;padding:12px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#f43f5e;">🔥 Advanced Scenario Questions</strong> — these are the hardest scenarios asked in DevOps interviews. Each has a structured answer showing investigative thinking.
+  </div>
+
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC01</span><span class="qa-q-text">A developer accidentally committed AWS access keys to a public GitHub repo. What do you do, step by step?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        This is a <strong>P1 security incident</strong>. Move fast — automated bots scan GitHub constantly and can abuse keys within minutes.<br><br>
+        <strong>1. Deactivate the keys immediately:</strong><br>
+        AWS Console → IAM → Users → Security credentials → Deactivate the access key. Do this before anything else. Even if the key hasn't been used yet.<br><br>
+        <strong>2. Check if the keys were already used:</strong><br>
+        AWS CloudTrail → filter by the Access Key ID → look for any API calls, especially in unusual regions. Check for new IAM users created, new EC2 launched, S3 data accessed.<br><br>
+        <strong>3. Remove from Git history:</strong><br>
+        <code>git filter-branch</code> or BFG Repo Cleaner to remove the commit from history. Force-push to GitHub. Note: if public, assume the key is compromised regardless — bots already have it.<br><br>
+        <strong>4. Generate new keys and update secrets securely:</strong><br>
+        Create new access keys. Store in AWS Secrets Manager or GitHub Actions secrets. Never in code.<br><br>
+        <strong>5. Prevent recurrence:</strong><br>
+        Add pre-commit hook using <strong>git-secrets</strong> or <strong>truffleHog</strong> to scan for credentials before every commit. Enable GitGuardian or similar on the org.<br><br>
+        <span class="qa-pill">deactivate first</span><span class="qa-pill">check CloudTrail for abuse</span><span class="qa-pill">purge from Git history</span><span class="qa-pill">add pre-commit secret scanning</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC02</span><span class="qa-q-text">Kubernetes pods are being OOMKilled repeatedly. How do you investigate and fix it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>OOMKilled = container exceeded its memory limit and was killed by the kernel.</strong><br><br>
+        <strong>1. Confirm OOMKilled:</strong><br>
+        <code>kubectl describe pod &lt;name&gt;</code> → in the container status section: <code>Last State: OOMKilled, Exit Code: 137</code><br><br>
+        <strong>2. Check actual memory usage before kill:</strong><br>
+        <code>kubectl top pods</code> — see current usage. <br>
+        Look at Grafana → memory usage graph for that pod over time. Is usage growing? That's a memory leak.<br><br>
+        <strong>3. Root cause options:</strong><br>
+        • <strong>Limit set too low:</strong> App genuinely needs more RAM. Increase <code>resources.limits.memory</code>.<br>
+        • <strong>Memory leak:</strong> Usage climbs over time until OOM. The app needs profiling and fixing.<br>
+        • <strong>Spike under load:</strong> App uses bursts of memory under high traffic. Increase limit or add horizontal scaling.<br><br>
+        <strong>4. Immediate fix:</strong> Increase the memory limit in the deployment YAML. Long-term: profile the app for leaks, optimize queries, cache wisely.<br><br>
+        <span class="qa-pill">Exit Code 137 = OOMKilled</span><span class="qa-pill">kubectl top + Grafana</span><span class="qa-pill">increase limit or fix leak</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC03</span><span class="qa-q-text">Docker build works locally but fails in CI. How do you debug this?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        The classic "works on my machine" problem — but now it's your Docker build instead of your app.<br><br>
+        <strong>1. Read the exact CI error:</strong> Compare CI build log with local build output. What exact step fails?<br><br>
+        <strong>2. Check environment differences:</strong><br>
+        • <strong>Base image version:</strong> CI might be pulling a newer <code>node:latest</code> tag. Pin to an exact version.<br>
+        • <strong>Architecture:</strong> You're on Apple M1 (ARM64), CI runner is Linux (AMD64). Use <code>docker buildx build --platform linux/amd64</code> locally to match.<br>
+        • <strong>Network access:</strong> CI runner might be behind a proxy or unable to reach npm/pip registries. Check <code>.npmrc</code> or mirror configs.<br>
+        • <strong>Build secrets:</strong> CI might be missing an env var or build arg that your local Docker has.<br>
+        • <strong>Cache state:</strong> CI builds from scratch. A dependency that installed fine from cache locally might fail on a clean install.<br><br>
+        <strong>3. Reproduce exactly:</strong> Run <code>docker build --no-cache</code> locally. If it fails now, you've reproduced it.<br><br>
+        <span class="qa-pill">pin image tags</span><span class="qa-pill">check arch (ARM vs AMD64)</span><span class="qa-pill">build --no-cache locally</span><span class="qa-pill">check network + env vars</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC04</span><span class="qa-q-text">Your Terraform state file is locked and no one is running terraform. How do you fix it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        With S3 + DynamoDB remote state, Terraform acquires a lock in DynamoDB during apply. If the process is killed mid-apply (CI timeout, network drop), the lock is never released.<br><br>
+        <strong>1. Confirm it's stale:</strong><br>
+        Check DynamoDB table for the lock entry. Note the LockID and when it was created. Is anyone actually running Terraform? Check CI logs.<br><br>
+        <strong>2. Force-unlock (carefully):</strong><br>
+        <code>terraform force-unlock &lt;LOCK_ID&gt;</code><br>
+        The Lock ID is in the error message when you try to run Terraform.<br><br>
+        <strong>3. Before unlocking, verify:</strong><br>
+        Make sure no apply is actually in progress. Unlocking while an apply is running can corrupt state — two applies writing simultaneously. Check CI, check team Slack.<br><br>
+        <strong>4. After unlocking, run:</strong><br>
+        <code>terraform plan</code> to verify state is consistent. Check if partial apply left resources in a bad state.<br><br>
+        <span class="qa-pill">terraform force-unlock &lt;ID&gt;</span><span class="qa-pill">verify no apply is running first</span><span class="qa-pill">terraform plan after</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC05</span><span class="qa-q-text">After a new deployment, response times increased 10x. How do you find the cause?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Correlate the timing:</strong> Confirm response time increase started exactly at the deployment. Check Grafana — does the latency spike align precisely with the rollout?<br><br>
+        <strong>1. Check the app layer:</strong><br>
+        <code>kubectl logs &lt;pod&gt;</code> — any slow query warnings? Any new errors? Timeout messages?<br><br>
+        <strong>2. Check the database:</strong><br>
+        Was a new database migration part of this deploy? Did it add an unindexed column that a frequent query now uses? Run <code>EXPLAIN ANALYZE</code> on slow queries. Check DB slow query log.<br><br>
+        <strong>3. Check external dependencies:</strong><br>
+        Did the new code add calls to an external API? Is that API slow? Check connection pool settings.<br><br>
+        <strong>4. Check resource saturation:</strong><br>
+        <code>kubectl top pods</code> — is the new code CPU/memory heavy? Is it hitting limits and being throttled?<br><br>
+        <strong>5. Compare the diff:</strong><br>
+        <code>git diff v1.0..v2.0</code> — what changed? Look for new database queries, removed caching, synchronous operations that were async, N+1 query bugs.<br><br>
+        <strong>If urgent: rollback first, investigate in staging.</strong><br><br>
+        <span class="qa-pill">correlate timing with deploy</span><span class="qa-pill">check DB slow queries + missing index</span><span class="qa-pill">kubectl top for throttling</span><span class="qa-pill">git diff the changes</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC06</span><span class="qa-q-text">An S3 bucket was accidentally made public. What is your incident response?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>1. Block public access immediately:</strong><br>
+        S3 Console → Block Public Access settings → enable all four blocks. This is instant. Takes &lt;1 minute.<br><br>
+        <strong>2. Determine what was exposed:</strong><br>
+        S3 Server Access Logs or AWS CloudTrail Data Events → who accessed what files and when? Any <code>GetObject</code> requests from external IPs? What data was in that bucket?<br><br>
+        <strong>3. Assess the data sensitivity:</strong><br>
+        PII, credentials, internal configs, customer data? Escalate accordingly. If PII was exposed, legal/compliance team must be notified (GDPR, etc.).<br><br>
+        <strong>4. Rotate exposed secrets:</strong><br>
+        If any credentials, API keys, or tokens were in the bucket — rotate them all immediately.<br><br>
+        <strong>5. Root cause and prevention:</strong><br>
+        Who made it public and how? Was it Terraform config? A console click? Enable <strong>AWS Config rule: s3-bucket-public-read-prohibited</strong> — alerts immediately when any S3 bucket is made public.<br><br>
+        <span class="qa-pill">block public access first</span><span class="qa-pill">check CloudTrail for access</span><span class="qa-pill">rotate any exposed secrets</span><span class="qa-pill">AWS Config rule to prevent recurrence</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC07</span><span class="qa-q-text">Your CI pipeline takes 45 minutes. How do you reduce it to under 10?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Profile first — find the bottleneck:</strong> Which step takes longest? Tests? Docker build? Lint? You can't optimize what you can't measure.<br><br>
+        <strong>1. Parallelize jobs:</strong><br>
+        Run unit tests, lint, and security scan in parallel (separate jobs in GitHub Actions). Don't wait for lint to finish before starting tests.<br><br>
+        <strong>2. Fix Docker layer caching:</strong><br>
+        Move <code>COPY package.json</code> and <code>RUN npm install</code> BEFORE <code>COPY . .</code>. If your source code changes but deps don't, the install layer is cached — saves 5-10 min.<br><br>
+        <strong>3. Cache dependencies in CI:</strong><br>
+        GitHub Actions: <code>actions/cache@v3</code> for node_modules, pip cache, Maven .m2. Avoid re-downloading on every run.<br><br>
+        <strong>4. Split test suites:</strong><br>
+        Run unit tests in CI on every push. Run integration/e2e tests only on PRs to main. Don't run 5000 unit tests on every commit.<br><br>
+        <strong>5. Use faster runners:</strong><br>
+        Larger GitHub Actions runners (4 CPU vs 2 CPU) for compute-heavy steps. Self-hosted runners close to your registries.<br><br>
+        <strong>6. Fail fast:</strong><br>
+        Run the fastest checks (lint, type-check) first. Fail early before expensive steps.<br><br>
+        <span class="qa-pill">profile first</span><span class="qa-pill">parallelize jobs</span><span class="qa-pill">fix Docker layer cache order</span><span class="qa-pill">cache dependencies</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC08</span><span class="qa-q-text">All Kubernetes nodes are NotReady. What happened and how do you recover?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        NotReady = Kubelet on the worker node has stopped communicating with the Control Plane, or the node itself is down.<br><br>
+        <strong>1. Check node status:</strong><br>
+        <code>kubectl get nodes</code> → all NotReady.<br>
+        <code>kubectl describe node &lt;name&gt;</code> → conditions section shows why (DiskPressure, MemoryPressure, NetworkUnavailable, KubeletNotReady).<br><br>
+        <strong>2. SSH into a worker node and check:</strong><br>
+        <code>systemctl status kubelet</code> — is Kubelet running? If crashed: <code>journalctl -u kubelet -f</code> for error logs.<br>
+        Common causes: disk full (<code>df -h</code>), node OOM, kubelet config error after upgrade.<br><br>
+        <strong>3. Check the network:</strong><br>
+        Can nodes reach the API Server? Is the CNI plugin (Calico, Cilium) healthy? <code>kubectl get pods -n kube-system</code> — are networking pods crashing?<br><br>
+        <strong>4. Cloud provider check:</strong><br>
+        Are the EC2 instances actually running? Check AWS console. Did an ASG policy terminate them all? Is there a cloud region incident?<br><br>
+        <strong>5. Recovery:</strong><br>
+        Restart kubelet: <code>systemctl restart kubelet</code>. If disk full, clean up logs. If all else fails, replace the nodes via ASG.<br><br>
+        <span class="qa-pill">describe node = conditions</span><span class="qa-pill">systemctl status kubelet</span><span class="qa-pill">check disk full + CNI</span><span class="qa-pill">check cloud instance health</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC09</span><span class="qa-q-text">You need to roll back a Kubernetes deployment that included a database migration. What's the problem and how do you handle it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        This is one of the most important DevOps topics and most candidates miss the nuance.<br><br>
+        <strong>The problem:</strong> <code>kubectl rollout undo</code> rolls back the application code to v1.0. But the database migration already ran and added/modified schema. v1.0 code may not be compatible with the new schema — it might crash, produce errors, or corrupt data.<br><br>
+        <strong>Best practice — write backwards-compatible migrations:</strong><br>
+        • <strong>Never drop a column in the same release that stops using it.</strong> First release: add new column, code uses both old + new. Second release: migrate data. Third release: remove old column.<br>
+        • This allows safe rollback at any point — v1.0 code still works with the new schema because the old column still exists.<br><br>
+        <strong>If you're already in trouble:</strong><br>
+        • Roll back the app first to stop user impact.<br>
+        • Write a <strong>down migration</strong> (reverses the schema change) and run it manually.<br>
+        • Ensure no data was migrated that would be lost by the rollback.<br><br>
+        <span class="qa-pill">backward-compatible migrations</span><span class="qa-pill">never drop column in same release</span><span class="qa-pill">app rollback ≠ DB rollback</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC10</span><span class="qa-q-text">Your database is running out of connections under load. What do you investigate?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>1. Confirm the error:</strong><br>
+        App logs: "too many connections" or "connection pool exhausted." DB metric: active connections approaching <code>max_connections</code>.<br><br>
+        <strong>2. Check connection pool configuration:</strong><br>
+        Every app instance opens a pool of connections. If you have 20 pods × 50 pool size = 1000 connections. Does your DB support that? RDS Postgres default <code>max_connections</code> is often 100 for small instances.<br><br>
+        <strong>3. Solutions:</strong><br>
+        • <strong>PgBouncer / RDS Proxy</strong> — connection poolers that sit between your app and DB. Many app connections → few real DB connections. 1000 app connections → 100 actual DB connections. This is the right fix at scale.<br>
+        • <strong>Reduce pool size per pod</strong> — if you have many pods, reduce pool size so total connections fit within DB limits.<br>
+        • <strong>Increase DB max_connections</strong> — temporary fix. Each connection uses RAM, so this has limits.<br><br>
+        <strong>4. Find connection leaks:</strong><br>
+        Are connections being released after use? Check for code that opens connections but doesn't close them on error paths.<br><br>
+        <span class="qa-pill">pods × pool size = total connections</span><span class="qa-pill">PgBouncer/RDS Proxy = multiplexing</span><span class="qa-pill">check for connection leaks</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC11</span><span class="qa-q-text">A Kubernetes CronJob hasn't run in 3 days. How do you debug it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>1. Check the CronJob itself:</strong><br>
+        <code>kubectl describe cronjob &lt;name&gt;</code> — look at "Last Schedule Time" and "Active" count. Any events showing failures?<br><br>
+        <strong>2. Check if Jobs were created:</strong><br>
+        <code>kubectl get jobs</code> — was a Job object created? If not, the schedule expression might be wrong. Verify the cron expression at crontab.guru.<br><br>
+        <strong>3. Check missed deadline:</strong><br>
+        CronJob has a <code>startingDeadlineSeconds</code> field. If the cluster was down during the scheduled time and this window passed, K8s considers the job "missed" and won't run it retroactively.<br><br>
+        <strong>4. Check failed Jobs:</strong><br>
+        <code>kubectl get jobs --field-selector status.successful=0</code> — any failed jobs from recent runs? Check pod logs of the failed job.<br><br>
+        <strong>5. concurrencyPolicy:</strong><br>
+        If set to <code>Forbid</code> and a previous run is still running → new runs are skipped. Check for stuck running jobs.<br><br>
+        <span class="qa-pill">kubectl describe cronjob</span><span class="qa-pill">verify cron expression</span><span class="qa-pill">check concurrencyPolicy</span><span class="qa-pill">startingDeadlineSeconds</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC12</span><span class="qa-q-text">A new engineer accidentally ran `terraform destroy` in production. What's your recovery plan?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Don't panic. Act fast.</strong><br><br>
+        <strong>Immediate:</strong><br>
+        1. How much was destroyed? Run <code>terraform plan</code> to see what's missing vs what's in the state file.<br>
+        2. Is there a Terraform workspace or state backup? S3 versioning on the state bucket → restore previous state version from S3.<br><br>
+        <strong>Recovery:</strong><br>
+        1. <code>terraform apply</code> — recreates all resources defined in your .tf files. Terraform's declarative nature means this should reconstruct the infrastructure.<br>
+        2. Databases: check AWS RDS automated backups (retention period). Restore from the latest snapshot. This is why you enable automated backups and test restores.<br>
+        3. Restore DNS: if Route 53 records were destroyed, update them.<br><br>
+        <strong>Prevention (what you implement after):</strong><br>
+        • Enable <code>lifecycle { prevent_destroy = true }</code> on critical resources in Terraform.<br>
+        • Require two-person approval for production applies (Atlantis with required approvers).<br>
+        • Lock down <code>terraform destroy</code> in CI — never in automated pipelines, human-only.<br>
+        • Enable AWS Delete Protection on RDS, ELB.<br><br>
+        <span class="qa-pill">restore state from S3 versioning</span><span class="qa-pill">terraform apply recreates</span><span class="qa-pill">restore DB from snapshot</span><span class="qa-pill">prevent_destroy lifecycle rule</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC13</span><span class="qa-q-text">Your application is deployed but the Kubernetes Service is returning "No endpoints available". Why?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        "No endpoints" = the Service exists but has no pods backing it. The Service selector doesn't match any healthy pod labels.<br><br>
+        <strong>1. Check the endpoints object:</strong><br>
+        <code>kubectl get endpoints &lt;service-name&gt;</code> — if it shows <code>&lt;none&gt;</code>, no pods are selected.<br><br>
+        <strong>2. Check the Service selector vs Pod labels:</strong><br>
+        <code>kubectl describe service &lt;name&gt;</code> → look at "Selector" field (e.g., <code>app=myapp</code>)<br>
+        <code>kubectl get pods --show-labels</code> → do any pods have that exact label?<br>
+        Typo in the label or selector = no match = no endpoints. This is the most common cause.<br><br>
+        <strong>3. Check pod readiness:</strong><br>
+        Even if labels match, pods must be <strong>Ready</strong> to receive traffic. If readinessProbe is failing, pods are excluded from endpoints even though they're running.<br>
+        <code>kubectl get pods</code> → check the READY column (1/1 vs 0/1).<br><br>
+        <strong>4. Check namespace:</strong><br>
+        Is the Service in the same namespace as the pods? By default, Services only select pods in the same namespace.<br><br>
+        <span class="qa-pill">kubectl get endpoints = empty?</span><span class="qa-pill">selector label mismatch</span><span class="qa-pill">readinessProbe failing</span><span class="qa-pill">same namespace?</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC14</span><span class="qa-q-text">You're asked to migrate a monolith to microservices on Kubernetes. How do you approach it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        This is a <strong>Strangler Fig</strong> migration — don't rewrite everything at once. Extract services gradually while the monolith still runs.<br><br>
+        <strong>Phase 1 — Containerize the monolith first:</strong><br>
+        Before splitting anything, package the monolith in Docker and deploy to Kubernetes. This teaches your team K8s without the added complexity of microservices.<br><br>
+        <strong>Phase 2 — Identify seams:</strong><br>
+        Find the parts of the monolith that are independently deployable: auth service, payment service, notification service. Start with the one that changes most frequently or causes the most pain.<br><br>
+        <strong>Phase 3 — Extract one service at a time:</strong><br>
+        • Extract the service → deploy as a separate K8s Deployment.<br>
+        • Route traffic to the new service via the Ingress (e.g., <code>/api/payments</code> → payment service).<br>
+        • Keep the monolith running — both the monolith's payment code and the new service exist during transition.<br>
+        • Once confident, disable the monolith's payment code.<br><br>
+        <strong>Phase 4 — Data separation:</strong><br>
+        Each microservice should own its data — separate DB schemas or separate RDS instances.<br><br>
+        <span class="qa-pill">Strangler Fig pattern</span><span class="qa-pill">containerize monolith first</span><span class="qa-pill">extract one service at a time</span><span class="qa-pill">each service owns its data</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">SC15</span><span class="qa-q-text">You've been asked to set up a DevOps pipeline for a brand new project from scratch. Walk through everything you'd build.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        The answer that shows you understand the full picture:<br><br>
+        <strong>1. Source Control:</strong> GitHub repo, branch protection on main (require PR + CI pass to merge), .gitignore, conventional commits enforced via commit-msg hook.<br><br>
+        <strong>2. CI Pipeline (GitHub Actions):</strong><br>
+        On every push: lint → unit tests → build Docker image → push to ECR.<br>
+        On PR: additionally run integration tests + security scan (Trivy, Snyk).<br><br>
+        <strong>3. Infrastructure (Terraform):</strong><br>
+        VPC + subnets + security groups + EKS cluster + RDS in private subnet + ALB. Remote state in S3 + DynamoDB lock. Separate workspaces for dev/staging/prod.<br><br>
+        <strong>4. CD (GitHub Actions + kubectl/Helm):</strong><br>
+        On merge to main → deploy to staging automatically. Manual approval gate → deploy to production. Kubernetes rolling update, zero downtime.<br><br>
+        <strong>5. Secrets:</strong> GitHub Actions secrets for CI. AWS Secrets Manager for production app secrets. Never hardcoded.<br><br>
+        <strong>6. Monitoring:</strong> Prometheus + Grafana for metrics. CloudWatch for AWS infra. Alertmanager → PagerDuty. Liveness + readiness probes on all pods.<br><br>
+        <strong>7. Documentation:</strong> Runbook for on-call. README with setup instructions. Architecture diagram.<br><br>
+        <span class="qa-pill">Git → CI → IaC → CD → Secrets → Monitor → Docs</span>
+      </div></div>
+    </div>
+
+  </div>

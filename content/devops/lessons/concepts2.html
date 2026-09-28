@@ -1,0 +1,55 @@
+
+
+  <div class="concept" style="--cc:#10b981">
+    <div class="concept-head"><span class="concept-icon">🏛️</span><span class="concept-title">Microservices vs Monolith</span><span class="concept-subtitle">Architecture</span></div>
+    <div class="concept-body">
+      A <strong>microservice</strong> is an architectural style that structures an application as a collection of small, loosely coupled, and independently deployable services. Each service focuses on a specific business domain (e.g. auth service, payment service, notification service) and communicates with others through well-defined APIs.<br><br>
+      A <strong>monolith</strong> is a single massive unit where all functions and services are interconnected and run as a single process. Simpler to build initially, but harder to scale and deploy independently.<br><br>
+      <strong>DevOps angle:</strong> Microservices = more containers, more complexity for Kubernetes to manage. Each service can be deployed independently — one team can ship without waiting for others. Monoliths deploy as one unit — all or nothing.
+    </div>
+    <div class="pill-row">
+      <span class="pill">microservice = 1 job</span><span class="pill">communicate via API</span><span class="pill">deploy independently</span><span class="pill">monolith = all-in-one</span><span class="pill">K8s manages each service</span>
+    </div>
+  </div>
+
+  <div class="concept" style="--cc:#38bdf8">
+    <div class="concept-head"><span class="concept-icon">⬅️</span><span class="concept-title">Shift Left</span><span class="concept-subtitle">DevOps Principle</span></div>
+    <div class="concept-body">
+      The concept of <strong>"shift left"</strong> refers to the practice of performing tasks <em>earlier</em> in the software development lifecycle — moving quality, security, and testing activities to the left (earlier) on the timeline.<br><br>
+      Traditionally, testing and security reviews happened at the end. Shift left means: write tests while you code, run security scans in CI, catch issues at commit time not at deployment time.<br><br>
+      <strong>Why it matters:</strong> A bug found at commit time costs minutes to fix. The same bug found in production costs hours of downtime and potentially money. The earlier you catch it, the cheaper it is.
+    </div>
+    <div class="pill-row">
+      <span class="pill">test early</span><span class="pill">security in CI</span><span class="pill">catch bugs at commit</span><span class="pill">cheaper to fix early</span>
+    </div>
+  </div>
+
+  <div class="concept" style="--cc:#f97316">
+    <div class="concept-head"><span class="concept-icon">🏗️</span><span class="concept-title">IaC — Infrastructure as Code</span><span class="concept-subtitle">Terraform / CloudFormation / Ansible</span></div>
+    <div class="concept-body">
+      IaC is the practice of managing and provisioning infrastructure through <strong>machine-readable configuration files</strong> rather than through physical hardware configuration or interactive tools (manual clicking).<br><br>
+      By keeping infrastructure in code format:<br>
+      • Stored in <strong>version control</strong> (Git) — full audit trail<br>
+      • <strong>Automated deployment</strong> consistently across environments<br>
+      • Reduces risk of human error<br>
+      • Increases efficiency — one command spins up entire environment<br><br>
+      No company owns physical servers — they rent from <strong>AWS, Azure, GCP</strong>. IaC defines exactly what you're renting and how it's configured.
+    </div>
+    <div class="pill-row">
+      <span class="pill">code &gt; clicking</span><span class="pill">version controlled</span><span class="pill">repeatable</span><span class="pill">Terraform</span><span class="pill">reduces human error</span>
+    </div>
+  </div>
+
+  <div class="concept" style="--cc:#eab308">
+    <div class="concept-head"><span class="concept-icon">🏠</span><span class="concept-title">Self-Hosted CI/CD Tools</span><span class="concept-subtitle">Jenkins / GitLab CI</span></div>
+    <div class="concept-body">
+      Some CI/CD tools can be installed on <strong>your own infrastructure</strong> — they don't require external internet access and you control everything.<br><br>
+      <strong>Jenkins</strong> — the most popular self-hosted CI tool. Highly configurable via plugins. You run it on your own server. Great for companies with strict data policies.<br><br>
+      <strong>GitLab CI/CD</strong> — built into GitLab. Can be entirely self-hosted. Pipeline defined in <code>.gitlab-ci.yml</code>. Integrated with code reviews, merge requests, and container registry all in one place.<br><br>
+      <strong>vs Cloud CI/CD:</strong> GitHub Actions, CircleCI, and AWS CodePipeline run on the vendor's infrastructure — easier setup but your code leaves your servers.
+    </div>
+    <div class="pill-row">
+      <span class="pill">self-hosted = your infra</span><span class="pill">Jenkins = most popular</span><span class="pill">GitLab = all-in-one</span><span class="pill">no external dependency</span>
+    </div>
+  </div>
+

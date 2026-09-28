@@ -1,0 +1,459 @@
+
+
+  <details class="found-details">
+    <summary>🧱 Foundation for Docker</summary>
+    <div class="found-body">
+
+      <div class="found-p">Before Dockerfiles and flags fly past you — let's build this from true zero: what a container actually is, the complete journey from source code to a running container, the real commands you'll type, and what a DevOps engineer actually spends their day doing with all of this.</div>
+
+      <div class="found-h" style="font-size:14px;">Docker — Complete Foundation for DevOps</div>
+
+      <div class="found-sub">1. First: What even is a "container"?</div>
+      <div class="found-p">A container is a small, self-contained box that has everything your app needs to run — the code, the exact right version of the language runtime, every library it depends on — all packaged together so it runs identically no matter what machine it lands on.</div>
+      <div class="found-pre">Your laptop 💻 ──"works on my machine"──→ 🤷
+Your laptop 💻 ──ships a container──────→ ✅ (same result, every machine)</div>
+      <div class="found-p">That's the entire problem Docker solves. Not speed, not magic — just "the exact same thing runs the exact same way, everywhere."</div>
+
+      <div class="found-sub">2. Why does DevOps even need this?</div>
+      <div class="found-p">Because before containers, deploying an app meant manually matching a server's setup to whatever the developer happened to have installed — the right Node version, the right system libraries, the right everything. One mismatch, and the app breaks in a way nobody can reproduce.</div>
+      <div class="found-p">Containers remove that entire category of problem. If it runs in the container on your laptop, it runs identically in the container on the server, in the container in the CI pipeline, and in the container in the cluster.</div>
+      <div class="found-key">🔑 The uncomfortable truth: "it works on my machine" used to be a running joke because everyone's machine was actually different. Docker didn't make computers more reliable — it made the environment itself something you ship, instead of something you hope matches.</div>
+
+      <div class="found-sub">3. The complete flow — what actually happens when you run a container</div>
+      <div class="found-p">This is the single most important mental model in this whole section. Walk through it slowly:</div>
+      <div class="found-pre">You write code + a Dockerfile
+        │
+        ↓
+   docker build 🔨
+   "Follow these steps, package the result"
+        │
+        ↓
+   Image created 📦
+   (a frozen, reusable snapshot — not running yet)
+        │
+        ↓
+   docker run ▶️
+        │
+        ↓
+┌───────────────────────┐
+│  Docker Engine          │  ← reads the image, starts a process
+└───────────┬─────────────┘
+            │
+            ↓
+   Container 🏃
+   (the image, actually running, isolated from everything else)
+            │
+            ↓
+   Your app is now reachable (if you mapped a port)</div>
+      <div class="found-p">Every arrow in that diagram is something a DevOps engineer configures, automates, and eventually has to debug. That's the whole job, condensed into one picture.</div>
+
+      <div class="found-sub">4. Image vs Container — the foundation of "what" vs "running"</div>
+      <div class="found-p">This single distinction trips up almost everyone at first, so slow down here:</div>
+      <div class="found-pre">Image     = the recipe, frozen and packaged (a class, in programming terms)
+Container = an actual running instance of that recipe (an object, in programming terms)</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Image</strong> — built once, doesn't change, can be copied anywhere. Think of it as a read-only template.<br><strong style="color:#e2e8f0;">Container</strong> — a live, running process created from an image. You can start ten containers from the exact same image, and each one runs independently.</div>
+      <div class="found-p">This is exactly why <span class="found-code">docker images</span> lists your templates, and <span class="found-code">docker ps</span> lists what's actually running right now — they're answering two completely different questions.</div>
+
+      <div class="found-sub">5. The Dockerfile — how an image actually gets built</div>
+      <div class="found-p">A Dockerfile is a plain text list of steps, read top to bottom, that describes exactly how to build the image.</div>
+      <div class="found-pre">FROM node:20            ← start from an existing base image
+WORKDIR /app             ← everything below happens inside /app
+COPY . .                 ← copy your code into the image
+RUN npm install          ← install dependencies, baked into the image
+CMD ["npm", "start"]     ← what to run when a container starts</div>
+      <div class="found-p">Nothing mysterious here — it's a recipe. <span class="found-code">FROM</span> is your starting point, and every line after it adds one more layer on top.</div>
+
+      <div class="found-sub">6. Layers — why Docker is fast to rebuild</div>
+      <div class="found-p">Every instruction in a Dockerfile creates a "layer" — and Docker caches each one. If a layer hasn't changed since the last build, Docker reuses it instantly instead of redoing the work.</div>
+      <div class="found-pre">FROM node:20        → Layer 1 (cached — base image never changes)
+WORKDIR /app         → Layer 2 (cached — never changes)
+COPY package.json .  → Layer 3 (cached, UNLESS package.json changed)
+RUN npm install       → Layer 4 (only reruns if Layer 3 changed above it)
+COPY . .              → Layer 5 (changes almost every build — your code)
+CMD ["npm", "start"]  → Layer 6</div>
+      <div class="found-p">This is exactly why real Dockerfiles copy <span class="found-code">package.json</span> and run <span class="found-code">npm install</span> <em>before</em> copying the rest of the code — it means editing a source file doesn't force a full dependency reinstall on every single build.</div>
+
+      <div class="found-sub">7. The Docker daemon & client — how the CLI actually works</div>
+      <div class="found-p">When you type a Docker command, you're not talking directly to your containers — you're talking to a background service that manages everything.</div>
+      <div class="found-pre">You type: docker run nginx
+        │
+        ↓
+   Docker CLI (client) — just sends the request
+        │
+        ↓
+   Docker daemon (dockerd) — does the actual work:
+   pulls the image, creates the container, starts the process
+        │
+        ↓
+   Container is now running</div>
+      <div class="found-p">This matters in real DevOps work — it's why "is the Docker daemon running?" is one of the first things you check when a container command mysteriously hangs or fails.</div>
+
+      <div class="found-sub">8. Commands you actually type</div>
+      <div class="found-p">Theory is nothing without the terminal. These are the commands you will genuinely reach for, in the order you'd actually reach for them building and running something for real.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">docker build — "turn my Dockerfile into an image"</div>
+      <div class="found-pre">docker build -t myapp:1.0 .</div>
+      <div class="found-pre">[+] Building 4.2s
+=> [1/4] FROM node:20
+=> [2/4] WORKDIR /app
+=> [3/4] COPY . .
+=> [4/4] RUN npm install
+=> exporting to image
+=> naming to myapp:1.0</div>
+      <div class="found-p"><span class="found-code">-t myapp:1.0</span> tags the image with a name and version, and the trailing <span class="found-code">.</span> means "use the Dockerfile in this folder."</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">docker run — "actually start a container from that image"</div>
+      <div class="found-pre">docker run -d -p 3000:3000 myapp:1.0</div>
+      <div class="found-pre">a1b2c3d4e5f6 (container ID, running in the background)</div>
+      <div class="found-p"><span class="found-code">-d</span> runs it detached (in the background), <span class="found-code">-p 3000:3000</span> connects port 3000 on your machine to port 3000 inside the container.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">docker ps — "what's actually running right now?"</div>
+      <div class="found-pre">docker ps</div>
+      <div class="found-pre">CONTAINER ID   IMAGE        STATUS         PORTS
+a1b2c3d4e5f6   myapp:1.0    Up 2 minutes   0.0.0.0:3000->3000/tcp</div>
+      <div class="found-p">The very first command to run when something "isn't working" — confirms whether the container is even alive.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">docker logs — "what is it actually saying?"</div>
+      <div class="found-pre">docker logs -f a1b2c3d4e5f6</div>
+      <div class="found-pre">Server listening on port 3000
+GET /health 200 OK</div>
+      <div class="found-p"><span class="found-code">-f</span> follows the log output live — the single most-used debugging command in all of Docker.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">docker exec — "let me look around inside it"</div>
+      <div class="found-pre">docker exec -it a1b2c3d4e5f6 sh</div>
+      <div class="found-pre">/app # (you're now inside the running container)</div>
+      <div class="found-p">Opens an interactive shell inside the already-running container — for poking around and checking files without stopping anything.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">docker stop / rm — "shut it down and clean up"</div>
+      <div class="found-pre">docker stop a1b2c3d4e5f6
+docker rm a1b2c3d4e5f6</div>
+      <div class="found-p"><span class="found-code">stop</span> gracefully shuts the process down; <span class="found-code">rm</span> deletes the now-stopped container so it doesn't clutter <span class="found-code">docker ps -a</span>.</div>
+
+      <div class="found-sub">9. What does a DevOps engineer actually DO with Docker, day to day?</div>
+      <div class="found-p">This is the part most tutorials skip. Here's what it actually looks like in a real job:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Writing and trimming Dockerfiles</strong> — ordering instructions so the build cache works in your favor, and switching to smaller base images (like <span class="found-code">node:20-alpine</span>) to cut image size and pull time.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Debugging "it built fine, why won't it start"</strong> — this is where <span class="found-code">docker logs</span> and <span class="found-code">docker exec</span> get used together to figure out exactly what's actually happening inside.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Wiring containers together</strong> — making sure an app container can actually reach a database container, usually via a shared Docker network or docker-compose.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Managing volumes</strong> — making sure a database container's data survives a restart instead of vanishing with the container.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Building images in CI</strong> — every push triggers a pipeline that builds a fresh image, tags it, and pushes it to a registry, ready to deploy.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Cleaning up disk space</strong> — old images and stopped containers quietly pile up on build servers; pruning them is a routine, recurring task.</div>
+
+      <div class="found-sub">10. The full picture, one more time</div>
+      <div class="found-pre">              Dockerfile 📄
+                   │
+              docker build
+                   │
+                   ↓
+             ┌─────────────────────┐
+             │       Image 📦        │  ← frozen, reusable, shareable
+             └──────────┬────────────┘
+                        │
+                   docker run
+                        │
+                        ↓
+             ┌─────────────────────┐
+             │     Container 🏃      │  ← the image, actually running
+             └──────────┬────────────┘
+                        │
+              docker ps / logs / exec
+                        │
+                        ↓
+                Debug, inspect, iterate</div>
+      <div class="found-p">Every box is something you'll build. Every arrow is a command you'll eventually reach for without even thinking about it.</div>
+
+      <div class="found-h">🧠 Docker cheat sheet</div>
+      <table class="found-table">
+        <thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Image</td><td>Frozen, reusable template — not running</td></tr>
+          <tr><td>Container</td><td>A running instance of an image</td></tr>
+          <tr><td>Dockerfile</td><td>Recipe describing how to build the image</td></tr>
+          <tr><td>Layer</td><td>One cached step of the build — reused if unchanged</td></tr>
+          <tr><td>Docker daemon</td><td>Background service that does the actual work</td></tr>
+          <tr><td>docker build</td><td>Turn a Dockerfile into an image</td></tr>
+          <tr><td>docker run</td><td>Start a container from an image</td></tr>
+          <tr><td>docker ps</td><td>What's running right now</td></tr>
+          <tr><td>docker logs -f</td><td>Live output from a container</td></tr>
+          <tr><td>docker exec -it</td><td>Open a shell inside a running container</td></tr>
+          <tr><td>docker stop / rm</td><td>Shut down and delete a container</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 Kid-friendly memory trick</div>
+      <div class="found-p">Think of Docker like baking:</div>
+      <div class="found-pre">Dockerfile
+ ↓
+Like a RECIPE card
+
+docker build
+ ↓
+Like actually BAKING the cake once
+
+Image
+ ↓
+The finished cake, boxed up — doesn't spoil, can be shipped anywhere
+
+docker run
+ ↓
+Taking a boxed cake out and putting a SLICE on a plate
+
+Container
+ ↓
+That plated slice — the thing actually being eaten right now
+
+You can plate ten slices (containers) from one boxed cake (image)</div>
+
+      <div class="found-key">🔑 Key takeaway<br><br>Everything in Docker traces back to one idea: <em>package it once, run it identically anywhere.</em> An image is the frozen package. A container is that package, alive and running. Every command you'll ever type either builds the package, starts it, or lets you look inside it while it's running.</div>
+
+    </div>
+  </details>
+
+
+
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#38bdf8;">🐳 Docker for DevOps</strong> — the Docker tab covers the concepts (images vs containers, Dockerfile, layers). This tab is the hands-on companion: click any real command to see its output, walk through real troubleshooting scenarios, then test yourself.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERACTIVE DOCKER COMMAND SIMULATOR
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🖥️ Try It — Click Any Docker Command to "Run" It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 12px;">Same simulator as Linux for DevOps, Networking, and Shell/SSH — syntax first, then a real example, then output. Every command runs <strong style="color:#94a3b8;">3 separate times</strong>, in 3 different real situations — each in its own box.</div>
+
+  <div id="dockerRunsArea">
+    <div class="ld-term">
+      <div class="ld-term-bar">
+        <span class="ld-dot" style="background:#ff5f56"></span>
+        <span class="ld-dot" style="background:#ffbd2e"></span>
+        <span class="ld-dot" style="background:#27c93f"></span>
+        <span class="ld-term-title">devops@server: ~</span>
+      </div>
+      <div class="ld-term-body">
+        <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> click any command below</div>
+        <div class="pu-output"><span class="dim">↳ output shows up here the moment you click something</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ld-info" id="dockerInfo">
+    <div><strong>🧩 Syntax:</strong> <code id="dockerSyntax">click a command below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="dockerDoes">Pick any command below to get started — images, containers, networking, volumes, compose, and cleanup are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="dockerWhere">—</span></div>
+  </div>
+
+  <div class="sl-breakdown" id="dockerBreakdownBox" style="margin-top:10px;">
+    <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+    <div class="sl-breakdown-list" id="dockerBreakdownList"><span class="dim">Click a command above — every piece of its syntax gets broken down here, one at a time.</span></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:20px;">
+    <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+    <div id="dockerWhyUseful"><span class="dim">Click a command above to see a real problem it solves, with a real example.</span></div>
+  </div>
+
+  <div class="ld-cat">🐳 Images</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('pull',this)">docker pull</button>
+    <button class="ld-pill" onclick="runDockerCmd('images',this)">docker images</button>
+    <button class="ld-pill" onclick="runDockerCmd('build',this)">docker build</button>
+    <button class="ld-pill" onclick="runDockerCmd('tag',this)">docker tag</button>
+    <button class="ld-pill" onclick="runDockerCmd('rmi',this)">docker rmi</button>
+  </div>
+
+  <div class="ld-cat">📦 Container Lifecycle</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('run',this)">docker run</button>
+    <button class="ld-pill" onclick="runDockerCmd('ps',this)">docker ps</button>
+    <button class="ld-pill" onclick="runDockerCmd('stop',this)">docker stop</button>
+    <button class="ld-pill" onclick="runDockerCmd('rm',this)">docker rm</button>
+    <button class="ld-pill" onclick="runDockerCmd('exec',this)">docker exec -it</button>
+  </div>
+
+  <div class="ld-cat">📋 Inspecting &amp; Logs</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('logs',this)">docker logs</button>
+    <button class="ld-pill" onclick="runDockerCmd('logsF',this)">docker logs -f</button>
+    <button class="ld-pill" onclick="runDockerCmd('inspectContainer',this)">docker inspect</button>
+    <button class="ld-pill" onclick="runDockerCmd('stats',this)">docker stats</button>
+    <button class="ld-pill" onclick="runDockerCmd('top',this)">docker top</button>
+  </div>
+
+  <div class="ld-cat">🌐 Networking</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('networkLs',this)">docker network ls</button>
+    <button class="ld-pill" onclick="runDockerCmd('networkCreate',this)">docker network create</button>
+    <button class="ld-pill" onclick="runDockerCmd('networkInspect',this)">docker network inspect</button>
+    <button class="ld-pill" onclick="runDockerCmd('port',this)">docker port</button>
+  </div>
+
+  <div class="ld-cat">💾 Volumes &amp; Data</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('volumeCreate',this)">docker volume create</button>
+    <button class="ld-pill" onclick="runDockerCmd('volumeLs',this)">docker volume ls</button>
+    <button class="ld-pill" onclick="runDockerCmd('bindMount',this)">docker run -v (bind mount)</button>
+    <button class="ld-pill" onclick="runDockerCmd('cp',this)">docker cp</button>
+  </div>
+
+  <div class="ld-cat">🧹 Cleanup</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('systemPrune',this)">docker system prune -a</button>
+    <button class="ld-pill" onclick="runDockerCmd('containerPrune',this)">docker container prune</button>
+    <button class="ld-pill" onclick="runDockerCmd('imagePrune',this)">docker image prune -a</button>
+    <button class="ld-pill" onclick="runDockerCmd('volumePrune',this)">docker volume prune</button>
+  </div>
+
+  <div class="ld-cat">🐙 Docker Compose</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('composeUp',this)">docker compose up -d</button>
+    <button class="ld-pill" onclick="runDockerCmd('composeDown',this)">docker compose down</button>
+    <button class="ld-pill" onclick="runDockerCmd('composePs',this)">docker compose ps</button>
+    <button class="ld-pill" onclick="runDockerCmd('composeLogs',this)">docker compose logs -f</button>
+  </div>
+
+  <div class="ld-cat">🔐 Registry &amp; Health</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('login',this)">docker login</button>
+    <button class="ld-pill" onclick="runDockerCmd('push',this)">docker push</button>
+    <button class="ld-pill" onclick="runDockerCmd('healthStatus',this)">health status</button>
+    <button class="ld-pill" onclick="runDockerCmd('restartPolicy',this)">--restart policy</button>
+  </div>
+
+  <div class="ld-cat">👤 Container User Management</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runDockerCmd('useraddExpireDocker',this)">useradd -e</button>
+    <button class="ld-pill" onclick="runDockerCmd('chageListDocker',this)">chage -l</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       REAL SCENARIOS
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn Docker by Solving the Problem First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually run, then click ▶ Run to reveal the command and its real output.</div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> A container exits immediately after "docker run," with nothing obviously wrong printed to your terminal.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker logs web</div>
+      <div class="pu-output"><span class="err">Error: Cannot find module 'express'</span><br>    at Function.Module._resolveFilename</div>
+      <div class="scenario-why"><strong>Why this command:</strong> The container's stdout/stderr from before it exited is captured here — the terminal itself shows nothing extra because the container already stopped by the time you'd see it.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> Your app container can't reach a database container by hostname, even though "docker ps" shows both running fine.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker network inspect app-net</div>
+      <div class="pu-output">"Containers": {<br>  "db-container-id": { "Name": "db" }<br>  <span class="err">// "web" is missing from this list</span><br>}</div>
+      <div class="scenario-why"><strong>Why this command:</strong> The app container was never attached to the same custom network as the database — the default bridge network doesn't support name-based resolution, so "web" simply isn't in this network's container list.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> You fixed a bug and rebuilt the image, but the running container still behaves like the old, broken version.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker ps</div>
+      <div class="pu-output">CONTAINER ID   IMAGE        STATUS<br>a3f9d2c1b8e4   <span class="err">myapp:v1</span>   Up 2 hours</div>
+      <div class="scenario-why"><strong>Why this command:</strong> Rebuilding an image never touches an already-running container — it's still running the old image entirely. The fix is "docker stop web && docker rm web" followed by a fresh "docker run" from the new tag.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> A CI runner's disk is nearly full after months of repeated image builds piling up unused layers.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker system prune -a</div>
+      <div class="pu-output"><span class="ok">Total reclaimed space: 4.2GB</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Every build leaves behind untagged intermediate layers and old images that never clean themselves up — this sweeps out everything not currently in use by a container in one shot.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> You need to grab one config file out of a running container, without opening a full interactive shell session.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker cp web:/etc/nginx/nginx.conf ./nginx.conf</div>
+      <div class="pu-output"><span class="ok">(file copied to ./nginx.conf)</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> cp moves a single file straight out of the container's filesystem to the host — faster than exec-ing in, catting the file, and manually copying the output.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> "docker ps" shows a container marked (unhealthy), and you need to know exactly why before restarting it.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker inspect --format='{{json .State.Health}}' web</div>
+      <div class="pu-output">{"Status":"<span class="err">unhealthy</span>","FailingStreak":3,"Log":[{"Output":"curl: (7) Failed to connect"}]}</div>
+      <div class="scenario-why"><strong>Why this command:</strong> The Health object logs the actual output of each failed probe — here, the healthcheck's own curl command couldn't connect, telling you exactly what's failing and not just that something is.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> You're about to launch a production container and want it to come back up automatically if it ever crashes.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker run -d --restart unless-stopped --name web nginx</div>
+      <div class="pu-output"><span class="ok">a3f9d2c1b8e4</span><br><span class="dim"># container now auto-restarts on crash or host reboot</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Without a restart policy, a crash or host reboot leaves the app down until someone notices and manually restarts it — this is a near-default setting for anything in production.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> You need to spin up an app, a database, and a cache together for local development, without three separate "docker run" commands.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">docker compose up -d</div>
+      <div class="pu-output">[+] Running 3/3<br> <span class="ok">✔ Container myapp-db-1     Started</span><br> <span class="ok">✔ Container myapp-redis-1  Started</span><br> <span class="ok">✔ Container myapp-web-1    Started</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> compose reads docker-compose.yml and starts every defined service in the correct dependency order — one command instead of three separate ones, and the services can already reach each other by name.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       QUIZ
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎮 Test Yourself — Docker for DevOps Quiz</div>
+  <div class="quiz-game" id="quiz-dockerdevops">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">🐳</div>
+      <div class="quiz-start-title">Docker for DevOps Quiz</div>
+      <div class="quiz-start-desc">50 questions across images, containers, networking, volumes, compose, cleanup, health checks, and troubleshooting — shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-dockerdevops', DOCKER_QUIZ_JOKES, DOCKER_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
+      </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+    </div>
+
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-dockerdevops')">↻ Play Again</button>
+    </div>
+  </div>
+

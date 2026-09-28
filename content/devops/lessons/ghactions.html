@@ -1,0 +1,395 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🤖 GitHub Actions in one sentence</div></div>
+    <div class="analogy-item"><span class="analogy-icon">👀</span><div class="analogy-text"><strong>GitHub watches your repo</strong><br>for things happening — pushes, PRs</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📋</span><div class="analogy-text"><strong>and runs a checklist for you</strong><br>a file you wrote, top to bottom</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">✅</span><div class="analogy-text"><strong>free CI/CD, built into GitHub</strong><br>no separate server to run yourself</div></div>
+  </div>
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    This tab is the "start from zero" foundation for GitHub Actions specifically — <strong style="color:#e2e8f0;">what it is, why teams bother with it, exactly when to introduce it into a project, what every piece of vocabulary means, how to build a workflow file line by line, and what everything looks like when you click around the real GitHub UI.</strong> If you want the syntax cheat-sheet keyword table, that's in <strong style="color:#38bdf8;">📄 YAML/CI</strong>. If you want to see it used inside one full realistic pipeline, that's in <strong style="color:#38bdf8;">🎬 How It's Used → Example 3</strong>. This tab is the "why does any of this exist, and when do I even need it" layer underneath both.
+  </div>
+
+  <!-- WHY -->
+  <div class="section-title">🤔 WHY GitHub Actions Exists — The Problem It Solves</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:8px;">😰 Without it</div>
+      You push code. You <em>hope</em> you remembered to run the tests locally. You <em>hope</em> the app still builds. If you're deploying, you SSH in and run commands by hand, hoping you don't fat-finger a step. Nobody checks your work until a user finds the bug.
+    </div>
+    <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:8px;">✅ With it</div>
+      You push code. GitHub <strong style="color:#e2e8f0;">automatically</strong> runs your tests, on a clean machine, the exact same way every single time — human memory removed from the process entirely. You get a green ✅ or red ❌ before anyone even looks at the code.
+    </div>
+  </div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px 16px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#e2e8f0;">Why GitHub Actions specifically</strong> (and not just "a CI tool" in general): it lives <em>inside</em> GitHub. No separate server to install, no separate account to make, no separate URL to remember. The workflow file lives in your repo, next to your code, versioned in Git like everything else. You already have a GitHub account — you already have GitHub Actions.
+  </div>
+
+  <!-- AT WHAT STAGE -->
+  <div class="section-title">🪜 At What Stage Should You Actually Add This?</div>
+  <div style="font-size:11.5px;color:#64748b;margin:-8px 0 14px;">This is the part most tutorials skip. You don't need this on day one — and turning on the wrong stage too early just adds friction with no payoff.</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Solo hobby project, just you, still learning</span><span class="stage-tool">SKIP IT FOR NOW</span></div><div class="stage-desc">You're the only person touching the code and there's nothing automated to check yet. Adding a workflow here is busywork that teaches you YAML, not the thing you're actually trying to learn. Focus on writing code first.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">You have at least one automated test, or a second person joins</span><span class="stage-tool">ADD THIS FIRST</span></div><div class="stage-desc">This is the real starting line. Add <strong style="color:#e2e8f0;">one</strong> workflow: run the test suite on every push and every pull request. This single workflow alone removes most "oops, I forgot to test that" bugs before they ever reach a teammate — or you, a week from now.</div><span class="stage-cmd">on: [push, pull_request]</span></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">You have a Dockerfile or a real build step</span><span class="stage-tool">ADD BUILD</span></div><div class="stage-desc">Tests passing doesn't guarantee the app actually builds — a missing import can pass tests and still break the build. Add a second job that builds the image (or runs the build command) so that's checked automatically too.</div><span class="stage-cmd">docker build .</span></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">You deploy somewhere real people can reach</span><span class="stage-tool">ADD DEPLOY — CAREFULLY</span></div><div class="stage-desc">Only automate deployment once you genuinely trust stages 2 and 3. Auto-deploying broken code faster is <em>worse</em> than deploying it slowly by hand. This is also the stage where <strong style="color:#e2e8f0;">Secrets</strong> (API keys, server credentials) start to matter — never type those directly into the YAML file.</div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">The team grows, or the project actually matters now</span><span class="stage-tool">ADD GUARDRAILS</span></div><div class="stage-desc">Turn on <strong style="color:#e2e8f0;">branch protection</strong> so nobody can merge to main unless the workflow passes. Add linting and security-scan jobs. Require a second person's review. The workflow stops being a convenience and starts being the thing that actually protects production.</div></div></div>
+  </div>
+  <div class="loop-box">
+    <div class="loop-icon">🎯</div>
+    <div>
+      <div class="loop-title">The one rule that matters: start with tests-on-push, nothing else</div>
+      <div class="loop-desc">Every tutorial that opens with a full deploy pipeline is skipping the part that actually builds your foundation. <span class="loop-arrow">|</span> Test automation first. <span class="loop-arrow">|</span> Build checking second. <span class="loop-arrow">|</span> Deploy automation last, once you trust the first two.</div>
+    </div>
+  </div>
+
+  <!-- CORE VOCABULARY -->
+  <div class="section-title">🧠 Core Vocabulary — What Everything Is Called</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table class="concept-table" style="margin-bottom:0;">
+      <thead><tr><th>Term</th><th>Think of it as</th><th>What it actually is</th></tr></thead>
+      <tbody>
+        <tr><td>Workflow</td><td style="color:#64748b;">The whole recipe</td><td style="color:#94a3b8;">One YAML file in <code style="color:#fbbf24;">.github/workflows/</code>. A repo can have several — one per file. Each is independent.</td></tr>
+        <tr><td>Event / Trigger</td><td style="color:#64748b;">"When does this start?"</td><td style="color:#94a3b8;">What causes a workflow to run: <code style="color:#fbbf24;">push</code>, <code style="color:#fbbf24;">pull_request</code>, <code style="color:#fbbf24;">workflow_dispatch</code> (manual button), <code style="color:#fbbf24;">schedule</code> (cron).</td></tr>
+        <tr><td>Job</td><td style="color:#64748b;">A section of the checklist</td><td style="color:#94a3b8;">A group of steps that all run on the <strong style="color:#e2e8f0;">same machine</strong>. A workflow can have multiple jobs — by default they all start at once, in parallel.</td></tr>
+        <tr><td>Step</td><td style="color:#64748b;">One line of the checklist</td><td style="color:#94a3b8;">A single task inside a job. Steps inside one job always run <strong style="color:#e2e8f0;">in order</strong>, top to bottom — if one fails, the rest of that job stops.</td></tr>
+        <tr><td>Runner</td><td style="color:#64748b;">The machine doing the work</td><td style="color:#94a3b8;">A fresh, temporary virtual machine GitHub spins up just for your job, then throws away when it's done. <code style="color:#fbbf24;">ubuntu-latest</code> is the default — free and disposable.</td></tr>
+        <tr><td>Action</td><td style="color:#64748b;">A reusable step someone else wrote</td><td style="color:#94a3b8;">A packaged step you drop in with <code style="color:#fbbf24;">uses:</code> instead of writing it yourself — e.g. <code style="color:#fbbf24;">actions/checkout@v4</code> pulls your code onto the runner in one line.</td></tr>
+        <tr><td>Secret</td><td style="color:#64748b;">A password the YAML never sees directly</td><td style="color:#94a3b8;">Stored encrypted in <strong style="color:#e2e8f0;">Settings → Secrets and variables → Actions</strong>, referenced as <code style="color:#fbbf24;">${{ secrets.NAME }}</code>. Never appears in logs, never lives in the file.</td></tr>
+        <tr><td>Artifact</td><td style="color:#64748b;">A file the run hands back to you</td><td style="color:#94a3b8;">Build output worth keeping — a test report, a compiled binary. Uploaded with <code style="color:#fbbf24;">actions/upload-artifact</code>, downloadable from the run page afterward.</td></tr>
+        <tr><td>Matrix</td><td style="color:#64748b;">"Run this same job, many times"</td><td style="color:#94a3b8;">Runs one job across multiple combinations automatically — e.g. Node 18 <em>and</em> 20, on Ubuntu <em>and</em> Windows — without copy-pasting the job four times.</td></tr>
+        <tr><td>Marketplace Action</td><td style="color:#64748b;">A plugin</td><td style="color:#94a3b8;">A pre-built action anyone can publish and reuse — Docker login, Slack notify, deploy-to-AWS. Search them at <code style="color:#fbbf24;">github.com/marketplace/actions</code>.</td></tr>
+        <tr><td>Environment</td><td style="color:#64748b;">A named deploy target with rules</td><td style="color:#94a3b8;">e.g. "production" — can require a human to click approve before a job touching it is allowed to run. Your safety switch on real deploys.</td></tr>
+        <tr><td>Concurrency</td><td style="color:#64748b;">"Don't let two of these overlap"</td><td style="color:#94a3b8;">Cancels or queues runs so two deploys can't race each other — important once deploy automation exists (Stage 4 above).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BUILDING A WORKFLOW LINE BY LINE -->
+  <div class="section-title">📄 Building Your First Workflow File, One Piece at a Time</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Click any card below to open it — click again to close it. Each one adds exactly one new idea on top of the last.</div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">01</div>
+      <div><div class="pu-title">The absolute minimum workflow that runs</div><div class="pu-desc">No checkout, no tests — just proof the machine works and something fires</div></div>
+      <div class="pu-badge">.github/workflows/hello.yml</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label file">FILE</span>
+        <div class="pu-step-content">
+          <div class="pu-path">.github/workflows/hello.yml</div>
+          <div class="pu-code"><span class="k">name</span>: <span class="s">Hello Workflow</span>
+<span class="k">on</span>: <span class="v">push</span>
+<span class="k">jobs</span>:
+  <span class="fn">say-hello</span>:
+    <span class="k">runs-on</span>: <span class="v">ubuntu-latest</span>
+    <span class="k">steps</span>:
+      - <span class="k">run</span>: echo <span class="s">"Hello from GitHub Actions"</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">Four ideas, nothing else: <strong>name</strong> is just a label. <strong>on: push</strong> means "run every time someone pushes." <strong>runs-on</strong> picks the machine. <strong>run</strong> is one shell command. Commit this file and push — a real run appears in the Actions tab within seconds.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>a workflow that can't see your code isn't useful yet — fix that</em></div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">02</div>
+      <div><div class="pu-title">Give it your actual code first</div><div class="pu-desc">A fresh runner starts completely empty — it has to be told to fetch your repo</div></div>
+      <div class="pu-badge">actions/checkout</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label file">FILE</span>
+        <div class="pu-step-content">
+          <div class="pu-path">.github/workflows/hello.yml</div>
+          <div class="pu-code"><span class="k">jobs</span>:
+  <span class="fn">say-hello</span>:
+    <span class="k">runs-on</span>: <span class="v">ubuntu-latest</span>
+    <span class="k">steps</span>:
+      - <span class="k">uses</span>: <span class="s">actions/checkout@v4</span>
+      - <span class="k">run</span>: ls</div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">The runner is a brand new, empty machine every single time — it does not automatically have your repo on it. <code>uses: actions/checkout@v4</code> is the official action that clones your repo onto the runner. It's the first step in almost every real-world workflow that has ever been written.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>now make it actually check something meaningful</em></div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">03</div>
+      <div><div class="pu-title">Install dependencies, then run your real tests</div><div class="pu-desc">This is the version worth actually committing to a real project</div></div>
+      <div class="pu-badge">setup-node + npm test</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label file">FILE</span>
+        <div class="pu-step-content">
+          <div class="pu-path">.github/workflows/hello.yml</div>
+          <div class="pu-code"><span class="k">jobs</span>:
+  <span class="fn">test</span>:
+    <span class="k">runs-on</span>: <span class="v">ubuntu-latest</span>
+    <span class="k">steps</span>:
+      - <span class="k">uses</span>: <span class="s">actions/checkout@v4</span>
+      - <span class="k">uses</span>: <span class="s">actions/setup-node@v4</span>
+        <span class="k">with</span>:
+          <span class="k">node-version</span>: <span class="s">'20'</span>
+      - <span class="k">run</span>: npm install
+      - <span class="k">run</span>: npm test</div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box"><code>setup-node</code> installs a specific Node.js version onto the runner — the runner has an OS but not necessarily the exact toolchain your app needs. <code>with:</code> passes options into an action, the same way arguments get passed into a function. From here, <code>npm test</code> is the same command you'd run on your own laptop — it just now runs automatically, on a clean machine, every single push.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>last touch — be specific about when this should actually fire</em></div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">04</div>
+      <div><div class="pu-title">Narrow down exactly when it should run</div><div class="pu-desc">"Every push" includes branches you may not care about yet</div></div>
+      <div class="pu-badge">on: branches</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label file">FILE</span>
+        <div class="pu-step-content">
+          <div class="pu-path">.github/workflows/hello.yml</div>
+          <div class="pu-code"><span class="k">name</span>: <span class="s">Run Tests</span>
+<span class="k">on</span>:
+  <span class="k">push</span>:
+    <span class="k">branches</span>: [main]
+  <span class="k">pull_request</span>:
+    <span class="k">branches</span>: [main]</div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">This says: run when someone pushes straight to <code>main</code>, <strong>and</strong> run on every pull request that targets <code>main</code> — which means every PR gets tested <em>before</em> it's even merged, not after. This is the exact version of the workflow used as Step 1 of Example 3 in the "How It's Used" tab.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLICK BY CLICK UI -->
+  <div class="section-title">🖱️ Click-by-Click: Where Everything Actually Lives in GitHub's UI</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Every screen below is described exactly as the real GitHub UI looks and is laid out — so nothing here looks unfamiliar the first time you open the real thing.</div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">01</div>
+      <div><div class="pu-title">Where the file physically goes</div><div class="pu-desc">One folder, one exact name — GitHub only looks in this one place</div></div>
+      <div class="pu-badge">folder structure</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label file">PATH</span>
+        <div class="pu-step-content">
+          <div class="pu-code">your-repo/
+├── .github/
+│   └── workflows/
+│       └── ci.yml    <span class="c">← any .yml file in here is a workflow</span>
+├── src/
+├── package.json
+└── README.md</div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">That's the entire rule. <code>.github/workflows/</code> — that exact folder name, that exact spelling, in the repo root. GitHub scans this one folder. You can have as many <code>.yml</code> files in there as you want; each one is a completely separate, independent workflow.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">02</div>
+      <div><div class="pu-title">The Actions tab, the first time you ever open it</div><div class="pu-desc">If a repo has no workflows yet, GitHub offers to help you write one</div></div>
+      <div class="pu-badge">Actions tab</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label out">UI</span>
+        <div class="pu-step-content">
+          <div class="pu-output"><span class="hi">Get started with GitHub Actions</span>
+<span class="dim">GitHub Actions can help you automate your workflow.</span>
+
+<span class="ok">▸ Simple workflow</span>          <span class="dim">a basic starter file</span>
+<span class="ok">▸ Node.js</span>                   <span class="dim">test a Node.js project</span>
+<span class="ok">▸ Docker image</span>              <span class="dim">build and push an image</span>
+<span class="dim">... more suggested templates, based on files already in your repo</span>
+
+<span class="dim">or</span>  <span class="hi">set up a workflow yourself →</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">GitHub actually detects what's in your repo — if it sees a <code>package.json</code>, it suggests a Node.js template; if it sees a <code>Dockerfile</code>, it suggests a Docker template. Clicking "set up a workflow yourself" just opens a blank editor already pointed at <code>.github/workflows/main.yml</code>, ready to commit.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">03</div>
+      <div><div class="pu-title">You push — a run appears in the list</div><div class="pu-desc">Every push or PR that matches your trigger adds one row here</div></div>
+      <div class="pu-badge">workflow runs list</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label out">UI — while it's running</span>
+        <div class="pu-step-content">
+          <div class="pu-output"><span class="warn">● Run Tests #14</span>  <span class="dim">Push · main · you</span>  <span class="dim">· 12s so far</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label out">UI — once it finishes</span>
+        <div class="pu-step-content">
+          <div class="pu-output"><span class="ok">✓ Run Tests #14</span>  <span class="dim">Push · main · you</span>  <span class="dim">· Success · 38s</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">A hollow yellow dot means it's currently in progress. A green checkmark means every job in that run finished with exit code 0. A red ✕ means at least one job failed. This exact list is what "the workflow ran" actually looks like in practice — this is what Step 4 of Example 3 walks through inside one real pipeline.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">04</div>
+      <div><div class="pu-title">Click into the run → click into the job → live steps</div><div class="pu-desc">Every single step you wrote shows up here, in order, with its own log</div></div>
+      <div class="pu-badge">job step list</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label out">UI</span>
+        <div class="pu-step-content">
+          <div class="pu-output"><span class="ok">✓</span> Set up job                         <span class="dim">1s</span>
+<span class="ok">✓</span> Checkout code                       <span class="dim">1s</span>
+<span class="ok">✓</span> Set up Node                         <span class="dim">3s</span>
+<span class="ok">✓</span> npm install                         <span class="dim">14s</span>
+<span class="ok">✓</span> npm test                            <span class="dim">17s</span>
+<span class="ok">✓</span> Complete job                        <span class="dim">0s</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">"Set up job" and "Complete job" are added automatically by GitHub — everything between them is exactly the <code>steps:</code> list you wrote in the YAML, in the same order. Click any row to expand its full raw terminal output — genuinely the same output you'd see running it locally.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#fbbf24">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">05</div>
+      <div><div class="pu-title">Where secrets actually live</div><div class="pu-desc">Never in the YAML file — always in repo settings, encrypted</div></div>
+      <div class="pu-badge">Settings → Secrets</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label out">UI PATH</span>
+        <div class="pu-step-content">
+          <div class="pu-output"><span class="dim">Repo →</span> <span class="hi">Settings</span> <span class="dim">→</span> <span class="hi">Secrets and variables</span> <span class="dim">→</span> <span class="hi">Actions</span>
+
+<span class="dim">Repository secrets</span>                    <span class="ok">[ New repository secret ]</span>
+<span class="dim">DOCKERHUB_TOKEN</span>          <span class="dim">Updated 2 days ago</span>
+<span class="dim">SERVER_SSH_KEY</span>           <span class="dim">Updated 2 days ago</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">You type the value in once here — GitHub encrypts it. From then on, your workflow only ever references the <em>name</em>: <code>${{ secrets.DOCKERHUB_TOKEN }}</code>. It's automatically masked as <code>***</code> if it ever shows up in a log by accident. This is the only correct place for passwords, API keys, or tokens — never paste one directly into a <code>.yml</code> file.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pu-card hu-card" style="--pu-clr:#22c55e">
+    <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+      <div class="pu-num">06</div>
+      <div><div class="pu-title">Made a mistake? Re-run it, or cancel it</div><div class="pu-desc">No need to push a new commit just to try again</div></div>
+      <div class="pu-badge">••• menu</div>
+    </div>
+    <div class="pu-body">
+      <div class="pu-step">
+        <span class="pu-step-label out">UI</span>
+        <div class="pu-step-content">
+          <div class="pu-output"><span class="dim">On a finished run, top-right</span> <span class="hi">•••</span>
+  <span class="ok">↻ Re-run all jobs</span>
+  <span class="ok">↻ Re-run failed jobs</span>
+  <span class="dim">⤓ Download log archive</span>
+
+<span class="dim">On a run that's still in progress, top-right</span>
+  <span class="err">✕ Cancel run</span></div>
+        </div>
+      </div>
+      <div class="pu-step">
+        <span class="pu-step-label note">WHY</span>
+        <div class="pu-step-content">
+          <div class="pu-note-box">"Re-run failed jobs" only re-runs what actually failed — useful when a test flaked for an unrelated reason and you don't want to wait for the whole thing again. "Cancel run" stops a run mid-flight, e.g. you just noticed the code isn't ready and don't want it to finish deploying.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q&A -->
+  <div class="section-title">🎯 Foundational Q&amp;A</div>
+  <div class="qa-list">
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">GA1</span><span class="qa-q-text">What's the actual difference between a workflow, a job, and a step?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text"><strong>Workflow</strong> = one YAML file, the whole automation. <strong>Job</strong> = a group of steps that all run together on one machine — a workflow can have several jobs, and by default they all start in parallel. <strong>Step</strong> = one task inside a job, and steps inside a job always run in order, top to bottom.<br><br><span class="qa-pill">workflow = file</span><span class="qa-pill">job = machine + parallel</span><span class="qa-pill">step = task in order</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">GA2</span><span class="qa-q-text">What actually triggers a workflow to run?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">An <strong>event</strong> defined under <code>on:</code>. Most common: <code>push</code> (code lands on a branch), <code>pull_request</code> (a PR is opened or updated), <code>workflow_dispatch</code> (someone clicks a manual "Run workflow" button), and <code>schedule</code> (a cron expression, e.g. "every night at 2am"). If none of these match, the workflow simply never runs.<br><br><span class="qa-pill">push</span><span class="qa-pill">pull_request</span><span class="qa-pill">workflow_dispatch = manual</span><span class="qa-pill">schedule = cron</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">GA3</span><span class="qa-q-text">Why never hardcode an API key or password directly in the YAML file?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">The workflow file is committed to Git — meaning it's in your repo's full history <strong>forever</strong>, visible to anyone with read access, even if you delete the line in a later commit. Secrets stored in <strong>Settings → Secrets and variables → Actions</strong> are encrypted, never appear in the file, and get automatically masked as <code>***</code> in logs even if a step accidentally prints them.<br><br><span class="qa-pill">git history is forever</span><span class="qa-pill">secrets = encrypted + masked</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">GA4</span><span class="qa-q-text">What is a "runner," exactly?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">A temporary virtual machine GitHub spins up fresh, just to execute one job, then destroys the moment that job is done. Nothing you install or write to disk during a run survives to the next one — that's intentional, it guarantees every run starts from the exact same clean state. <code>runs-on: ubuntu-latest</code> is the free, default option; self-hosted runners (your own machine) are also possible for special hardware or private-network access.<br><br><span class="qa-pill">fresh every run</span><span class="qa-pill">disposable</span><span class="qa-pill">ubuntu-latest = free default</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">GA5</span><span class="qa-q-text">If a workflow has two jobs, do they run one after the other, or at the same time?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">At the same time, by default — jobs are parallel unless you say otherwise. To force one job to wait for another, add <code>needs: job-name</code>. E.g. a <code>deploy</code> job with <code>needs: test</code> won't start until the <code>test</code> job has fully succeeded — exactly what stops broken code from ever reaching a deploy step.<br><br><span class="qa-pill">jobs = parallel by default</span><span class="qa-pill">needs: = wait for another job</span></div></div></div>
+
+    <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">GA6</span><span class="qa-q-text">When should you NOT reach for GitHub Actions yet?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">When you're the only person on the project and there's nothing automated to check yet — no tests, no build step. Writing a workflow at that point is practicing YAML syntax, not solving a real problem. Add it the moment there's a test suite to run automatically or a second person whose code you need checked before it lands next to yours.<br><br><span class="qa-pill">see Stage 1 above</span><span class="qa-pill">automation needs something to automate</span></div></div></div>
+
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🐙</div>
+    <div>
+      <div class="loop-title">Workflow file → trigger → runner → jobs → steps</div>
+      <div class="loop-desc">Start with one workflow: tests on every push. <span class="loop-arrow">|</span> Add build-checking once there's something to build. <span class="loop-arrow">|</span> Add deploy only once you trust both of those. <span class="loop-arrow">|</span> Secrets always live in Settings, never in the YAML. <span class="loop-arrow">|</span> See it all wired into one real pipeline in <strong style="color:#38bdf8;">🎬 How It's Used → Example 3</strong>.</div>
+    </div>
+  </div>
+

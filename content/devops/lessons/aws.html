@@ -1,0 +1,283 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">☁️ Cloud / AWS</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🏦</span><div class="analogy-text"><strong>No physical servers</strong><br>Rent compute from AWS</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚡</span><div class="analogy-text"><strong>200+ services</strong><br>Compute, storage, DB, networking</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🌍</span><div class="analogy-text"><strong>Regions + AZs</strong><br>High availability by design</div></div>
+  </div>
+
+  <div class="section-title">⚡ Core AWS Services — DevOps Essentials</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(249,115,22,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#f97316;font-weight:700;width:150px;">SERVICE</th><th style="text-align:left;padding:8px 12px;color:#f97316;font-weight:700;">WHAT IT IS</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">EC2</span></td><td style="padding:7px 12px;color:#94a3b8;">Virtual machine in the cloud. You pick the OS, size, and specs. The foundation of cloud compute.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">S3</span></td><td style="padding:7px 12px;color:#94a3b8;">Object storage — files, backups, static websites, Docker layer cache, Terraform state files. Infinitely scalable.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">IAM</span></td><td style="padding:7px 12px;color:#94a3b8;">Who can do what. Users, roles, policies. Always follow <strong style="color:#e2e8f0;">least privilege principle</strong> — give only the permissions needed, nothing more.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">VPC</span></td><td style="padding:7px 12px;color:#94a3b8;">Your private isolated network inside AWS. Subnets, routing tables, gateways. Everything sits inside a VPC.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">Security Group</span></td><td style="padding:7px 12px;color:#94a3b8;">Virtual firewall for EC2/RDS. Controls inbound and outbound traffic by port/protocol/source.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">CloudWatch</span></td><td style="padding:7px 12px;color:#94a3b8;">AWS monitoring, logging, and alerting. Like Prometheus + Grafana but native AWS. Collects metrics, stores logs, fires alarms.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">ECS</span></td><td style="padding:7px 12px;color:#94a3b8;">AWS-native container orchestration. Simpler than K8s. Two modes: EC2 (you manage the VMs) and Fargate (serverless, AWS manages infra).</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">EKS</span></td><td style="padding:7px 12px;color:#94a3b8;">Managed Kubernetes on AWS. AWS handles the control plane. You manage worker nodes. Best when you need full K8s compatibility.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">ALB</span></td><td style="padding:7px 12px;color:#94a3b8;">Application Load Balancer. HTTP/HTTPS routing, health checks, path-based routing. Works with ECS and EKS.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">Lambda</span></td><td style="padding:7px 12px;color:#94a3b8;">Serverless compute. Run code without managing servers. Event-triggered. Pay per invocation. Great for lightweight background tasks.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">RDS</span></td><td style="padding:7px 12px;color:#94a3b8;">Managed relational database. Postgres, MySQL, Aurora. AWS handles backups, patching, failover.</td></tr>
+        <tr><td style="padding:7px 12px;"><span style="color:#fbbf24;font-family:'JetBrains Mono',monospace;">Region / AZ</span></td><td style="padding:7px 12px;color:#94a3b8;"><strong style="color:#e2e8f0;">Region</strong> = geographic area (us-east-1). <strong style="color:#e2e8f0;">AZ</strong> = isolated data center within a region. Deploy across AZs for High Availability.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🛡️ High Availability vs Disaster Recovery</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:6px;">High Availability (HA)</div>
+      Cluster is always accessible even if one or more servers are down. Achieved by:<br>
+      • Multi-AZ deployment within a region<br>
+      • Redundant instances + auto-scaling<br>
+      • Load balancers routing around failed nodes
+    </div>
+    <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:6px;">Disaster Recovery (DR)</div>
+      Continue service even during a regional outage. Achieved by:<br>
+      • Multi-region deployment<br>
+      • Data replication across regions<br>
+      • DNS failover to backup region
+    </div>
+  </div>
+
+  <div class="section-title">🌐 AWS Networking Summary</div>
+  <div class="cmd-grid">
+    <div class="cmd-card" style="border-left-color:#f97316;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">VPC</span><span class="cmd-tag">isolation</span></div>
+      <div class="cmd-desc">Virtual Private Cloud — your isolated network. Resources (EC2, RDS) live inside subnets within the VPC. Public subnets face internet. Private subnets are internal only.</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">Security Groups</span><span class="cmd-tag">firewall</span></div>
+      <div class="cmd-desc">Virtual firewall. Controls inbound/outbound traffic by port, protocol, source IP. Stateful — if you allow inbound, outbound response is auto-allowed.</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#22c55e;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">Load Balancer (ALB)</span><span class="cmd-tag">traffic</span></div>
+      <div class="cmd-desc">Distributes HTTP(S) traffic across multiple instances. Health checks remove unhealthy instances. Path-based routing. SSL termination.</div>
+    </div>
+    <div class="cmd-card" style="border-left-color:#a855f7;">
+      <div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">IAM</span><span class="cmd-tag">access control</span></div>
+      <div class="cmd-desc"><strong>Least privilege principle:</strong> Give only the permissions needed. IAM Roles attach to EC2/Lambda — never hardcode access keys in code. Use roles for service-to-service auth.</div>
+    </div>
+  </div>  <div class="section-title">🔥 Full DevOps Deployment Workflow on AWS</div>
+  <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:4px;padding:16px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#f97316;font-size:12px;">User → ALB → ECS/EKS (App) → RDS (DB)</strong><br>
+    <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓</span><br>
+    <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S3</span><br><br>
+    <strong style="color:#e2e8f0;">1. Network Setup</strong> — VPC → Public subnet (ALB) + Private subnet (ECS + RDS)<br>
+    <strong style="color:#e2e8f0;">2. Security</strong> — IAM roles for ECS/EC2. Security groups: Allow ALB→ECS (port 3000), Allow ECS→RDS (port 5432)<br>
+    <strong style="color:#e2e8f0;">3. Database</strong> — Launch RDS (Postgres) in private subnet (never public)<br>
+    <strong style="color:#e2e8f0;">4. App Deployment</strong> — Build Docker image → Push to ECR → Deploy on ECS Fargate (or EKS for K8s)<br>
+    <strong style="color:#e2e8f0;">5. Traffic</strong> — Create ALB → Route /api → backend service, / → frontend service<br>
+    <strong style="color:#e2e8f0;">6. Storage</strong> — S3 for static assets (React build), file uploads, logs<br>
+    <strong style="color:#e2e8f0;">7. Monitoring</strong> — CloudWatch: logs + CPU/memory metrics + alerts<br>
+    <strong style="color:#e2e8f0;">8. Automation</strong> — Lambda for background jobs (image resize, cron tasks)
+  </div>
+
+  <div class="section-title">🃏 Service Quick-Reference Cards</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));">
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">EC2</span><span class="cmd-tag">compute</span></div><div class="cmd-desc">A computer in the cloud. You pick OS + size. Host apps, run Docker, CI/CD runners.<br><strong style="color:#e2e8f0;">Think:</strong> "Renting a computer on AWS"</div></div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">S3</span><span class="cmd-tag">storage</span></div><div class="cmd-desc">Unlimited file storage. Images, videos, React builds, Terraform state, logs, build artifacts.<br><strong style="color:#e2e8f0;">Think:</strong> "Google Drive for servers"</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">IAM</span><span class="cmd-tag">access</span></div><div class="cmd-desc">Controls who can do what. Dev can deploy but not delete DB. EC2 can read S3 but nothing else. Rule: least privilege.<br><strong style="color:#e2e8f0;">Think:</strong> "Bouncer for AWS"</div></div>
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">VPC</span><span class="cmd-tag">network</span></div><div class="cmd-desc">Your private isolated network in AWS. Public subnet → web servers. Private subnet → database (never expose DB to internet).<br><strong style="color:#e2e8f0;">Think:</strong> "Your own mini internet inside AWS"</div></div>
+    <div class="cmd-card" style="border-left-color:#eab308;"><div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">Security Group</span><span class="cmd-tag">firewall</span></div><div class="cmd-desc">Virtual firewall. Allow port 80 (HTTP), allow port 22 (SSH from your IP only). Lock down servers.<br><strong style="color:#e2e8f0;">Think:</strong> "Firewall rules per instance"</div></div>
+    <div class="cmd-card" style="border-left-color:#f43f5e;"><div class="cmd-head"><span class="cmd-label" style="color:#f43f5e;background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.2);">CloudWatch</span><span class="cmd-tag">monitoring</span></div><div class="cmd-desc">Logs + metrics + alerts. CPU &gt; 80% → send alert. App logs stored and searchable. Debug issues, monitor uptime.<br><strong style="color:#e2e8f0;">Think:</strong> "Eyes + ears of your system"</div></div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">ECS Fargate</span><span class="cmd-tag">containers</span></div><div class="cmd-desc">Run Docker containers — AWS manages the servers. You just provide the image. Simpler than K8s.<br><strong style="color:#e2e8f0;">Think:</strong> "Docker hosting without managing VMs"</div></div>
+    <div class="cmd-card" style="border-left-color:#818cf8;"><div class="cmd-head"><span class="cmd-label" style="color:#818cf8;background:rgba(129,140,248,0.08);border-color:rgba(129,140,248,0.2);">EKS</span><span class="cmd-tag">kubernetes</span></div><div class="cmd-desc">Managed Kubernetes. AWS handles the control plane. Use when you need full K8s power for complex microservices.<br><strong style="color:#e2e8f0;">Think:</strong> "Powerful ECS with full K8s"</div></div>
+    <div class="cmd-card" style="border-left-color:#10b981;"><div class="cmd-head"><span class="cmd-label" style="color:#10b981;background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);">Lambda</span><span class="cmd-tag">serverless</span></div><div class="cmd-desc">Run code without servers. Upload image → auto resize. API endpoints. Cron jobs. Pay per invocation.<br><strong style="color:#e2e8f0;">Think:</strong> "Run code only when needed"</div></div>
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">RDS</span><span class="cmd-tag">database</span></div><div class="cmd-desc">Managed SQL database (Postgres, MySQL). No manual setup. Auto backups, patching, failover handled by AWS.<br><strong style="color:#e2e8f0;">Think:</strong> "Database without the headache"</div></div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">ALB</span><span class="cmd-tag">load balancer</span></div><div class="cmd-desc">Distributes traffic. Route /api → backend, / → frontend. Health checks remove failed instances. SSL termination.<br><strong style="color:#e2e8f0;">Think:</strong> "Traffic police for requests"</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">Region / AZ</span><span class="cmd-tag">geography</span></div><div class="cmd-desc">Region = location (us-east-1). AZ = data center inside region. Deploy in 2+ AZs → if one fails, app still works.<br><strong style="color:#e2e8f0;">Think:</strong> "Spread load to survive failures"</div></div>
+  </div>
+
+  <div class="section-title">🌐 Global Infrastructure — Regions & AZs</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:6px;">🌍 Regions</div>
+      Geographic locations around the world — <code style="color:#fbbf24;">us-east-1</code> (N. Virginia), <code style="color:#fbbf24;">eu-west-1</code> (Ireland), <code style="color:#fbbf24;">ap-southeast-1</code> (Singapore). Each is a massive cluster of data centers.<br><br>Choose your region based on: latency to users, data residency laws, and service availability.
+    </div>
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:6px;">🏢 Availability Zones (AZs)</div>
+      Within each Region there are multiple <strong style="color:#e2e8f0;">physically isolated</strong> data centers: <code style="color:#fbbf24;">us-east-1a</code>, <code style="color:#fbbf24;">us-east-1b</code>, <code style="color:#fbbf24;">us-east-1c</code>. Independent power, cooling, networking.<br><br>If a disaster hits one AZ, the others stay online. <strong style="color:#22c55e;">Good DevOps = always deploy across 2+ AZs.</strong>
+    </div>
+  </div>
+
+  <div class="section-title">💾 Storage Types — Which to Use When</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;width:80px;">SERVICE</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">TYPE</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">USE CASE</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">S3</td><td style="padding:7px 12px;color:#e2e8f0;">Object storage</td><td style="padding:7px 12px;color:#94a3b8;">Infinitely scalable file bucket. Accessed via API. Perfect for backups, static assets, logs, Terraform state, Docker build cache. Not a filesystem.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">EBS</td><td style="padding:7px 12px;color:#e2e8f0;">Block storage</td><td style="padding:7px 12px;color:#94a3b8;">Virtual hard drive attached directly to one EC2 instance. Holds the OS and local databases. Like a laptop's hard drive. Fast, but tied to one instance and one AZ.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">EFS</td><td style="padding:7px 12px;color:#e2e8f0;">Network filesystem</td><td style="padding:7px 12px;color:#94a3b8;">Shared network drive. Multiple EC2 instances or K8s pods across different AZs can mount and read/write simultaneously. Like NFS in the cloud.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">⚖️ L4 vs L7 Load Balancers (NLB vs ALB)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;font-size:13px;margin-bottom:8px;">⚡ L4 — NLB (Fast, Blind)</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">
+        Only looks at the <strong style="color:#e2e8f0;">IP address and TCP/UDP port</strong>. Has no idea what the user is asking for. Just grabs the packet and sends it to the next server as fast as possible.<br><br>
+        <strong style="color:#22c55e;">Pros:</strong> Blazing fast, low latency, millions of req/sec.<br>
+        <strong style="color:#e2e8f0;">When to use:</strong> Raw speed matters, or non-HTTP traffic (gaming servers, database connections).<br>
+        <strong style="color:#fbbf24;">AWS = NLB (Network Load Balancer)</strong>
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;font-size:13px;margin-bottom:8px;">🧠 L7 — ALB (Smart, Reading)</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">
+        <strong style="color:#e2e8f0;">Opens the packet and reads the HTTP request</strong>. Understands the request content and can make smart routing decisions.<br><br>
+        <strong style="color:#22c55e;">Path-based routing:</strong> <code style="color:#fbbf24;">/images</code> → Image Servers. <code style="color:#fbbf24;">/api</code> → API Servers.<br>
+        <strong style="color:#e2e8f0;">When to use:</strong> Web apps and microservices routing by URL, headers, or cookies.<br>
+        <strong style="color:#fbbf24;">AWS = ALB (Application Load Balancer)</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🏗️ VPC Architecture — Step by Step</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#e2e8f0;">Golden rule:</strong> Never put a database on the public internet. Design a network that separates public-facing traffic from secure backend resources.
+  </div>
+  <div class="pipeline" style="margin-bottom:20px;">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Create the VPC</span></div><div class="stage-desc">Create a Virtual Private Cloud with a CIDR block like <code style="color:#fbbf24;">10.0.0.0/16</code>. This is your isolated slice of AWS — nothing gets in or out without your permission. Use /16 for enough IPs for all subnets.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Carve out Subnets</span></div><div class="stage-desc"><strong style="color:#22c55e;">Public Subnet</strong> <code style="color:#fbbf24;">10.0.1.0/24</code> → Web server / Load Balancer lives here.<br><strong style="color:#f43f5e;">Private Subnet</strong> <code style="color:#fbbf24;">10.0.2.0/24</code> → Database lives here. Repeat in each AZ for HA.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Attach Internet Gateway (IGW)</span></div><div class="stage-desc">A VPC is completely locked down by default. Attach an IGW to give the public subnet internet access. Think of it as the modem for your cloud network. Private subnet gets no IGW route — stays safely offline.</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Security Groups (Bouncers)</span></div><div class="stage-desc"><strong>Web SG:</strong> Allow port 80/443 from internet (0.0.0.0/0).<br><strong style="color:#fbbf24;">Interview Gold:</strong> <strong>DB SG</strong> — allow port 3306 only from the Web Security Group ID, not from an IP. Only instances wearing the "Web SG badge" can talk to the DB. Never open the DB to 0.0.0.0/0.</div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Launch EC2 + User Data</span></div><div class="stage-desc">Select AMI (Amazon Machine Image — the OS blueprint, e.g. Ubuntu 22.04), choose instance type (<code style="color:#fbbf24;">t3.micro</code>), place in correct subnet. <strong>User Data</strong> = a bash script that runs on first boot. Use it to automatically <code>apt install nginx</code> — no SSH needed. This is bootstrapping.<br>Your DevOps job: automate all of this in Terraform.</div></div></div>
+    <div class="stage s6"><div class="stage-connector"><div class="stage-dot">6</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">NAT Gateway (Private → Internet)</span></div><div class="stage-desc">Private subnet resources (app servers, DBs) can't reach the internet directly. A <strong>NAT Gateway</strong> in the public subnet allows outbound internet access (for package updates, API calls) without exposing the private resources to inbound traffic.</div></div></div>
+  </div>
+
+  <div style="background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.2);border-radius:4px;padding:12px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.8;font-family:'JetBrains Mono',monospace;">
+    <strong style="color:#f97316;">Architecture diagram:</strong><br>
+    Internet <span style="color:#38bdf8;">→</span> IGW <span style="color:#38bdf8;">→</span> ALB (public subnet) <span style="color:#38bdf8;">→</span> App servers (private subnet) <span style="color:#38bdf8;">→</span> RDS (private subnet)<br>
+    Private subnet <span style="color:#38bdf8;">→</span> NAT Gateway (public subnet) <span style="color:#38bdf8;">→</span> IGW <span style="color:#38bdf8;">→</span> Internet (for outbound only)
+  </div>
+
+  <div class="section-title">🔒 Security Groups vs NACLs</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(244,63,94,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#f43f5e;font-weight:700;width:160px;">FEATURE</th><th style="text-align:left;padding:8px 12px;color:#f43f5e;font-weight:700;">SECURITY GROUP</th><th style="text-align:left;padding:8px 12px;color:#f43f5e;font-weight:700;">NACL (Network ACL)</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">Level</td><td style="padding:7px 12px;color:#94a3b8;">Instance-level (attached to EC2)</td><td style="padding:7px 12px;color:#94a3b8;">Subnet-level (all traffic in/out)</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">State</td><td style="padding:7px 12px;color:#94a3b8;">Stateful — return traffic auto-allowed</td><td style="padding:7px 12px;color:#94a3b8;">Stateless — must allow both directions</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">Rules</td><td style="padding:7px 12px;color:#94a3b8;">Allow only. Default deny all.</td><td style="padding:7px 12px;color:#94a3b8;">Allow and explicit Deny rules.</td></tr>
+        <tr><td style="padding:7px 12px;color:#e2e8f0;">Use case</td><td style="padding:7px 12px;color:#94a3b8;">Primary security mechanism</td><td style="padding:7px 12px;color:#94a3b8;">Layered defense, blocking specific IPs</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">📡 CDN — Content Delivery Network</div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    A CDN caches static assets (images, JS, CSS, HTML) at <strong style="color:#e2e8f0;">edge locations</strong> globally. When a user requests a file, it's served from the nearest edge location — not from your origin server.<br><br>
+    <strong style="color:#e2e8f0;">Benefits:</strong> Dramatically reduces latency (user in Singapore gets content from Singapore edge, not your US server). Reduces origin server load. Protects against traffic spikes.<br><br>
+    <strong style="color:#fbbf24;">AWS CloudFront</strong> (AWS CDN), <strong style="color:#fbbf24;">Cloudflare</strong>, <strong style="color:#fbbf24;">Fastly</strong> are the major players.<br><br>
+    <strong style="color:#e2e8f0;">DevOps gotcha:</strong> After a deployment, CDN may serve <em>stale</em> cached files. You need to <strong>invalidate the cache</strong> or use cache-busting (e.g., hashed filenames like <code>app.a3f9d2.js</code>).
+  </div>
+
+  <div class="section-title">🔒 Firewall vs Reverse Proxy</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:5px;">🛡️ Firewall</div>
+      Controls which traffic is <strong style="color:#e2e8f0;">allowed into/out of a network</strong> based on rules (IP, port, protocol). Does NOT see the content of requests — just the "envelope". AWS Security Groups and NACLs are firewalls.
+    </div>
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:5px;">🔀 Reverse Proxy</div>
+      Sits in front of servers and <strong style="color:#e2e8f0;">forwards client requests to them</strong>. Reads the request content. Used for: load balancing, SSL termination, caching, hiding backend topology. Nginx is often both. ALB acts as L7 reverse proxy.
+    </div>
+  </div>
+
+  <div class="section-title">📊 SLI / SLO / SLA</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(34,197,94,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#22c55e;font-weight:700;width:80px;">TERM</th><th style="text-align:left;padding:8px 12px;color:#22c55e;font-weight:700;">FULL NAME</th><th style="text-align:left;padding:8px 12px;color:#22c55e;font-weight:700;">WHAT IT IS</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">SLI</td><td style="padding:7px 12px;color:#e2e8f0;">Service Level Indicator</td><td style="padding:7px 12px;color:#94a3b8;">A <em>measurable metric</em>. Examples: error rate, p99 latency, uptime percentage. The raw number you track.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">SLO</td><td style="padding:7px 12px;color:#e2e8f0;">Service Level Objective</td><td style="padding:7px 12px;color:#94a3b8;">A <em>target for an SLI</em>. "99.9% of requests complete in under 200ms." Internal goal. If you miss SLOs, your error budget is consumed.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">SLA</td><td style="padding:7px 12px;color:#e2e8f0;">Service Level Agreement</td><td style="padding:7px 12px;color:#94a3b8;"><em>Contractual commitment</em> with customers. "We guarantee 99.9% uptime or you get a credit." SLOs are internal targets. SLAs are external promises with financial consequences.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🏗️ AWS CloudFormation — Native IaC</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    CloudFormation is <strong style="color:#e2e8f0;">AWS's native IaC service</strong>. Define AWS resources in JSON/YAML templates → provisioned as a <strong>Stack</strong>. Updates as <strong>change sets</strong>. Deep AWS integration, free. vs Terraform: CloudFormation = AWS-only. Terraform = multi-cloud HCL.
+  </div>
+
+  <div class="section-title">📡 More AWS Services — Also Asked</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(249,115,22,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#f97316;font-weight:700;text-align:left;width:130px;">SERVICE</th><th style="padding:8px 12px;color:#f97316;font-weight:700;text-align:left;">WHAT IT IS</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Route 53</td><td style="padding:7px 12px;color:#94a3b8;">AWS DNS service. Register domains, manage DNS records, health-check-based routing (failover to backup region), weighted routing, latency-based routing.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">ECR</td><td style="padding:7px 12px;color:#94a3b8;">Elastic Container Registry — AWS's private Docker image registry. Integrates tightly with ECS/EKS. IAM-controlled access. Scan images for vulnerabilities automatically.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">SQS</td><td style="padding:7px 12px;color:#94a3b8;">Simple Queue Service — managed message queue. Decouples microservices. Producer puts messages in queue; consumers poll and process. Handles traffic spikes without dropping requests.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">SNS</td><td style="padding:7px 12px;color:#94a3b8;">Simple Notification Service — pub/sub messaging. Publish once, fan out to many subscribers (SQS queues, Lambda, email, HTTP). Used for event-driven architectures.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">ElastiCache</td><td style="padding:7px 12px;color:#94a3b8;">Managed Redis or Memcached. In-memory cache for session storage, query caching, leaderboards. Massively reduces DB load for read-heavy workloads.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">CloudTrail</td><td style="padding:7px 12px;color:#94a3b8;">Logs every API call made in your AWS account — who did what, when, from where. "Who deleted that security group?" Answer is in CloudTrail. Essential for security auditing.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">AWS Config</td><td style="padding:7px 12px;color:#94a3b8;">Continuously records configuration changes to AWS resources. Set rules that alert or auto-remediate when resources drift from compliance (e.g., "alert if any S3 bucket is public").</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Auto Scaling Group</td><td style="padding:7px 12px;color:#94a3b8;">Automatically adds/removes EC2 instances based on load. Set min/max/desired capacity. Define scaling policies (add instance if CPU &gt; 70%). Works with ALB to distribute traffic across new instances.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">SSM (Systems Manager)</td><td style="padding:7px 12px;color:#94a3b8;">Connect to EC2 instances without SSH or opening port 22. Use Session Manager from AWS console. Store and access secrets via Parameter Store. Run commands across many instances simultaneously.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🌐 Route53 — AWS DNS</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    AWS's highly available DNS service. More than just DNS — it also does <strong style="color:#e2e8f0;">health-based routing</strong>: if your primary server goes down, Route53 detects the health check failure and automatically reroutes traffic to a backup server or region.<br><br>
+    <strong style="color:#fbbf24;">Routing policies:</strong><br>
+    <strong style="color:#e2e8f0;">Simple</strong> — one record, one IP. Basic.<br>
+    <strong style="color:#e2e8f0;">Weighted</strong> — 70% traffic to us-east-1, 30% to eu-west-1. Good for canary deploys.<br>
+    <strong style="color:#e2e8f0;">Latency</strong> — route to the region with lowest latency for that user.<br>
+    <strong style="color:#e2e8f0;">Failover</strong> — primary/secondary. If primary fails health check, Route53 switches to secondary. Core of disaster recovery.<br>
+    <strong style="color:#e2e8f0;">Geolocation</strong> — route EU users to EU servers, US users to US servers.
+  </div>
+
+  <div class="section-title">📦 ECR — Elastic Container Registry</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:13px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    AWS's private Docker image registry. Like Docker Hub but inside your AWS account.<br><br>
+    <strong style="color:#e2e8f0;">Key benefits:</strong> Integrated with IAM (control who can push/pull), no bandwidth cost for images pulled by ECS/EKS in same region, image vulnerability scanning built-in, lifecycle policies to auto-delete old images.
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2;overflow-x:auto;">
+    <span style="color:#64748b;"># Authenticate Docker to ECR (run before push/pull):</span><br>
+    <span style="color:#fbbf24;">aws ecr get-login-password --region us-east-1 | docker login \</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;--username AWS --password-stdin 123456789.dkr.ecr.us-east-1.amazonaws.com</span><br><br>
+    <span style="color:#64748b;"># Tag and push:</span><br>
+    <span style="color:#fbbf24;">docker tag myapp:v2 123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:v2</span><br>
+    <span style="color:#fbbf24;">docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:v2</span>
+  </div>
+
+  <div class="section-title">⏱️ RTO &amp; RPO — Disaster Recovery Targets</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:6px;">RTO — Recovery Time Objective</div>
+      <strong style="color:#e2e8f0;">How long can the system be down?</strong><br>
+      "After a disaster, we must be back online within 4 hours." This drives decisions about hot standby (minutes) vs cold backup (hours). Lower RTO = more expensive infra.
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:6px;">RPO — Recovery Point Objective</div>
+      <strong style="color:#e2e8f0;">How much data can we afford to lose?</strong><br>
+      "We can tolerate losing up to 1 hour of data." This drives backup frequency. RPO = 1 hour → backups every hour. RPO = 0 → real-time replication required.
+    </div>
+  </div>
+
+  <div class="section-title">💬 SQS &amp; SNS — Messaging Services</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:5px;">SQS — Simple Queue Service</div>
+      Message queue. Producer sends message to queue. Consumer polls queue and processes it. <strong style="color:#e2e8f0;">Decouples</strong> services — if consumer is slow or down, messages wait in the queue. Use for: background jobs, order processing, task workers.
+    </div>
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:5px;">SNS — Simple Notification Service</div>
+      Pub/Sub messaging. One publisher sends to a topic, <strong style="color:#e2e8f0;">many subscribers</strong> receive it simultaneously. Use for: fan-out (one event triggers multiple actions), sending emails/SMS, triggering Lambda functions.
+    </div>
+  </div>
+

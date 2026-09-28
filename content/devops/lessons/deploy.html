@@ -1,0 +1,79 @@
+
+
+  <div class="section-title">🚀 Deployment Strategies</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:24px;">
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;font-size:13px;margin-bottom:8px;">Rolling Deploy</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Take one server out of rotation, update it, add back. Repeat for each server. <strong style="color:#e2e8f0;">No downtime</strong> but there's a brief period running two versions simultaneously.<br><br>✅ Simple, safe. ⚠️ Brief version mismatch.</div>
+    </div>
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;font-size:13px;margin-bottom:8px;">Blue / Green</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Two full environments. LB routes to <span style="color:#22c55e;">green</span> (live). Deploy to <span style="color:#38bdf8;">blue</span>. Test blue. Flip LB to blue. Rollback = flip LB back instantly.<br><br>✅ Instant rollback. ⚠️ Double infra cost.</div>
+    </div>
+    <div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fbbf24;font-size:13px;margin-bottom:8px;">Canary</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Route 5% of traffic to new version via weighted rules. Monitor errors/latency. Expand % if healthy. <strong style="color:#e2e8f0;">Limits blast radius</strong> — if it breaks, only 5% of users affected.<br><br>✅ Safe for high-risk changes. ⚠️ More complex setup.</div>
+    </div>
+    <div style="background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.2);border-left:3px solid #a855f7;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#a855f7;font-size:13px;margin-bottom:8px;">A/B Testing</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.75;">Route users by header/cookie to different versions. Like canary but <strong style="color:#e2e8f0;">measuring user behavior</strong>, not just errors. Used to test feature impact on metrics (clicks, conversions).</div>
+    </div>
+  </div>
+
+  <div class="section-title">⚖️ Load Balancing Algorithms</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:24px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead>
+        <tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;">
+          <th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;width:140px;">ALGORITHM</th>
+          <th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;">HOW IT WORKS</th>
+          <th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;width:200px;">BEST FOR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+          <td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Round Robin</td>
+          <td style="padding:8px 12px;color:#94a3b8;">Req 1 → A, Req 2 → B, Req 3 → C, repeat. Evenly distributed.</td>
+          <td style="padding:8px 12px;color:#64748b;">Stateless apps, equal server capacity</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+          <td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Least Connections</td>
+          <td style="padding:8px 12px;color:#94a3b8;">Route to server with fewest active connections. Smarter than round robin.</td>
+          <td style="padding:8px 12px;color:#64748b;">Requests vary in duration (some slow, some fast)</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+          <td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">IP Hash</td>
+          <td style="padding:8px 12px;color:#94a3b8;">Same client IP always hits same server. Deterministic routing.</td>
+          <td style="padding:8px 12px;color:#64748b;">Sticky sessions when state isn't centralized</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Weighted</td>
+          <td style="padding:8px 12px;color:#94a3b8;">Server A gets 70%, Server B gets 30%. You define the ratio.</td>
+          <td style="padding:8px 12px;color:#64748b;">Different server capacities, canary deployments</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">⚙️ How to Set Up a CI/CD Pipeline from Scratch</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Set up CI</span><span class="stage-tool">Jenkins / GitLab CI / GitHub Actions</span></div><div class="stage-desc">Select a CI tool and connect it to your VCS. Write a build script: code checkout → dependency install → compile → run tests. Set up automated testing on every commit or PR.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Artifact Storage</span><span class="stage-tool">Docker Hub / AWS S3 / ECR</span></div><div class="stage-desc">Decide where to store build artifacts (Docker images, binaries). Configure the pipeline to package and upload artifacts to storage after a successful build.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Set up CD</span><span class="stage-tool">Same tool or extend</span></div><div class="stage-desc">Define deployment scripts for each environment (dev → staging → prod). Configure triggers after successful builds. Set up environment-specific configs and secrets management.</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Infrastructure</span><span class="stage-tool">Terraform / CloudFormation</span></div><div class="stage-desc">Provision infrastructure using IaC. Ensure environments are consistent and reproducible — spinning up a new one should be a single command, no human intervention.</div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Monitoring &amp; Logging</span><span class="stage-tool">Prometheus / Grafana / ELK</span></div><div class="stage-desc">Implement monitoring for apps and infrastructure. Configure alerts for critical issues — monitoring without alerting is pointless, you need to react to problems.</div></div></div>
+    <div class="stage s6"><div class="stage-connector"><div class="stage-dot">6</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Security &amp; Docs</span><span class="stage-tool">Snyk / OWASP</span></div><div class="stage-desc">Integrate security scanning tools (Snyk, OWASP). Document the pipeline, configuration, and deployment steps — to onboard new team members and maintain the system.</div></div></div>
+  </div>
+
+  <div class="concept" style="--cc:#f43f5e;margin-top:8px;">
+    <div class="concept-head"><span class="concept-icon">🕸️</span><span class="concept-title">Service Mesh</span><span class="concept-subtitle">Istio / Linkerd</span></div>
+    <div class="concept-body">
+      A <strong>service mesh</strong> is a dedicated infrastructure layer for handling service-to-service communication in microservice architectures.<br><br>
+      As your microservice count grows, orchestrating reliable communication between them becomes complex — load balancing, retries, timeouts, encryption, observability. A service mesh handles all this automatically, without changing your application code.<br><br>
+      Think of it as a network of <strong>sidecar proxies</strong> attached to each service, intercepting all traffic and adding observability, security (mTLS), and routing capabilities.
+    </div>
+    <div class="pill-row">
+      <span class="pill">sidecar proxy pattern</span><span class="pill">service-to-service comms</span><span class="pill">mTLS encryption</span><span class="pill">observability</span><span class="pill">Istio / Linkerd</span>
+    </div>
+  </div>
+

@@ -1,0 +1,1413 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🧯 Troubleshooting, organized by area</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🗂️</span><div class="analogy-text"><strong>One tab per area</strong><br>Linux, Networking, Git, Docker...</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔍</span><div class="analogy-text"><strong>Pick the one that fits</strong><br>Where the problem actually is</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🛠️</span><div class="analogy-text"><strong>Work it, step by step</strong><br>Same way every time</div></div>
+  </div>
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    Every category of thing DevOps actually troubleshoots, gathered in one place — pick a tab below. <strong style="color:#e2e8f0;">Content for each one is being built out</strong>, the same way as everywhere else in this cheat sheet: real commands, real output, real fixes.
+  </div>
+
+  <div class="pu-tabs">
+    <div class="pu-tab pu-active" onclick="showPU('tsLinux',this)">🐧 Linux</div>
+    <div class="pu-tab" onclick="showPU('tsNetworking',this)">🌐 Networking</div>
+    <div class="pu-tab" onclick="showPU('tsGit',this)">🌿 Git</div>
+    <div class="pu-tab" onclick="showPU('tsDocker',this)">🐳 Docker</div>
+    <div class="pu-tab" onclick="showPU('tsK8s',this)">☸️ Kubernetes</div>
+    <div class="pu-tab" onclick="showPU('tsTerraform',this)">🏗️ Terraform</div>
+    <div class="pu-tab" onclick="showPU('tsCicd',this)">🐙 CI/CD</div>
+    <div class="pu-tab" onclick="showPU('tsAws',this)">☁️ AWS</div>
+    <div class="pu-tab" onclick="showPU('tsNginx',this)">🔁 Nginx</div>
+    <div class="pu-tab" onclick="showPU('tsSecurity',this)">🔒 Security</div>
+    <div class="pu-tab" onclick="showPU('tsBash',this)">🐚 Shell / Bash</div>
+  </div>
+
+  <div class="pu-panel pu-active" id="pu-tsLinux">
+
+    <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px 18px;margin-bottom:22px;">
+      <div class="found-h" style="color:#a78bfa;margin-top:0;">🧠 How to think, before you touch anything</div>
+      <div class="found-p">Every problem below follows the exact same thinking process. Learn this once, and it works on almost anything, not just these 5:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. What changed?</strong> — a deploy, an edit, a reboot, or genuinely nothing? This alone solves half of all problems.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Make it happen again</strong> — if you can reliably reproduce it, you can reliably confirm when it's actually fixed.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Check the cheap, obvious thing first</strong> — before anything complicated, before Googling, before panicking.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Change one thing at a time</strong> — then check again. Change three things at once and you'll never know which one actually fixed it.</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Ask "why did this happen"</strong> — a fix that stops it from happening again beats a fix that just makes today's fire go away.</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">🐧 5 Everyday Linux Problems, Solved the Same Calm Way</div>
+    <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">These are genuinely the ones you'll hit most — not exotic edge cases, just Tuesday.</div>
+
+    <!-- PROBLEM 1 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">1. 😟 "My app isn't responding"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> you (or a user) try to reach the app and get nothing — a hang, a timeout, "connection refused."</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> don't jump to anything complicated yet — network, DNS, a bug in the code. Start at the simplest possible layer first: <em>is the program even running at all?</em> That one question rules out or confirms the most common cause in seconds.</div>
+      <div class="found-pre">$ systemctl status myapp
+<span class="err">● myapp.service - inactive (dead)</span></div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the app crashed and simply isn't running anymore — nothing to do with the network at all.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">systemctl restart myapp</span> — it's back up immediately. <strong>Why it happened:</strong> apps crash — an unhandled error, running out of memory, someone stopping it manually and forgetting to start it again. <strong>Prevent it next time:</strong> run it under something that auto-restarts on crash (systemd, pm2) instead of a plain terminal process.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ systemctl restart myapp
+$ systemctl status myapp
+<span class="ok">● myapp.service - active (running)</span>
+
+$ curl localhost:3000
+Hello World
+<span class="ok">↳ responding again — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 2 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">2. 😟 "No space left on device"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> a command fails with that exact message, or the app can't save uploads or write logs anymore.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> disk space almost never disappears in one dramatic moment — it quietly fills up over weeks from logs, temp files, and old backups nobody's cleaning up. Your job is just to find WHERE it went.</div>
+      <div class="found-pre">$ df -h
+/dev/sda1   50G   49G   0G  <span class="err">100%</span>  /
+
+$ du -sh /var/log/* | sort -rh | head -3
+<span class="warn">9.8G</span>  /var/log/app-debug.log
+120M  /var/log/nginx
+40M   /var/log/syslog</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the root filesystem is completely full, and one single debug log file is responsible for almost all of it.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">&gt; /var/log/app-debug.log</span> empties it instantly without deleting the file (safer than <span class="found-code">rm</span> while something might still be writing to it). <strong>Why it happened:</strong> debug logging was left on and nothing was ever set up to rotate or delete old logs. <strong>Prevent it next time:</strong> set up <span class="found-code">logrotate</span>, or reuse the cleanup script from the 🤖 Bash Automation tab.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ &gt; /var/log/app-debug.log
+$ df -h
+/dev/sda1   50G   39G   11G   <span class="ok">78%</span>  /
+<span class="ok">↳ 11GB free again — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 3 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">3. 😟 "Permission denied"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> running a script or opening a file gives you exactly that: <span class="found-code">Permission denied</span>.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> this is never mysterious — it's always a plain, checkable fact about two things: <em>who owns this file</em>, and <em>who you actually are</em> right now. Don't guess, don't immediately reach for sudo — look first.</div>
+      <div class="found-pre">$ ./deploy.sh
+bash: ./deploy.sh: Permission denied
+
+$ ls -l deploy.sh
+-rw-r--r--  1 root  root  842  deploy.sh
+
+$ whoami
+devops</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the file has no execute permission for anyone (notice there's no "x" anywhere in <span class="found-code">-rw-r--r--</span>), and it's owned by root, not you.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> <span class="found-code">chmod +x deploy.sh</span> if it just needs to be executable, or <span class="found-code">sudo chown devops deploy.sh</span> if you genuinely need to own it. <strong>Why it happened:</strong> the file was created by a different user (often root, during setup) and the execute bit was never set. <strong>Prevent it next time:</strong> when you write a new script, make it executable in the same breath you save it — it becomes a habit fast.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ chmod +x deploy.sh
+$ ls -l deploy.sh
+<span class="ok">-rwxr-xr-x</span>  1 root  root  842  deploy.sh
+
+$ ./deploy.sh
+<span class="ok">✓ Deploying...</span>
+<span class="ok">↳ runs fine now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 4 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">4. 😟 "Command not found"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> you type a command you're SURE exists, and bash says <span class="found-code">command not found</span>.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> there are only ever two real explanations, so check both in order: either the tool genuinely isn't installed on this machine, or it IS installed, but bash doesn't know which folder to look in for it.</div>
+      <div class="found-pre">$ docker --version
+bash: docker: command not found
+
+$ which docker
+<span class="dim">(nothing printed — not found anywhere on PATH)</span>
+
+$ echo $PATH
+/usr/local/bin:/usr/bin:/bin</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> <span class="found-code">which</span> came back empty, meaning it's genuinely not installed at all — not a PATH problem this time.</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> install it — <span class="found-code">sudo apt install docker.io</span>. (If <span class="found-code">which</span> HAD found it somewhere, the fix instead would be adding that folder to PATH: <span class="found-code">export PATH=$PATH:/that/folder</span>.) <strong>Why it happened:</strong> a fresh server, or a fresh SSH session as a different user with a different setup than you expected. <strong>Prevent it next time:</strong> bake required tools into your server setup script (see 🏗️ Terraform for DevOps or the AMI/user-data pattern) instead of installing things by hand after the fact.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ sudo apt install docker.io
+<span class="dim">Setting up docker.io ...</span>
+
+$ docker --version
+<span class="ok">Docker version 24.0.7</span>
+<span class="ok">↳ found it now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 5 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;">5. 😟 "The server is really slow"</div>
+      <div class="found-p"><strong style="color:#94a3b8;">The symptom:</strong> everything feels sluggish — pages take forever, even typing over SSH feels laggy.</div>
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> "slow" isn't a real answer — it's a feeling. Your actual job is turning that vague feeling into one specific, measurable number: is it CPU maxed out? Memory full? One command usually tells you immediately which resource is actually the problem.</div>
+      <div class="found-pre">$ top
+
+<span class="dim">%CPU  %MEM  COMMAND</span>
+<span class="err">98.2  4.1   node</span>
+ 0.3   1.2   sshd
+ 0.1   0.8   bash</div>
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> one single node process is eating 98% of the CPU — that's the actual bottleneck, not the whole server being generically "slow."</div>
+      <div class="found-key">🔧 <strong>The fix:</strong> restart that one process (<span class="found-code">systemctl restart myapp</span>) to relieve it immediately, then go look at what it was actually doing — often an infinite loop or a runaway request. <strong>Why it happened:</strong> a bug causing wasted CPU work, a memory leak, or the server genuinely outgrew its size for real traffic. <strong>Prevent it next time:</strong> set up monitoring and alerts (📡 Prometheus + Grafana) so you find out before a user complains, not after.</div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ systemctl restart myapp
+$ top
+
+<span class="dim">%CPU  %MEM  COMMAND</span>
+<span class="ok">2.1   4.0   node</span>
+<span class="ok">↳ CPU usage back to normal — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PROBLEM 6 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">6. 😟 "I can't SSH into my server"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You type your normal <span class="found-code">ssh</span> command and... nothing. It just hangs forever, or says "connection refused."</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> don't panic and don't assume the server is dead. Ask one simple question first: <em>is the server even reachable at all, or is it just this one door (port 22) that's closed?</em> Those are two very different problems.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ ssh devops@203.0.113.45
+<span class="err">ssh: connect to host 203.0.113.45 port 22: Connection timed out</span>
+
+$ ping 203.0.113.45
+<span class="ok">64 bytes from 203.0.113.45: icmp_seq=1 time=12ms</span>
+<span class="dim">↳ it answered! the server itself is alive and reachable</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the server answers ping just fine — it's alive. So it's not a dead server, it's specifically port 22 being blocked.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Open port 22 in the firewall — <span class="found-code">sudo ufw allow 22</span> if it's a Linux firewall, or add an inbound rule for port 22 in the AWS Security Group if it's a cloud server. <strong>Why it happened:</strong> the port simply was never opened, or a firewall rule changed. <strong>Prevent it next time:</strong> when you launch a new server, opening port 22 (just for your IP, not the whole internet) is the very first thing to check.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ sudo ufw allow 22
+<span class="ok">Rule added</span>
+
+$ ssh devops@203.0.113.45
+<span class="dim">Welcome to Ubuntu 22.04 LTS</span>
+<span class="ok">devops@server:~$</span>
+<span class="ok">↳ connected — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 7 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">7. 😟 "I changed the code, but nothing happened"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You edit a file, save it, refresh the page — and it's still showing the old version, like your edit never happened.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> saving a file and a program actually USING that file are two completely separate things. A program reads your code once, when it starts — editing the file afterward doesn't magically update a program that's already running.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ curl localhost:3000
+Hello World   <span class="warn">← the OLD text — my edit isn't showing</span>
+
+$ ps aux | grep node
+devops  1044  node app.js   <span class="dim">↳ started 3 hours ago — BEFORE I edited the file</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the process still running is the OLD one, from before your edit — it has no idea the file changed underneath it.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Restart it — <span class="found-code">systemctl restart myapp</span> (or however you started it). <strong>Why it happened:</strong> this trips up genuinely everyone at some point — it's such a common gotcha it's almost a rite of passage. <strong>Prevent it next time:</strong> make "did I restart it?" your automatic first question anytime an edit doesn't seem to be working.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ systemctl restart myapp
+$ curl localhost:3000
+<span class="ok">Hello DevOps! (updated)</span>
+<span class="ok">↳ new code is live — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 8 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">8. 😟 "The app crashes right after I start it"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You start the app and it just... dies. Instantly. No idea why.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> resist the urge to guess. Almost every crash prints an actual error message explaining exactly what went wrong — the answer is usually sitting right there on screen, you just have to actually read it instead of skimming past it.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ node app.js
+Server starting...
+<span class="err">Error: Cannot find module 'express'</span>
+<span class="dim">    at Function.Module._resolveFilename (...)</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the very first line already tells you exactly what's wrong — a required piece of code ("express") is missing.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Run <span class="found-code">npm install</span> to install whatever's missing, then start it again. <strong>Why it happened:</strong> the code was copied onto this server, but the dependencies it needs never got installed here. <strong>Prevent it next time:</strong> always read the FIRST error line before doing anything else — it's almost always the real answer, and everything printed after it is just extra noise.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ npm install
+<span class="dim">added 57 packages in 4s</span>
+
+$ node app.js
+Server starting...
+<span class="ok">Listening on port 3000</span>
+<span class="ok">↳ running clean, no crash — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 9 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">9. 😟 "It works when I run it myself, but not through cron"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You run your script by hand and it works perfectly. You schedule it with cron to run automatically — and it silently fails every time.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> when YOU type a command, your terminal quietly hands it a ton of setup for free (your normal folder, your normal shortcuts). Cron gets none of that — it starts from a completely bare, empty setup, so anything your script assumed was "just there" might not be.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ ./backup.sh
+<span class="ok">✓ Backup saved</span>   <span class="dim">↳ works fine when I run it myself</span>
+
+$ crontab -l
+0 2 * * * backup.sh   <span class="warn">← just the filename, no folder</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the crontab line just says <span class="found-code">backup.sh</span> — no folder in front of it. Cron has no idea where to even look for that file.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Use the FULL path in cron: <span class="found-code">0 2 * * * /home/devops/scripts/backup.sh</span>. <strong>Why it happened:</strong> cron simply doesn't know your normal folder or shortcuts the way your own logged-in terminal does. <strong>Prevent it next time:</strong> always write full, exact paths inside anything meant to run automatically — never rely on it "just knowing where things are."</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ crontab -e
+<span class="dim"># changed to:</span>
+0 2 * * * /home/devops/scripts/backup.sh
+
+$ tail -3 /var/log/cron.log
+<span class="ok">✓ Backup saved to /home/devops/backups/...</span>
+<span class="ok">↳ runs automatically now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 10 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">10. 😟 "I can't find where a file or log actually is"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Someone says "check the log file" — but you have no idea which folder it's actually sitting in.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> you don't need to guess or click through folder after folder by hand. Linux can just search the whole machine for you in seconds — let it do the work instead of you doing it manually.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ cat app.log
+cat: app.log: No such file or directory   <span class="dim">↳ not here, where did it go?</span>
+
+$ find / -name "app.log" 2&gt;/dev/null
+<span class="ok">/var/log/myapp/app.log</span>   <span class="dim">↳ found it!</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the file was never in the folder you were sitting in — it lives somewhere else entirely, and <span class="found-code">find</span> located it instantly.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">find / -name "filename" 2&gt;/dev/null</span> — searches the entire machine and quietly ignores any "permission denied" folders along the way. <strong>Why it happened:</strong> different apps store logs in different default places, and there's no reason you'd have them memorized. <strong>Prevent it next time:</strong> reach for <span class="found-code">find</span> immediately instead of guessing — it's faster than clicking around ever will be.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ tail -f /var/log/myapp/app.log
+<span class="ok">[INFO] Server running smoothly</span>
+<span class="ok">↳ found it, now watching the live log — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSING CHECKLIST -->
+    <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.25);box-shadow:0 0 24px rgba(56,189,248,0.1);border-radius:8px;padding:18px 20px;margin-top:20px;">
+      <div class="found-h" style="color:#38bdf8;margin-top:0;text-shadow:0 0 12px rgba(56,189,248,0.4);">🔎 5 Things To Always Check, No Matter What Broke</div>
+      <div class="found-p">All 10 problems above really come down to just these 5 questions. Keep this list in your head — it works on almost anything:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Is it even running?</strong> — <span class="found-code">ps aux</span> or <span class="found-code">systemctl status</span></div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. What do the logs actually say?</strong> — don't guess, go read the real error</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Is there room to work with?</strong> — <span class="found-code">df -h</span> for disk, <span class="found-code">free -h</span> for memory</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Are you actually allowed to do this?</strong> — file permissions, firewall rules, who owns what</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Did something about the environment change?</strong> — different user, manual run vs. cron, a fresh server vs. an old one</div>
+    </div>
+
+  </div>
+
+  <div class="pu-panel" id="pu-tsNetworking">
+
+    <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px 18px;margin-bottom:22px;">
+      <div class="found-h" style="color:#a78bfa;margin-top:0;">🧠 How to think, before you touch anything</div>
+      <div class="found-p">Networking problems feel scary because there are more moving parts — but the same calm process still works. A few extra habits that help specifically here:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Split it in half: is it DNS, or is it the server?</strong> — test the raw IP directly. If the IP works but the domain doesn't, it's DNS. If neither works, it's the server.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. "Refused" and "timed out" mean different things</strong> — refused means something answered and said no (check what's listening). Timed out usually means a firewall or a dead host (nothing answered at all).</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Test the network path directly</strong> — <span class="found-code">curl</span>, <span class="found-code">ping</span>, <span class="found-code">nc</span>. Don't trust a vague app error — go check the actual connection yourself.</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">4. If it's random, there's probably more than one path</strong> — intermittent failures usually mean multiple IPs or servers, and only one of them is actually broken.</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">🌐 5 Everyday Networking Problems, Solved the Same Calm Way</div>
+    <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same style as the Linux tab — the problem, how to think about it, the real commands, and then watching the actual fix happen.</div>
+
+    <!-- PROBLEM 1 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">1. 😟 "The website works for me, but nobody else can reach it"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You just moved your app to a new server. It loads fine for you — but everyone else swears the site is down.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> DNS is like a phonebook that everyone shares — but that phonebook takes a little time to update everywhere. It's very possible the phonebook still has the OLD address written in it for most people.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ dig myapp.com
+myapp.com.  300  IN  A  <span class="warn">203.0.113.10</span>   <span class="dim">↳ the OLD server</span>
+
+$ curl ifconfig.me   <span class="dim"># run ON the new server</span>
+<span class="ok">203.0.113.99</span>   <span class="dim">↳ this is the NEW server's real address</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> DNS is still pointing everyone at the OLD server — that's the entire mismatch. Nothing is actually broken, the phonebook is just outdated.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Update the DNS A record to point at the new server's IP. <strong>Why it happened:</strong> nobody updated the phonebook entry after moving to the new server. <strong>Prevent it next time:</strong> update DNS BEFORE fully shutting down the old server, so there's overlap instead of a gap.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># updated the A record in the DNS dashboard to 203.0.113.99</span>
+
+$ dig myapp.com
+myapp.com.  300  IN  A  <span class="ok">203.0.113.99</span>
+<span class="ok">↳ now pointing at the right server — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 2 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">2. 😟 "Connection refused" when one service calls another</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Your app tries to call another service on the network and gets <span class="found-code">Connection refused</span> — instantly, every time.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> "refused" is actually good news — it means the network path works fine, and something on the other end is awake enough to actively say no. So the real question is: is that service listening where you think it is?</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ curl http://192.168.1.50:5000/api
+<span class="err">curl: (7) Failed to connect: Connection refused</span>
+
+$ ss -tuln | grep 5000
+tcp  LISTEN  <span class="warn">127.0.0.1:5000</span>   <span class="dim">↳ only listening to itself!</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the service IS running — but it's only listening on <span class="found-code">127.0.0.1</span> (itself), so no other machine on the network can ever reach it, no matter what.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Change the service's bind address to <span class="found-code">0.0.0.0</span> (all interfaces) instead of <span class="found-code">127.0.0.1</span>, then restart it. <strong>Why it happened:</strong> a lot of frameworks default to localhost-only for safety. <strong>Prevent it next time:</strong> decide on purpose whether a service should be reachable from the network — don't leave it to a default.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># changed config: HOST=0.0.0.0 (was 127.0.0.1)</span>
+$ systemctl restart myservice
+$ ss -tuln | grep 5000
+tcp  LISTEN  <span class="ok">0.0.0.0:5000</span>
+
+$ curl http://192.168.1.50:5000/api
+<span class="ok">{"status":"ok"}</span>
+<span class="ok">↳ reachable now — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 3 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">3. 😟 The site shows "Not Secure" / a certificate warning</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">The site still loads, but the browser shows a scary warning — "Not Secure," or a certificate error.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> HTTPS certificates aren't permanent — they expire on a schedule (often every 90 days for free ones). If nothing automatically renews it, one day it just quietly stops being valid.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ curl -vI https://myapp.com 2&gt;&amp;1 | grep expire
+* SSL certificate expire date: <span class="err">Jul 10 2026 (EXPIRED)</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the certificate genuinely expired — plain and simple, nobody renewed it in time.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Renew it — <span class="found-code">certbot renew</span> for a free Let's Encrypt certificate — then reload the web server so it picks up the new one. <strong>Why it happened:</strong> renewal was never automated, so it silently expired. <strong>Prevent it next time:</strong> set renewal on a cron job so it happens automatically, well before expiry.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ sudo certbot renew
+<span class="ok">Congratulations, all renewals succeeded</span>
+
+$ sudo systemctl reload nginx
+$ curl -vI https://myapp.com 2&gt;&amp;1 | grep expire
+* SSL certificate expire date: <span class="ok">Oct 08 2026</span>
+<span class="ok">↳ valid again — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 4 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">4. 😟 The app server can't reach the database server</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Your app tries to connect to the database on another server, and it just... hangs. Then eventually times out.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> a hang and a timeout (not an instant "refused") is a very specific clue — it usually means something in between the two machines is silently dropping the traffic, most often a firewall.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@app-server: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ nc -zv 10.0.1.20 5432
+<span class="err">nc: connect to 10.0.1.20 port 5432 timed out</span>
+<span class="dim">↳ not "refused" — just silence. Something is blocking it.</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> total silence, not a rejection — a strong sign a firewall or security group between the two servers is quietly dropping the connection before it ever reaches the database.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Add a firewall/security group rule allowing port 5432 FROM the app server's IP TO the database server. <strong>Why it happened:</strong> the database's firewall was locked down (correctly!) and this app server was just never added to the allow list. <strong>Prevent it next time:</strong> whenever you add a new server that needs to talk to another, opening that specific path is part of the setup, not an afterthought.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@app-server: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># added rule: allow port 5432 from app-server IP</span>
+$ nc -zv 10.0.1.20 5432
+<span class="ok">Connection to 10.0.1.20 5432 port succeeded!</span>
+
+$ psql -h 10.0.1.20 -U admin mydb
+<span class="ok">mydb=></span>
+<span class="ok">↳ connected — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 5 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">5. 😟 "It works sometimes, and fails randomly"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Same request, same everything — but sometimes it works fine, and sometimes it just fails. No obvious pattern.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> a problem that isn't ALWAYS broken is a big clue on its own — it usually means there's more than one possible path your request could take, and only one of those paths is actually broken.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ dig myapp.com
+myapp.com.  300  IN  A  <span class="ok">203.0.113.10</span>
+myapp.com.  300  IN  A  <span class="warn">203.0.113.11</span>
+<span class="dim">↳ two different servers answer for the same domain!</span>
+
+$ curl -I http://203.0.113.11
+<span class="err">curl: (7) Connection refused</span>   <span class="dim">↳ found the broken one</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> DNS is actually handing out TWO different server addresses for the same domain, and one of the two is dead. Roughly half of all requests randomly land on the broken one.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Fix or restart the dead server, or remove it from DNS until it's healthy again, so only working servers ever receive traffic. <strong>Why it happened:</strong> one server in the group quietly crashed or was never fully set up, but nothing was checking its health. <strong>Prevent it next time:</strong> use a load balancer with health checks (see the Networking for DevOps tab) instead of raw DNS with multiple IPs — it automatically stops sending traffic to anything unhealthy.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~ (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># removed the dead 203.0.113.11 record from DNS</span>
+$ dig myapp.com
+myapp.com.  300  IN  A  <span class="ok">203.0.113.10</span>
+<span class="ok">↳ only the healthy server remains — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSING CHECKLIST -->
+    <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.25);box-shadow:0 0 24px rgba(56,189,248,0.1);border-radius:8px;padding:18px 20px;margin-top:20px;">
+      <div class="found-h" style="color:#38bdf8;margin-top:0;text-shadow:0 0 12px rgba(56,189,248,0.4);">🔎 5 Things To Always Check When The Network Is The Suspect</div>
+      <div class="found-p">All 5 problems above really come down to these 5 questions. Keep this list in your head:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Does the raw IP work?</strong> — tells you instantly if it's DNS or the server itself</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Refused, or timed out?</strong> — refused = something answered. Timed out = probably a firewall, or nothing's there</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Is it actually listening where you expect?</strong> — <span class="found-code">ss -tuln</span>, and on which address (0.0.0.0 vs 127.0.0.1)</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Is a certificate involved, and is it still valid?</strong> — <span class="found-code">curl -vI</span> shows the expiry date</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Is there more than one path?</strong> — multiple DNS records or backend servers means only one might be the broken one</div>
+    </div>
+
+  </div>
+
+  <div class="pu-panel" id="pu-tsGit">
+
+    <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px 18px;margin-bottom:22px;">
+      <div class="found-h" style="color:#a78bfa;margin-top:0;">🧠 How to think, before you touch anything</div>
+      <div class="found-p">Git panics are almost always worse in your head than in reality. A few habits that make every one of these calmer:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Nothing is usually lost</strong> — git almost never actually deletes your work. It just changes what's currently pointing at it. Most "I lost everything" moments are recoverable.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Has it been pushed yet?</strong> — this one question decides everything. Not pushed = safe to rewrite history freely. Already pushed/shared = don't rewrite it, add a new commit instead.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Read the actual error</strong> — git's messages are unusually specific and literal. "Rejected," "conflict," "detached" all mean exactly what they say.</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">4. When git refuses to do something, that's it protecting you</strong> — not being annoying. Understand why before you force anything.</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">🌿 10 Everyday Git Problems, Solved the Same Calm Way</div>
+    <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same style as Linux and Networking — the problem, how to think about it, the real commands, and then watching the actual fix happen.</div>
+
+    <!-- PROBLEM 1 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">1. 😟 "I committed to the wrong branch"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You made changes and committed — then realized you were sitting on <span class="found-code">main</span>, not the feature branch you meant to be on.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> don't redo any work — the commit already exists and is perfectly fine. You just need to move it to where it should actually live.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+a3f9d2c Add login page
+
+$ git branch
+<span class="warn">* main</span>
+  feature/login</div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> confirmed — the commit is sitting on <span class="found-code">main</span> instead of <span class="found-code">feature/login</span>.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Create the correct branch right here (it takes the commit with it), then remove the commit from main. <strong>Why it happened:</strong> forgetting to check which branch you're on before starting work — extremely common. <strong>Prevent it next time:</strong> glance at your branch name (most terminals show it) before your very first edit.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git branch feature/login
+$ git reset --hard HEAD~1
+$ git checkout feature/login
+Switched to branch 'feature/login'
+
+$ git log --oneline -1
+<span class="ok">a3f9d2c Add login page</span>
+<span class="ok">↳ now on the right branch — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 2 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">2. 😟 "I have a merge conflict and don't know what to do"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You run <span class="found-code">git merge</span> and git says <span class="found-code">CONFLICT</span> — and now there's weird <span class="found-code">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> text inside your file.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> a conflict just means two branches changed the exact same line differently, and git genuinely can't guess which one you want. It's not broken — it's politely asking you to decide.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git merge feature/login
+Auto-merging app.js
+<span class="err">CONFLICT (content): Merge conflict in app.js</span>
+
+$ cat app.js
+<span class="warn">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+const port = 3000;
+<span class="warn">=======</span>
+const port = 8080;
+<span class="warn">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> both branches changed the same line to a different value — git is showing you both versions, side by side, waiting for you to pick.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Open the file, delete the <span class="found-code">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> / <span class="found-code">=======</span> / <span class="found-code">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span> markers, keep whichever line (or combination) is actually correct, then add and commit. <strong>Why it happened:</strong> two people (or two branches) genuinely changed the same line — completely normal on any real team. <strong>Prevent it next time:</strong> pull and merge often, in small chunks — tiny conflicts are easy, giant ones are scary.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;"><span class="dim"># edited app.js — removed markers, kept: const port = 8080;</span>
+$ git add app.js
+$ git commit
+<span class="ok">✓ Merge made by the 'recursive' strategy.</span>
+<span class="ok">↳ conflict resolved — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 3 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">3. 😟 "I accidentally committed a secret file"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You committed <span class="found-code">.env</span> — with a real API key inside — and realized it right after.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> the single most important question is: has it been pushed yet? If not, this is simple and completely private. If it HAS been pushed, the key is already exposed and deleting it later doesn't erase it from history — treat it as compromised and rotate it.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+b7e21ab Add .env with API keys
+
+$ git status
+On branch main
+<span class="ok">Your branch is ahead of 'origin/main' by 1 commit.</span>
+<span class="dim">↳ good — this hasn't been pushed yet</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the risky commit is still only local — nobody else has seen it yet, so it can be cleanly undone.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Undo the commit, remove <span class="found-code">.env</span> from tracking, and add it to <span class="found-code">.gitignore</span> so this can't happen again. <strong>Why it happened:</strong> <span class="found-code">.gitignore</span> either didn't exist yet or didn't list this file. <strong>Prevent it next time:</strong> set up <span class="found-code">.gitignore</span> as literally the first thing in any new project, before the first commit.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git reset --soft HEAD~1
+$ git rm --cached .env
+$ echo ".env" &gt;&gt; .gitignore
+$ git add .gitignore
+$ git commit -m "Add .gitignore, remove .env"
+<span class="ok">✓ committed cleanly</span>
+<span class="ok">↳ secret removed before it was ever pushed — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 4 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">4. 😟 "I forgot to add a file to my last commit"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You committed, then noticed one file never actually got included.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> since you haven't pushed yet, you don't need a whole separate commit for one forgotten file — you can just quietly fold it into the one you just made.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git status
+Untracked files:
+  <span class="warn">utils.js</span>
+<span class="dim">↳ this file never got committed</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> confirmed — <span class="found-code">utils.js</span> was sitting there the whole time, just never staged.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Add the file, then <span class="found-code">git commit --amend</span> — it folds into the previous commit instead of creating a new one. <strong>Why it happened:</strong> forgot to <span class="found-code">git add</span> it before committing. <strong>Prevent it next time:</strong> run <span class="found-code">git status</span> right before every commit, as a habit, to see exactly what's about to be included.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git add utils.js
+$ git commit --amend --no-edit
+$ git show --stat HEAD
+<span class="ok">utils.js | 12 ++++++++++++</span>
+<span class="ok">↳ now included in the same commit — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 5 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">5. 😟 "git push says 'rejected — non-fast-forward'"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git push</span> fails: "Updates were rejected because the remote contains work that you do not have locally."</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> this isn't an error in your code at all — it just means someone else pushed before you, and git is refusing to silently overwrite their work. That's a safety feature, not a bug.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git push
+<span class="err">! [rejected]  main -> main (non-fast-forward)</span>
+<span class="err">error: failed to push some refs</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the remote branch has commits your local branch doesn't — a teammate pushed first, and your local history is now behind.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Pull their changes first (merge or rebase them in), then push. <strong>Why it happened:</strong> completely normal on any team — two people worked at the same time. <strong>Prevent it next time:</strong> pull before you start working, and again right before you push, to minimize surprises.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git pull --rebase
+<span class="ok">Successfully rebased and updated refs/heads/main.</span>
+
+$ git push
+<span class="ok">✓ main -> main</span>
+<span class="ok">↳ pushed cleanly — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 6 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">6. 😟 "I want to undo my last commit"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You made a commit and want it gone — maybe it was a mistake, or you're not ready for it yet.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> this splits into two completely different tools depending on one question: has anyone else seen this commit? Not pushed yet → safe to rewrite. Already pushed/shared → don't rewrite it, add a new commit that undoes it instead.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+c4f8a21 Bad commit
+
+$ git status
+<span class="ok">Your branch is ahead of 'origin/main' by 1 commit.</span>
+<span class="dim">↳ not pushed yet — safe to rewrite</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> this commit is still local-only — nobody else has it, so rewriting history here is completely safe.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git reset --soft HEAD~1</span> — removes the commit but keeps all your changes, ready to redo the commit properly. <strong>If it HAD already been pushed:</strong> use <span class="found-code">git revert HEAD</span> instead — it adds a brand new commit that undoes the old one, without erasing shared history. <strong>Prevent it next time:</strong> keep this rule in your head permanently — pushed changes what's safe.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git reset --soft HEAD~1
+$ git status
+Changes to be committed:
+  <span class="ok">modified: app.js</span>
+<span class="ok">↳ commit undone, all changes kept — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 7 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">7. 😟 "I'm in a weird 'detached HEAD' state"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You checked out an old commit, and git warns: "You are in 'detached HEAD' state."</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> nothing is broken — you're just looking at an old snapshot instead of standing on a branch. The only real danger is committing here without realizing it, since those new commits aren't attached to anything and can get lost.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git checkout a3f9d2c
+Note: switching to 'a3f9d2c'.
+<span class="warn">You are in 'detached HEAD' state...</span>
+
+$ git branch
+<span class="warn">* (HEAD detached at a3f9d2c)</span>
+  main</div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> confirmed — you're standing on a specific commit, not a branch. Any commits made right now wouldn't be tracked by anything.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Just looking around? <span class="found-code">git checkout main</span> gets you back, nothing lost. Already made commits you want to keep? Create a branch right here FIRST, before doing anything else. <strong>Why it happened:</strong> checking out a specific commit or tag instead of a branch name. <strong>Prevent it next time:</strong> if you only meant to look at old code, you never needed to check it out at all — <span class="found-code">git show a3f9d2c</span> shows it without moving anywhere.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git checkout -b rescued-work
+Switched to a new branch 'rescued-work'
+<span class="ok">↳ any work made here is now safely on a real branch — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 8 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">8. 😟 "I want to change my last commit message"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">There's a typo in your last commit message — or it's just genuinely unclear what it did.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> same rule as always — if it hasn't been pushed, changing it is completely painless.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git log --oneline -1
+a3f9d2c <span class="warn">fix bugg</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> a typo, and honestly not a very useful message either way.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git commit --amend -m "new message"</span> replaces it entirely. <strong>Why it happened:</strong> typed quickly without a second look. <strong>Prevent it next time:</strong> write commit messages like you're explaining the change to a teammate six months from now — because eventually, you are.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git commit --amend -m "Fix login validation bug"
+$ git log --oneline -1
+<span class="ok">e91c4a2 Fix login validation bug</span>
+<span class="ok">↳ message updated — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 9 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">9. 😟 "I accidentally deleted a branch"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You ran <span class="found-code">git branch -d feature/login</span> — and then realized you still needed it.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> remember the golden rule — git almost never actually throws work away. Deleting a branch just removes the LABEL pointing at those commits; the commits themselves usually still exist for a while, and git keeps a record of everywhere HEAD has recently pointed.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git branch -d feature/login
+Deleted branch feature/login (was <span class="warn">a3f9d2c</span>).
+
+$ git branch
+* main
+<span class="dim">↳ gone from the branch list — but the commit isn't actually gone yet</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> the branch is gone, but git told you the exact commit hash it was pointing at — that's everything needed to bring it back.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">Use <span class="found-code">git reflog</span> to find the commit, then recreate the branch pointing at it. <strong>Why it happened:</strong> deleted the wrong branch, or forgot it hadn't been merged yet. <strong>Prevent it next time:</strong> git actually warns you with <span class="found-code">-d</span> if a branch has unmerged work — only <span class="found-code">-D</span> (force) skips that warning, so avoid reaching for capital D out of habit.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git reflog
+<span class="ok">a3f9d2c HEAD@{0}: commit: Add login page</span>
+
+$ git branch feature/login a3f9d2c
+$ git branch
+* main
+<span class="ok">  feature/login</span>
+<span class="ok">↳ branch recovered — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROBLEM 10 -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:18px 20px;margin-bottom:8px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#e2e8f0;margin-bottom:10px;text-shadow:0 0 14px rgba(248,113,113,0.4);">10. 😟 "I have unfinished changes but need to switch branches right now"</div>
+
+      <div style="background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.3);box-shadow:0 0 20px rgba(248,81,73,0.14);border-radius:6px;padding:10px 14px;margin-bottom:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#f85149;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(248,81,73,0.55);">😟 THE PROBLEM</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;">You're mid-way through changes, an urgent fix comes in on another branch, and git won't let you switch cleanly.</div>
+      </div>
+
+      <div class="found-p"><strong style="color:#38bdf8;">🧠 How to think about it:</strong> you don't have to choose between "commit unfinished, half-broken work" or "lose it entirely" — there's a shelf for exactly this in-between situation.</div>
+
+      <div class="ld-term" style="margin:12px 0;">
+        <div class="ld-term-bar">
+          <span class="ld-dot" style="background:#ff5f56"></span>
+          <span class="ld-dot" style="background:#ffbd2e"></span>
+          <span class="ld-dot" style="background:#27c93f"></span>
+          <span class="ld-term-title">devops@laptop: ~/app</span>
+        </div>
+        <div class="ld-term-body">
+          <div class="pu-output" style="white-space:pre;">$ git checkout main
+<span class="err">error: Your local changes would be overwritten by checkout.</span></div>
+        </div>
+      </div>
+
+      <div class="found-p"><strong style="color:#94a3b8;">What you found:</strong> git is protecting your unfinished work by refusing to just throw it away — it needs somewhere to put it first.</div>
+
+      <div style="background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.3);box-shadow:0 0 20px rgba(63,185,80,0.14);border-radius:6px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:4px;text-shadow:0 0 10px rgba(63,185,80,0.55);">🔧 THE FIX</div>
+        <div style="font-size:11.5px;color:#e2e8f0;line-height:1.7;"><span class="found-code">git stash</span> shelves your unfinished changes and gives you a clean slate. Switch, do the urgent fix, come back, then <span class="found-code">git stash pop</span> brings everything back exactly as it was. <strong>Why it happened:</strong> real work rarely lines up neatly with when you need to switch context. <strong>Prevent it next time:</strong> nothing to prevent — stash exists precisely for this, completely normal.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#3fb950;font-weight:700;margin-bottom:6px;text-shadow:0 0 10px rgba(63,185,80,0.55);">▶️ APPLYING THE FIX — STEP BY STEP</div>
+        <div class="ld-term" style="border-color:rgba(63,185,80,0.35);box-shadow:0 0 22px rgba(63,185,80,0.12);margin-bottom:0;">
+          <div class="ld-term-bar">
+            <span class="ld-dot" style="background:#ff5f56"></span>
+            <span class="ld-dot" style="background:#ffbd2e"></span>
+            <span class="ld-dot" style="background:#27c93f"></span>
+            <span class="ld-term-title">devops@laptop: ~/app (fixing it)</span>
+          </div>
+          <div class="ld-term-body">
+            <div class="pu-output" style="white-space:pre;">$ git stash
+<span class="ok">Saved working directory and index state WIP on feature: a3f9d2c</span>
+
+$ git checkout main
+Switched to branch 'main'
+<span class="dim"># ...did the urgent fix, switched back...</span>
+
+$ git checkout feature
+$ git stash pop
+<span class="ok">↳ unfinished changes are back, exactly as left — fixed!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSING CHECKLIST -->
+    <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.25);box-shadow:0 0 24px rgba(56,189,248,0.1);border-radius:8px;padding:18px 20px;margin-top:20px;">
+      <div class="found-h" style="color:#38bdf8;margin-top:0;text-shadow:0 0 12px rgba(56,189,248,0.4);">🔎 5 Things To Always Check When Git Is Acting Up</div>
+      <div class="found-p">All 10 problems above really come down to these 5 questions. Keep this list in your head:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. Has it been pushed?</strong> — <span class="found-code">git status</span> tells you instantly if you're ahead of the remote</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. What branch am I actually on?</strong> — <span class="found-code">git branch</span>, before you do anything else</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. What does the log actually say?</strong> — <span class="found-code">git log --oneline</span> for a quick, honest history</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Is it really gone, or just unreachable right now?</strong> — <span class="found-code">git reflog</span> before you assume anything is lost</div>
+      <div class="found-p" style="margin-bottom:0;"><strong style="color:#e2e8f0;">5. Am I about to rewrite shared history?</strong> — if others have it, add a new commit instead of rewriting the old one</div>
+    </div>
+
+  </div>
+
+  <div class="pu-panel" id="pu-tsDocker">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Docker troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsK8s">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Kubernetes troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsTerraform">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Terraform troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsCicd">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 CI/CD troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsAws">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 AWS troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsNginx">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Nginx troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsSecurity">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Security troubleshooting — coming soon.</div>
+  </div>
+  <div class="pu-panel" id="pu-tsBash">
+    <div style="text-align:center;padding:40px 20px;color:#475569;font-size:12px;">🚧 Shell / Bash troubleshooting — coming soon.</div>
+  </div>
+

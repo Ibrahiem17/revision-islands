@@ -1,0 +1,1113 @@
+
+
+  
+  <details class="found-details">
+    <summary>🧱 Foundation for Shell</summary>
+    <div class="found-body">
+
+      <div class="found-p">Absolutely. Let's learn SSH from the foundation to actually typing the command, but we'll use template data so you don't need to create an AWS server right now.</div>
+
+      <div class="found-h" style="font-size:14px;">SSH — Complete Foundation</div>
+
+      <div class="found-sub">1. First: What is SSH?</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">SSH = Secure Shell</strong></div>
+      <div class="found-p">It lets you securely connect from your computer → another computer/server over a network.</div>
+      <div class="found-pre">Your computer 💻
+      │
+      │ SSH 🔐
+      ↓
+Remote Linux server 🖥️</div>
+      <div class="found-p">Once connected, you can use your terminal to control the remote server.</div>
+
+      <div class="found-sub">2. Why do we need SSH?</div>
+      <div class="found-p">Suppose your company's server is in an AWS data center:</div>
+      <div class="found-pre">Your laptop 🇵🇰
+      │
+      │ Internet
+      ↓
+AWS data center 🌍
+      │
+      ↓
+Linux server 🖥️</div>
+      <div class="found-p">You can't physically sit beside the server.</div>
+      <div class="found-p">SSH lets you work on it remotely.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">systemctl status nginx</div>
+      <div class="found-p">This checks Nginx on the server, not your laptop.</div>
+
+      <div class="found-sub">3. What information do we need?</div>
+      <div class="found-p">To SSH into a server, you generally need:</div>
+      <div class="found-p">Username<br>Server IP address<br>Authentication method</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">Username: ubuntu
+IP:       203.0.113.25
+Key:      my-server.pem</div>
+      <div class="found-p">These are template/example values, not a real server.</div>
+
+      <div class="found-sub">4. The basic SSH command</div>
+      <div class="found-p">The basic form is:</div>
+      <div class="found-pre">ssh &lt;username&gt;@&lt;server-ip&gt;</div>
+      <div class="found-p">Example:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">Read it as:</div>
+      <div class="found-p"><em>"Connect to the server at 203.0.113.25 as user ubuntu."</em></div>
+      <div class="found-p">Breakdown:</div>
+      <div class="found-pre">ssh
+ ↓
+SSH program
+
+ubuntu
+ ↓
+username
+
+@
+ ↓
+at
+
+203.0.113.25
+ ↓
+server's IP address</div>
+
+      <div class="found-sub">5. What is the IP address?</div>
+      <div class="found-p">Every machine on a network can have an IP address used to identify it.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">203.0.113.25</div>
+      <div class="found-p">Think of it like a computer's address.</div>
+      <div class="found-pre">House address
+     ↓
+123 Main Street
+
+Computer address
+     ↓
+203.0.113.25</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">means:</div>
+      <div class="found-p"><em>"Connect to the computer at this address using the ubuntu account."</em></div>
+
+      <div class="found-sub">6. What is the username?</div>
+      <div class="found-p">The server has Linux users.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-p">root<br>ubuntu<br>admin<br>devops</div>
+      <div class="found-p">You must tell SSH which user you want to log in as.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">You're saying:</div>
+      <div class="found-p">User → ubuntu<br>Server → 203.0.113.25</div>
+
+      <div class="found-sub">7. What happens after you run it?</div>
+      <div class="found-p">You type:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">SSH contacts the server.</div>
+      <div class="found-p">You might see:</div>
+      <div class="found-pre">The authenticity of host '203.0.113.25' can't be established.
+Are you sure you want to continue connecting (yes/no)?</div>
+      <div class="found-p">You type:</div>
+      <div class="found-pre">yes</div>
+      <div class="found-p">Then SSH authenticates you.</div>
+      <div class="found-p">If successful, you'll eventually see something like:</div>
+      <div class="found-pre">ubuntu@server:~$</div>
+      <div class="found-p">🎉 You're now inside the remote server.</div>
+
+      <div class="found-sub">8. How do you know you're inside?</div>
+      <div class="found-p">Look at your prompt.</div>
+      <div class="found-p">Before SSH:</div>
+      <div class="found-pre">ibrahiem@laptop:~$</div>
+      <div class="found-p">After SSH:</div>
+      <div class="found-pre">ubuntu@server:~$</div>
+      <div class="found-p">The prompt tells you which machine you're currently using.</div>
+      <div class="found-p">Now:</div>
+      <div class="found-pre">pwd</div>
+      <div class="found-p">might output:</div>
+      <div class="found-pre">/home/ubuntu</div>
+      <div class="found-p">That's the server's filesystem.</div>
+
+      <div class="found-sub">9. What happens to your commands?</div>
+      <div class="found-p">Suppose you type:</div>
+      <div class="found-pre">ls</div>
+      <div class="found-p">Before SSH:</div>
+      <div class="found-pre">Your laptop
+    ↓
+   ls
+    ↓
+your laptop's files</div>
+      <div class="found-p">After SSH:</div>
+      <div class="found-pre">Remote server
+      ↓
+     ls
+      ↓
+server's files</div>
+      <div class="found-p">Same terminal.<br>Different computer.</div>
+      <div class="found-p">That's the key idea.</div>
+
+      <div class="found-sub">10. SSH with an SSH key</div>
+      <div class="found-p">For servers such as AWS EC2, you commonly authenticate using an SSH key pair instead of typing a normal password.</div>
+      <div class="found-p">You might have:</div>
+      <div class="found-pre">my-server.pem</div>
+      <div class="found-p">The command becomes:</div>
+      <div class="found-pre">ssh -i my-server.pem ubuntu@203.0.113.25</div>
+      <div class="found-p">Breakdown:</div>
+      <div class="found-pre">ssh
+ ↓
+SSH
+
+-i
+ ↓
+identity/private-key file
+
+my-server.pem
+ ↓
+your private key
+
+ubuntu
+ ↓
+username
+
+@
+ ↓
+at
+
+203.0.113.25
+ ↓
+server</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">ssh -i my-server.pem ubuntu@203.0.113.25</div>
+      <div class="found-p">means:</div>
+      <div class="found-p"><em>"Connect to this server as ubuntu, using my-server.pem as my identity/private key."</em></div>
+
+      <div class="found-sub">11. What is .pem?</div>
+      <div class="found-p">A .pem file can contain a private cryptographic key.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">my-server.pem</div>
+      <div class="found-p">Think of it like a very special key 🔑 that proves:</div>
+      <div class="found-p"><em>"I am authorized to log into this server."</em></div>
+      <div class="found-warn">⚠️ Very important<br><br>Your private key should be kept private.<br><br>Don't:<br>❌ upload it to GitHub<br>❌ send it to random people<br>❌ paste it into chat</div>
+
+      <div class="found-sub">12. Why does SSH use keys?</div>
+      <div class="found-p">Instead of:</div>
+      <div class="found-p">Username + password</div>
+      <div class="found-p">you can use:</div>
+      <div class="found-pre">Private key 🔑
+       ↓
+      SSH
+       ↓
+    Server</div>
+      <div class="found-p">The server has the corresponding public key configured for that user.</div>
+      <div class="found-p">Very roughly:</div>
+      <div class="found-pre">Your computer
+Private key 🔑
+       │
+       ↓
+      SSH
+       │
+       ↓
+Server
+Public key 🔓</div>
+      <div class="found-p">The cryptography proves that you possess the correct private key without sending the private key itself to the server.</div>
+
+      <div class="found-sub">13. What is -i?</div>
+      <div class="found-p">You saw:</div>
+      <div class="found-pre">ssh -i my-server.pem ubuntu@203.0.113.25</div>
+      <div class="found-p">Here:</div>
+      <div class="found-p"><span class="found-code">-i</span> → identity file</div>
+      <div class="found-p">It tells SSH:</div>
+      <div class="found-p"><em>"Use this key file to authenticate me."</em></div>
+      <div class="found-note">🧠 Trick:<br><br><span class="found-code">-i</span> = Identity</div>
+
+      <div class="found-sub">14. What if SSH uses a different port?</div>
+      <div class="found-p">SSH normally uses:</div>
+      <div class="found-p">Port 22</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">normally connects to port 22.</div>
+      <div class="found-p">But a server could use another port, for example:</div>
+      <div class="found-pre">2222</div>
+      <div class="found-p">Then:</div>
+      <div class="found-pre">ssh -p 2222 ubuntu@203.0.113.25</div>
+      <div class="found-p"><span class="found-code">-p</span> = port</div>
+      <div class="found-p">Think:</div>
+      <div class="found-p"><span class="found-code">-p</span> → Port</div>
+
+      <div class="found-sub">15. Complete SSH template</div>
+      <div class="found-p">Basic:</div>
+      <div class="found-pre">ssh &lt;username&gt;@&lt;server-ip&gt;</div>
+      <div class="found-p">With private key:</div>
+      <div class="found-pre">ssh -i &lt;private-key&gt; &lt;username&gt;@&lt;server-ip&gt;</div>
+      <div class="found-p">With custom port:</div>
+      <div class="found-pre">ssh -p &lt;port&gt; &lt;username&gt;@&lt;server-ip&gt;</div>
+      <div class="found-p">With both:</div>
+      <div class="found-pre">ssh -i &lt;private-key&gt; -p &lt;port&gt; &lt;username&gt;@&lt;server-ip&gt;</div>
+      <div class="found-p">Example using template data:</div>
+      <div class="found-pre">ssh -i my-server.pem -p 2222 ubuntu@203.0.113.25</div>
+
+      <div class="found-sub">16. What if you have a domain instead of IP?</div>
+      <div class="found-p">You can also use a hostname/domain:</div>
+      <div class="found-pre">ssh ubuntu@example.com</div>
+      <div class="found-p">Instead of:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">The important thing is:</div>
+      <div class="found-p">username @ destination</div>
+
+      <div class="found-sub">17. What happens when you are finished?</div>
+      <div class="found-p">You're connected:</div>
+      <div class="found-pre">ubuntu@server:~$</div>
+      <div class="found-p">Run:</div>
+      <div class="found-pre">exit</div>
+      <div class="found-p">You'll see something like:</div>
+      <div class="found-pre">logout
+Connection to 203.0.113.25 closed.</div>
+      <div class="found-p">Now you're back on your own computer.</div>
+      <div class="found-pre">Your laptop 💻
+      ↑
+    exit
+      ↑
+Remote server 🖥️</div>
+
+      <div class="found-sub">18. The complete real-world flow</div>
+      <div class="found-p">Imagine AWS gives you:</div>
+      <div class="found-p">Server IP:<br>203.0.113.25</div>
+      <div class="found-p">Username:<br>ubuntu</div>
+      <div class="found-p">Private key:<br>my-server.pem</div>
+      <div class="found-p">You open your terminal on your computer.</div>
+      <div class="found-p">Then:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Step 1</strong></div>
+      <div class="found-pre">cd ~/Downloads</div>
+      <div class="found-p">Go where your key is stored.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Step 2</strong></div>
+      <div class="found-pre">ssh -i my-server.pem ubuntu@203.0.113.25</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Step 3</strong></div>
+      <div class="found-p">SSH connects.</div>
+      <div class="found-p">You might see:</div>
+      <div class="found-pre">ubuntu@server:~$</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Step 4</strong></div>
+      <div class="found-p">Now you're operating the server.</div>
+      <div class="found-pre">ls
+df -h
+systemctl status nginx
+docker ps</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Step 5</strong></div>
+      <div class="found-p">Finished?</div>
+      <div class="found-pre">exit</div>
+      <div class="found-p">You're back on your laptop.</div>
+
+      <div class="found-sub">19. SSH in one picture</div>
+      <div class="found-pre">                 INTERNET
+                    │
+                    │
+                    ↓
+Your laptop 💻 ─── SSH 🔐 ───→ Linux Server 🖥️
+                                   │
+                                   ├── nginx
+                                   ├── Docker
+                                   ├── files
+                                   └── applications</div>
+      <div class="found-p">You use your laptop's terminal as the remote control.</div>
+
+      <div class="found-h">🧠 SSH cheat sheet</div>
+      <table class="found-table">
+        <thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>ssh</td><td>Start SSH connection</td></tr>
+          <tr><td>&lt;username&gt;</td><td>User on remote server</td></tr>
+          <tr><td>&lt;server-ip&gt;</td><td>Server's network address</td></tr>
+          <tr><td>@</td><td>"at"</td></tr>
+          <tr><td>-i</td><td>Identity/private key</td></tr>
+          <tr><td>-p</td><td>Port</td></tr>
+          <tr><td>22</td><td>Default SSH port</td></tr>
+          <tr><td>.pem</td><td>Common private-key file format</td></tr>
+          <tr><td>exit</td><td>Disconnect</td></tr>
+        </tbody>
+      </table>
+      <div class="found-sub">Most important commands</div>
+      <div class="found-pre">ssh &lt;username&gt;@&lt;server-ip&gt;
+ssh -i &lt;key&gt; &lt;username&gt;@&lt;server-ip&gt;
+ssh -p &lt;port&gt; &lt;username&gt;@&lt;server-ip&gt;
+exit</div>
+
+      <div class="found-h">🧠 Kid-friendly memory trick</div>
+      <div class="found-p">Think of SSH as calling a remote computer 📞:</div>
+      <div class="found-pre">ssh
+ ↓
+CALL
+
+username
+ ↓
+WHO?
+
+@
+ ↓
+AT
+
+server-ip
+ ↓
+WHERE?</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">reads almost like:</div>
+      <div class="found-p"><em>"SSH: connect me as UBUNTU at 203.0.113.25."</em></div>
+
+      <div class="found-h">🇵🇰 Urdu-English</div>
+      <div class="found-p">SSH basically remote server mein login karne ka secure tareeqa hai. <span class="found-code">ssh username@IP</span> ka matlab hai: "is IP wale server par is user ke naam se connect ho."</div>
+
+      <div class="found-key">🔑 Key takeaway<br><br>The one command you should remember first is:<br><br><span class="found-code">ssh &lt;username&gt;@&lt;server-ip&gt;</span><br><br>And when authentication requires a key:<br><br><span class="found-code">ssh -i &lt;private-key&gt; &lt;username&gt;@&lt;server-ip&gt;</span><br><br>You are not moving your terminal to another computer—you are using your terminal to send commands to another computer.</div>
+
+      <hr class="found-divider">
+
+      <div class="found-p"><strong style="color:#e2e8f0;">which tool we use to ssh into a server ? ubuntu terminal on your own pc ? and my another question is why would someone need it , i get the example you cant physically go to aws server but why . and another thing do we user our own username @ serverip to enter it ? and the ip address of a server far far away</strong></div>
+
+      <div class="found-p">Yes — you're asking the right foundational questions. Let's separate them.</div>
+
+      <div class="found-sub">1. What tool do we use to SSH?</div>
+      <div class="found-p">Yes. If you're using Ubuntu/Linux, you can use the Ubuntu Terminal on your own PC.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">Your terminal has an SSH client installed.</div>
+      <div class="found-pre">Your PC
+┌──────────────────────┐
+│ Ubuntu Terminal       │
+│                       │
+│ ssh client            │
+└──────────┬────────────┘
+           │
+           │ Internet
+           ↓
+     Remote Server</div>
+      <div class="found-p">You don't open a special "SSH app."</div>
+      <div class="found-p">You normally just type the ssh command into your terminal.</div>
+      <div class="found-p">On Windows, you can also use PowerShell/Windows Terminal because modern Windows includes an SSH client.</div>
+
+      <div class="found-sub">2. But WHY would we need to access another server?</div>
+      <div class="found-p">This is the bigger question.</div>
+      <div class="found-p">Forget AWS for a second.</div>
+      <div class="found-p">Imagine you're building a website.</div>
+      <div class="found-p">You have your laptop:</div>
+      <div class="found-pre">Your laptop 💻</div>
+      <div class="found-p">You write:</div>
+      <div class="found-pre">mywebsite</div>
+      <div class="found-p">But your laptop isn't supposed to be the computer that serves your website to everyone on the internet.</div>
+      <div class="found-p">You need a computer that is:</div>
+      <div class="found-p">connected to the internet<br>available 24/7<br>powerful/reliable enough<br>located in a data center<br>configured to run your application</div>
+      <div class="found-p">That's a server.</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">You build application
+        ↓
+Your laptop 💻
+        ↓
+Put application on
+        ↓
+Server 🖥️
+        ↓
+Internet 🌍
+        ↓
+Users</div>
+
+      <div class="found-sub">3. Why can't we just use our own PC?</div>
+      <div class="found-p">You technically can.</div>
+      <div class="found-p">You could make your own PC a server.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">Your PC
+   ↓
+Run website
+   ↓
+Internet users</div>
+      <div class="found-p">But there are problems.</div>
+      <div class="found-p">Your PC might be:<br>❌ turned off<br>❌ lose internet<br>❌ lose electricity<br>❌ have changing IP<br>❌ not have enough resources<br>❌ not be configured for high traffic</div>
+      <div class="found-p">And you probably don't want to leave your personal PC running 24/7 just to host a website.</div>
+
+      <div class="found-sub">4. So companies use servers</div>
+      <div class="found-p">Companies rent servers from cloud providers such as AWS.</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">AWS Data Center
+      │
+      ├── Server 1
+      ├── Server 2
+      ├── Server 3
+      ├── Server 4
+      └── ...</div>
+      <div class="found-p">You don't own or physically manage those machines.</div>
+      <div class="found-p">AWS provides the physical infrastructure.</div>
+      <div class="found-p">You manage the server remotely.</div>
+      <div class="found-p">That's where SSH becomes useful.</div>
+
+      <div class="found-sub">5. "Why can't we physically go to the AWS server?"</div>
+      <div class="found-p">Because AWS has huge data centers, often in different cities/countries.</div>
+      <div class="found-p">You might be sitting in Pakistan:</div>
+      <div class="found-pre">You 🇵🇰
+  ↓
+Your laptop</div>
+      <div class="found-p">Your server could be in an AWS data center somewhere else:</div>
+      <div class="found-pre">AWS Data Center 🌎
+       ↓
+    Server</div>
+      <div class="found-p">You don't need to travel there every time you want to:</div>
+      <div class="found-pre">restart nginx</div>
+      <div class="found-p">or:</div>
+      <div class="found-pre">docker ps</div>
+      <div class="found-p">or:</div>
+      <div class="found-pre">apt install nginx</div>
+      <div class="found-p">SSH lets you control it remotely.</div>
+
+      <div class="found-sub">6. Now your username question — VERY important</div>
+      <div class="found-p">You asked:</div>
+      <div class="found-p"><em>"Do we use our own username @ server IP?"</em></div>
+      <div class="found-p">Not necessarily.</div>
+      <div class="found-p">The username is usually a username that exists on the remote server.</div>
+      <div class="found-p">For example, suppose the remote server has:</div>
+      <div class="found-p">root<br>ubuntu<br>john<br>devops</div>
+      <div class="found-p">You can connect as:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">You're saying:</div>
+      <div class="found-p"><em>"I want to log into the ubuntu account on that server."</em></div>
+      <div class="found-p">You're not saying your laptop username is ubuntu.</div>
+
+      <div class="found-sub">7. Example</div>
+      <div class="found-p">Your laptop might have:</div>
+      <div class="found-pre">ibrahiem@laptop</div>
+      <div class="found-p">The server might have:</div>
+      <div class="found-pre">ubuntu@server</div>
+      <div class="found-p">You type:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">Before:</div>
+      <div class="found-pre">ibrahiem@laptop:~$</div>
+      <div class="found-p">After successful SSH:</div>
+      <div class="found-pre">ubuntu@server:~$</div>
+      <div class="found-p">Notice what happened?</div>
+      <div class="found-p">You are still sitting at:</div>
+      <div class="found-p">Your laptop</div>
+      <div class="found-p">But your terminal is now operating as:</div>
+      <div class="found-p">ubuntu</div>
+      <div class="found-p">on:</div>
+      <div class="found-p">203.0.113.25</div>
+
+      <div class="found-sub">8. And YES — the server can be VERY far away</div>
+      <div class="found-p">Absolutely.</div>
+      <div class="found-p">Your computer could be in:</div>
+      <div class="found-p">Pakistan 🇵🇰</div>
+      <div class="found-p">The server could be in:</div>
+      <div class="found-p">USA 🇺🇸</div>
+      <div class="found-p">or:</div>
+      <div class="found-p">Germany 🇩🇪</div>
+      <div class="found-p">or:</div>
+      <div class="found-p">Singapore 🇸🇬</div>
+      <div class="found-p">The internet connects them.</div>
+      <div class="found-pre">Pakistan 💻
+     │
+     │ Internet 🌍
+     │
+     ↓
+USA 🖥️
+AWS Server</div>
+      <div class="found-p">You type:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">The SSH client communicates across the internet with that server.</div>
+
+      <div class="found-sub">9. What does the IP actually do?</div>
+      <div class="found-p">Think of the IP as the network address of the server.</div>
+      <div class="found-p">Just like:</div>
+      <div class="found-p">House:<br>123 Main Street</div>
+      <div class="found-p">helps you find a house,</div>
+      <div class="found-p">203.0.113.25</div>
+      <div class="found-p">identifies a network destination.</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">roughly means:</div>
+      <div class="found-p"><em>"Go across the network to this computer and try to log me into its ubuntu account."</em></div>
+
+      <div class="found-sub">10. One more important thing: knowing the IP isn't enough</div>
+      <div class="found-p">You can't just do:</div>
+      <div class="found-pre">ssh ubuntu@random-ip</div>
+      <div class="found-p">and enter somebody else's server 😂.</div>
+      <div class="found-p">The server must:</div>
+      <div class="found-p">be reachable over the network<br>have SSH available<br>allow SSH connections through its firewall/security rules<br>have the ubuntu user<br>recognize/authenticate you</div>
+      <div class="found-p">For example, with a key:</div>
+      <div class="found-pre">ssh -i my-key.pem ubuntu@203.0.113.25</div>
+      <div class="found-p">The key proves you are authorized.</div>
+
+      <div class="found-h">🧠 The whole picture</div>
+      <div class="found-pre">                    INTERNET
+                       🌍
+                       │
+                       │
+Your PC                 │                 AWS
+┌─────────────┐         │        ┌─────────────────┐
+│              │        │        │                 │
+│ Terminal     │        │        │ Linux Server    │
+│              │        │        │                 │
+│ SSH Client   │ ───────┼──────→ │ SSH Server      │
+│              │        │        │                 │
+└─────────────┘         │        └─────────────────┘
+                       │
+                  far away</div>
+      <div class="found-p">You type:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">And essentially:</div>
+      <div class="found-pre">Your SSH client
+      ↓
+   Internet
+      ↓
+Server's IP
+      ↓
+Server's SSH service
+      ↓
+Authentication
+      ↓
+Remote terminal</div>
+
+      <div class="found-h">The 4 things to remember</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">1. What tool?</strong><br>Your terminal + SSH client</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">2. Why?</strong><br>To remotely manage computers/servers</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">3. Whose username?</strong><br>A user account on the REMOTE server</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">4. Can the server be far away?</strong><br>YES — potentially anywhere in the world.</div>
+      <div class="found-key">And that's actually the core reason SSH is so important in DevOps: DevOps engineers constantly manage machines that they aren't physically sitting in front of.</div>
+
+    </div>
+  </details>
+
+  <details class="found-details">
+    <summary>🔐 SSH Keys — Complete Foundation</summary>
+    <div class="found-body">
+
+      <div class="found-sub">1. First, what problem are we solving?</div>
+      <div class="found-p">You want to connect to a remote Linux server:</div>
+      <div class="found-pre">ssh ubuntu@SERVER_IP</div>
+      <div class="found-p">The server needs to answer:</div>
+      <div class="found-p"><em>"How do I know you're allowed to log in?"</em></div>
+      <div class="found-p">There are two common approaches:</div>
+      <div class="found-pre">Password authentication
+        OR
+SSH key authentication</div>
+      <div class="found-p">We're learning the second one.</div>
+
+      <div class="found-sub">2. Who has what?</div>
+      <div class="found-p">There are two computers:</div>
+      <div class="found-pre">YOUR COMPUTER 💻                 SERVER 🖥️</div>
+      <div class="found-p">You want:</div>
+      <div class="found-pre">YOUR COMPUTER ───────SSH──────→ SERVER</div>
+      <div class="found-p">Your computer will have the private key.</div>
+      <div class="found-p">The server will have the public key.</div>
+      <div class="found-pre">YOUR COMPUTER                 SERVER
+     │                           │
+Private key 🔐              Public key 🔓</div>
+      <div class="found-p">Private key stays with you.</div>
+
+      <div class="found-sub">3. First, create the keys</div>
+      <div class="found-p">You run this on your computer:</div>
+      <div class="found-pre">ssh-keygen -t ed25519</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">What is ssh-keygen?</div>
+      <div class="found-p">It's a Linux program that generates SSH keys.</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">What is -t?</div>
+      <div class="found-p"><span class="found-code">-t</span> means:</div>
+      <div class="found-p">type</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">What is ed25519?</div>
+      <div class="found-p">It's a type of cryptographic algorithm used for SSH keys.</div>
+      <div class="found-p">You don't need to understand its mathematics right now.</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">ssh-keygen -t ed25519</div>
+      <div class="found-p">means:</div>
+      <div class="found-p"><em>"Create an SSH key pair using the Ed25519 key type."</em></div>
+
+      <div class="found-sub">4. What gets created?</div>
+      <div class="found-p">ssh-keygen creates two files:</div>
+      <div class="found-pre">~/.ssh/
+├── id_ed25519
+└── id_ed25519.pub</div>
+      <div class="found-p">They are:</div>
+      <div class="found-pre">id_ed25519
+     ↓
+PRIVATE KEY 🔐
+
+id_ed25519.pub
+     ↓
+PUBLIC KEY 🔓</div>
+      <div class="found-p">You didn't manually create these files.</div>
+      <div class="found-p">ssh-keygen created them.</div>
+
+      <div class="found-sub">5. What do we do with the keys?</div>
+      <div class="found-p">This is the most important part.</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">Private key</div>
+      <div class="found-p">Keep it on:</div>
+      <div class="found-pre">YOUR COMPUTER
+~/.ssh/id_ed25519</div>
+      <div class="found-p">Never give it to the server or other people.</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">Public key</div>
+      <div class="found-p">Put it on:</div>
+      <div class="found-pre">SERVER</div>
+      <div class="found-p">The server stores it in:</div>
+      <div class="found-pre">~/.ssh/authorized_keys</div>
+      <div class="found-p">So:</div>
+      <div class="found-pre">YOUR COMPUTER                 SERVER
+────────────────────────────────────────
+
+id_ed25519 🔐
+
+                              authorized_keys
+                              └── your public key 🔓</div>
+
+      <div class="found-sub">6. How do we put the public key on the server?</div>
+      <div class="found-p">A common command is:</div>
+      <div class="found-pre">ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@SERVER_IP</div>
+      <div class="found-p">For example:</div>
+      <div class="found-pre">ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@203.0.113.25</div>
+      <div class="found-p">This essentially says:</div>
+      <div class="found-p"><em>"Copy my public key to the server and add it to the list of keys allowed to log in."</em></div>
+      <div class="found-p">The server ends up with:</div>
+      <div class="found-pre">/home/ubuntu/.ssh/authorized_keys</div>
+      <div class="found-p">containing your public key.</div>
+
+      <div class="found-sub">7. Now we have this situation</div>
+      <div class="found-pre">YOUR COMPUTER                       SERVER
+     │                                │
+     │                                │
+     │ id_ed25519 🔐                  │
+     │                                │
+     │                                │
+     │                    authorized_keys
+     │                    └── public key 🔓
+     │                                │
+     └────────────────────────────────┘</div>
+      <div class="found-p">Now the server knows:</div>
+      <div class="found-p"><em>"I will allow someone who can prove they have the private key corresponding to this public key."</em></div>
+
+      <div class="found-sub">8. Now we SSH</div>
+      <div class="found-p">You run:</div>
+      <div class="found-pre">ssh ubuntu@203.0.113.25</div>
+      <div class="found-p">SSH sees your private key:</div>
+      <div class="found-pre">~/.ssh/id_ed25519</div>
+      <div class="found-p">The server has your public key:</div>
+      <div class="found-pre">~/.ssh/authorized_keys</div>
+      <div class="found-p">SSH performs an authentication process to prove that your private key matches the public key the server trusts.</div>
+      <div class="found-p">You don't manually send the private key to the server.</div>
+      <div class="found-p">That's important.</div>
+
+      <div class="found-sub">9. If authentication succeeds</div>
+      <div class="found-p">The server says:</div>
+      <div class="found-p">✅ You're authorized.</div>
+      <div class="found-p">You get a remote shell:</div>
+      <div class="found-pre">ubuntu@server:~$</div>
+      <div class="found-p">Now:</div>
+      <div class="found-pre">ls</div>
+      <div class="found-p">runs on the server, not your laptop.</div>
+
+      <div class="found-sub">10. What if you don't have the private key?</div>
+      <div class="found-p">Suppose someone copies your public key:</div>
+      <div class="found-p">public key 🔓</div>
+      <div class="found-p">That's okay.</div>
+      <div class="found-p">But if they don't have your private key:</div>
+      <div class="found-p">private key 🔐</div>
+      <div class="found-p">they can't authenticate using that key pair.</div>
+      <div class="found-p">That's why the private key must be protected.</div>
+
+      <div class="found-sub">11. What does the whole flow look like?</div>
+      <div class="found-p">Here's the complete picture:</div>
+      <div class="found-pre">                 YOUR COMPUTER 💻
+                        │
+                        │
+                ssh-keygen -t ed25519
+                        │
+                        ↓
+                 Generate key pair
+                   /          \
+                  /            \
+                 ↓              ↓
+        id_ed25519 🔐     id_ed25519.pub 🔓
+          PRIVATE              PUBLIC
+             │                   │
+             │                   │
+        KEEP HERE                │
+             │                   │
+             │          ssh-copy-id
+             │                   │
+             │                   ↓
+             │              SERVER 🖥️
+             │                   │
+             │          ~/.ssh/authorized_keys
+             │                   │
+             │              PUBLIC KEY
+             │                   │
+             └─────── SSH ───────┘
+                         │
+                         ↓
+                  Authentication
+                         │
+                         ↓
+                       ✅ Login</div>
+
+      <div class="found-sub">12. The commands in order</div>
+      <div class="found-p">If you're actually setting it up, the conceptual sequence is:</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">Step 1 — Generate keys</div>
+      <div class="found-pre">ssh-keygen -t ed25519</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">Step 2 — Put public key on server</div>
+      <div class="found-pre">ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@SERVER_IP</div>
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">Step 3 — Connect</div>
+      <div class="found-pre">ssh ubuntu@SERVER_IP</div>
+      <div class="found-p">That's the basic flow.</div>
+
+      <div class="found-h">🧠 What each thing means</div>
+      <table class="found-table">
+        <thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>ssh</td><td>Connect to a remote machine</td></tr>
+          <tr><td>ssh-keygen</td><td>Generate SSH keys</td></tr>
+          <tr><td>ed25519</td><td>Type of SSH key algorithm</td></tr>
+          <tr><td>id_ed25519</td><td>Your private key</td></tr>
+          <tr><td>id_ed25519.pub</td><td>Your public key</td></tr>
+          <tr><td>authorized_keys</td><td>Server's list of trusted public keys</td></tr>
+          <tr><td>ssh-copy-id</td><td>Copies your public key to the server</td></tr>
+          <tr><td>Private key</td><td>Keep secret</td></tr>
+          <tr><td>Public key</td><td>Can be placed on the server</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 The one mental model you need</div>
+      <div class="found-p">Think of it like a lock and key:</div>
+      <div class="found-p">PUBLIC KEY 🔓 = lock<br>PRIVATE KEY 🔐 = your secret key</div>
+      <div class="found-p">You put the lock on the server.</div>
+      <div class="found-p">You keep the key with yourself.</div>
+      <div class="found-p">When you SSH:</div>
+      <div class="found-pre">You
+ 🔐
+  │
+  │ "I have the matching key."
+  ↓
+Server
+ 🔓
+  │
+  ↓
+✅ Let me in</div>
+      <div class="found-p">Don't worry about the cryptographic mathematics yet.</div>
+      <div class="found-key">For DevOps, your foundation at this stage is simply:<br><br>Generate a key pair → keep the private key → put the public key on the server → SSH uses the pair to authenticate you.</div>
+
+    </div>
+  </details>
+
+  <div class="section-title">🔑 SSH — Secure Shell</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    SSH lets you securely connect to remote Linux servers. <strong style="color:#e2e8f0;">Always use key-based authentication — never passwords in production.</strong>
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#64748b;"># ── CONNECT ───────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">ssh user@server-ip</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# basic connect</span><br>
+    <span style="color:#fbbf24;">ssh -i ~/.ssh/key.pem user@ip</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# connect with specific key</span><br>
+    <span style="color:#fbbf24;">ssh -p 2222 user@ip</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# connect on non-default port</span><br><br>
+    <span style="color:#64748b;"># ── KEY GENERATION ────────────────────────────</span><br>
+    <span style="color:#fbbf24;">ssh-keygen -t ed25519 -C "email"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;# generate SSH key pair</span><br>
+    <span style="color:#64748b;"># creates ~/.ssh/id_ed25519 (private) + id_ed25519.pub (public)</span><br>
+    <span style="color:#fbbf24;">ssh-copy-id user@server-ip</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# copy public key to server's authorized_keys</span><br><br>
+    <span style="color:#64748b;"># ── TUNNEL / PORT FORWARD ─────────────────────</span><br>
+    <span style="color:#fbbf24;">ssh -L 5432:localhost:5432 user@ip</span><span style="color:#475569;"> &nbsp;# local port forward (access remote DB locally)</span><br>
+    <span style="color:#fbbf24;">ssh -N -D 8080 user@ip</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# SOCKS proxy through SSH</span>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERACTIVE SSH COMMAND SIMULATOR — same pattern as the
+       Linux for DevOps / Networking tabs (reuses .ld-term / .ld-pill /
+       .ld-cat / .ld-info CSS, already global on this page).
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🖥️ Try It — Click Any SSH Command to "Run" It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 12px;">Same simulator as Linux for DevOps and Networking, now for SSH specifically — syntax first, then a real example, then output. Every command runs <strong style="color:#94a3b8;">3 separate times</strong>, in 3 different real situations — each in its own box.</div>
+
+  <div id="sshRunsArea">
+    <div class="ld-term">
+      <div class="ld-term-bar">
+        <span class="ld-dot" style="background:#ff5f56"></span>
+        <span class="ld-dot" style="background:#ffbd2e"></span>
+        <span class="ld-dot" style="background:#27c93f"></span>
+        <span class="ld-term-title">you@laptop: ~</span>
+      </div>
+      <div class="ld-term-body">
+        <div class="ld-term-line"><span class="ld-prompt">you@laptop:~$</span> click any command below</div>
+        <div class="pu-output"><span class="dim">↳ output shows up here the moment you click something</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ld-info" id="sshInfo">
+    <div><strong>🧩 Syntax:</strong> <code id="sshSyntax">click a command below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="sshDoes">Pick any command below to get started — connecting, keys, tunneling, hardening, and troubleshooting are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="sshWhere">—</span></div>
+  </div>
+
+  <div class="sl-breakdown" id="sshBreakdownBox" style="margin-top:10px;">
+    <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+    <div class="sl-breakdown-list" id="sshBreakdownList"><span class="dim">Click a command above — every piece of its syntax gets broken down here, one at a time.</span></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:20px;">
+    <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+    <div id="sshWhyUseful"><span class="dim">Click a command above to see a real problem it solves, with a real example.</span></div>
+  </div>
+
+  <div class="ld-cat">🔌 Connecting</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('sshBasic',this)">ssh user@host</button>
+    <button class="ld-pill" onclick="runSshCmd('sshPort',this)">ssh -p</button>
+    <button class="ld-pill" onclick="runSshCmd('sshIdentity',this)">ssh -i</button>
+    <button class="ld-pill" onclick="runSshCmd('sshVerbose',this)">ssh -v</button>
+    <button class="ld-pill" onclick="runSshCmd('sshAgentForward',this)">ssh -A</button>
+  </div>
+
+  <div class="ld-cat">🔑 Keys &amp; Auth</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('keygenEd25519',this)">ssh-keygen -t ed25519</button>
+    <button class="ld-pill" onclick="runSshCmd('keygenRsa',this)">ssh-keygen -t rsa</button>
+    <button class="ld-pill" onclick="runSshCmd('copyId',this)">ssh-copy-id</button>
+    <button class="ld-pill" onclick="runSshCmd('chmodKey',this)">chmod 600 key</button>
+    <button class="ld-pill" onclick="runSshCmd('chmodSshDir',this)">chmod 700 ~/.ssh</button>
+    <button class="ld-pill" onclick="runSshCmd('sshAdd',this)">ssh-add</button>
+    <button class="ld-pill" onclick="runSshCmd('sshAgentStart',this)">ssh-agent</button>
+  </div>
+
+  <div class="ld-cat">📁 Config &amp; Known Hosts</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('sshConfig',this)">~/.ssh/config</button>
+    <button class="ld-pill" onclick="runSshCmd('sshF',this)">ssh -F</button>
+    <button class="ld-pill" onclick="runSshCmd('knownHostsCat',this)">known_hosts</button>
+    <button class="ld-pill" onclick="runSshCmd('sshKeyscan',this)">ssh-keyscan</button>
+    <button class="ld-pill" onclick="runSshCmd('keygenRemove',this)">ssh-keygen -R</button>
+  </div>
+
+  <div class="ld-cat">📤 File Transfer</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('scpUpload',this)">scp (upload)</button>
+    <button class="ld-pill" onclick="runSshCmd('scpDownload',this)">scp (download)</button>
+    <button class="ld-pill" onclick="runSshCmd('scpRecursive',this)">scp -r</button>
+    <button class="ld-pill" onclick="runSshCmd('rsyncSsh',this)">rsync -e ssh</button>
+    <button class="ld-pill" onclick="runSshCmd('sftp',this)">sftp</button>
+  </div>
+
+  <div class="ld-cat">🌐 Tunneling &amp; Port Forwarding</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('localForward',this)">ssh -L</button>
+    <button class="ld-pill" onclick="runSshCmd('remoteForward',this)">ssh -R</button>
+    <button class="ld-pill" onclick="runSshCmd('socksProxy',this)">ssh -D</button>
+    <button class="ld-pill" onclick="runSshCmd('backgroundTunnel',this)">ssh -N -f -L</button>
+    <button class="ld-pill" onclick="runSshCmd('proxyJump',this)">ssh -J</button>
+  </div>
+
+  <div class="ld-cat">🖥️ Remote Execution</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('remoteCmd',this)">ssh host "cmd"</button>
+    <button class="ld-pill" onclick="runSshCmd('remoteScript',this)">ssh host &lt; script.sh</button>
+    <button class="ld-pill" onclick="runSshCmd('nohupBg',this)">nohup ... &amp;</button>
+    <button class="ld-pill" onclick="runSshCmd('tmuxNew',this)">tmux new</button>
+    <button class="ld-pill" onclick="runSshCmd('tmuxAttach',this)">tmux attach</button>
+  </div>
+
+  <div class="ld-cat">🛡️ Server-Side Hardening</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('sshdConfigView',this)">cat sshd_config</button>
+    <button class="ld-pill" onclick="runSshCmd('disableRootLogin',this)">PermitRootLogin no</button>
+    <button class="ld-pill" onclick="runSshCmd('disablePasswordAuth',this)">PasswordAuthentication no</button>
+    <button class="ld-pill" onclick="runSshCmd('restartSshd',this)">systemctl restart sshd</button>
+    <button class="ld-pill" onclick="runSshCmd('ufwAllowSsh',this)">ufw allow OpenSSH</button>
+    <button class="ld-pill" onclick="runSshCmd('fail2banStatus',this)">fail2ban-client status</button>
+  </div>
+
+<div class="ld-cat">👤 User Management (Remote)</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runSshCmd('useraddExpireSsh',this)">useradd -e</button>
+  <button class="ld-pill" onclick="runSshCmd('chageListSsh',this)">chage -l</button>
+</div>
+
+  <div class="ld-cat">🔍 Troubleshooting</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runSshCmd('sshVVV',this)">ssh -vvv</button>
+    <button class="ld-pill" onclick="runSshCmd('sshT',this)">ssh -T git@github.com</button>
+    <button class="ld-pill" onclick="runSshCmd('journalctlSshd',this)">journalctl -u sshd</button>
+    <button class="ld-pill" onclick="runSshCmd('sshExitCode',this)">echo $?</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       REAL SCENARIOS — same .scenario-card pattern/CSS as the
+       Linux for DevOps and Networking tabs.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn SSH by Solving the Problem First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually run, then click ▶ Run to reveal the command and its real output.</div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> A brand-new server rejects your connection with "Permission denied (publickey)" — and you're not sure why.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">ssh -vvv deploy@203.0.113.10</div>
+      <div class="pu-output">debug1: Authentications that can continue: publickey<br><span class="err">debug1: No more authentication methods to try.</span><br><span class="err">Permission denied (publickey).</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Maximum verbosity shows exactly which authentication methods the server offered and that every key you tried was rejected — the fix is adding your public key to that server's authorized_keys, not generating a new one blindly.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> A server you rebuilt yesterday now makes SSH refuse to connect with a "REMOTE HOST IDENTIFICATION HAS CHANGED!" warning.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">ssh-keygen -R 203.0.113.10</div>
+      <div class="pu-output"><span class="ok"># Host 203.0.113.10 found: line 4</span><br>/home/user/.ssh/known_hosts updated.</div>
+      <div class="scenario-why"><strong>Why this command:</strong> The rebuild genuinely changed the server's host key, so the old fingerprint needs to be removed from known_hosts before reconnecting — always confirm the rebuild was legitimate first, never bypass this warning blindly.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> You need to inspect a database from your own local DB client, but it only accepts connections from inside a private network.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">ssh -L 5432:localhost:5432 deploy@bastion.example.com</div>
+      <div class="pu-output"><span class="ok">Welcome to Ubuntu 22.04 LTS</span><br><span class="dim"># tunnel active — connect your local DB client to localhost:5432</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Local port forwarding tunnels the private-network-only database port to your own machine through the one server that can already reach it — no need to ever expose the database publicly.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> You're about to kick off a 2-hour migration script over SSH, and you know your connection might drop before it's done.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">tmux new -s migrate</div>
+      <div class="pu-output"><span class="dim">(opens a persistent session — run the migration inside it, then detach with Ctrl+B D)</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> tmux keeps the migration running on the server itself, completely independent of your own SSH connection — if it drops, you just reconnect and run "tmux attach -t migrate" to pick up exactly where you left off.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> A brand-new production server just finished booting and needs to be locked down before anything else touches it.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/; s/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config &amp;&amp; sudo systemctl restart sshd</div>
+      <div class="pu-output"><span class="ok">(no output — root login and password login are now both blocked)</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Disabling root login and password authentication closes off the two most common, most automated attack paths immediately — and the restart is what makes sshd actually pick up the new config.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> You suspect a server is under a brute-force SSH attack and want to confirm your automated defenses are actually working.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">sudo fail2ban-client status sshd</div>
+      <div class="pu-output">Currently failed: 3 &nbsp; Total failed: 214<br>Currently banned: <span class="err">2</span> &nbsp; IP list: 198.51.100.7 203.0.113.44</div>
+      <div class="scenario-why"><strong>Why this command:</strong> Seeing banned IPs here confirms fail2ban is actively catching and blocking the repeated failed attempts — exactly what it's supposed to do, not a sign anything is broken.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> You're re-deploying the same mostly-unchanged frontend build folder to a server for the tenth time this week.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">rsync -avz -e ssh ./dist/ deploy@203.0.113.10:/var/www/app/</div>
+      <div class="pu-output">sending incremental file list<br>dist/app.js<br><span class="ok">sent 41,204 bytes  received 128 bytes  16,532.80 bytes/sec</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> rsync only transfers files that actually changed since the last sync — for a mostly-unchanged folder deployed repeatedly, that's dramatically faster than scp re-uploading everything from scratch every single time.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> You just added a brand-new SSH key to GitHub and want to be sure it actually works before you risk a real push.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">ssh -T git@github.com</div>
+      <div class="pu-output"><span class="ok">Hi ibrahiem17! You've successfully authenticated, but GitHub does not provide shell access.</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> This performs a real handshake against GitHub using your key, without touching any actual repository — it isolates whether the key setup itself works before you risk a real git push on top of it.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       QUIZ — same reusable engine as Linux for DevOps / Networking.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎮 Test Yourself — SSH Quiz</div>
+  <div class="quiz-game" id="quiz-ssh">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">🔑</div>
+      <div class="quiz-start-title">SSH Quiz</div>
+      <div class="quiz-start-desc">50 questions across connecting, keys, config, file transfer, tunneling, remote execution, hardening, and troubleshooting — shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-ssh', SSH_QUIZ_JOKES, SSH_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
+      </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+    </div>
+
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-ssh')">↻ Play Again</button>
+    </div>
+  </div>
+
+  <div class="section-title">⌨️ Bash Scripting for DevOps</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#64748b;">#!/bin/bash</span><br>
+    <span style="color:#64748b;"># ── VARIABLES ──────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">NAME="ibrahiem"</span><br>
+    <span style="color:#fbbf24;">echo "Hello $NAME"</span><br>
+    <span style="color:#fbbf24;">echo "Script name: $0 &nbsp;Args: $1 $2"</span><span style="color:#475569;"> &nbsp;# $0=script, $1=first arg</span><br><br>
+    <span style="color:#64748b;"># ── IF / ELSE ──────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">if [ "$1" == "prod" ]; then</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;echo "Deploying to production"</span><br>
+    <span style="color:#fbbf24;">elif [ "$1" == "staging" ]; then</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;echo "Deploying to staging"</span><br>
+    <span style="color:#fbbf24;">else</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;echo "Unknown environment"</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;exit 1</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# non-zero exit = failure in CI</span><br>
+    <span style="color:#fbbf24;">fi</span><br><br>
+    <span style="color:#64748b;"># ── LOOPS ──────────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">for server in web1 web2 web3; do</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;ssh $server "sudo systemctl restart nginx"</span><br>
+    <span style="color:#fbbf24;">done</span><br><br>
+    <span style="color:#64748b;"># ── ERROR HANDLING (CRITICAL IN CI SCRIPTS) ────</span><br>
+    <span style="color:#fbbf24;">set -e</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# exit on any error</span><br>
+    <span style="color:#fbbf24;">set -u</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# exit on undefined variable</span><br>
+    <span style="color:#fbbf24;">set -o pipefail</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# exit if any command in pipe fails</span><br><br>
+    <span style="color:#64748b;"># ── FUNCTIONS ──────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">deploy() {</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;echo "Deploying $1..."</span><br>
+    <span style="color:#fbbf24;">&nbsp;&nbsp;docker pull myapp:$1 &amp;&amp; docker run -d myapp:$1</span><br>
+    <span style="color:#fbbf24;">}</span><br>
+    <span style="color:#fbbf24;">deploy "v2.0"</span>
+  </div>
+
+  <div class="section-title">⏰ Cron Jobs — Scheduled Tasks</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#64748b;"># crontab format: MIN HOUR DOM MON DOW COMMAND</span><br>
+    <span style="color:#64748b;">#                  *   *    *   *   *</span><br>
+    <span style="color:#fbbf24;">crontab -e</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# edit current user's crontab</span><br>
+    <span style="color:#fbbf24;">crontab -l</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# list scheduled jobs</span><br><br>
+    <span style="color:#64748b;"># Examples:</span><br>
+    <span style="color:#fbbf24;">0 2 * * * /scripts/backup.sh</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# daily at 2 AM</span><br>
+    <span style="color:#fbbf24;">*/5 * * * * /scripts/health.sh</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# every 5 minutes</span><br>
+    <span style="color:#fbbf24;">0 0 * * 0 /scripts/cleanup.sh</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# every Sunday at midnight</span><br>
+    <span style="color:#fbbf24;">0 9 * * 1-5 /scripts/report.sh</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# weekdays at 9 AM</span>
+  </div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:4px;padding:10px;margin-bottom:20px;font-size:11px;color:#64748b;">
+    💡 Use <strong style="color:#38bdf8;">crontab.guru</strong> to verify cron expressions. Logs go to <code style="color:#fbbf24;">/var/log/syslog</code> or <code style="color:#fbbf24;">/var/log/cron</code>.
+  </div>
+
+  <div class="section-title">🔧 Environment Variables</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#fbbf24;">export DB_URL="postgres://..."</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# set for current session + child processes</span><br>
+    <span style="color:#fbbf24;">echo $DB_URL</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# read variable</span><br>
+    <span style="color:#fbbf24;">env | grep DB</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# list all env vars matching DB</span><br>
+    <span style="color:#fbbf24;">unset DB_URL</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# remove variable</span><br><br>
+    <span style="color:#64748b;"># Persist across sessions: add to ~/.bashrc or ~/.bash_profile</span><br>
+    <span style="color:#fbbf24;">echo 'export DB_URL="..."' >> ~/.bashrc</span><br>
+    <span style="color:#fbbf24;">source ~/.bashrc</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# reload without logging out</span><br><br>
+    <span style="color:#64748b;"># NEVER put secrets in .bashrc — use a secrets manager</span>
+  </div>
+

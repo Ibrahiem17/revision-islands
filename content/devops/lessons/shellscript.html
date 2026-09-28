@@ -1,0 +1,331 @@
+
+
+
+<div class="analogy">
+  <div><div class="analogy-label">🐚 What a shell script actually is</div></div>
+  <div class="analogy-item"><span class="analogy-icon">📝</span><div class="analogy-text"><strong>A to-do list of commands</strong><br>Saved in one text file</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">▶️</span><div class="analogy-text"><strong>Run it with one command</strong><br>Instead of typing 10 by hand</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🔁</span><div class="analogy-text"><strong>Repeatable, every time</strong><br>Same result, zero forgotten steps</div></div>
+</div>
+
+<div style="background:rgba(167,139,250,0.04);border:1px solid rgba(167,139,250,0.15);border-left:3px solid #a78bfa;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+  If you can already run commands in the <strong style="color:#e2e8f0;">🐧 Linux for DevOps</strong> tab, you already know 90% of what a shell script needs — a script is just <strong style="color:#a78bfa;">those exact same commands, saved in a file, run together</strong>. This tab teaches everything on top of that: variables, decisions, loops, functions — building from an absolute "hello world" up to three real scripts a DevOps engineer would actually use on the job. Every lesson below now teaches the individual pieces first, then shows how they combine — and there's a real methodology below for how to approach writing a script from a blank file.
+</div>
+
+<div class="section-title">🧠 How to Actually Think About Writing a Script</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 14px;">This is the part tutorials usually skip — not "here's the syntax," but "here's the actual thought process," start to finish.</div>
+<div class="pipeline">
+  <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Do it by hand first</span><span class="stage-tool">before writing anything</span></div><div class="stage-desc">Before you write a single line of a script, run the actual commands yourself, one at a time, in your real terminal, until they do what you want. A script isn't where you invent the steps — it's where you write down steps you already proved work.</div></div></div>
+  <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Find what changes each time</span><span class="stage-tool">→ variables &amp; arguments</span></div><div class="stage-desc">Look at the commands you just ran by hand. Which words would be different the next time you run this — a filename, a server name, an environment? Those become variables, or better, arguments (<code style="color:#fbbf24;">$1</code>, <code style="color:#fbbf24;">$2</code>) so the script stays reusable instead of hardcoded.</div></div></div>
+  <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Find what could go wrong</span><span class="stage-tool">→ conditionals &amp; exit codes</span></div><div class="stage-desc">For every command, ask: "what does it look like when this fails?" A missing file, a failed network call, an empty variable. Each answer becomes a check — an <code style="color:#fbbf24;">if</code>, a test like <code style="color:#fbbf24;">[ -f file ]</code>, or an <code style="color:#fbbf24;">exit 1</code> that stops things before they get worse.</div></div></div>
+  <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Find what repeats</span><span class="stage-tool">→ loops &amp; functions</span></div><div class="stage-desc">Doing the same thing to multiple items — servers, files, environments? That's a <code style="color:#fbbf24;">for</code> loop. Doing the same few steps in more than one place in the script? Pull them into a <code style="color:#fbbf24;">function</code> instead of copy-pasting.</div></div></div>
+  <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Test each piece alone</span><span class="stage-tool">before gluing it together</span></div><div class="stage-desc">Run the variable line by itself. Run the loop by itself with an <code style="color:#fbbf24;">echo</code> instead of the real command inside it. A script that's assembled from pieces you already know work is infinitely easier to debug than one written all at once and tested for the first time as a whole.</div></div></div>
+  <div class="stage s6"><div class="stage-connector"><div class="stage-dot">6</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Add safety last</span><span class="stage-tool">→ set -euo pipefail</span></div><div class="stage-desc">Once the logic actually works, put <code style="color:#fbbf24;">set -euo pipefail</code> on line 2. Not before — while you're still figuring out the logic, you want to see things fail loudly and understand why. Once it's correct, this line makes sure it <em>stays</em> correct by refusing to continue after anything unexpected.</div></div></div>
+</div>
+<div class="loop-box">
+  <div class="loop-icon">🧠</div>
+  <div>
+    <div class="loop-title">This is genuinely how every lesson below was built</div>
+    <div class="loop-desc">What would I type by hand <span class="loop-arrow">→</span> what changes <span class="loop-arrow">→</span> what could fail <span class="loop-arrow">→</span> what repeats <span class="loop-arrow">→</span> test the pieces <span class="loop-arrow">→</span> add safety. <span class="loop-arrow">|</span> Each lesson below layers on exactly one new idea from this list — by Lesson 15 you're combining all six at once, without noticing.</div>
+  </div>
+</div>
+
+<div class="section-title">💻 Try It — Pick a Lesson, Then Run the Script</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 14px;">Each lesson now shows the individual commands first — read those, then look at how they combine in the full script below.</div>
+
+<div class="sl-breakdown" id="slBreakdown">
+  <div class="sl-breakdown-label">🧩 First, what each piece means</div>
+  <div class="sl-breakdown-list" id="slBreakdownList"><span class="dim">Pick a lesson below — every command it uses gets explained here, one at a time, before you see them combined.</span></div>
+</div>
+
+<div class="sl-editor">
+  <div class="sl-editor-bar">
+    <span class="sl-dot" style="background:#ff5f56"></span>
+    <span class="sl-dot" style="background:#ffbd2e"></span>
+    <span class="sl-dot" style="background:#27c93f"></span>
+    <span class="sl-filename" id="slFilename">pick-a-lesson-below.sh</span>
+    <button class="sl-run-btn" onclick="runShellScript()">▶ Run script</button>
+  </div>
+  <div class="pu-code" id="slCode"><span class="dim"># click any lesson below to load its script here</span></div>
+</div>
+<div class="sl-output-wrap">
+  <div class="sl-output-label">Output</div>
+  <div class="pu-output" id="slOutput"><span class="dim">↳ nothing run yet — pick a lesson, then click ▶ Run script above</span></div>
+</div>
+<div class="sl-info" id="slInfo">
+  <div><strong>🧩 Syntax:</strong> <code id="slSyntax">—</code></div>
+  <div style="margin-top:6px;"><strong>What it does:</strong> <span id="slDoes">Pick any lesson below to get started.</span></div>
+  <div style="margin-top:6px;"><strong>Where it connects to DevOps:</strong> <span id="slWhere">—</span></div>
+</div>
+
+<div class="sl-cat">🌱 Foundations</div>
+<div class="sl-pills">
+  <button class="sl-pill" onclick="loadShellLesson('shebang',this)">1. Shebang &amp; running a script</button>
+  <button class="sl-pill" onclick="loadShellLesson('varsArgs',this)">2. Variables &amp; arguments</button>
+  <button class="sl-pill" onclick="loadShellLesson('readInput',this)">3. Reading input</button>
+</div>
+
+<div class="sl-cat">🔀 Logic &amp; Control</div>
+<div class="sl-pills">
+  <button class="sl-pill" onclick="loadShellLesson('conditionals',this)">4. Conditionals &amp; tests</button>
+  <button class="sl-pill" onclick="loadShellLesson('loops',this)">5. Loops</button>
+  <button class="sl-pill" onclick="loadShellLesson('functions',this)">6. Functions</button>
+</div>
+
+<div class="sl-cat">🔢 Data &amp; Values</div>
+<div class="sl-pills">
+  <button class="sl-pill" onclick="loadShellLesson('exitCodes',this)">7. Exit codes</button>
+  <button class="sl-pill" onclick="loadShellLesson('strings',this)">8. String operations</button>
+  <button class="sl-pill" onclick="loadShellLesson('arithmetic',this)">9. Arithmetic</button>
+  <button class="sl-pill" onclick="loadShellLesson('arrays',this)">10. Arrays</button>
+  <button class="sl-pill" onclick="loadShellLesson('cmdSub',this)">11. Command substitution</button>
+</div>
+
+<div class="sl-cat">🛡️ Production-Grade</div>
+<div class="sl-pills">
+  <button class="sl-pill" onclick="loadShellLesson('errorHandling',this)">12. Error handling (set -e)</button>
+</div>
+
+<div class="sl-cat">🚀 DevOps Capstones — Real Scripts</div>
+<div class="sl-pills">
+  <button class="sl-pill" onclick="loadShellLesson('healthCheck',this)">13. Health-check script</button>
+  <button class="sl-pill" onclick="loadShellLesson('backupScript',this)">14. Backup script</button>
+  <button class="sl-pill" onclick="loadShellLesson('deployScript',this)">15. Full deploy script</button>
+</div>
+
+<div class="loop-box" style="margin-top:24px;">
+  <div class="loop-icon">🐚</div>
+  <div>
+    <div class="loop-title">By lesson 15, you're not learning syntax anymore — you're reading a real deploy script</div>
+    <div class="loop-desc">Variables <span class="loop-arrow">→</span> conditionals <span class="loop-arrow">→</span> loops <span class="loop-arrow">→</span> functions <span class="loop-arrow">→</span> error handling <span class="loop-arrow">→</span> a script that actually calls <code style="color:#fbbf24;">git</code>, <code style="color:#fbbf24;">docker</code>, and <code style="color:#fbbf24;">kubectl</code>. <span class="loop-arrow">|</span> That last script is genuinely what a hand-written <code style="color:#fbbf24;">./deploy.sh</code> looks like — the manual version of the exact pipeline built in the <strong style="color:#a78bfa;">GitHub Actions</strong> tab and <strong style="color:#a78bfa;">Example 3</strong>.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     EXTRA COMMAND SIMULATOR — cron, signals, arg parsing, and every
+     other "real script" command the 15 lessons above didn't cover.
+     Same pattern as Linux for DevOps / Networking / SSH / Docker for
+     DevOps: reuses global .ld-term / .ld-pill / .ld-cat / .ld-info /
+     .scenario-card CSS, nothing new to define.
+     ══════════════════════════════════════════════════════════ -->
+<div class="section-title" style="margin-top:28px;">🖥️ Try It — Click Any Shell Scripting Command to "Run" It</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">The 15 lessons above teach how to think and write scripts. These are the extra commands every real script eventually needs — cron scheduling, signal handling, argument parsing, and more.</div>
+
+<div class="ld-term">
+  <div class="ld-term-bar">
+    <span class="ld-dot" style="background:#ff5f56"></span>
+    <span class="ld-dot" style="background:#ffbd2e"></span>
+    <span class="ld-dot" style="background:#27c93f"></span>
+    <span class="ld-term-title">devops@server: ~</span>
+  </div>
+  <div class="ld-term-body">
+    <div class="ld-term-line"><span class="ld-prompt">$</span> <span id="shCmd">click any command below</span></div>
+    <div class="pu-output" id="shOutput"><span class="dim">↳ output shows up here the moment you click something</span></div>
+  </div>
+</div>
+<div class="ld-info" id="shInfo">
+  <div><strong>🧩 Syntax:</strong> <code id="shSyntax">click a command below</code></div>
+  <div style="margin-top:6px;"><strong>What it does:</strong> <span id="shDoes">Pick any command below to get started — cron, signals, arguments, and more.</span></div>
+  <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="shWhere">—</span></div>
+</div>
+
+<div class="ld-cat">⏰ Cron &amp; Scheduling</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('crontabEdit',this)">crontab -e</button>
+  <button class="ld-pill" onclick="runShCmd('crontabList',this)">crontab -l</button>
+  <button class="ld-pill" onclick="runShCmd('crontabRemove',this)">crontab -r</button>
+  <button class="ld-pill" onclick="runShCmd('cronSyntax',this)">cron syntax</button>
+  <button class="ld-pill" onclick="runShCmd('atCommand',this)">at</button>
+</div>
+
+<div class="ld-cat">🎛️ Control Flow Extras</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('caseStatement',this)">case</button>
+  <button class="ld-pill" onclick="runShCmd('untilLoop',this)">until</button>
+  <button class="ld-pill" onclick="runShCmd('selectMenu',this)">select</button>
+</div>
+
+<div class="ld-cat">🚦 Signals &amp; Process Control</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('trapSignal',this)">trap</button>
+  <button class="ld-pill" onclick="runShCmd('waitCmd',this)">wait</button>
+  <button class="ld-pill" onclick="runShCmd('backgroundJob',this)">command &amp;</button>
+  <button class="ld-pill" onclick="runShCmd('jobsCmd',this)">jobs</button>
+</div>
+
+<div class="ld-cat">📥 Input &amp; Arguments</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('getopts',this)">getopts</button>
+  <button class="ld-pill" onclick="runShCmd('shift',this)">shift</button>
+  <button class="ld-pill" onclick="runShCmd('readPrompt',this)">read -p</button>
+  <button class="ld-pill" onclick="runShCmd('readSilent',this)">read -s</button>
+</div>
+
+<div class="ld-cat">🔧 Text &amp; Utility Commands</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('printfCmd',this)">printf</button>
+  <button class="ld-pill" onclick="runShCmd('xargsCmd',this)">xargs</button>
+  <button class="ld-pill" onclick="runShCmd('teeCmd',this)">tee</button>
+  <button class="ld-pill" onclick="runShCmd('seqCmd',this)">seq</button>
+  <button class="ld-pill" onclick="runShCmd('basenameDirname',this)">basename / dirname</button>
+</div>
+
+<div class="ld-cat">📜 Scoping &amp; Sourcing</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('exportCmd',this)">export</button>
+  <button class="ld-pill" onclick="runShCmd('localVar',this)">local</button>
+  <button class="ld-pill" onclick="runShCmd('declareCmd',this)">declare</button>
+  <button class="ld-pill" onclick="runShCmd('sourceCmd',this)">source / .</button>
+</div>
+
+<div class="ld-cat">🧵 Advanced</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('heredoc',this)">heredoc &lt;&lt;EOF</button>
+  <button class="ld-pill" onclick="runShCmd('evalCmd',this)">eval</button>
+  <button class="ld-pill" onclick="runShCmd('execCmd',this)">exec</button>
+</div>
+
+<div class="ld-cat">🐞 Debugging &amp; Special Vars</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runShCmd('setX',this)">set -x</button>
+  <button class="ld-pill" onclick="runShCmd('specialVars',this)">$$ $! $? $0 $#</button>
+  <button class="ld-pill" onclick="runShCmd('dateCmd',this)">date</button>
+  <button class="ld-pill" onclick="runShCmd('sleepCmd',this)">sleep</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     REAL SCENARIOS
+     ══════════════════════════════════════════════════════════ -->
+<div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn Shell Scripting by Solving the Problem First</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually write, then click ▶ Run to reveal the command and its real output.</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> You need a backup script to run automatically every night at 2 AM, with no one around to trigger it manually.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">crontab -e<br># then add:<br>0 2 * * * /scripts/backup.sh</div>
+    <div class="pu-output"><span class="ok">(saved — cron now runs backup.sh at 2:00 AM every day)</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Cron is the standard Linux scheduler for exactly this — "run this command at this time, every day, forever," with zero human involvement needed.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> A deploy script creates a lockfile, but if it crashes partway through, the lockfile is left behind and blocks every future run.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">trap 'rm -f /tmp/deploy.lock' EXIT</div>
+    <div class="pu-output"><span class="ok">(lockfile is removed no matter how the script ends — success, failure, or interruption)</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> An EXIT trap runs on every possible way the script can end, guaranteeing cleanup even when the script crashes or is killed midway through.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> Your deploy script is always called like "./deploy.sh -e production -v" and needs to actually parse those real flags.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">while getopts "e:v" opt; do<br>  case $opt in<br>    e) env="$OPTARG";;<br>    v) verbose=true;;<br>  esac<br>done</div>
+    <div class="pu-output"><span class="ok">env=production, verbose=true</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> getopts is built specifically for parsing real -flag style arguments, instead of hoping $1 and $2 always show up in the exact right order.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> A deploy script needs to wait until a freshly started app is actually responding before it declares the deploy successful.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">until curl -sf http://localhost:3000/health; do<br>  sleep 2<br>done</div>
+    <div class="pu-output">Waiting...<br>Waiting...<br><span class="ok">(loop exits the moment curl succeeds)</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> "until" keeps polling until the health check actually succeeds — far more reliable than a fixed sleep that guesses how long startup will take.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> A script kicks off three independent tasks that could run at the same time, and needs to wait for all three before continuing.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">./task1.sh &amp;<br>./task2.sh &amp;<br>./task3.sh &amp;<br>wait<br>echo "All three finished"</div>
+    <div class="pu-output"><span class="ok">All three finished</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Backgrounding all three with "&" lets them run in parallel, and "wait" with no argument pauses until every backgrounded job has completed.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> You need to watch a long deploy script's output live in the terminal, but also keep a saved copy of the full log afterward.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">./deploy.sh | tee deploy.log</div>
+    <div class="pu-output">Deploying v2.0...<br>Deploy finished<br><span class="dim"># shown live AND saved to deploy.log</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> tee splits the output two ways at once — to your screen for live viewing and to a file for a permanent record — instead of forcing a choice between the two.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> A script isn't behaving as expected, and you need to see exactly what it's actually executing, line by line.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">set -x<br># rest of the script runs as normal below this line</div>
+    <div class="pu-output"><span class="dim">+ count=3</span><br><span class="dim">+ echo 3</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Debug tracing prints every command as it actually runs, with variables already expanded — far faster than sprinkling echo statements everywhere to guess what's happening.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> A Docker entrypoint script starts the real app as its last step, and needs signals like SIGTERM to reach that app directly.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">exec node server.js</div>
+    <div class="pu-output"><span class="ok">(node server.js replaces the script's own process — signals now reach it directly)</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Without exec, the app runs as a child process and a "docker stop" signal can get stuck waiting on the wrapper script instead of reaching the app that needs to actually handle it.</div>
+  </div>
+</div>
+
+<!-- QUIZ GAME — same reusable engine as the Linux for DevOps tab.
+     See "REUSABLE QUIZ GAME ENGINE" comment above the JS engine for how
+     this was wired up (unique rootId + two unique data arrays, nothing else). -->
+<div class="section-title">🎮 Test Yourself — Shell Scripting Quiz</div>
+<div class="quiz-game" id="quiz-shellscript">
+  <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+  <div class="quiz-screen quiz-start-screen" style="display:flex;">
+    <div class="quiz-icon">🐚</div>
+    <div class="quiz-start-title">Shell Scripting Quiz</div>
+    <div class="quiz-start-desc">50 questions pulled straight from the lessons above, shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+    <button class="quiz-play-btn" onclick="quizStart('quiz-shellscript', SHELLSCRIPT_QUIZ_JOKES, SHELLSCRIPT_QUIZ_QUESTIONS)">▶ Play</button>
+  </div>
+
+  <div class="quiz-screen quiz-joke-screen">
+    <div class="quiz-joke-icon">😄</div>
+    <div class="quiz-joke-label">while the quiz loads...</div>
+    <div class="quiz-joke-text"></div>
+  </div>
+
+  <div class="quiz-screen quiz-question-screen">
+    <div class="quiz-top-bar">
+      <span class="quiz-progress">Question 1 of 50</span>
+      <span class="quiz-score">Score: 0</span>
+    </div>
+    <div class="quiz-q-text"></div>
+    <div class="quiz-options"></div>
+    <div class="quiz-feedback" style="display:none;"></div>
+    <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+  </div>
+
+  <div class="quiz-screen quiz-end-screen">
+    <div class="quiz-end-icon">🏁</div>
+    <div class="quiz-end-title">Quiz Finished</div>
+    <div class="quiz-end-score">0 / 0</div>
+    <div class="quiz-end-pct">0%</div>
+    <button class="quiz-play-btn" onclick="quizReset('quiz-shellscript')">↻ Play Again</button>
+  </div>
+</div>
+

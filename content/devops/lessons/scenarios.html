@@ -1,0 +1,501 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🎭 Real Interview Scenarios</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🔥</span><div class="analogy-text"><strong>These get asked</strong><br>Practical incident debugging</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧠</span><div class="analogy-text"><strong>Show your process</strong><br>Not just the answer</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🎯</span><div class="analogy-text"><strong>Hit the key points</strong><br>Structured, methodical</div></div>
+  </div>
+
+  <div class="section-title">🐧 Linux & OS Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">S01</span><span class="qa-q-text">A server's CPU is spiking to 100% and it's unresponsive. Walk me through how you find the culprit.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1.</strong> SSH into the box (if you can — if completely unresponsive, use cloud console/serial access).<br>
+        <strong>2.</strong> <code>top</code> or <code>htop</code> — sort by CPU. Identify the PID consuming it. Note the process name.<br>
+        <strong>3.</strong> <code>ps aux --sort=-%cpu | head -10</code> — non-interactive version, good for scripting.<br>
+        <strong>4.</strong> <code>strace -p &lt;PID&gt;</code> — see what system calls the process is actually making right now. Is it stuck in a loop? Waiting on I/O?<br>
+        <strong>5.</strong> <code>dmesg | tail -50</code> or <code>cat /var/log/messages</code> — check for kernel-level errors (OOM kills, hardware errors, driver issues).<br>
+        <strong>6.</strong> If it's a runaway process: <code>kill -9 &lt;PID&gt;</code> as last resort.<br><br>
+        <span class="qa-pill">top/htop → PID</span><span class="qa-pill">strace = what it's doing</span><span class="qa-pill">dmesg = system errors</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">S02</span><span class="qa-q-text">"No space left on device" error, but df -h shows 20% disk space free. What's going on?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        This is the classic <strong>inode exhaustion</strong> problem — and interviewers love it because most people don't know it exists.<br><br>
+        Every file on Linux takes up one inode (an index node — metadata entry). You can have physical disk space free but run out of inodes if there are <em>millions of tiny files</em>.<br><br>
+        <strong>Verify:</strong> <code>df -i</code> — shows inode usage. If Use% is 100% on a filesystem, that's your culprit.<br>
+        <strong>Find the directory:</strong> <code>find / -xdev -printf '%h\n' | sort | uniq -c | sort -rn | head</code> — shows which directory has the most files.<br><br>
+        <strong>Second possibility:</strong> A deleted file is being held open by a running process — the disk space isn't reclaimed until the process closes the file handle.<br>
+        <strong>Check:</strong> <code>lsof | grep deleted</code> — find processes holding deleted file handles. Restart that process to free the space.<br><br>
+        <span class="qa-pill">df -i = inode usage</span><span class="qa-pill">inode exhaustion = millions of tiny files</span><span class="qa-pill">lsof | grep deleted = held-open files</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">S03</span><span class="qa-q-text">The OOM killer keeps terminating your main application. How do you troubleshoot and fix it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1. Confirm the OOM killer fired:</strong><br>
+        <code>dmesg | grep -i "oom\|killed"</code> — you'll see "Out of memory: Kill process &lt;PID&gt; (&lt;name&gt;)"<br>
+        <code>cat /var/log/syslog | grep oom-killer</code><br><br>
+        <strong>2. Investigate the cause:</strong><br>
+        • <strong>Memory leak?</strong> — watch <code>free -h</code> over time. If memory steadily climbs, the app has a leak. Profile it.<br>
+        • <strong>Container limits too low?</strong> — if containerized, the cgroup memory limit might be set lower than the app needs. Check <code>docker stats</code> or <code>kubectl describe pod</code> for resource limits.<br>
+        • <strong>Server genuinely lacks RAM?</strong> — the app's actual requirements exceed the server's memory. Scale up or optimize.<br><br>
+        <strong>3. Short-term fix:</strong> Increase memory limits or add swap (not ideal but buys time).<br>
+        <strong>4. Long-term fix:</strong> Fix the memory leak, right-size container limits, or upgrade instance.<br><br>
+        <span class="qa-pill">dmesg → confirm OOM kill</span><span class="qa-pill">free -h over time = leak detection</span><span class="qa-pill">cgroup limits too low = container issue</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">🌐 Networking & Web Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">S04</span><span class="qa-q-text">Users are getting 502 Bad Gateway. LB → Nginx → upstream app server. How do you isolate it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>502 = Nginx received an invalid/no response from the upstream server.</strong> The LB is fine. Nginx is fine. The upstream app is the problem.<br><br>
+        <strong>1.</strong> <code>cat /var/log/nginx/error.log | tail -50</code> — what error is Nginx actually seeing? "connect() failed", "upstream timed out", "no live upstreams"?<br>
+        <strong>2.</strong> Check the upstream app: <code>systemctl status appname</code> — is it running?<br>
+        <strong>3.</strong> <code>curl -v http://localhost:&lt;app-port&gt;/health</code> — is the app responding on its port locally?<br>
+        <strong>4.</strong> <code>netstat -tlnp | grep &lt;port&gt;</code> or <code>ss -tlnp</code> — is anything listening on that port?<br>
+        <strong>5.</strong> Check firewall/security groups — is internal traffic between Nginx and the app being blocked?<br><br>
+        <span class="qa-pill">502 = upstream problem, not Nginx</span><span class="qa-pill">nginx error.log first</span><span class="qa-pill">curl localhost to test app directly</span><span class="qa-pill">ss -tlnp = what's listening</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">S05</span><span class="qa-q-text">Service can't connect to database. What's the difference between "Connection Refused" and "Connection Timeout"?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        This tests TCP/IP fundamentals — a classic question.<br><br>
+        <strong>Connection Refused</strong> — the packet <em>reached</em> the destination, but nothing is listening on that port. The server actively rejected it. Causes: DB service is down, DB is bound to <code>127.0.0.1</code> (localhost only) instead of <code>0.0.0.0</code>.<br>
+        <strong>Debug:</strong> Is the DB process running? What IP is it bound to? (<code>ss -tlnp | grep 5432</code>)<br><br>
+        <strong>Connection Timeout</strong> — the packet never arrived or was silently dropped. No response at all. Causes: firewall blocking, security group denying traffic, wrong IP/port, routing issue.<br>
+        <strong>Debug:</strong> Check security groups/firewall rules. Can you reach the host at all? (<code>ping &lt;db-host&gt;</code>)<br><br>
+        <strong>Test both:</strong> <code>telnet &lt;db-host&gt; 5432</code> or <code>nc -zv &lt;db-host&gt; 5432</code><br><br>
+        <span class="qa-pill">Refused = reached but nothing listening</span><span class="qa-pill">Timeout = packet never arrived</span><span class="qa-pill">nc -zv to test TCP connectivity</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">S06</span><span class="qa-q-text">Ping by hostname fails. Ping by IP works. nslookup resolves correctly. What's the issue?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        This tests DNS resolution order — a subtle but important distinction.<br><br>
+        <code>nslookup</code> queries DNS directly. But <code>ping</code> uses the <strong>OS resolver</strong>, which follows the resolution order defined in <code>/etc/nsswitch.conf</code>.<br><br>
+        The OS might be checking <code>/etc/hosts</code> BEFORE querying DNS. If there's a stale or incorrect entry for that hostname in <code>/etc/hosts</code>, ping will use that wrong IP and fail — while nslookup queries DNS directly and gets the correct answer.<br><br>
+        <strong>1.</strong> <code>cat /etc/hosts</code> — is there a hardcoded entry for this hostname with a wrong IP?<br>
+        <strong>2.</strong> <code>cat /etc/nsswitch.conf</code> — check the <code>hosts:</code> line. It likely says <code>files dns</code> — meaning check files (/etc/hosts) first, then DNS.<br>
+        <strong>Fix:</strong> Remove the bad entry from /etc/hosts, or reorder nsswitch.conf to query DNS first.<br><br>
+        <span class="qa-pill">nslookup = DNS direct</span><span class="qa-pill">ping = OS resolver order</span><span class="qa-pill">check /etc/hosts for stale entry</span><span class="qa-pill">/etc/nsswitch.conf = resolution order</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">☸️ Kubernetes Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S07</span><span class="qa-q-text">A pod is stuck in CrashLoopBackOff. Walk through the exact commands.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1.</strong> <code>kubectl get pods</code> — confirm the state. CrashLoopBackOff means the container starts, crashes, K8s tries to restart, crashes again, with increasing delays.<br>
+        <strong>2.</strong> <code>kubectl describe pod &lt;name&gt;</code> — read the <strong>Events section</strong>. Look for liveness probe failures, missing secrets/configmaps, resource limit kills.<br>
+        <strong>3.</strong> <code>kubectl logs &lt;pod&gt; --previous</code> — <strong>crucial</strong>: shows logs of the container <em>before</em> it crashed. Current logs may be empty if the crash is immediate.<br>
+        <strong>4.</strong> Common causes:<br>
+        • App error on startup (bad env var, missing config, DB not reachable)<br>
+        • Liveness probe misconfigured (fails before app is ready)<br>
+        • Secret/ConfigMap referenced but doesn't exist<br>
+        • OOMKilled — container hit memory limit<br><br>
+        <span class="qa-pill">describe pod = events = root cause</span><span class="qa-pill">logs --previous = before crash</span><span class="qa-pill">OOMKilled → increase memory limit</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S08</span><span class="qa-q-text">Pod is stuck in ImagePullBackOff. What are the potential reasons?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        ImagePullBackOff = the worker node is trying to pull your Docker image and failing.<br><br>
+        <strong>Reason 1 — Typo in image name or tag:</strong> Most common. <code>myapp:lates</code> instead of <code>myapp:latest</code>. Double-check the image name in your deployment YAML.<br><br>
+        <strong>Reason 2 — Node can't reach the registry:</strong> Worker node has no internet access to Docker Hub / ECR. Check network/security group rules from the node.<br><br>
+        <strong>Reason 3 — Private registry, missing imagePullSecrets:</strong> The registry requires authentication, but the pod spec doesn't have <code>imagePullSecrets</code> pointing to the credentials secret.<br>
+        Fix: Create a K8s Secret with registry credentials and add <code>imagePullSecrets</code> to the deployment.<br><br>
+        <strong>Debug:</strong> <code>kubectl describe pod &lt;name&gt;</code> — the Events section will say "Failed to pull image" with the exact reason.<br><br>
+        <span class="qa-pill">typo in image name</span><span class="qa-pill">node network blocks registry</span><span class="qa-pill">missing imagePullSecrets</span><span class="qa-pill">describe pod = exact error</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S09</span><span class="qa-q-text">Pod A is healthy but pod B in the same namespace can't reach it via Service name. How do you debug?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1.</strong> First, try the Service <em>IP</em> from pod B:<br>
+        <code>kubectl exec -it &lt;pod-b&gt; -- curl &lt;service-ip&gt;</code><br>
+        If IP works but name doesn't → it's a <strong>DNS issue</strong> (CoreDNS).<br><br>
+        <strong>2.</strong> Check if CoreDNS is running:<br>
+        <code>kubectl get pods -n kube-system | grep coredns</code><br><br>
+        <strong>3.</strong> Check the Service selector — does it actually match the target pod's labels?<br>
+        <code>kubectl get endpoints &lt;service-name&gt;</code><br>
+        If the endpoints list is empty, the selector doesn't match any pod labels. This is a very common mistake.<br><br>
+        <strong>4.</strong> Check the Service port matches the container's exposed port.<br><br>
+        <span class="qa-pill">IP works, name fails = CoreDNS</span><span class="qa-pill">kubectl get endpoints = selector match</span><span class="qa-pill">empty endpoints = selector mismatch</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">🔧 CI/CD & Infrastructure Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#22c55e;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);">S10</span><span class="qa-q-text">CI pipeline fails randomly ~10% of the time on integration tests. How do you fix flaky tests?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>Do NOT just add retries</strong> — that masks the problem and makes the pipeline non-deterministic.<br><br>
+        <strong>Find the pattern:</strong> Which tests? Which CI runner? What time of day? Collect data.<br><br>
+        <strong>Common root causes:</strong><br>
+        • <strong>Shared state:</strong> Multiple test runs hitting the same database and stepping on each other's data. Fix: each test run gets its own isolated DB/schema.<br>
+        • <strong>Race conditions:</strong> Tests that depend on async operations completing without proper waits.<br>
+        • <strong>External API timeouts:</strong> Tests calling real external services. Fix: mock them.<br>
+        • <strong>CI runner resource starvation:</strong> CPU/memory contention between parallel jobs.<br><br>
+        <strong>Reproduce locally:</strong> Run the failing test in an isolated Docker container to match the CI environment.<br><br>
+        <span class="qa-pill">no retries = fix the root cause</span><span class="qa-pill">shared state = isolated DB per run</span><span class="qa-pill">mock external APIs</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#22c55e;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);">S11</span><span class="qa-q-text">Docker build pipeline went from 2 minutes to 15 minutes. What do you investigate?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1. Check the Dockerfile first:</strong> Did someone change an instruction high up in the file (like adding an ENV, modifying a COPY, or changing a RUN command) that is <strong>busting the Docker layer cache</strong>? If a layer high in the file changes, every subsequent layer must rebuild. If the COPY command that copies source code was moved above the npm install step, every commit now reinstalls all dependencies.<br><br>
+        <strong>2. Check CI runner health:</strong> Is the runner starved for CPU or disk I/O? <code>top</code> during the build — is something competing for resources?<br><br>
+        <strong>3. Is the cache actually being used?</strong> Many CI systems don't persist Docker layer cache between runs by default. You may need to explicitly configure BuildKit cache mounts or use a registry-based cache.<br><br>
+        <strong>4.</strong> New large dependency added? A massive npm/pip install that didn't exist before?<br><br>
+        <span class="qa-pill">layer cache busted = most common</span><span class="qa-pill">order matters: deps before code</span><span class="qa-pill">CI runner resource starvation</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#22c55e;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);">S12</span><span class="qa-q-text">Deployment succeeded in the pipeline, but users still see the old version. Where do you look?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        The pipeline said "success" — but "deployed" and "released" are not the same thing.<br><br>
+        <strong>Frontend/static assets:</strong><br>
+        • <strong>Browser cache:</strong> User's browser cached the old JS/CSS. Force-refresh (Ctrl+Shift+R) to test.<br>
+        • <strong>CDN cache:</strong> Cloudflare or CloudFront is serving stale files. Check CDN cache settings. Trigger a cache purge.<br><br>
+        <strong>Backend/Kubernetes:</strong><br>
+        • Did the new deployment actually roll out? <code>kubectl rollout status deployment/myapp</code><br>
+        • Is the new pod actually running? <code>kubectl get pods</code> — is the new pod in Running state while old ones are Terminating?<br>
+        • Is the Service selector pointing to the new pods? Are there 2 versions running simultaneously (old pods still serving traffic)?<br><br>
+        <span class="qa-pill">browser cache = force refresh</span><span class="qa-pill">CDN cache = purge</span><span class="qa-pill">kubectl rollout status</span><span class="qa-pill">old pods still serving?</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#22c55e;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);">S13</span><span class="qa-q-text">Someone manually deleted an AWS Security Group rule, breaking the app. You use Terraform. How do you fix it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        This is a <strong>Terraform drift detection</strong> scenario.<br><br>
+        <strong>1.</strong> <code>terraform plan</code> — Terraform compares its state file (.tfstate) against the real AWS environment. It will detect the missing rule as "drift" and propose recreating it. You'll see something like: <code>~ aws_security_group_rule.allow_app: rule missing, will add</code><br><br>
+        <strong>2.</strong> Review the plan output carefully, then <code>terraform apply</code> to recreate the deleted rule.<br><br>
+        <strong>3. Prevent future manual changes:</strong><br>
+        • Lock down AWS Console write access for the Security Group resources<br>
+        • Use AWS Config Rules to detect and alert on manual changes<br>
+        • Set up CloudTrail to audit all API calls — you'll know exactly who deleted it<br><br>
+        <span class="qa-pill">terraform plan = drift detection</span><span class="qa-pill">terraform apply = fix</span><span class="qa-pill">restrict Console write access</span><span class="qa-pill">CloudTrail = audit who did it</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#22c55e;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);">S14</span><span class="qa-q-text">EC2 instance gets "Access Denied" trying to write to S3. Walk through checking permissions.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        IAM permission debugging is layered — check each layer in order:<br><br>
+        <strong>1. IAM Role on EC2:</strong> Go to EC2 → check the attached Instance Profile. Does it have a Role? Does that Role have a policy with <code>s3:PutObject</code> on this bucket?<br><br>
+        <strong>2. S3 Bucket Policy:</strong> Even if the IAM role allows it, the <em>bucket policy</em> can explicitly DENY access. An explicit Deny overrides any Allow. Check the bucket's Permissions → Bucket Policy.<br><br>
+        <strong>3. KMS Encryption:</strong> If the bucket uses KMS encryption, the EC2 role also needs <code>kms:GenerateDataKey</code> and <code>kms:Decrypt</code> permissions on that specific KMS key.<br><br>
+        <strong>4. VPC Endpoint / Network:</strong> If the bucket has a VPC endpoint policy, the EC2 might be blocked at the network level.<br><br>
+        <strong>Tip:</strong> Use AWS IAM Policy Simulator to test permissions without making real API calls.<br><br>
+        <span class="qa-pill">IAM role → s3:PutObject</span><span class="qa-pill">bucket policy explicit Deny overrides</span><span class="qa-pill">KMS = needs kms permissions too</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f43f5e;background:rgba(244,63,94,0.1);border-color:rgba(244,63,94,0.2);">S15</span><span class="qa-q-text">2 AM page: total drop in incoming traffic to your main application. Walk through your incident response.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>This tests your incident response process as much as your technical knowledge.</strong><br><br>
+        <strong>1. Acknowledge the alert</strong> — mark it in your incident tool (PagerDuty, etc.). Start a war room (Slack channel, call).<br><br>
+        <strong>2. Establish blast radius</strong> — are ALL users affected or a subset? One region? One service?<br><br>
+        <strong>3. Work from the outside in:</strong><br>
+        • <strong>DNS first:</strong> Did the domain expire? <code>nslookup app.com</code> — does it resolve? <code>whois app.com</code> — when does it expire?<br>
+        • <strong>Load balancer / CDN:</strong> Is traffic hitting the edge? Check LB access logs and health checks in AWS CloudWatch.<br>
+        • <strong>App layer:</strong> If traffic hits the LB but fails — check backend health. <code>kubectl get pods</code> or ECS service status.<br>
+        • <strong>Database:</strong> Is RDS/database reachable? Failover triggered?<br><br>
+        <strong>4. Communicate</strong> — update stakeholders every 15-30 minutes with status even if you have nothing new.<br>
+        <strong>5. Fix, verify, post-mortem</strong> — after restoring service, schedule a blameless post-mortem. Never blame people.<br><br>
+        <span class="qa-pill">acknowledge first</span><span class="qa-pill">DNS → LB → app → DB</span><span class="qa-pill">communicate often</span><span class="qa-pill">blameless post-mortem</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">🌐 The "google.com" Question</div>
+  <div class="qa-list">
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.2);">S16</span><span class="qa-q-text">What happens exactly when you type google.com into your browser and hit Enter?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        This tests DNS, networking, HTTP, and server knowledge end-to-end.<br><br>
+        <strong>1. Browser cache:</strong> Is google.com already cached from a recent visit?<br>
+        <strong>2. DNS Resolution:</strong> Browser asks OS → OS checks /etc/hosts, then queries the local DNS resolver → resolver checks its cache → queries root nameservers → TLD nameservers (.com) → Google's authoritative nameserver → returns IP address (e.g., 142.250.80.46).<br>
+        <strong>3. TCP Connection:</strong> Browser opens a TCP connection to port 443 (HTTPS) via a 3-way handshake (SYN → SYN-ACK → ACK).<br>
+        <strong>4. TLS Handshake:</strong> Client and server negotiate encryption. Server sends its TLS certificate. Browser verifies it against a CA. Session keys are exchanged.<br>
+        <strong>5. HTTP Request:</strong> Browser sends <code>GET / HTTP/2 Host: www.google.com</code><br>
+        <strong>6. Load Balancer:</strong> Request hits Google's edge load balancer, routes to a backend server.<br>
+        <strong>7. Response:</strong> Server returns HTML. Browser parses it, finds CSS/JS/image references, and makes more requests for those resources.<br>
+        <strong>8. Render:</strong> Browser constructs the DOM, applies CSS, runs JS, displays the page.<br><br>
+        <span class="qa-pill">DNS → TCP → TLS → HTTP → LB → server → render</span>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="section-title">🐳 Docker Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">S17</span><span class="qa-q-text">Your Docker container exits immediately after starting. How do you debug it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1.</strong> <code>docker ps -a</code> — lists all containers including exited ones. Check the STATUS column — see the exit code. Exit code 0 = clean exit. Exit code 1 = error. Exit code 137 = OOM killed (out of memory).<br><br>
+        <strong>2.</strong> <code>docker logs &lt;container-id&gt;</code> — read the output the container produced before dying. This usually has the actual error.<br><br>
+        <strong>3.</strong> <code>docker inspect &lt;container-id&gt;</code> — look at the <code>State</code> section. Check <code>ExitCode</code>, <code>OOMKilled</code>, <code>Error</code>.<br><br>
+        <strong>Common causes:</strong><br>
+        • CMD/ENTRYPOINT error — process exits immediately if the startup command fails<br>
+        • Missing environment variable — app crashes on start because <code>DB_URL</code> is not set<br>
+        • Missing required file — app can't find config file that wasn't COPYed into image<br>
+        • Port already in use — app can't bind to the port<br>
+        • OOMKilled — container hit memory limit<br><br>
+        <span class="qa-pill">docker ps -a → exit code</span><span class="qa-pill">docker logs → actual error</span><span class="qa-pill">exit 137 = OOM killed</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">S18</span><span class="qa-q-text">Your Docker image is 3GB. A teammate asks how to reduce it. What do you suggest?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1. Use a smaller base image:</strong> Switch from <code>node:18</code> (~350MB) to <code>node:18-alpine</code> (~50MB). Alpine Linux is minimal by design.<br><br>
+        <strong>2. Multi-stage build:</strong> Build in a heavy image, copy only the compiled artifact into a minimal production image. Build tools (compilers, npm dev-deps) stay in the builder stage and are discarded.<br><br>
+        <strong>3. Add .dockerignore:</strong> Exclude <code>node_modules/</code>, <code>.git/</code>, <code>tests/</code>, <code>docs/</code>, <code>*.md</code> from being COPYed into the image.<br><br>
+        <strong>4. Combine RUN commands:</strong> Each RUN = a layer. <code>RUN apt-get update &amp;&amp; apt-get install -y curl &amp;&amp; rm -rf /var/lib/apt/lists/*</code> — install and clean up in one layer, not three.<br><br>
+        <strong>5. Don't install dev dependencies in prod:</strong> <code>npm install --omit=dev</code> or <code>pip install --no-dev</code>.<br><br>
+        <span class="qa-pill">alpine base = tiny</span><span class="qa-pill">multi-stage = only artifact</span><span class="qa-pill">.dockerignore = exclude junk</span><span class="qa-pill">combine RUN layers</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">S19</span><span class="qa-q-text">Two Docker containers need to communicate. Container A can't reach Container B. How do you debug?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1. Check if they're on the same network:</strong> <code>docker network ls</code> then <code>docker inspect &lt;network-name&gt;</code>. If containers are on different networks, they can't talk by default.<br><br>
+        <strong>2. If using docker-compose:</strong> Services in the same <code>docker-compose.yml</code> are automatically on a shared network and can reach each other by service name (e.g., <code>http://db:5432</code>).<br><br>
+        <strong>3. Manual network connection:</strong> <code>docker network connect my-network container-b</code><br><br>
+        <strong>4. Test from inside container A:</strong> <code>docker exec -it container-a sh</code> then <code>ping container-b</code> or <code>curl http://container-b:3000</code>. Use service/container name, not IP — IPs change on restart.<br><br>
+        <strong>5. Check EXPOSE/port mapping:</strong> <code>EXPOSE</code> in Dockerfile just documents the port — it doesn't bind it. For external access use <code>-p 3000:3000</code>. Container-to-container on same network doesn't need -p.<br><br>
+        <span class="qa-pill">same network = can communicate</span><span class="qa-pill">use container name not IP</span><span class="qa-pill">exec inside to test curl</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">☸️ Kubernetes Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S20</span><span class="qa-q-text">A pod is in Pending state and never starts. How do you debug it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>Pending</strong> means the Scheduler cannot find a suitable node to place the pod.<br><br>
+        <strong>1.</strong> <code>kubectl describe pod &lt;name&gt;</code> → read the <strong>Events</strong> section. It will say exactly why it's pending.<br><br>
+        <strong>Common causes:</strong><br>
+        • <strong>"Insufficient CPU/memory"</strong> — the pod's resource request exceeds available capacity on all nodes. Fix: reduce requests, add nodes, or reduce other pod limits.<br>
+        • <strong>"No nodes matching nodeSelector/affinity"</strong> — pod has a label constraint that no node satisfies. Fix: check your nodeSelector.<br>
+        • <strong>"Unschedulable"</strong> — node is tainted and pod has no matching toleration. Fix: add toleration or remove taint.<br>
+        • <strong>"PVC not bound"</strong> — pod needs a Persistent Volume Claim that hasn't been fulfilled. Fix: check <code>kubectl get pvc</code>.<br><br>
+        <strong>2.</strong> <code>kubectl get nodes</code> — are all nodes Ready? A NotReady node won't accept pods.<br><br>
+        <span class="qa-pill">Pending = Scheduler can't place pod</span><span class="qa-pill">describe pod → Events section</span><span class="qa-pill">check resources, taints, PVC</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S21</span><span class="qa-q-text">Your Kubernetes cluster is running out of resources. Pods keep failing to schedule. What do you do?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>1. Verify the problem:</strong> <code>kubectl top nodes</code> — which nodes are at capacity? <code>kubectl describe nodes</code> — look for "Allocatable" vs "Requests" section.<br><br>
+        <strong>2. Find resource hogs:</strong> <code>kubectl top pods --all-namespaces --sort-by=memory</code> — which pods are consuming the most?<br><br>
+        <strong>3. Right-size pod requests:</strong> Are pods requesting 4GB but only using 200MB? Over-requesting waste cluster capacity. Reduce requests to match actual usage.<br><br>
+        <strong>4. Add nodes:</strong><br>
+        • AWS EKS: add to the Auto Scaling Group (manually or via cluster-autoscaler)<br>
+        • <code>kubectl scale</code> won't help — that scales pods, not nodes<br><br>
+        <strong>5. Enable Cluster Autoscaler:</strong> Watches for unschedulable pods and automatically provisions new EC2 instances. Scales down when nodes are underutilized.<br><br>
+        <strong>6. Evict idle pods:</strong> Check for pods in namespaces you might have forgotten to clean up.<br><br>
+        <span class="qa-pill">kubectl top nodes</span><span class="qa-pill">reduce over-requesting</span><span class="qa-pill">cluster-autoscaler for auto-scale</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S22</span><span class="qa-q-text">You deployed a new version and users are getting errors. How do you roll back in Kubernetes?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>Immediate rollback (do this first):</strong><br>
+        <code>kubectl rollout undo deployment/myapp</code> — rolls back to the previous version immediately. Kubernetes keeps the last 10 revision history by default.<br><br>
+        <strong>Roll back to a specific version:</strong><br>
+        <code>kubectl rollout history deployment/myapp</code> — list all revisions<br>
+        <code>kubectl rollout undo deployment/myapp --to-revision=3</code> — go to specific revision<br><br>
+        <strong>Watch the rollback:</strong><br>
+        <code>kubectl rollout status deployment/myapp</code> — watch pods come up<br>
+        <code>kubectl get pods -w</code> — watch pods update in real time<br><br>
+        <strong>After stabilizing:</strong> Check what went wrong. Was it the code? A bad environment variable? A database migration that can't be reversed? Fix the issue before pushing v3.0.<br><br>
+        <span class="qa-pill">kubectl rollout undo = instant rollback</span><span class="qa-pill">--to-revision for specific version</span><span class="qa-pill">fix root cause before next deploy</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2);">S23</span><span class="qa-q-text">A pod is OOMKilled repeatedly. What does it mean and how do you fix it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>OOMKilled = Out Of Memory Killed.</strong> The container exceeded its memory limit and was forcibly terminated by the Linux kernel (OOM killer). The pod will restart, hit the limit again, get killed again — CrashLoopBackOff.<br><br>
+        <strong>Verify:</strong> <code>kubectl describe pod &lt;name&gt;</code> → look for <code>OOMKilled: true</code> in the State section.<br><br>
+        <strong>Investigate:</strong><br>
+        • <code>kubectl top pods</code> — what was the actual memory usage before it was killed?<br>
+        • Check application code — is there a memory leak? Does memory grow over time or spike suddenly?<br><br>
+        <strong>Fix options:</strong><br>
+        • <strong>Short term:</strong> Increase the memory limit in the pod spec. <code>limits.memory: "1Gi"</code> instead of <code>"512Mi"</code>.<br>
+        • <strong>Long term:</strong> Fix the memory leak. Profile the app, find what's growing, and fix it in code.<br><br>
+        <span class="qa-pill">OOMKilled = exceeded memory limit</span><span class="qa-pill">describe pod → OOMKilled: true</span><span class="qa-pill">increase limit short-term, fix leak long-term</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">☁️ AWS / Cloud Scenarios</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S24</span><span class="qa-q-text">A developer accidentally pushed API keys to a public GitHub repo. What do you do immediately?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>Assume the secret is already compromised</strong> — bots scan GitHub 24/7 and pick up leaked secrets within seconds. Deleting the commit is NOT enough — the history exists and the key is already stolen.<br><br>
+        <strong>Immediate actions (do in parallel):</strong><br>
+        <strong>1. Revoke the key IMMEDIATELY</strong> — go to AWS Console → IAM → Access Keys → Deactivate/Delete the compromised key. This is the most critical step. Do it before anything else.<br><br>
+        <strong>2. Rotate all affected credentials</strong> — create a new key for the service that needed it. Update all places that were using the old key.<br><br>
+        <strong>3. Check for unauthorized activity</strong> — AWS CloudTrail will show what API calls were made with the leaked key. Look for unusual regions, services, or large data exfil.<br><br>
+        <strong>4. Make the GitHub repo private</strong> (if not already) and use <code>git filter-branch</code> or BFG Repo Cleaner to remove the secret from history (prevents future accidental exposure).<br><br>
+        <strong>5. Post-mortem + Prevention</strong> — add <code>.env</code> to .gitignore. Use GitHub's secret scanning. Add pre-commit hooks to detect secrets before commit (tools: <code>git-secrets</code>, <code>truffleHog</code>).<br><br>
+        <span class="qa-pill">revoke key FIRST</span><span class="qa-pill">check CloudTrail for damage</span><span class="qa-pill">rotate credentials</span><span class="qa-pill">prevent with pre-commit hooks</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S25</span><span class="qa-q-text">An EC2 instance can't connect to your RDS database. Walk through your debug steps.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        Work through the layers systematically:<br><br>
+        <strong>1. Is RDS actually running?</strong> AWS Console → RDS → check Status. Is it Available? If Stopped, start it. If Failing Over, wait.<br><br>
+        <strong>2. Network connectivity:</strong> From the EC2, try <code>nc -zv &lt;rds-endpoint&gt; 5432</code>. Connection Refused or Timeout?<br><br>
+        <strong>3. Security Group check (most common cause):</strong><br>
+        • RDS Security Group must allow port 5432 <em>from</em> the EC2's Security Group ID (not its IP — IPs change)<br>
+        • EC2 Security Group must allow outbound to RDS<br><br>
+        <strong>4. Subnet/VPC check:</strong> Are EC2 and RDS in the same VPC? If RDS is in a different VPC, you need VPC peering. Is RDS in a private subnet that has no route to EC2?<br><br>
+        <strong>5. Check RDS endpoint and port:</strong> Is the connection string using the correct endpoint, port, DB name, username, password?<br><br>
+        <strong>6. Check RDS parameter group:</strong> Is the DB accepting connections on the expected port?<br><br>
+        <span class="qa-pill">Security Group = most common cause</span><span class="qa-pill">reference SG ID not IP</span><span class="qa-pill">nc -zv to test port</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S26</span><span class="qa-q-text">Your Terraform state file is corrupted or locked. How do you handle it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>State file locked (most common):</strong> A previous <code>terraform apply</code> crashed and left a lock in DynamoDB. Terraform says "Error acquiring the state lock."<br>
+        Fix: <code>terraform force-unlock &lt;LOCK_ID&gt;</code> (the lock ID is shown in the error message). Only do this if you're certain no other apply is running.<br><br>
+        <strong>State file corrupted:</strong><br>
+        <strong>1.</strong> First, DON'T panic and run <code>terraform apply</code> — you could make things worse.<br>
+        <strong>2.</strong> Restore from backup — S3 has versioning enabled on your state bucket (it should). Go to S3, find the last good version, restore it.<br>
+        <strong>3.</strong> If no backup: <code>terraform import</code> to rebuild state by importing existing resources one by one.<br><br>
+        <strong>Prevention:</strong> Always use remote state (S3 + DynamoDB). Enable S3 versioning. Enable state encryption. Never manually edit the .tfstate file.<br><br>
+        <span class="qa-pill">force-unlock if stuck lock</span><span class="qa-pill">S3 versioning = restore backup</span><span class="qa-pill">never edit tfstate manually</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S27</span><span class="qa-q-text">Your ALB health checks are failing and all instances are being removed from rotation. What do you check?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        ALB health checks periodically hit a specific endpoint (e.g., <code>/health</code>) on your instances. If it doesn't get 200 OK within the timeout, it marks the instance unhealthy.<br><br>
+        <strong>1. What's the health check configured for?</strong> Go to ALB → Target Group → Health Check settings. Note the path, port, protocol, success codes, timeout, and threshold.<br><br>
+        <strong>2. Test the health check endpoint manually:</strong> SSH into an EC2 instance. <code>curl -v http://localhost:&lt;health-check-port&gt;/health</code>. Does it return 200? What does it return?<br><br>
+        <strong>3. Common causes:</strong><br>
+        • Health check path wrong — app has <code>/healthz</code> but ALB checks <code>/health</code><br>
+        • Wrong port — ALB checking port 80, app on port 3000<br>
+        • App is starting slowly — health check fires before app is ready. Fix: increase <code>HealthyThresholdCount</code> or initial delay.<br>
+        • Security Group — does the Security Group allow the ALB to reach the health check port on the instances?<br>
+        • App genuinely broken — the app is actually returning 500, which is the real problem to fix.<br><br>
+        <span class="qa-pill">curl localhost to test manually</span><span class="qa-pill">check path + port config</span><span class="qa-pill">SG must allow ALB to instances</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S28</span><span class="qa-q-text">Your RDS database CPU is at 100%. How do you diagnose and respond?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        <strong>Immediate (stop the bleeding):</strong><br>
+        <strong>1.</strong> AWS Console → RDS → Enhanced Monitoring or Performance Insights — see which queries are consuming the CPU.<br>
+        <strong>2.</strong> Identify and kill the most expensive query: connect to the DB and run <code>SELECT * FROM pg_stat_activity ORDER BY duration DESC;</code> (Postgres). Kill with <code>SELECT pg_terminate_backend(pid);</code>.<br><br>
+        <strong>Diagnose root cause:</strong><br>
+        • <strong>Missing index:</strong> A query is doing a full table scan. Check with <code>EXPLAIN ANALYZE</code>. Add an index on the column being filtered.<br>
+        • <strong>Sudden traffic spike:</strong> More connections = more queries. Scale up the instance type or add a read replica for read-heavy workloads.<br>
+        • <strong>N+1 query problem:</strong> App code making hundreds of queries in a loop where one query would do.<br>
+        • <strong>Runaway scheduled job:</strong> A background job launched a massive query.<br><br>
+        <strong>Longer term:</strong> Enable slow query log, add connection pooling (PgBouncer), add read replicas for read traffic, cache frequently-read data in Redis/ElastiCache.<br><br>
+        <span class="qa-pill">Performance Insights = identify queries</span><span class="qa-pill">EXPLAIN ANALYZE = find missing indexes</span><span class="qa-pill">read replica for read scaling</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S29</span><span class="qa-q-text">Your CI/CD pipeline is deploying but the new code isn't reflecting in production. You've already ruled out browser cache. What next?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        This is a "deployment succeeded but nothing changed" problem. Work through the delivery chain:<br><br>
+        <strong>1. Was the right image built?</strong> Check the CI logs — did the Docker build actually pick up your latest code? Or did it use a cached layer that skipped your changes?<br><br>
+        <strong>2. Was the new image pushed?</strong> Check ECR/Docker Hub — is there a new image tag with today's timestamp?<br><br>
+        <strong>3. Was the deployment actually updated?</strong><br>
+        • Kubernetes: <code>kubectl describe deployment myapp</code> — what image tag is it using? Did the deployment get the new image tag or the same old one?<br>
+        • Common mistake: always pushing to <code>:latest</code> tag. If the tag doesn't change, Kubernetes thinks it's the same image and won't pull a new one. Use a unique tag per build (commit hash or version number).<br><br>
+        <strong>4. Force re-pull:</strong> <code>kubectl rollout restart deployment/myapp</code> — forces all pods to restart and pull the latest image.<br><br>
+        <strong>5. CDN invalidation:</strong> Even for backend APIs, if there's a WAF or CDN in front, cached responses might be stale.<br><br>
+        <span class="qa-pill">check CI logs for correct image</span><span class="qa-pill">never use :latest in K8s</span><span class="qa-pill">rollout restart to force re-pull</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S30</span><span class="qa-q-text">You need to investigate an EC2 instance but port 22 is closed and you can't SSH. How do you get in?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        Port 22 being closed is actually a <strong>good security practice</strong>. There are proper alternatives:<br><br>
+        <strong>Option 1 — AWS Systems Manager Session Manager (best practice):</strong><br>
+        AWS Console → EC2 → Select instance → Connect → Session Manager. Opens a browser-based terminal session. No port 22 needed, no inbound security group rules, full audit log in CloudTrail. Requires SSM agent on instance (pre-installed on Amazon Linux 2+) and correct IAM role.<br><br>
+        <strong>Option 2 — EC2 Instance Connect:</strong><br>
+        AWS Console → EC2 → Connect → EC2 Instance Connect. AWS pushes a temporary SSH key. Still requires port 22 but only from AWS IP ranges (not 0.0.0.0/0).<br><br>
+        <strong>Option 3 — Bastion Host:</strong><br>
+        SSH into a bastion/jump host in the public subnet (which has port 22 open but restricted to your IP), then SSH from there to the private EC2.<br><br>
+        <strong>Option 4 — EC2 Serial Console:</strong><br>
+        For instances that won't boot or are completely unreachable. Low-level access via AWS Console.<br><br>
+        <span class="qa-pill">SSM Session Manager = best practice</span><span class="qa-pill">no port 22 needed</span><span class="qa-pill">full audit log</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#f97316;background:rgba(249,115,22,0.1);border-color:rgba(249,115,22,0.2);">S31</span><span class="qa-q-text">Your application suddenly starts throwing "too many open files" errors on Linux. What's happening?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">APPROACH</div><div class="qa-a-text">
+        Linux limits the number of file descriptors a process can have open simultaneously (files, network connections, sockets all count). When the limit is hit, the process can't open new connections or files.<br><br>
+        <strong>1. Check current limits:</strong><br>
+        <code>ulimit -n</code> — shows current per-process limit (often 1024 by default)<br>
+        <code>cat /proc/&lt;PID&gt;/limits</code> — limits for a specific process<br><br>
+        <strong>2. Check actual usage:</strong><br>
+        <code>lsof -p &lt;PID&gt; | wc -l</code> — how many files/connections the process has open<br><br>
+        <strong>3. Fix temporary:</strong><br>
+        <code>ulimit -n 65536</code> — increase limit for current session<br><br>
+        <strong>4. Fix permanent:</strong><br>
+        Edit <code>/etc/security/limits.conf</code> — add <code>* soft nofile 65536</code> and <code>* hard nofile 65536</code><br><br>
+        <strong>Root cause:</strong> Usually a connection leak — app opens connections (DB, HTTP) but never closes them. Fix the leak in code; increasing limits is a bandaid.<br><br>
+        <span class="qa-pill">ulimit -n = file descriptor limit</span><span class="qa-pill">lsof -p = what process has open</span><span class="qa-pill">fix the connection leak, not just the limit</span>
+      </div></div>
+    </div>
+
+  </div>
+

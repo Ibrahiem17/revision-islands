@@ -1,0 +1,199 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🐧 Linux for DevOps</div></div>
+    <div class="analogy-item"><span class="analogy-icon">💻</span><div class="analogy-text"><strong>Servers run Linux</strong><br>Everything in prod is Linux</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>CLI is your tool</strong><br>No GUI on a server</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔑</span><div class="analogy-text"><strong>Master the basics</strong><br>Navigate, manage, monitor</div></div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="section-title">📁 Navigation &amp; File Management</div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">pwd</span><span class="cmd-tag">location</span></div>
+      <div class="cmd-desc">Print working directory — shows where you are right now.</div>
+      <div class="cmd-ex">$ pwd<br><span class="cmd-out">/home/ibrahiem</span></div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">ls -la</span><span class="cmd-tag">list</span></div>
+      <div class="cmd-desc"><code>ls</code> lists files. <code>-l</code> = long format (permissions, size, date). <code>-a</code> = show hidden files (starting with .).</div>
+      <div class="cmd-ex">$ ls -la /var/log</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">cd /var/log</span><span class="cmd-tag">navigate</span></div>
+      <div class="cmd-desc">Change directory. <code>cd ..</code> = go up one level. <code>cd ~</code> = go home. <code>cd -</code> = go back to previous dir.</div>
+      <div class="cmd-ex">$ cd /var/log<br>$ cd ..</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">touch / mkdir</span><span class="cmd-tag">create</span></div>
+      <div class="cmd-desc"><code>touch app.log</code> creates an empty file. <code>mkdir logs</code> creates a folder. <code>mkdir -p app/config</code> creates nested dirs in one shot.</div>
+      <div class="cmd-ex">$ touch app.log<br>$ mkdir -p app/config</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">cp / mv / rm</span><span class="cmd-tag">manage</span></div>
+      <div class="cmd-desc"><code>cp file.txt backup.txt</code> copies. <code>cp -r dir1 dir2</code> copies directories. <code>mv old.txt new.txt</code> renames or moves. <code>rm -rf folder</code> deletes folder recursively — no confirmation, no undo.</div>
+      <div class="cmd-ex">$ cp -r dir1 dir2<br>$ rm -rf folder ⚠️</div>
+    </div>
+  </div>
+
+  <!-- READING FILES -->
+  <div class="section-title">📄 Reading Files</div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">cat file.txt</span><span class="cmd-tag">read all</span></div>
+      <div class="cmd-desc">Dump entire file to terminal. Good for small files. Avoid on huge log files.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">head / tail</span><span class="cmd-tag">partial read</span></div>
+      <div class="cmd-desc"><code>head -n 10 file.txt</code> = first 10 lines. <code>tail -n 10 file.txt</code> = last 10 lines. <code>tail -f app.log</code> = follow live — watches the file as new lines are written. 🔥 Essential for watching logs in real time.</div>
+      <div class="cmd-ex">$ tail -f app.log &nbsp;# live stream</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">grep</span><span class="cmd-tag">search</span></div>
+      <div class="cmd-desc"><code>grep "error" app.log</code> — find lines with "error". <code>-i</code> = case insensitive. <code>-r</code> = search recursively through all files in a directory.</div>
+      <div class="cmd-ex">$ grep -i "error" app.log<br>$ grep -r "error" .</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">find</span><span class="cmd-tag">locate files</span></div>
+      <div class="cmd-desc">Search the filesystem by name or type. <code>find . -name "*.log"</code> = all .log files in current dir. <code>find / -type f -name "config.yaml"</code> = search entire filesystem.</div>
+      <div class="cmd-ex">$ find . -name "*.log"<br>$ find / -type f -name "config.yaml"</div>
+    </div>
+  </div>
+
+  <!-- PIPES & REDIRECTS -->
+  <div class="section-title">🔗 Pipes &amp; Redirects — The Power Combo</div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#38bdf8;">Pipe ( | )</strong> = take the output of one command and feed it as input to the next.<br>
+    <strong style="color:#38bdf8;">Redirect ( &gt; )</strong> = send output to a file (overwrites). <strong style="color:#38bdf8;">( &gt;&gt; )</strong> = append to file.
+  </div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">ls | grep ".txt"</span><span class="cmd-tag">pipe</span></div>
+      <div class="cmd-desc">List files, then filter to only show .txt files. Output of <code>ls</code> is piped into <code>grep</code>.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">grep "error" app.log | wc -l</span><span class="cmd-tag">count</span></div>
+      <div class="cmd-desc">Count how many lines contain "error". <code>wc -l</code> counts lines. Useful for quick error counts.</div>
+      <div class="cmd-ex">$ grep "error" app.log | wc -l<br><span class="cmd-out">42</span></div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">&gt; and &gt;&gt;</span><span class="cmd-tag">redirect</span></div>
+      <div class="cmd-desc"><code>echo "hello" &gt; file.txt</code> — overwrites the file with "hello". <code>echo "world" &gt;&gt; file.txt</code> — appends "world" as a new line. <code>&gt;</code> destroys existing content. <code>&gt;&gt;</code> is safe.</div>
+      <div class="cmd-ex">$ echo "hello" &gt; file.txt<br>$ echo "world" &gt;&gt; file.txt</div>
+    </div>
+  </div>
+
+  <!-- PERMISSIONS -->
+  <div class="section-title">🔐 Permissions</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.9;">
+    <strong style="color:#e2e8f0;">Reading permission strings:</strong><br>
+    <code style="color:#fbbf24;">-rwxr-xr--</code><br><br>
+    <span style="color:#818cf8;">-</span> = file type (<code>-</code>=file, <code>d</code>=dir, <code>l</code>=symlink)<br>
+    <span style="color:#f97316;">rwx</span> = owner can Read, Write, Execute<br>
+    <span style="color:#22c55e;">r-x</span> = group can Read, Execute (no write)<br>
+    <span style="color:#38bdf8;">r--</span> = others can only Read<br><br>
+    <strong style="color:#e2e8f0;">Numeric mode:</strong> r=4, w=2, x=1. Add them up per group.<br>
+    <code style="color:#fbbf24;">755</code> = owner:rwx(7) group:r-x(5) others:r-x(5)<br>
+    <code style="color:#fbbf24;">644</code> = owner:rw-(6) group:r--(4) others:r--(4)
+  </div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">chmod</span><span class="cmd-tag">change perms</span></div>
+      <div class="cmd-desc"><code>chmod 755 script.sh</code> = set numeric permissions. <code>chmod +x script.sh</code> = add execute permission for everyone. Scripts need +x to run.</div>
+      <div class="cmd-ex">$ chmod +x deploy.sh<br>$ ./deploy.sh</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">chown</span><span class="cmd-tag">change owner</span></div>
+      <div class="cmd-desc"><code>chown user file.txt</code> = change owner. <code>chown user:group file.txt</code> = change both owner and group. Used when files are created by root but need to be accessed by app user.</div>
+      <div class="cmd-ex">$ chown deploy:www-data /var/app</div>
+    </div>
+  </div>
+
+  <!-- PROCESSES -->
+  <div class="section-title">⚙️ Processes &amp; System Health</div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">ps aux</span><span class="cmd-tag">processes</span></div>
+      <div class="cmd-desc">List all running processes with PID, CPU%, MEM%, and command. Pipe to grep to find a specific process: <code>ps aux | grep nginx</code>.</div>
+      <div class="cmd-ex">$ ps aux | grep nginx</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">top / htop</span><span class="cmd-tag">live monitor</span></div>
+      <div class="cmd-desc">Live CPU/memory monitor. Updates in real time. Press <code>q</code> to quit. <code>htop</code> is the prettier version (if installed). Essential for spotting runaway processes.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">kill / kill -9</span><span class="cmd-tag">stop process</span></div>
+      <div class="cmd-desc"><code>kill PID</code> = graceful stop (lets process clean up). <code>kill -9 PID</code> = force kill instantly — no cleanup. Use graceful first, -9 as last resort.</div>
+      <div class="cmd-ex">$ kill 1234<br>$ kill -9 1234 &nbsp;# nuclear option</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">df -h</span><span class="cmd-tag">disk space</span></div>
+      <div class="cmd-desc">Show disk space on all filesystems. <code>-h</code> = human readable (GB/MB). Critical for catching "disk full" issues before they crash your app.</div>
+      <div class="cmd-ex">$ df -h<br><span class="cmd-out">Filesystem  Size  Used Avail Use%</span></div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">du -sh *</span><span class="cmd-tag">folder sizes</span></div>
+      <div class="cmd-desc">Show size of each file/folder in current directory. <code>du -sh /var/log/*</code> = see which log files are eating your disk.</div>
+      <div class="cmd-ex">$ du -sh /var/log/*</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">free -h</span><span class="cmd-tag">RAM</span></div>
+      <div class="cmd-desc">Show total, used, and free RAM. <code>-h</code> = human readable. Critical metric — if RAM is full, apps start crashing or swapping to disk (very slow).</div>
+      <div class="cmd-ex">$ free -h<br><span class="cmd-out">Mem:  7.7G  4.2G  1.2G</span></div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">uptime</span><span class="cmd-tag">system age</span></div>
+      <div class="cmd-desc">Shows how long the system has been running + load average (1m, 5m, 15m). Load avg &gt; number of CPU cores = system is overloaded.</div>
+      <div class="cmd-ex">$ uptime<br><span class="cmd-out">up 14 days, load avg: 0.5 0.4 0.3</span></div>
+    </div>
+  </div>
+
+  <!-- NETWORKING -->
+  <div class="section-title">🌐 Networking</div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">ping</span><span class="cmd-tag">reachability</span></div>
+      <div class="cmd-desc">Check if a host is reachable. <code>ping google.com</code> sends ICMP packets and measures round-trip time. Ctrl+C to stop.</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">curl</span><span class="cmd-tag">HTTP requests</span></div>
+      <div class="cmd-desc">Make HTTP requests from the terminal. Essential for testing APIs. <code>curl http://api.com</code> = GET request. Add <code>-v</code> for verbose output, <code>-X POST</code> for POST.</div>
+      <div class="cmd-ex">$ curl -v http://localhost:8080/health</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">wget</span><span class="cmd-tag">download</span></div>
+      <div class="cmd-desc">Download files from URLs. <code>wget file_url</code> saves to current directory. Good for downloading configs, binaries, or scripts onto a server.</div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="section-title">🔧 Services (systemctl)</div>
+  <div class="cmd-grid">
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">systemctl status</span><span class="cmd-tag">check</span></div>
+      <div class="cmd-desc"><code>systemctl status nginx</code> — shows if the service is running, failed, or stopped. Also shows last few log lines. First thing to run when something seems broken.</div>
+      <div class="cmd-ex">$ systemctl status nginx<br><span class="cmd-out">● nginx.service - Active: active (running)</span></div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">systemctl restart</span><span class="cmd-tag">restart</span></div>
+      <div class="cmd-desc"><code>systemctl restart nginx</code> — stops and restarts the service. <code>systemctl stop</code> / <code>start</code> available too. <code>systemctl enable nginx</code> = auto-start on boot.</div>
+      <div class="cmd-ex">$ systemctl restart nginx<br>$ systemctl enable nginx</div>
+    </div>
+  </div>
+
+  <!-- CHEATSHEET CARD -->
+  <div class="loop-box">
+    <div class="loop-icon">🧠</div>
+    <div>
+      <div class="loop-title">The DevOps Linux Survival Kit</div>
+      <div class="loop-desc">
+        <strong style="color:#fb923c;">Investigate:</strong> <code style="color:#fbbf24;">ps aux | grep app</code> → <code style="color:#fbbf24;">tail -f app.log</code> → <code style="color:#fbbf24;">grep -i error app.log | wc -l</code><br>
+        <strong style="color:#fb923c;">Health check:</strong> <code style="color:#fbbf24;">df -h</code> → <code style="color:#fbbf24;">free -h</code> → <code style="color:#fbbf24;">uptime</code> → <code style="color:#fbbf24;">top</code><br>
+        <strong style="color:#fb923c;">Service down:</strong> <code style="color:#fbbf24;">systemctl status nginx</code> → <code style="color:#fbbf24;">systemctl restart nginx</code>
+      </div>
+    </div>
+  </div>
+

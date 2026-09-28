@@ -1,0 +1,26 @@
+
+  <div class="section-title">📖 Quick Reference — All Key Terms</div>
+  <div class="qr-grid">
+    <div class="qr-card"><div class="qr-term">CI</div><div class="qr-def">Auto-build + test on every push. Catch bugs early.</div></div>
+    <div class="qr-card"><div class="qr-term">CD (Delivery)</div><div class="qr-def">Every passing build is deployable. Human approves final push.</div></div>
+    <div class="qr-card"><div class="qr-term">CD (Deployment)</div><div class="qr-def">Every passing build auto-deploys. Fully automated.</div></div>
+    <div class="qr-card"><div class="qr-term">Webhook</div><div class="qr-def">HTTP push notification when an event fires (e.g. git push).</div></div>
+    <div class="qr-card"><div class="qr-term">Docker Image</div><div class="qr-def">Portable snapshot: app + all dependencies. Immutable.</div></div>
+    <div class="qr-card"><div class="qr-term">Container</div><div class="qr-def">A running instance of a Docker image. Isolated, lightweight.</div></div>
+    <div class="qr-card"><div class="qr-term">Registry</div><div class="qr-def">Storage for Docker images. Docker Hub, AWS ECR, GCR.</div></div>
+    <div class="qr-card"><div class="qr-term">Kubernetes (K8s)</div><div class="qr-def">Orchestrates containers — scheduling, scaling, self-healing.</div></div>
+    <div class="qr-card"><div class="qr-term">Pod</div><div class="qr-def">Smallest K8s unit. Wraps one or more containers.</div></div>
+    <div class="qr-card"><div class="qr-term">Deployment (K8s)</div><div class="qr-def">Manages replicas of a pod. Handles rolling updates.</div></div>
+    <div class="qr-card"><div class="qr-term">Rolling Update</div><div class="qr-def">Replace containers gradually. Zero downtime.</div></div>
+    <div class="qr-card"><div class="qr-term">Blue-Green</div><div class="qr-def">Two identical envs. Flip traffic switch. Instant rollback.</div></div>
+    <div class="qr-card"><div class="qr-term">Canary Deploy</div><div class="qr-def">Route X% of traffic to new version. Validate before full rollout.</div></div>
+    <div class="qr-card"><div class="qr-term">IaC</div><div class="qr-def">Infrastructure described in code. Stored in Git. Repeatable.</div></div>
+    <div class="qr-card"><div class="qr-term">Terraform</div><div class="qr-def">IaC tool. Declare infra in HCL files. Works across clouds.</div></div>
+    <div class="qr-card"><div class="qr-term">Makefile</div><div class="qr-def">Automates build commands. make build → docker build + run.</div></div>
+    <div class="qr-card"><div class="qr-term">Prometheus</div><div class="qr-def">Scrapes and stores time-series metrics from your app.</div></div>
+    <div class="qr-card"><div class="qr-term">Grafana</div><div class="qr-def">Visualizes Prometheus data into dashboards + alerts.</div></div>
+    <div class="qr-card"><div class="qr-term">Microservices</div><div class="qr-def">App split into small independent services, each in its own container.</div></div>
+    <div class="qr-card"><div class="qr-term">Staging</div><div class="qr-def">Pre-production environment. Mirrors prod. Where CD deploys first.</div></div>
+    <div class="qr-card"><div class="qr-term">Jira</div><div class="qr-def">Project planning tool. Tracks sprints, tickets, epics.</div></div>
+    <div class="qr-card"><div class="qr-term">4 Golden Signals</div><div class="qr-def">Latency, Traffic, Errors, Saturation — Google SRE monitoring framework.</div></div>
+  </div>

@@ -1,0 +1,84 @@
+
+  <div class="analogy">
+    <div class="analogy-item"><span class="analogy-icon">📝</span><div class="analogy-text"><strong>Write HCL code</strong><br>Describe desired infra</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📋</span><div class="analogy-text"><strong>terraform plan</strong><br>Preview what changes</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">✅</span><div class="analogy-text"><strong>terraform apply</strong><br>Provision the infra</div></div>
+  </div>
+
+  <div class="section-title">⚙️ Terraform Workflow</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Configuration Files</span><span class="stage-tool">HCL / JSON</span></div><div class="stage-desc">Define your infrastructure using <strong>.tf</strong> files written in HCL (HashiCorp Configuration Language) or JSON. Describe servers, networks, databases — everything as code.</div><span class="stage-cmd">main.tf</span><span class="stage-cmd">variables.tf</span><span class="stage-cmd">outputs.tf</span></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Execution Plan</span><span class="stage-tool">terraform plan</span></div><div class="stage-desc">Terraform generates a plan showing exactly what will be created, changed, or destroyed to reach the desired state. Review before applying — no surprises.</div><span class="stage-cmd">terraform init</span><span class="stage-cmd">terraform plan</span></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Resource Provisioning</span><span class="stage-tool">terraform apply</span></div><div class="stage-desc">Terraform applies the plan — provisions and configures all the resources. Creates EC2 instances, VPCs, S3 buckets, whatever you defined.</div><span class="stage-cmd">terraform apply</span></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">State Management</span><span class="stage-tool">terraform.tfstate</span></div><div class="stage-desc">Terraform tracks current infrastructure state in a state file. This is how it knows what exists and what needs to change. In teams, store state in a <strong>remote backend</strong> (S3 + DynamoDB lock) — never commit it to Git.</div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Version Control</span><span class="stage-tool">Git</span></div><div class="stage-desc">Store configuration files in Git. Review infra changes via PRs. Full audit trail. Never hardcode secrets — use environment variables or a secrets manager.</div></div></div>
+  </div>
+
+  <div class="section-title">🌐 Multi-Cloud with Terraform</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#e2e8f0;">1. Define Providers</strong> — add provider blocks for each cloud (AWS, Azure, GCP). Each configures how Terraform interacts with that cloud.<br>
+    <strong style="color:#e2e8f0;">2. Resource Definitions</strong> — define resources per cloud in the same or separate .tf files.<br>
+    <strong style="color:#e2e8f0;">3. Remote State</strong> — use a remote backend (S3, Azure Blob) to share state across team members. Critical for multi-cloud consistency.<br>
+    <strong style="color:#e2e8f0;">4. Networking</strong> — configure VPCs, VPNs, or VPC peering for cross-cloud communication.<br>
+    <strong style="color:#e2e8f0;">5. Authentication</strong> — use environment variables or a secrets manager for cloud credentials. <strong>Never hardcode access keys.</strong>
+  </div>
+
+  <div class="section-title">⌨️ Core Terraform Commands</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#fbbf24;">terraform init</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Initialize, download providers</span><br>
+    <span style="color:#fbbf24;">terraform plan</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Preview changes</span><br>
+    <span style="color:#fbbf24;">terraform apply</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Apply changes (provisions infra)</span><br>
+    <span style="color:#fbbf24;">terraform destroy</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Tear down all resources</span><br>
+    <span style="color:#fbbf24;">terraform fmt</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Format .tf files</span><br>
+    <span style="color:#fbbf24;">terraform validate</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Validate configuration syntax</span><br>
+    <span style="color:#fbbf24;">terraform state list</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# List all managed resources</span>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🏗️</div>
+    <div>
+      <div class="loop-title">IaC = Infrastructure as Code. Code → Plan → Apply → State</div>
+      <div class="loop-desc">Infra changes go through <strong style="color:#fb923c;">code review in Git PRs</strong> — same as app code. Full audit trail. Reproducible: one command recreates any environment. Never click the AWS console for critical infra.</div>
+    </div>
+  </div>
+
+  <div class="section-title">⚔️ Terraform vs Ansible — They're Teammates, Not Rivals</div>
+  <div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:4px;padding:13px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.6;">
+    <strong style="color:#fbbf24;">The golden rule:</strong> Use <strong style="color:#e2e8f0;">Terraform to build the house</strong>. Use <strong style="color:#e2e8f0;">Ansible to arrange the furniture</strong>.
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;font-size:13px;margin-bottom:10px;">🏗️ Terraform — Provisioning</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        <strong style="color:#e2e8f0;">Best for:</strong> Managing the lifecycle of infrastructure itself — VPCs, EC2 instances, S3 buckets, RDS, load balancers.<br><br>
+        <strong style="color:#e2e8f0;">Declarative:</strong> You describe the end state ("I want 5 servers"). Terraform figures out how.<br><br>
+        <strong style="color:#e2e8f0;">State-aware:</strong> Keeps a .tfstate file. Knows exactly what exists. If you manually delete something, Terraform sees the "drift" and recreates it.<br><br>
+        <strong style="color:#e2e8f0;">Immutable:</strong> Change a server's size? Terraform destroys the old one and creates a new one. Prevents config drift.
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;font-size:13px;margin-bottom:10px;">⚙️ Ansible — Configuration Management</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        <strong style="color:#e2e8f0;">Best for:</strong> Configuring the software <em>inside</em> servers once they exist — installing Nginx, updating packages, managing users, deploying app code.<br><br>
+        <strong style="color:#e2e8f0;">Procedural:</strong> Follows a playbook step-by-step. Like running shell commands across 100 servers at once.<br><br>
+        <strong style="color:#e2e8f0;">Stateless:</strong> Doesn't track infra in a database. Logs into target, checks state, applies changes. If you delete a server, Ansible won't know until it tries to reach it.<br><br>
+        <strong style="color:#e2e8f0;">Agentless:</strong> No agent to install on target servers. Just SSH.
+      </div>
+    </div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;width:160px;">QUESTION</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">TERRAFORM</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">ANSIBLE</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">What does it manage?</td><td style="padding:7px 12px;color:#94a3b8;">Infrastructure (servers, networks)</td><td style="padding:7px 12px;color:#94a3b8;">Software inside servers</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">Style</td><td style="padding:7px 12px;color:#94a3b8;">Declarative (describe end state)</td><td style="padding:7px 12px;color:#94a3b8;">Procedural (step-by-step)</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">State tracking</td><td style="padding:7px 12px;color:#94a3b8;">Yes — .tfstate file</td><td style="padding:7px 12px;color:#94a3b8;">No — stateless</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">Infra model</td><td style="padding:7px 12px;color:#94a3b8;">Immutable (destroy + recreate)</td><td style="padding:7px 12px;color:#94a3b8;">Mutable (update in place)</td></tr>
+        <tr><td style="padding:7px 12px;color:#e2e8f0;">Agent needed?</td><td style="padding:7px 12px;color:#94a3b8;">No</td><td style="padding:7px 12px;color:#94a3b8;">No (agentless via SSH)</td></tr>
+      </tbody>
+    </table>
+  </div>
+

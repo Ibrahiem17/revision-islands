@@ -1,0 +1,86 @@
+
+
+  <div class="section-title">📏 DORA Metrics — How Fast Are You Really?</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:14px;font-size:11px;color:#94a3b8;line-height:1.6;">
+    The <strong style="color:#e2e8f0;">DORA Research Program</strong> identified 4 key metrics that predict software delivery performance and organizational success. These are asked in senior DevOps interviews.
+  </div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(34,197,94,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#22c55e;font-weight:700;text-align:left;width:200px;">METRIC</th><th style="padding:8px 12px;color:#22c55e;font-weight:700;text-align:left;">WHAT IT MEASURES</th><th style="padding:8px 12px;color:#22c55e;font-weight:700;text-align:left;width:150px;">ELITE PERFORMERS</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Deployment Frequency</td><td style="padding:7px 12px;color:#94a3b8;">How often code is deployed to production</td><td style="padding:7px 12px;color:#22c55e;">Multiple times per day</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Lead Time for Changes</td><td style="padding:7px 12px;color:#94a3b8;">Commit → production time</td><td style="padding:7px 12px;color:#22c55e;">Less than 1 hour</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">MTTR (Mean Time to Restore)</td><td style="padding:7px 12px;color:#94a3b8;">How fast you recover from incidents</td><td style="padding:7px 12px;color:#22c55e;">Less than 1 hour</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;">Change Failure Rate</td><td style="padding:7px 12px;color:#94a3b8;">% of deployments causing production failure</td><td style="padding:7px 12px;color:#22c55e;">0–15%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🔄 GitOps — Declarative Delivery</div>
+  <div class="concept" style="--cc:#22c55e;margin-bottom:16px;">
+    <div class="concept-head"><span class="concept-icon">🌿</span><span class="concept-title">GitOps</span><span class="concept-subtitle">ArgoCD / FluxCD</span></div>
+    <div class="concept-body">
+      GitOps is an operating model where <strong>Git is the single source of truth</strong> for both application code AND infrastructure configuration. Everything is in Git — including Kubernetes YAML manifests.<br><br>
+      A GitOps tool (like <strong>ArgoCD</strong> or <strong>FluxCD</strong>) continuously watches your Git repo. The moment you merge a change to the deployment manifests, the tool automatically syncs the Kubernetes cluster to match. If someone manually changes something in the cluster (drift), the tool detects it and reconciles back to what's in Git.<br><br>
+      <strong>Pull-based model:</strong> Instead of your CI pipeline pushing to K8s, the cluster <em>pulls</em> its desired state from Git. More secure — no external write access to your cluster needed.
+    </div>
+    <div class="pill-row">
+      <span class="pill">Git = single source of truth</span><span class="pill">auto-sync to cluster</span><span class="pill">drift detection + reconciliation</span><span class="pill">pull-based = more secure</span>
+    </div>
+  </div>
+
+  <div class="section-title">🔐 Secrets Management</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#f43f5e;"><div class="cmd-head"><span class="cmd-label" style="color:#f43f5e;background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.2);">NEVER</span><span class="cmd-tag">hardcoded</span></div><div class="cmd-desc">Never store secrets (API keys, DB passwords, tokens) in code or Git. Even in private repos. Attackers scan GitHub constantly. One leaked secret = full breach.<br><br><code>DB_PASSWORD="abc123"</code> in code = fired in prod.</div></div>
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">AWS Secrets Manager</span><span class="cmd-tag">cloud native</span></div><div class="cmd-desc">Store secrets in AWS. EC2/Lambda fetches them at runtime via SDK. Automatic rotation. Audit trail. IAM controls who can access which secret.</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">HashiCorp Vault</span><span class="cmd-tag">multi-cloud</span></div><div class="cmd-desc">Cloud-agnostic secrets engine. Dynamic secrets (generates temp DB creds). Encryption as a service. Works across AWS, Azure, GCP, and on-prem.</div></div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">K8s Sealed Secrets</span><span class="cmd-tag">kubernetes</span></div><div class="cmd-desc">Encrypt K8s Secrets so they're safe to commit to Git. Only the cluster can decrypt them. Solves "how do I store K8s secrets in Git safely?"</div></div>
+    <div class="cmd-card" style="border-left-color:#eab308;"><div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">CI/CD Secrets</span><span class="cmd-tag">pipelines</span></div><div class="cmd-desc">GitHub Actions: store in <code>Settings → Secrets</code>. Access as <code>${{ secrets.MY_SECRET }}</code>. Never echo them — GitHub masks automatically.</div></div>
+  </div>
+
+  <div class="section-title">☸️ Kubernetes Probes — Health Checks</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(129,140,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;width:150px;">PROBE</th><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;">PURPOSE</th><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;">WHAT HAPPENS ON FAILURE</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">livenessProbe</td><td style="padding:7px 12px;color:#94a3b8;">Is the container still alive? Detects deadlocks or stuck states.</td><td style="padding:7px 12px;color:#f43f5e;">Container is restarted</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">readinessProbe</td><td style="padding:7px 12px;color:#94a3b8;">Is the container ready to accept traffic? Warm-up time after start.</td><td style="padding:7px 12px;color:#f97316;">Pod removed from Service endpoints (no traffic sent)</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">startupProbe</td><td style="padding:7px 12px;color:#94a3b8;">For slow-starting apps. Disables liveness + readiness until startup succeeds.</td><td style="padding:7px 12px;color:#f43f5e;">Container restarted if startup takes too long</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.9;overflow-x:auto;">
+    <span style="color:#64748b;"># In your deployment.yaml:</span><br>
+    <span style="color:#38bdf8;">livenessProbe</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">httpGet</span><span style="color:#e2e8f0;">: { path: /health, port: 3000 }</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">initialDelaySeconds</span><span style="color:#e2e8f0;">: 10 &nbsp;</span><span style="color:#475569;"># wait 10s before first check</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">periodSeconds</span><span style="color:#e2e8f0;">: 5 &nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#475569;"># check every 5s</span><br>
+    <span style="color:#38bdf8;">readinessProbe</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span class="stage-cmd" style="color:#38bdf8;">httpGet</span><span style="color:#e2e8f0;">: { path: /ready, port: 3000 }</span>
+  </div>
+
+  <div class="section-title">☸️ Kubernetes RBAC</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#e2e8f0;">Role-Based Access Control</strong> — controls who can do what in Kubernetes. Same least-privilege principle as IAM.<br><br>
+    <strong style="color:#fbbf24;">Role</strong> — defines permissions within a namespace (e.g., "can get/list pods in namespace production").<br>
+    <strong style="color:#fbbf24;">ClusterRole</strong> — same as Role but cluster-wide (all namespaces).<br>
+    <strong style="color:#fbbf24;">RoleBinding</strong> — attaches a Role to a User/ServiceAccount/Group.<br>
+    <strong style="color:#fbbf24;">ServiceAccount</strong> — identity for pods. Pods can access the K8s API using their ServiceAccount's permissions (like IAM roles for pods).
+  </div>
+
+  <div class="section-title">💰 Cost Optimization in Cloud</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">Right-sizing</span><span class="cmd-tag">instance size</span></div><div class="cmd-desc">Match instance size to actual workload. <code>t3.micro</code> for low-traffic apps vs <code>m5.2xlarge</code> for compute-heavy. Use CloudWatch to see actual CPU/RAM utilization, then downsize.</div></div>
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">Spot Instances</span><span class="cmd-tag">up to 90% cheaper</span></div><div class="cmd-desc">AWS sells spare capacity at huge discounts (up to 90%). Can be reclaimed with 2-min warning. Use for batch jobs, CI/CD runners, non-critical workers that can handle interruption.</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">Reserved Instances</span><span class="cmd-tag">1-3 year commit</span></div><div class="cmd-desc">Commit to 1 or 3 years of usage → up to 72% discount. Use for stable, predictable baseline workloads (web servers, databases that always run).</div></div>
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">Auto Scaling</span><span class="cmd-tag">scale to zero</span></div><div class="cmd-desc">Scale down to minimum at night/weekends for dev/staging environments. HPA in K8s scales pods. ASG scales EC2 nodes. Only pay for what you use.</div></div>
+  </div>
+
+  <div class="section-title">🔄 CI/CD Patterns — Advanced</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">Feature Flags</span><span class="cmd-tag">trunk-based</span></div><div class="cmd-desc">Ship code to production behind a flag that's turned off. Enable for specific users/% traffic. Enables trunk-based development — you can merge half-done features safely.</div></div>
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">Error Budget</span><span class="cmd-tag">SRE concept</span></div><div class="cmd-desc">If SLO = 99.9% uptime, your error budget = 0.1% (8.7 hours/year). If you exhaust your budget, you freeze new features and focus on reliability. Balances velocity and stability.</div></div>
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">Immutable Infra</span><span class="cmd-tag">replace not patch</span></div><div class="cmd-desc">Never patch a running server. Build a new one from scratch, deploy, destroy the old one. Eliminates configuration drift. Every server is identical to the last known good state.</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">12-Factor App</span><span class="cmd-tag">cloud-native design</span></div><div class="cmd-desc">Methodology for cloud-native apps. Key factors: store config in env vars, treat logs as streams, stateless processes, explicit dependencies. Enables easier containerization and scaling.</div></div>
+  </div>
+

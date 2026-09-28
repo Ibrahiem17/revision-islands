@@ -1,0 +1,43 @@
+
+  <div class="analogy">
+    <div><div class="analogy-label">📊 Monitoring vs Logging</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📈</span><div class="analogy-text"><strong>Monitoring = Vitals</strong><br>CPU, memory, RPS, latency</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📋</span><div class="analogy-text"><strong>Logging = Diary</strong><br>What happened and when</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🚨</span><div class="analogy-text"><strong>Alerting = Pager</strong><br>Tell you when things break</div></div>
+  </div>
+  <div class="section-title">📊 Monitoring vs Logging</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:6px;">📈 Monitoring</div>
+      Collecting data about <strong style="color:#e2e8f0;">current performance and stability</strong>. Is the system healthy right now? Is CPU at 90%? Are response times spiking?<br><br>• Infrastructure monitoring (CPU, RAM, disk, network)<br>• Application monitoring (error rates, latency, throughput)<br>• User experience monitoring (Apdex score, page load times)
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:6px;">📋 Logging</div>
+      Collecting the <strong style="color:#e2e8f0;">historical record</strong> of what happened. What did the app do at 2:17 AM? What error did user X see?<br><br>• Log aggregation (ELK stack, Loki, CloudWatch Logs)<br>• Security analytics (who accessed what)<br>• Application errors and slow queries
+    </div>
+  </div>
+  <div class="section-title">🔥 Prometheus Deep Dive</div>
+  <div class="concept" style="--cc:#f97316;margin-bottom:16px;">
+    <div class="concept-head"><span class="concept-icon">📡</span><span class="concept-title">Prometheus</span><span class="concept-subtitle">Metrics + Alerting</span></div>
+    <div class="concept-body"><strong>Pull-based:</strong> Prometheus scrapes metrics from targets on a schedule. Each target exposes a <code>/metrics</code> endpoint. Prometheus pulls every 15s.<br><br><strong>Time-series database:</strong> Stores all metrics as timestamped values. Query "what was CPU at 3 AM last Tuesday?"<br><br><strong>PromQL:</strong> Powerful query language. <code>rate(http_requests_total[5m])</code> = request rate over 5 mins.<br><br><strong>Alertmanager:</strong> Routes alerts to Slack/PagerDuty/email. Deduplicates and silences.</div>
+    <div class="pill-row"><span class="pill">pull-based scraping</span><span class="pill">time-series DB</span><span class="pill">PromQL</span><span class="pill">/metrics endpoint</span><span class="pill">Alertmanager</span></div>
+  </div>
+  <div class="section-title">📊 Grafana</div>
+  <div class="concept" style="--cc:#f97316;margin-bottom:20px;">
+    <div class="concept-head"><span class="concept-icon">📊</span><span class="concept-title">Grafana</span><span class="concept-subtitle">Visualization + Dashboards</span></div>
+    <div class="concept-body">Connects to Prometheus (and 50+ other data sources) and turns raw data into dashboards. Drag-and-drop panels: graphs, gauges, heatmaps. Alert rules: "if error rate &gt; 1%, notify Slack." Variables for dynamic dashboards (switch env: dev/staging/prod). Always deployed with Prometheus.</div>
+    <div class="pill-row"><span class="pill">50+ data sources</span><span class="pill">dashboards + panels</span><span class="pill">alerting</span><span class="pill">paired with Prometheus</span></div>
+  </div>
+  <div class="section-title">🛡️ Infrastructure Security Layers</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#f43f5e;"><div class="cmd-head"><span class="cmd-label" style="color:#f43f5e;background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.2);">Network Security</span><span class="cmd-tag">perimeter</span></div><div class="cmd-desc">Firewalls, VPNs, network segmentation, DDoS protection.</div></div>
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">Cloud Security</span><span class="cmd-tag">AWS/Azure</span></div><div class="cmd-desc">IAM least privilege, encryption at rest/transit, Security Groups, NACLs, KMS key management.</div></div>
+    <div class="cmd-card" style="border-left-color:#eab308;"><div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">Host Security</span><span class="cmd-tag">server level</span></div><div class="cmd-desc">OS hardening, patch management, host-based firewalls, run apps as non-root.</div></div>
+  </div>
+  <div class="section-title">🚦 Rate Limiting — Two Algorithms</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;"><div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:5px;">🪣 Token Bucket</div>Fixed tokens replenished at fixed rate. Each request consumes a token. Empty bucket = rejected. <strong style="color:#e2e8f0;">Allows bursts</strong> up to bucket size.</div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;"><div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:5px;">💧 Leaky Bucket</div>Requests leak out at a <strong style="color:#e2e8f0;">constant rate</strong>. Bucket overflows = dropped. Smooths bursts — output rate is always constant.</div>
+  </div>

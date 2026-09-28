@@ -1,0 +1,17 @@
+{
+  "name": "revision-islands",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "manifest": "node scripts/build-manifest.mjs",
+    "predev": "npm run manifest",
+    "dev": "vite",
+    "prebuild": "npm run manifest",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1"
+  }
+}

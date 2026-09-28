@@ -972,9 +972,6 @@
   </div>
 </div>
 
-<script src="../js/data.js"></script>
-<script src="../js/render.js"></script>
-<script src="../js/mascot.js"></script>
 <script>
   function showTab(name, el) {
     const panel = document.getElementById('tab-' + name);
@@ -989,14 +986,6 @@
     qEl.closest('.qa-item').classList.toggle('open');
   }
 
-  Revision.renderPage("database", {
-    contentEl: document.getElementById("content"),
-    searchEl: document.getElementById("search"),
-    progressFillEl: document.getElementById("progress-fill"),
-    progressTextEl: document.getElementById("progress-text")
-  });
-
-  Mascot.init("database");
 
   /* ══════════════════════════════════════════════════════════════════
      SQL PLAYGROUND — the database "compiler". Same load-then-run pattern
@@ -1440,5 +1429,6 @@
     root.querySelector('.quiz-close-btn').style.display = 'none';
   }
 </script>
+<script type="module" src="/src/topics/database.js"></script>
 </body>
 </html>

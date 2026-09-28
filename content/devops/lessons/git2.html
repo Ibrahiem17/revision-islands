@@ -1,0 +1,86 @@
+
+
+  <div class="section-title">🌿 Git Topics Interviewers Love to Test</div>
+
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-bottom:20px;">
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">git cherry-pick</span><span class="cmd-tag">copy 1 commit</span></div>
+      <div class="cmd-desc">Apply a specific commit from another branch to your current branch — without merging the whole branch. Used to backport a bug fix from main to a release branch without pulling everything else in.</div>
+      <div class="cmd-ex">$ git cherry-pick a3f9d2c
+$ git cherry-pick a3f9..b1e8  # range</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">git rebase -i HEAD~N</span><span class="cmd-tag">squash/reorder</span></div>
+      <div class="cmd-desc">Interactive rebase — lets you squash, reorder, edit, or drop commits before pushing. Use to clean up messy WIP commits into one clean commit before opening a PR. Never rebase shared branches.</div>
+      <div class="cmd-ex">$ git rebase -i HEAD~5
+# change 'pick' → 'squash' to combine</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">git tag</span><span class="cmd-tag">releases</span></div>
+      <div class="cmd-desc">Mark specific commits as releases. <code>git tag v2.0.0</code> = lightweight tag. <code>git tag -a v2.0.0 -m "msg"</code> = annotated (includes tagger, date, message — use this). Push tags separately: <code>git push origin v2.0.0</code>.</div>
+      <div class="cmd-ex">$ git tag -a v2.0.0 -m "Release 2.0.0"
+$ git push origin --tags</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">git blame</span><span class="cmd-tag">who wrote it</span></div>
+      <div class="cmd-desc">Shows who last modified each line of a file, with the commit hash and date. Used to find who introduced a bug or who to ask about a piece of code. Not for blame — for context.</div>
+      <div class="cmd-ex">$ git blame src/auth.js
+# → shows author + commit per line</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">git diff</span><span class="cmd-tag">see changes</span></div>
+      <div class="cmd-desc"><code>git diff</code> = unstaged changes vs last commit. <code>git diff --staged</code> = staged changes. <code>git diff main..feature</code> = what's different between branches. Useful before every commit to review what you're shipping.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">git clean</span><span class="cmd-tag">remove untracked</span></div>
+      <div class="cmd-desc">Remove untracked files and directories. <code>git clean -fd</code> = force-remove files and directories. Use when you want a completely clean working directory. <strong>Cannot be undone.</strong></div>
+      <div class="cmd-ex">$ git clean -n   # dry run (preview)
+$ git clean -fd  # actually delete ⚠️</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">.gitignore</span><span class="cmd-tag">exclude files</span></div>
+      <div class="cmd-desc">Tells Git which files/directories to never track. Essential patterns: <code>node_modules/</code>, <code>.env</code>, <code>*.log</code>, <code>dist/</code>, <code>.terraform/</code>, <code>*.tfstate</code>. Add <code>.gitignore</code> as the first commit in any repo.</div>
+      <div class="cmd-ex">.env          # never commit secrets!
+node_modules/
+*.log
+.terraform/</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-head"><span class="cmd-label">Monorepo vs Polyrepo</span><span class="cmd-tag">repo strategy</span></div>
+      <div class="cmd-desc"><strong>Monorepo</strong> — all services in one Git repo. Easier cross-service refactoring, shared tooling. Used by Google, Meta. <strong>Polyrepo</strong> — each service in its own repo. Full independence, simpler pipelines per service. Most common in smaller orgs.</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">⚙️ Conventional Commits — The Standard Format</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
+    <span style="color:#64748b;"># Format: type(scope): description</span><br>
+    <span style="color:#fbbf24;">feat(auth): add JWT token refresh</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# new feature</span><br>
+    <span style="color:#fbbf24;">fix(api): handle null user gracefully</span><span style="color:#475569;"> &nbsp;&nbsp;# bug fix</span><br>
+    <span style="color:#fbbf24;">chore(deps): bump axios to 1.4.0</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# dependency update, no code change</span><br>
+    <span style="color:#fbbf24;">docs(readme): add deployment guide</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# documentation only</span><br>
+    <span style="color:#fbbf24;">refactor(db): extract query builder</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# no behavior change</span><br>
+    <span style="color:#fbbf24;">ci(pipeline): add staging deploy step</span><span style="color:#475569;"> &nbsp;&nbsp;# CI/CD changes</span><br>
+    <span style="color:#fbbf24;">BREAKING CHANGE: remove v1 API</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# triggers major version bump</span>
+  </div>
+
+  <div class="section-title">🌿 Git Workflows — Which to Recommend in an Interview</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(34,197,94,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#22c55e;font-weight:700;text-align:left;width:160px;">WORKFLOW</th><th style="padding:8px 12px;color:#22c55e;font-weight:700;text-align:left;">WHEN TO USE</th><th style="padding:8px 12px;color:#22c55e;font-weight:700;text-align:left;width:160px;">BEST FOR</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">Trunk-Based</td><td style="padding:7px 12px;color:#94a3b8;">All devs commit to main (or very short-lived branches). CI must be fast + reliable. Feature flags hide incomplete work.</td><td style="padding:7px 12px;color:#64748b;">SaaS, CD pipelines, high frequency</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;">GitHub Flow</td><td style="padding:7px 12px;color:#94a3b8;">Feature branch → PR → merge to main → deploy. Simpler than Git Flow. One long-lived branch.</td><td style="padding:7px 12px;color:#64748b;">Most teams, continuous delivery</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;">Git Flow</td><td style="padding:7px 12px;color:#94a3b8;">main + develop + feature/release/hotfix branches. More ceremony, more control. Good for versioned software.</td><td style="padding:7px 12px;color:#64748b;">Mobile apps, packaged releases</td></tr>
+      </tbody>
+    </table>
+  </div>
+

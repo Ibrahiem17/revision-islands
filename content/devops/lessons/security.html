@@ -1,0 +1,53 @@
+
+
+  <div class="section-title">🔒 DevSecOps — Security Baked Into the Pipeline</div>
+  <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.15);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    DevSecOps = security integrated <strong style="color:#e2e8f0;">throughout</strong> the development and deployment process — not bolted on at the end. Security at every stage, automated in the pipeline.
+  </div>
+
+  <div class="lifecycle" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+    <div class="lc-card" style="--lc:#f43f5e;">
+      <div class="lc-head"><span class="lc-icon">⬅️</span><span class="lc-name">Shift Left Security</span><span class="lc-tool">SAST / Lint</span></div>
+      <div class="lc-desc">Perform security checks early — static code analysis, dependency scanning, secret detection during the build phase. Catch vulnerabilities at commit, not in production.</div>
+    </div>
+    <div class="lc-card" style="--lc:#f97316;">
+      <div class="lc-head"><span class="lc-icon">🤖</span><span class="lc-name">Automated Security Tests</span><span class="lc-tool">DAST / Snyk</span></div>
+      <div class="lc-desc">Vulnerability scans and dynamic application security testing (DAST) run automatically in CI. Identify issues before they reach production.</div>
+    </div>
+    <div class="lc-card" style="--lc:#eab308;">
+      <div class="lc-head"><span class="lc-icon">📊</span><span class="lc-name">Continuous Monitoring</span><span class="lc-tool">Prometheus / Grafana</span></div>
+      <div class="lc-desc">Monitor pipeline and deployed apps for security incidents. Use specialized security monitoring tools alongside Prometheus/Grafana.</div>
+    </div>
+    <div class="lc-card" style="--lc:#22c55e;">
+      <div class="lc-head"><span class="lc-icon">🏗️</span><span class="lc-name">IaC Security Scanning</span><span class="lc-tool">Checkov / tfsec</span></div>
+      <div class="lc-desc">Scan Terraform/CloudFormation templates for misconfigurations and vulnerabilities (like hardcoded passwords, overly permissive policies) before they're applied.</div>
+    </div>
+    <div class="lc-card" style="--lc:#38bdf8;">
+      <div class="lc-head"><span class="lc-icon">🔑</span><span class="lc-name">Access Control</span><span class="lc-tool">RBAC / IAM</span></div>
+      <div class="lc-desc">Strict access controls using RBAC (Role-Based Access Control) or ABAC. Enforce least privilege principle across the entire pipeline — humans and services.</div>
+    </div>
+    <div class="lc-card" style="--lc:#818cf8;">
+      <div class="lc-head"><span class="lc-icon">🚨</span><span class="lc-name">Incident Response</span><span class="lc-tool">PagerDuty / Alerts</span></div>
+      <div class="lc-desc">Clear incident response plan integrated into the pipeline. Security alerts fire automatically. Quickly address potential breaches. Runbooks for common scenarios.</div>
+    </div>
+  </div>
+
+  <div class="section-title">🔀 Reverse Proxy — Nginx</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    A <strong style="color:#e2e8f0;">reverse proxy</strong> sits between clients and backend servers, forwarding requests to the appropriate server and returning responses to the client.<br><br>
+    <strong style="color:#e2e8f0;">What it provides:</strong><br>
+    • <strong>Load balancing</strong> — distribute requests across backend servers<br>
+    • <strong>SSL termination</strong> — handle HTTPS at the proxy, HTTP behind it<br>
+    • <strong>Caching</strong> — serve cached responses without hitting backends<br>
+    • <strong>Security</strong> — hide backend server IPs, rate limiting, WAF<br><br>
+    <strong style="color:#e2e8f0;">Example (Nginx):</strong> Web app on 3 backend servers. Nginx distributes incoming HTTP requests evenly. If one server fails, Nginx routes around it. SSL cert lives on Nginx — backends don't need it.
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🔒</div>
+    <div>
+      <div class="loop-title">DevSecOps = Shift Left + Automate + Monitor</div>
+      <div class="loop-desc">Security isn't a final gate — it's woven into every stage. Secret detection at commit <span class="loop-arrow">→</span> vulnerability scan in CI <span class="loop-arrow">→</span> IaC scan before apply <span class="loop-arrow">→</span> RBAC in prod <span class="loop-arrow">→</span> security monitoring alerts. <strong style="color:#fb923c;">Never hardcode secrets anywhere — ever.</strong></div>
+    </div>
+  </div>
+

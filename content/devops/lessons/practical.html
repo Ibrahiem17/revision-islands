@@ -1,0 +1,1772 @@
+
+
+<div class="analogy">
+  <div><div class="analogy-label">🧪 Practical Use — Learn by Doing</div></div>
+  <div class="analogy-item"><span class="analogy-icon">📝</span><div class="analogy-text"><strong>See the file</strong><br>Know exactly what to write</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>Run the command</strong><br>Copy-paste ready</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">✅</span><div class="analogy-text"><strong>See the output</strong><br>Know it worked</div></div>
+</div>
+
+<div class="pu-tabs">
+  <div class="pu-tab pu-active" onclick="showPU('docker',this)">🐳 Docker</div>
+  <div class="pu-tab" onclick="showPU('k8s',this)">☸️ Kubernetes</div>
+  <div class="pu-tab" onclick="showPU('gha',this)">⚡ GitHub Actions</div>
+  <div class="pu-tab" onclick="showPU('terraform',this)">🏗️ Terraform</div>
+  <div class="pu-tab" onclick="showPU('linux',this)">🐧 Linux</div>
+  <div class="pu-tab" onclick="showPU('gitpu',this)">🌿 Git</div>
+</div>
+
+<!-- ══════════════════════════ DOCKER ══════════════════════════ -->
+<div class="pu-panel pu-active" id="pu-docker">
+<div class="section-title">🐳 Docker — Practical Use Cases</div>
+
+<!-- D1 -->
+<div class="pu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Build a Docker Image from a Node.js App</div><div class="pu-desc">Package your app into a portable image that runs anywhere</div></div>
+    <div class="pu-badge">Dockerfile</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./Dockerfile</div>
+        <div class="pu-code"><span class="c"># Use official Node.js 20 base image</span>
+<span class="k">FROM</span> <span class="s">node:20-alpine</span>
+
+<span class="c"># Set working directory inside container</span>
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+
+<span class="c"># Copy package files and install dependencies FIRST (caching!)</span>
+<span class="k">COPY</span> package*.json ./
+<span class="k">RUN</span> npm install
+
+<span class="c"># Copy the rest of the source code</span>
+<span class="k">COPY</span> . .
+
+<span class="c"># Expose the port your app listens on</span>
+<span class="k">EXPOSE</span> <span class="num">3000</span>
+
+<span class="c"># Command to start the app</span>
+<span class="k">CMD</span> [<span class="s">"node"</span>, <span class="s">"index.js"</span>]</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./.dockerignore</div>
+        <div class="pu-code">node_modules
+.git
+.env
+*.log</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Build the image — tag it as myapp:1.0</span>
+docker build <span class="v">-t</span> myapp:<span class="num">1.0</span> .
+
+<span class="c"># List images to confirm it was created</span>
+docker images</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="dim">[1/4] FROM docker.io/library/node:20-alpine</span>
+<span class="dim">[2/4] WORKDIR /app</span>
+<span class="dim">[3/4] RUN npm install</span>
+<span class="ok">[4/4] COPY . .</span>
+<span class="ok"> => exporting to image</span>
+<span class="ok"> => naming to docker.io/library/myapp:1.0</span>
+
+REPOSITORY   TAG   IMAGE ID       SIZE
+<span class="hi">myapp        1.0   a3f8c91b7e2d   185MB</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">COPY package*.json + RUN npm install <strong>before</strong> COPY . . — Docker caches each layer. If you change only app code, npm install layer is reused → <strong>much faster rebuilds</strong>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D2 -->
+<div class="pu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Run a Container with Port Mapping & Env Vars</div><div class="pu-desc">Start your image as a running container, map ports, inject config</div></div>
+    <div class="pu-badge">docker run</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Run container:</span>
+<span class="c">#   -d         = detached (background)</span>
+<span class="c">#   --name     = give it a name</span>
+<span class="c">#   -p 8080:3000 = host:container port map</span>
+<span class="c">#   -e         = inject environment variable</span>
+docker run <span class="v">-d</span>   <span class="v">--name</span> my-api   <span class="v">-p</span> <span class="num">8080</span>:<span class="num">3000</span>   <span class="v">-e</span> NODE_ENV=production   <span class="v">-e</span> PORT=<span class="num">3000</span>   myapp:<span class="num">1.0</span>
+
+<span class="c"># Check it is running</span>
+docker ps
+
+<span class="c"># View live logs</span>
+docker logs <span class="v">-f</span> my-api
+
+<span class="c"># Stop the container</span>
+docker stop my-api</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">CONTAINER ID   NAME     STATUS          PORTS
+<span class="hi">d7a3b891f2c1   my-api   Up 3 seconds    0.0.0.0:8080->3000/tcp</span>
+
+<span class="ok">Server listening on port 3000</span>
+<span class="ok">Connected to DB</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box"><strong>-p 8080:3000</strong> means "on my laptop, go to localhost:8080 — it forwards to port 3000 inside the container". The container stays isolated; you only open the ports you need.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D3 -->
+<div class="pu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Multi-Container App with Docker Compose</div><div class="pu-desc">Run Node.js API + PostgreSQL together with one command</div></div>
+    <div class="pu-badge">compose</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./docker-compose.yml</div>
+        <div class="pu-code"><span class="k">version</span>: <span class="s">'3.8'</span>
+
+<span class="k">services</span>:
+  <span class="fn">api</span>:
+    <span class="k">build</span>: .                          <span class="c"># builds from your Dockerfile</span>
+    <span class="k">ports</span>:
+      - <span class="s">"8080:3000"</span>
+    <span class="k">environment</span>:
+      - DATABASE_URL=postgres://postgres:secret@db:5432/mydb
+    <span class="k">depends_on</span>:
+      - db                            <span class="c"># wait for db to start first</span>
+    <span class="k">volumes</span>:
+      - .:/app                        <span class="c"># live-reload: sync code into container</span>
+      - /app/node_modules             <span class="c"># but DON'T sync node_modules</span>
+
+  <span class="fn">db</span>:
+    <span class="k">image</span>: <span class="s">postgres:16-alpine</span>
+    <span class="k">environment</span>:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=mydb
+    <span class="k">volumes</span>:
+      - pg_data:/var/lib/postgresql/data  <span class="c"># persist DB data</span>
+
+<span class="k">volumes</span>:
+  pg_data:</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Start everything</span>
+docker compose up <span class="v">-d</span>
+
+<span class="c"># See what's running</span>
+docker compose ps
+
+<span class="c"># Tear down (keeps volumes)</span>
+docker compose down
+
+<span class="c"># Tear down AND delete data volumes</span>
+docker compose down <span class="v">-v</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">✔ Container myapp-db-1   Started</span>
+<span class="ok">✔ Container myapp-api-1  Started</span>
+
+NAME           SERVICE   STATUS    PORTS
+<span class="hi">myapp-api-1    api       running   0.0.0.0:8080->3000/tcp</span>
+<span class="hi">myapp-db-1     db        running   5432/tcp</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D4 -->
+<div class="pu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Push Image to Docker Hub (Registry)</div><div class="pu-desc">Publish your image so any server or CI pipeline can pull it</div></div>
+    <div class="pu-badge">push / pull</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># 1. Login to Docker Hub</span>
+docker login
+<span class="c">#    → prompts for username + password/token</span>
+
+<span class="c"># 2. Tag the image with your Docker Hub username</span>
+<span class="c">#    format: username/repo:tag</span>
+docker tag myapp:<span class="num">1.0</span> ibrahiem17/myapp:<span class="num">1.0</span>
+docker tag myapp:<span class="num">1.0</span> ibrahiem17/myapp:latest
+
+<span class="c"># 3. Push both tags</span>
+docker push ibrahiem17/myapp:<span class="num">1.0</span>
+docker push ibrahiem17/myapp:latest
+
+<span class="c"># 4. On any other machine — pull and run it</span>
+docker pull ibrahiem17/myapp:<span class="num">1.0</span>
+docker run <span class="v">-p</span> <span class="num">8080</span>:<span class="num">3000</span> ibrahiem17/myapp:<span class="num">1.0</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">The push refers to repository [docker.io/ibrahiem17/myapp]
+<span class="hi">1.0: digest: sha256:a3f8...7e2d size: 1234</span>
+<span class="ok">latest: digest: sha256:a3f8...7e2d size: 1234</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Always push <strong>both a version tag (1.0) and latest</strong>. Kubernetes manifests can pin to 1.0 for stability. CI pipelines use latest for dev builds. Never use only latest in production — you can't roll back a tag that moves.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D5 -->
+<div class="pu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Multi-Stage Build — Shrink Production Image</div><div class="pu-desc">Use a builder stage; copy only the compiled output into a tiny final image</div></div>
+    <div class="pu-badge">multi-stage</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./Dockerfile</div>
+        <div class="pu-code"><span class="c"># ── STAGE 1: Builder (has all dev tools + source) ──────────</span>
+<span class="k">FROM</span> <span class="s">node:20-alpine</span> <span class="k">AS</span> builder
+<span class="k">WORKDIR</span> /app
+<span class="k">COPY</span> package*.json ./
+<span class="k">RUN</span> npm ci                   <span class="c"># clean install (faster than npm install in CI)</span>
+<span class="k">COPY</span> . .
+<span class="k">RUN</span> npm run build            <span class="c"># e.g. compiles TypeScript → dist/</span>
+
+<span class="c"># ── STAGE 2: Production (only the dist/ output) ────────────</span>
+<span class="k">FROM</span> <span class="s">node:20-alpine</span> <span class="k">AS</span> production
+<span class="k">WORKDIR</span> /app
+<span class="k">COPY</span> package*.json ./
+<span class="k">RUN</span> npm ci <span class="v">--omit=dev</span>       <span class="c"># no devDependencies in prod</span>
+<span class="k">COPY --from=</span>builder /app/dist ./dist
+<span class="k">EXPOSE</span> <span class="num">3000</span>
+<span class="k">CMD</span> [<span class="s">"node"</span>, <span class="s">"dist/index.js"</span>]</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker build <span class="v">-t</span> myapp:prod .
+docker images | grep myapp</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">REPOSITORY   TAG     IMAGE ID       SIZE
+<span class="hi">myapp        prod    b2d9e44c8f1a   <span class="ok">72MB</span>   </span><span class="dim">← production (tiny!)</span>
+<span class="warn">myapp        1.0     a3f8c91b7e2d   185MB</span>  <span class="dim">← dev (had all tools)</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Builder stage has compilers, test runners, source code — <strong>none of which belongs in production</strong>. Multi-stage build keeps the final image lean (smaller attack surface, faster pulls, cheaper ECR storage).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D6 -->
+<div class="pu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header">
+    <div class="pu-num">06</div>
+    <div><div class="pu-title">Volumes — Persist Data Between Container Restarts</div><div class="pu-desc">Without a volume, all data inside a container dies when it stops</div></div>
+    <div class="pu-badge">volumes</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Create a named volume</span>
+docker volume create pgdata
+
+<span class="c"># Run PostgreSQL mounting the volume to its data dir</span>
+docker run <span class="v">-d</span>   <span class="v">--name</span> mydb   <span class="v">-e</span> POSTGRES_PASSWORD=secret   <span class="v">-v</span> pgdata:/var/lib/postgresql/data   postgres:<span class="num">16</span>-alpine
+
+<span class="c"># Stop and delete the container — data SURVIVES in the volume</span>
+docker stop mydb && docker rm mydb
+
+<span class="c"># Start a NEW container, re-mount same volume — data is back!</span>
+docker run <span class="v">-d</span> <span class="v">--name</span> mydb-v2 <span class="v">-v</span> pgdata:/var/lib/postgresql/data postgres:<span class="num">16</span>
+
+<span class="c"># Inspect where the volume lives on disk</span>
+docker volume inspect pgdata</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">[
+  {
+    <span class="hi">"Name": "pgdata"</span>,
+    <span class="ok">"Mountpoint": "/var/lib/docker/volumes/pgdata/_data"</span>,
+    "Driver": "local"
+  }
+]</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Containers are <strong>ephemeral by design</strong> — their filesystem is wiped on removal. Named volumes are managed by Docker and live outside the container lifecycle. Always use volumes for databases, uploads, and anything that must survive a restart.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pu-docker -->
+
+<!-- ══════════════════════════ KUBERNETES ══════════════════════════ -->
+<div class="pu-panel" id="pu-k8s">
+<div class="section-title">☸️ Kubernetes — Practical Use Cases</div>
+
+<!-- K1 -->
+<div class="pu-card" style="--pu-clr:#818cf8">
+  <div class="pu-card-header">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Deploy an App — Deployment + Service</div><div class="pu-desc">The two files every K8s app needs: a Deployment (runs pods) + Service (exposes them)</div></div>
+    <div class="pu-badge">deploy</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./k8s/deployment.yml</div>
+        <div class="pu-code"><span class="k">apiVersion</span>: apps/v1
+<span class="k">kind</span>: Deployment
+<span class="k">metadata</span>:
+  name: myapp
+  labels:
+    app: myapp
+<span class="k">spec</span>:
+  replicas: <span class="num">3</span>                     <span class="c"># run 3 pods</span>
+  selector:
+    matchLabels:
+      app: myapp
+  <span class="k">template</span>:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: ibrahiem17/myapp:<span class="num">1.0</span>
+        ports:
+        - containerPort: <span class="num">3000</span>
+        resources:
+          requests:
+            cpu: <span class="s">"100m"</span>            <span class="c"># 0.1 CPU core</span>
+            memory: <span class="s">"128Mi"</span>
+          limits:
+            cpu: <span class="s">"500m"</span>            <span class="c"># max 0.5 CPU core</span>
+            memory: <span class="s">"256Mi"</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./k8s/service.yml</div>
+        <div class="pu-code"><span class="k">apiVersion</span>: v1
+<span class="k">kind</span>: Service
+<span class="k">metadata</span>:
+  name: myapp-svc
+<span class="k">spec</span>:
+  selector:
+    app: myapp             <span class="c"># routes traffic to pods with this label</span>
+  ports:
+  - port: <span class="num">80</span>              <span class="c"># service port</span>
+    targetPort: <span class="num">3000</span>      <span class="c"># pod port</span>
+  type: LoadBalancer       <span class="c"># cloud gives you an external IP</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">kubectl apply <span class="v">-f</span> k8s/
+kubectl get deployments
+kubectl get pods
+kubectl get services</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">NAME     READY   UP-TO-DATE   AVAILABLE
+<span class="ok">myapp    3/3     3            3</span>
+
+NAME                     READY   STATUS
+<span class="ok">myapp-79f8b9d5c-4pqx7    1/1     Running</span>
+<span class="ok">myapp-79f8b9d5c-k2nbt    1/1     Running</span>
+<span class="ok">myapp-79f8b9d5c-v9mzj    1/1     Running</span>
+
+NAME        TYPE           EXTERNAL-IP
+<span class="hi">myapp-svc   LoadBalancer   52.14.8.201</span>   <span class="dim">← visit this IP</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- K2 -->
+<div class="pu-card" style="--pu-clr:#818cf8">
+  <div class="pu-card-header">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Scale a Deployment Up & Down</div><div class="pu-desc">Handle traffic spikes in one command — no downtime</div></div>
+    <div class="pu-badge">scale</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Scale up to 10 replicas (traffic spike)</span>
+kubectl scale deployment myapp <span class="v">--replicas=10</span>
+
+<span class="c"># Watch pods come up in real time</span>
+kubectl get pods <span class="v">-w</span>
+
+<span class="c"># Scale back down at night</span>
+kubectl scale deployment myapp <span class="v">--replicas=2</span>
+
+<span class="c"># Or edit the YAML and reapply</span>
+kubectl edit deployment myapp    <span class="c"># opens vi — change replicas: 10</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">deployment.apps/myapp scaled
+
+<span class="dim">myapp-79f8b9d5c-4pqx7   1/1   Running</span>
+<span class="dim">myapp-79f8b9d5c-k2nbt   1/1   Running</span>
+<span class="ok">myapp-79f8b9d5c-abc12   0/1   ContainerCreating</span>
+<span class="ok">myapp-79f8b9d5c-def34   0/1   ContainerCreating</span>
+<span class="ok">myapp-79f8b9d5c-abc12   1/1   Running</span>  <span class="dim">← new pod ready</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- K3 -->
+<div class="pu-card" style="--pu-clr:#818cf8">
+  <div class="pu-card-header">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Rolling Update — Deploy New Version with Zero Downtime</div><div class="pu-desc">K8s replaces pods one-by-one; users never see downtime</div></div>
+    <div class="pu-badge">rolling update</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Update image to v2.0 — triggers rolling update</span>
+kubectl set image deployment/myapp   myapp=ibrahiem17/myapp:<span class="num">2.0</span>
+
+<span class="c"># Watch the rollout progress</span>
+kubectl rollout status deployment/myapp
+
+<span class="c"># View rollout history</span>
+kubectl rollout history deployment/myapp
+
+<span class="c"># Something wrong? Roll back to previous version instantly</span>
+kubectl rollout undo deployment/myapp</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="dim">Waiting for deployment "myapp" rollout to finish...</span>
+<span class="dim">1 out of 3 new replicas have been updated...</span>
+<span class="dim">2 out of 3 new replicas have been updated...</span>
+<span class="ok">deployment "myapp" successfully rolled out</span>
+
+<span class="c"># After undo:</span>
+<span class="ok">deployment.apps/myapp rolled back</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">K8s won't terminate old pods until new ones are <strong>Ready</strong>. If the new pod fails health checks, the rollout pauses automatically — your old pods keep serving traffic. This is why you always define <strong>readinessProbe</strong> in production.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- K4 -->
+<div class="pu-card" style="--pu-clr:#818cf8">
+  <div class="pu-card-header">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">ConfigMap — Inject Config Without Rebuilding Image</div><div class="pu-desc">Separate config from code; change settings without a new deploy</div></div>
+    <div class="pu-badge">configmap</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./k8s/configmap.yml</div>
+        <div class="pu-code"><span class="k">apiVersion</span>: v1
+<span class="k">kind</span>: ConfigMap
+<span class="k">metadata</span>:
+  name: myapp-config
+<span class="k">data</span>:
+  NODE_ENV: production
+  LOG_LEVEL: info
+  MAX_CONNECTIONS: <span class="s">"100"</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./k8s/deployment.yml (updated containers section)</div>
+        <div class="pu-code">containers:
+- name: myapp
+  image: ibrahiem17/myapp:<span class="num">1.0</span>
+  <span class="k">envFrom</span>:
+  - configMapRef:
+      name: myapp-config      <span class="c"># all keys become env vars</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">kubectl apply <span class="v">-f</span> k8s/configmap.yml
+kubectl apply <span class="v">-f</span> k8s/deployment.yml
+kubectl describe configmap myapp-config</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Name: myapp-config
+Data
+====
+<span class="hi">LOG_LEVEL:        info</span>
+<span class="hi">MAX_CONNECTIONS:  100</span>
+<span class="hi">NODE_ENV:         production</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- K5 -->
+<div class="pu-card" style="--pu-clr:#818cf8">
+  <div class="pu-card-header">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Exec into a Running Pod — Debug Live Issues</div><div class="pu-desc">SSH-equivalent for Kubernetes — get a shell inside any running container</div></div>
+    <div class="pu-badge">debug</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Get pod name</span>
+kubectl get pods
+
+<span class="c"># Open a shell INSIDE the pod (like SSH)</span>
+kubectl exec <span class="v">-it</span> myapp-79f8b9d5c-4pqx7 <span class="v">--</span> sh
+
+<span class="c"># Inside the container now — debug freely:</span>
+# ls /app                  check files
+# cat /app/.env            check injected env file
+# curl localhost:3000/health  test the API locally
+# env | grep NODE           check env vars
+# exit                     leave the shell
+
+<span class="c"># Stream live logs from a specific pod</span>
+kubectl logs <span class="v">-f</span> myapp-79f8b9d5c-4pqx7
+
+<span class="c"># Describe pod — see events, errors, resource usage</span>
+kubectl describe pod myapp-79f8b9d5c-4pqx7</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">/app #</span>  <span class="dim">← you are INSIDE the container now</span>
+<span class="ok">$ curl localhost:3000/health</span>
+{"status":"ok","db":"connected"}
+
+<span class="ok">$ env | grep NODE</span>
+NODE_ENV=production</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box"><strong>CrashLoopBackOff?</strong> exec won't work (container keeps dying). Use: <code>kubectl logs myapp-xxx --previous</code> to see logs from the previous crashed instance. Or override the command: <code>kubectl debug pod/myapp-xxx -it --image=busybox</code></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- K6 -->
+<div class="pu-card" style="--pu-clr:#818cf8">
+  <div class="pu-card-header">
+    <div class="pu-num">06</div>
+    <div><div class="pu-title">Secrets — Store Passwords & Tokens Safely</div><div class="pu-desc">Like ConfigMap but base64-encoded; never hardcode secrets in your image</div></div>
+    <div class="pu-badge">secrets</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Create secret from literal values (never commit this to git!)</span>
+kubectl create secret generic db-secret   <span class="v">--from-literal</span>=DB_PASSWORD=supersecret123   <span class="v">--from-literal</span>=JWT_SECRET=myjwtsecret</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./k8s/deployment.yml (add under containers)</div>
+        <div class="pu-code">envFrom:
+- configMapRef:
+    name: myapp-config
+- secretRef:
+    name: db-secret        <span class="c"># DB_PASSWORD + JWT_SECRET injected as env vars</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">secret/db-secret created
+
+<span class="c"># Verify (values are hidden):</span>
+kubectl get secret db-secret
+NAME        TYPE     DATA   AGE
+<span class="hi">db-secret   Opaque   2      5s</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pu-k8s -->
+
+<!-- ══════════════════════════ GITHUB ACTIONS ══════════════════════════ -->
+<div class="pu-panel" id="pu-gha">
+<div class="section-title">⚡ GitHub Actions — Practical Use Cases</div>
+
+<!-- G1 -->
+<div class="pu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Run Tests on Every Push & Pull Request</div><div class="pu-desc">The most fundamental CI pipeline — catch broken code before it merges</div></div>
+    <div class="pu-badge">CI</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./.github/workflows/ci.yml</div>
+        <div class="pu-code"><span class="k">name</span>: CI
+
+<span class="k">on</span>:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+<span class="k">jobs</span>:
+  test:
+    <span class="k">runs-on</span>: ubuntu-latest
+
+    steps:
+    - <span class="k">name</span>: Checkout code
+      <span class="k">uses</span>: actions/checkout@v4
+
+    - <span class="k">name</span>: Setup Node.js
+      <span class="k">uses</span>: actions/setup-node@v4
+      <span class="k">with</span>:
+        node-version: <span class="s">'20'</span>
+        cache: <span class="s">'npm'</span>           <span class="c"># cache node_modules between runs</span>
+
+    - <span class="k">name</span>: Install dependencies
+      <span class="k">run</span>: npm ci
+
+    - <span class="k">name</span>: Run linter
+      <span class="k">run</span>: npm run lint
+
+    - <span class="k">name</span>: Run tests
+      <span class="k">run</span>: npm test</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">✓ Checkout code</span>            <span class="dim">2s</span>
+<span class="ok">✓ Setup Node.js</span>            <span class="dim">8s</span>
+<span class="ok">✓ Install dependencies</span>     <span class="dim">12s  (cached)</span>
+<span class="ok">✓ Run linter</span>               <span class="dim">3s</span>
+<span class="ok">✓ Run tests</span>                <span class="dim">7s</span>
+
+<span class="ok">All checks passed ✓</span>   <span class="dim">← green tick on your PR</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- G2 -->
+<div class="pu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Build & Push Docker Image on Merge to Main</div><div class="pu-desc">Automatically publish a new versioned image after every successful merge</div></div>
+    <div class="pu-badge">docker CI/CD</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">SETUP</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Go to GitHub Repo → <strong>Settings → Secrets and Variables → Actions</strong><br>Add: <strong>DOCKERHUB_USERNAME</strong> = your Docker Hub username<br>Add: <strong>DOCKERHUB_TOKEN</strong> = Docker Hub Access Token (not your password)</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./.github/workflows/docker-push.yml</div>
+        <div class="pu-code"><span class="k">name</span>: Build and Push Docker Image
+
+<span class="k">on</span>:
+  push:
+    branches: [main]         <span class="c"># only on merge to main</span>
+
+<span class="k">jobs</span>:
+  build-push:
+    <span class="k">runs-on</span>: ubuntu-latest
+    steps:
+    - <span class="k">uses</span>: actions/checkout@v4
+
+    - <span class="k">name</span>: Login to Docker Hub
+      <span class="k">uses</span>: docker/login-action@v3
+      <span class="k">with</span>:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - <span class="k">name</span>: Build and push
+      <span class="k">uses</span>: docker/build-push-action@v5
+      <span class="k">with</span>:
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/myapp:<span class="s">latest</span>
+          ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.sha }}</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">✓ Login to Docker Hub</span>
+<span class="ok">✓ Build and push</span>
+  <span class="hi">ibrahiem17/myapp:latest</span>
+  <span class="hi">ibrahiem17/myapp:3f8a9b2c...</span>   <span class="dim">← git SHA = immutable tag</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Using <strong>github.sha</strong> as image tag means every commit gets a unique, traceable image. You can always roll back to the exact commit that caused an issue.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- G3 -->
+<div class="pu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Deploy to a Server via SSH on Push to Main</div><div class="pu-desc">SSH into your VPS/EC2 and run deploy commands automatically</div></div>
+    <div class="pu-badge">CD / SSH</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">SETUP</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">In GitHub Secrets add:<br><strong>SSH_PRIVATE_KEY</strong> = your private key content (cat ~/.ssh/id_rsa)<br><strong>SERVER_HOST</strong> = your server IP or domain<br><strong>SERVER_USER</strong> = ubuntu (or ec2-user)</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./.github/workflows/deploy.yml</div>
+        <div class="pu-code"><span class="k">name</span>: Deploy to Production
+
+<span class="k">on</span>:
+  push:
+    branches: [main]
+
+<span class="k">jobs</span>:
+  deploy:
+    <span class="k">runs-on</span>: ubuntu-latest
+    steps:
+    - <span class="k">uses</span>: actions/checkout@v4
+
+    - <span class="k">name</span>: Deploy via SSH
+      <span class="k">uses</span>: appleboy/ssh-action@v1.0.3
+      <span class="k">with</span>:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /opt/myapp
+          git pull origin main
+          docker compose pull
+          docker compose up -d --no-deps
+          docker system prune -f</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">✓ Deploy via SSH</span>
+  <span class="dim">Connecting to 52.14.8.201...</span>
+  <span class="ok">Already on 'main'</span>
+  <span class="hi">Pulling ibrahiem17/myapp  ... done</span>
+  <span class="ok">Recreating myapp-api-1 ... done</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- G4 -->
+<div class="pu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Parallel Jobs — Run Lint, Test, Security Check Simultaneously</div><div class="pu-desc">Split slow pipelines into parallel jobs; only proceed if ALL pass</div></div>
+    <div class="pu-badge">parallel</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./.github/workflows/ci-full.yml</div>
+        <div class="pu-code"><span class="k">name</span>: Full CI
+
+<span class="k">on</span>: [push, pull_request]
+
+<span class="k">jobs</span>:
+  lint:                          <span class="c"># runs in parallel with test + security</span>
+    <span class="k">runs-on</span>: ubuntu-latest
+    steps:
+    - <span class="k">uses</span>: actions/checkout@v4
+    - <span class="k">run</span>: npm ci && npm run lint
+
+  test:                          <span class="c"># runs in parallel with lint + security</span>
+    <span class="k">runs-on</span>: ubuntu-latest
+    steps:
+    - <span class="k">uses</span>: actions/checkout@v4
+    - <span class="k">run</span>: npm ci && npm test
+
+  security:
+    <span class="k">runs-on</span>: ubuntu-latest
+    steps:
+    - <span class="k">uses</span>: actions/checkout@v4
+    - <span class="k">run</span>: npm audit <span class="v">--audit-level=high</span>
+
+  deploy:
+    <span class="k">needs</span>: [lint, test, security]  <span class="c"># waits for ALL three</span>
+    <span class="k">if</span>: github.ref == 'refs/heads/main'
+    <span class="k">runs-on</span>: ubuntu-latest
+    steps:
+    - <span class="k">run</span>: echo "All checks passed — deploying!"</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">lint ────────────── ✓  18s</span>
+<span class="hi">test ────────────── ✓  22s</span>   <span class="dim">← all ran simultaneously</span>
+<span class="hi">security ───────── ✓  9s</span>
+<span class="dim">         ↓</span>
+<span class="ok">deploy ──────────── ✓  All checks passed — deploying!</span>
+
+<span class="ok">Total: 24s</span>  <span class="dim">← vs 49s if run sequentially</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- G5 -->
+<div class="pu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Matrix Strategy — Test on Multiple Node.js Versions</div><div class="pu-desc">Run the same job across multiple versions/OS in one config block</div></div>
+    <div class="pu-badge">matrix</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./.github/workflows/matrix.yml</div>
+        <div class="pu-code"><span class="k">name</span>: Test Matrix
+
+<span class="k">on</span>: [push]
+
+<span class="k">jobs</span>:
+  test:
+    <span class="k">runs-on</span>: ubuntu-latest
+    <span class="k">strategy</span>:
+      matrix:
+        node-version: [<span class="num">18</span>, <span class="num">20</span>, <span class="num">22</span>]     <span class="c"># spawns 3 parallel jobs</span>
+
+    steps:
+    - <span class="k">uses</span>: actions/checkout@v4
+    - <span class="k">name</span>: Use Node ${{ matrix.node-version }}
+      <span class="k">uses</span>: actions/setup-node@v4
+      <span class="k">with</span>:
+        node-version: ${{ matrix.node-version }}
+    - <span class="k">run</span>: npm ci && npm test</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">test (18) ───── ✓  All tests passed</span>
+<span class="hi">test (20) ───── ✓  All tests passed</span>
+<span class="err">test (22) ───── ✗  TypeError: Buffer() is deprecated</span>  <span class="dim">← caught!</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pu-gha -->
+
+<!-- ══════════════════════════ TERRAFORM ══════════════════════════ -->
+<div class="pu-panel" id="pu-terraform">
+<div class="section-title">🏗️ Terraform — Practical Use Cases</div>
+
+<!-- T1 -->
+<div class="pu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Create an S3 Bucket on AWS</div><div class="pu-desc">Your first Terraform resource — the classic "Hello World" of IaC</div></div>
+    <div class="pu-badge">S3 / AWS</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./main.tf</div>
+        <div class="pu-code"><span class="c"># Tell Terraform to use the AWS provider</span>
+<span class="k">terraform</span> {
+  required_providers {
+    aws = {
+      source  = <span class="s">"hashicorp/aws"</span>
+      version = <span class="s">"~> 5.0"</span>
+    }
+  }
+}
+
+<span class="k">provider</span> <span class="s">"aws"</span> {
+  region = <span class="s">"us-east-1"</span>
+}
+
+<span class="c"># Declare the S3 bucket resource</span>
+<span class="k">resource</span> <span class="s">"aws_s3_bucket"</span> <span class="s">"my_bucket"</span> {
+  bucket = <span class="s">"ibrahiem-devops-practice-2024"</span>  <span class="c"># must be globally unique</span>
+
+  tags = {
+    Name        = <span class="s">"Practice Bucket"</span>
+    Environment = <span class="s">"Dev"</span>
+  }
+}</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># 1. Initialize (downloads the AWS provider plugin)</span>
+terraform init
+
+<span class="c"># 2. Preview what will be created — ALWAYS do this first</span>
+terraform plan
+
+<span class="c"># 3. Create the actual resources</span>
+terraform apply
+<span class="c">#    → type "yes" to confirm</span>
+
+<span class="c"># 4. See what Terraform is managing</span>
+terraform state list</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="dim">Initializing provider plugins...</span>
+<span class="ok">Terraform has been successfully initialized!</span>
+
+Plan: <span class="hi">1 to add</span>, 0 to change, 0 to destroy.
+<span class="hi">+ aws_s3_bucket.my_bucket</span>
+    bucket: "ibrahiem-devops-practice-2024"
+    tags:   { Environment = "Dev", Name = "Practice Bucket" }
+
+<span class="ok">Apply complete! Resources: 1 added.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- T2 -->
+<div class="pu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Provision an EC2 Instance</div><div class="pu-desc">Launch a virtual machine on AWS with key pair and security group</div></div>
+    <div class="pu-badge">EC2 / compute</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./ec2.tf</div>
+        <div class="pu-code"><span class="c"># Security group — allow SSH and HTTP</span>
+<span class="k">resource</span> <span class="s">"aws_security_group"</span> <span class="s">"web_sg"</span> {
+  name        = <span class="s">"web-sg"</span>
+  description = <span class="s">"Allow SSH and HTTP"</span>
+
+  ingress {
+    from_port   = <span class="num">22</span>
+    to_port     = <span class="num">22</span>
+    protocol    = <span class="s">"tcp"</span>
+    cidr_blocks = [<span class="s">"0.0.0.0/0"</span>]  <span class="c"># ⚠️ restrict this in production!</span>
+  }
+  ingress {
+    from_port   = <span class="num">80</span>
+    to_port     = <span class="num">80</span>
+    protocol    = <span class="s">"tcp"</span>
+    cidr_blocks = [<span class="s">"0.0.0.0/0"</span>]
+  }
+  egress {
+    from_port   = <span class="num">0</span>; to_port = <span class="num">0</span>; protocol = <span class="s">"-1"</span>
+    cidr_blocks = [<span class="s">"0.0.0.0/0"</span>]
+  }
+}
+
+<span class="c"># The EC2 instance</span>
+<span class="k">resource</span> <span class="s">"aws_instance"</span> <span class="s">"web"</span> {
+  ami                    = <span class="s">"ami-0c02fb55956c7d316"</span>  <span class="c"># Amazon Linux 2 (us-east-1)</span>
+  instance_type          = <span class="s">"t2.micro"</span>               <span class="c"># free tier eligible</span>
+  key_name               = <span class="s">"my-key-pair"</span>
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+
+  tags = { Name = <span class="s">"WebServer"</span> }
+}
+
+<span class="c"># Print the public IP after apply</span>
+<span class="k">output</span> <span class="s">"public_ip"</span> {
+  value = aws_instance.web.public_ip
+}</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">terraform plan
+terraform apply <span class="v">-auto-approve</span>   <span class="c"># skip the "yes" prompt</span>
+
+<span class="c"># Destroy everything when done (saves cost!)</span>
+terraform destroy</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">Apply complete! Resources: 2 added.</span>
+
+Outputs:
+<span class="hi">public_ip = "54.211.48.132"</span>
+
+<span class="dim"># SSH into it:</span>
+<span class="ok">ssh -i my-key-pair.pem ec2-user@54.211.48.132</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- T3 -->
+<div class="pu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Variables — Make Your Config Reusable</div><div class="pu-desc">Stop hardcoding values; use variables so the same code works for dev/staging/prod</div></div>
+    <div class="pu-badge">variables</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./variables.tf</div>
+        <div class="pu-code"><span class="k">variable</span> <span class="s">"region"</span> {
+  description = <span class="s">"AWS region to deploy into"</span>
+  type        = string
+  default     = <span class="s">"us-east-1"</span>
+}
+
+<span class="k">variable</span> <span class="s">"instance_type"</span> {
+  description = <span class="s">"EC2 instance size"</span>
+  type        = string
+  default     = <span class="s">"t2.micro"</span>
+}
+
+<span class="k">variable</span> <span class="s">"env"</span> {
+  description = <span class="s">"Environment name: dev / staging / prod"</span>
+  type        = string
+}</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./terraform.tfvars  (never commit to git if it has secrets!)</div>
+        <div class="pu-code">region        = <span class="s">"eu-west-1"</span>
+instance_type = <span class="s">"t3.small"</span>
+env           = <span class="s">"staging"</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Pass vars inline (useful in CI)</span>
+terraform apply <span class="v">-var</span>=<span class="s">"env=prod"</span> <span class="v">-var</span>=<span class="s">"instance_type=t3.medium"</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Plan: 1 to add.
+  <span class="hi">instance_type = "t3.medium"</span>   <span class="dim">← var override applied</span>
+  <span class="hi">tags.env      = "prod"</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- T4 -->
+<div class="pu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Remote State — Store tfstate in S3 (Team Setup)</div><div class="pu-desc">By default state is local; for teams, store it in S3 so everyone shares the same state</div></div>
+    <div class="pu-badge">remote state</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./backend.tf</div>
+        <div class="pu-code"><span class="k">terraform</span> {
+  backend <span class="s">"s3"</span> {
+    bucket         = <span class="s">"myteam-terraform-state"</span>   <span class="c"># must exist already</span>
+    key            = <span class="s">"myapp/terraform.tfstate"</span>
+    region         = <span class="s">"us-east-1"</span>
+    encrypt        = true
+    dynamodb_table = <span class="s">"terraform-locks"</span>         <span class="c"># prevents concurrent applies</span>
+  }
+}</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Re-initialize to migrate state to S3</span>
+terraform init <span class="v">-migrate-state</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">Successfully configured the backend "s3"!</span>
+<span class="hi">Terraform will now store state in s3://myteam-terraform-state/myapp/terraform.tfstate</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">The <strong>DynamoDB table</strong> is used for state locking — only one <code>terraform apply</code> can run at a time. Without it, two engineers applying simultaneously could corrupt your state file.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- T5 -->
+<div class="pu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Modules — Reuse Infrastructure Patterns</div><div class="pu-desc">Wrap common patterns into a module so you don't repeat yourself across environments</div></div>
+    <div class="pu-badge">modules</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./modules/ec2/main.tf</div>
+        <div class="pu-code"><span class="k">variable</span> <span class="s">"instance_type"</span> {}
+<span class="k">variable</span> <span class="s">"env"</span> {}
+
+<span class="k">resource</span> <span class="s">"aws_instance"</span> <span class="s">"this"</span> {
+  ami           = <span class="s">"ami-0c02fb55956c7d316"</span>
+  instance_type = var.instance_type
+  tags          = { Name = <span class="s">"${var.env}-server"</span> }
+}
+
+<span class="k">output</span> <span class="s">"ip"</span> { value = aws_instance.this.public_ip }</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./main.tf (using the module)</div>
+        <div class="pu-code"><span class="c"># Dev server</span>
+<span class="k">module</span> <span class="s">"dev"</span> {
+  source        = <span class="s">"./modules/ec2"</span>
+  instance_type = <span class="s">"t2.micro"</span>
+  env           = <span class="s">"dev"</span>
+}
+
+<span class="c"># Prod server</span>
+<span class="k">module</span> <span class="s">"prod"</span> {
+  source        = <span class="s">"./modules/ec2"</span>
+  instance_type = <span class="s">"t3.medium"</span>
+  env           = <span class="s">"prod"</span>
+}</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Plan: <span class="hi">2 to add</span>.
+<span class="ok">+ module.dev.aws_instance.this  (t2.micro,  dev-server)</span>
+<span class="ok">+ module.prod.aws_instance.this (t3.medium, prod-server)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pu-terraform -->
+
+<!-- ══════════════════════════ LINUX ══════════════════════════ -->
+<div class="pu-panel" id="pu-linux">
+<div class="section-title">🐧 Linux — Practical Use Cases</div>
+
+<!-- L1 -->
+<div class="pu-card" style="--pu-clr:#fb923c">
+  <div class="pu-card-header">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Find & Kill the Process Using a Port</div><div class="pu-desc">"Port 3000 already in use" — here's how to fix it in 10 seconds</div></div>
+    <div class="pu-badge">process</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Find what is using port 3000</span>
+lsof <span class="v">-i</span> :<span class="num">3000</span>
+
+<span class="c"># Or with ss (faster on modern systems)</span>
+ss <span class="v">-tlnp</span> | grep :<span class="num">3000</span>
+
+<span class="c"># Kill the process by PID</span>
+kill <span class="num">18423</span>
+
+<span class="c"># If it doesn't die — force kill</span>
+kill <span class="v">-9</span> <span class="num">18423</span>
+
+<span class="c"># One-liner: find and kill in one shot</span>
+lsof <span class="v">-ti</span> :<span class="num">3000</span> | xargs kill <span class="v">-9</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">COMMAND    PID      TYPE  NAME
+<span class="hi">node     18423     IPv6  *:3000 (LISTEN)</span>
+
+<span class="ok">[18423 killed]</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- L2 -->
+<div class="pu-card" style="--pu-clr:#fb923c">
+  <div class="pu-card-header">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Monitor CPU, Memory & Disk in Real Time</div><div class="pu-desc">The essential commands for understanding what a server is doing right now</div></div>
+    <div class="pu-badge">monitoring</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Real-time process + CPU + memory (press q to quit)</span>
+htop
+
+<span class="c"># Disk usage — how full are your drives?</span>
+df <span class="v">-h</span>
+
+<span class="c"># Disk usage — which folder is eating space?</span>
+du <span class="v">-sh</span> /var/log/*    <span class="c"># sorted by size</span>
+du <span class="v">-sh</span> * | sort <span class="v">-rh</span> | head <span class="v">-20</span>
+
+<span class="c"># Memory usage snapshot</span>
+free <span class="v">-h</span>
+
+<span class="c"># CPU + system overview</span>
+top     <span class="c"># then press M to sort by memory, P for CPU</span>
+
+<span class="c"># Network — what ports are open?</span>
+ss <span class="v">-tlnp</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Filesystem      Size  Used Avail Use%  Mounted on
+<span class="ok">/dev/xvda1       50G   12G   38G   24%  /</span>
+<span class="warn">/dev/xvdb1       20G   19G  0.8G   96%  /var</span>   <span class="err">← nearly full!</span>
+
+              total    used    free
+Mem:           7.8G    5.1G    2.7G
+<span class="hi">Swap:          2.0G    0.4G    1.6G</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- L3 -->
+<div class="pu-card" style="--pu-clr:#fb923c">
+  <div class="pu-card-header">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Set Up a Cron Job — Automate Recurring Tasks</div><div class="pu-desc">Run scripts on a schedule: backups, cleanup, health checks</div></div>
+    <div class="pu-badge">cron</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">./backup.sh</div>
+        <div class="pu-code">#!/bin/bash
+<span class="c"># Daily DB backup script</span>
+
+DATE=$(date +%Y-%m-%d)
+BACKUP_DIR=/opt/backups
+
+mkdir <span class="v">-p</span> $BACKUP_DIR
+
+<span class="c"># Dump PostgreSQL database</span>
+pg_dump <span class="v">-U</span> postgres mydb > $BACKUP_DIR/mydb-$DATE.sql
+
+<span class="c"># Compress it</span>
+gzip $BACKUP_DIR/mydb-$DATE.sql
+
+<span class="c"># Delete backups older than 7 days</span>
+find $BACKUP_DIR <span class="v">-name</span> <span class="s">"*.gz"</span> <span class="v">-mtime</span> +7 <span class="v">-delete</span>
+
+echo <span class="s">"Backup complete: $BACKUP_DIR/mydb-$DATE.sql.gz"</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Make the script executable</span>
+chmod +x backup.sh
+
+<span class="c"># Open crontab editor</span>
+crontab <span class="v">-e</span>
+
+<span class="c"># Add this line (runs every day at 2 AM):</span>
+<span class="c"># ┌─ minute (0-59)</span>
+<span class="c"># │ ┌─ hour (0-23)</span>
+<span class="c"># │ │ ┌─ day of month (1-31)</span>
+<span class="c"># │ │ │  ┌─ month (1-12)</span>
+<span class="c"># │ │ │  │  ┌─ day of week (0=Sun)</span>
+  <span class="num">0</span> <span class="num">2</span> * * * /opt/backup.sh >> /var/log/backup.log <span class="num">2</span>>&<span class="num">1</span>
+
+<span class="c"># List all scheduled cron jobs</span>
+crontab <span class="v">-l</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">0 2 * * * /opt/backup.sh >> /var/log/backup.log 2>&1
+
+<span class="dim"># In /var/log/backup.log the next morning:</span>
+<span class="ok">Backup complete: /opt/backups/mydb-2024-01-15.sql.gz</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- L4 -->
+<div class="pu-card" style="--pu-clr:#fb923c">
+  <div class="pu-card-header">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">File Permissions — chmod & chown Explained</div><div class="pu-desc">Fix "Permission denied" errors and understand rwx in 3 minutes</div></div>
+    <div class="pu-badge">permissions</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># See current permissions</span>
+ls <span class="v">-la</span> myapp/
+<span class="c"># -rw-r--r-- means: owner=rw, group=r, others=r</span>
+
+<span class="c"># Make a script executable</span>
+chmod <span class="v">+x</span> deploy.sh     <span class="c"># add execute for everyone</span>
+chmod <span class="num">755</span> deploy.sh     <span class="c"># rwxr-xr-x (owner full, others read+exec)</span>
+chmod <span class="num">600</span> .env          <span class="c"># rw------- (only owner can read — good for secrets!)</span>
+chmod <span class="num">700</span> ~/.ssh        <span class="c"># rwx------ (your SSH dir — others cannot see it)</span>
+
+<span class="c"># Change owner (run as root)</span>
+chown ubuntu:ubuntu /opt/myapp     <span class="c"># user:group</span>
+chown <span class="v">-R</span> ubuntu:ubuntu /opt/myapp  <span class="c"># -R = recursive (all files inside)</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">-rw------- 1 ubuntu ubuntu  512 Jan 15 .env
+<span class="hi">-rwxr-xr-x 1 ubuntu ubuntu 1024 Jan 15 deploy.sh</span>
+drwx------ 2 ubuntu ubuntu 4096 Jan 15 .ssh/</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">CHEATSHEET</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box"><strong>400</strong> = read-only (SSH key files) | <strong>600</strong> = rw owner only (.env, secrets) | <strong>644</strong> = web files (owner rw, others r) | <strong>755</strong> = scripts and dirs | <strong>777</strong> = everyone full access (⚠️ never use in prod)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- L5 -->
+<div class="pu-card" style="--pu-clr:#fb923c">
+  <div class="pu-card-header">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">grep, tail & pipe — Read Logs Like a Pro</div><div class="pu-desc">Find errors in massive log files instantly; watch logs stream live</div></div>
+    <div class="pu-badge">logs</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># Follow a log file live (Ctrl+C to stop)</span>
+tail <span class="v">-f</span> /var/log/nginx/access.log
+
+<span class="c"># Show last 100 lines</span>
+tail <span class="v">-n</span> <span class="num">100</span> /var/log/myapp.log
+
+<span class="c"># Find all ERROR lines in a log</span>
+grep <span class="s">"ERROR"</span> /var/log/myapp.log
+
+<span class="c"># Case-insensitive search</span>
+grep <span class="v">-i</span> <span class="s">"error"</span> app.log
+
+<span class="c"># Show 3 lines BEFORE and AFTER the match (context)</span>
+grep <span class="v">-B3 -A3</span> <span class="s">"TypeError"</span> app.log
+
+<span class="c"># Live errors only — follow AND filter</span>
+tail <span class="v">-f</span> app.log | grep <span class="s">"ERROR"</span>
+
+<span class="c"># Count how many 500 errors happened</span>
+grep <span class="s">"HTTP 500"</span> access.log | wc <span class="v">-l</span>
+
+<span class="c"># Show Docker container logs live</span>
+docker logs <span class="v">-f</span> myapp-api-1 | grep <span class="s">"error"</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="err">2024-01-15 14:32:11 [ERROR] DB connection timeout after 5000ms</span>
+<span class="err">2024-01-15 14:32:12 [ERROR] DB connection timeout after 5000ms</span>
+<span class="warn">2024-01-15 14:32:15 [WARN]  Retrying connection (attempt 3/5)</span>
+<span class="ok">2024-01-15 14:32:18 [INFO]  DB connected successfully</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pu-linux -->
+
+<!-- ══════════════════════════ GIT ══════════════════════════ -->
+<div class="pu-panel" id="pu-gitpu">
+<div class="section-title">🌿 Git — Practical Use Cases</div>
+
+<!-- GI1 -->
+<div class="pu-card" style="--pu-clr:#34d399">
+  <div class="pu-card-header">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Feature Branch Workflow — The Standard Way to Work</div><div class="pu-desc">Never commit directly to main; always use a branch, then open a PR</div></div>
+    <div class="pu-badge">workflow</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># 1. Make sure you start from latest main</span>
+git checkout main
+git pull origin main
+
+<span class="c"># 2. Create and switch to a new feature branch</span>
+git checkout <span class="v">-b</span> feature/add-auth
+
+<span class="c"># 3. Write your code... then commit</span>
+git add .
+git commit <span class="v">-m</span> <span class="s">"feat: add JWT authentication middleware"</span>
+
+<span class="c"># 4. Push your branch to GitHub</span>
+git push origin feature/add-auth
+
+<span class="c"># 5. Open a Pull Request on GitHub UI
+#    → team reviews → CI runs → merge to main</span>
+
+<span class="c"># 6. After merge, clean up your local branch</span>
+git checkout main
+git pull origin main
+git branch <span class="v">-d</span> feature/add-auth</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Switched to a new branch 'feature/add-auth'
+<span class="ok">[feature/add-auth 3f8a9b2] feat: add JWT authentication middleware</span>
+<span class="hi">Branch 'feature/add-auth' set up to track origin/feature/add-auth.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GI2 -->
+<div class="pu-card" style="--pu-clr:#34d399">
+  <div class="pu-card-header">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Resolve a Merge Conflict</div><div class="pu-desc">Two people edited the same file — here's how to resolve it without panic</div></div>
+    <div class="pu-badge">conflict</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># You are merging and hit a conflict</span>
+git merge main
+<span class="c"># CONFLICT (content): Merge conflict in src/config.js</span>
+
+<span class="c"># Open the conflicting file — it will look like this:</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label file">CONFLICT</span>
+      <div class="pu-step-content">
+        <div class="pu-path">src/config.js (conflict markers added by Git)</div>
+        <div class="pu-code"><<<<<<<  HEAD                     <span class="c">← YOUR changes</span>
+const PORT = 8080;
+=======                             <span class="c">← divider</span>
+const PORT = 3000;
+>>>>>>>  main                       <span class="c">← THEIR changes (from main)</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># EDIT the file — delete the markers, keep what you want:</span>
+<span class="c"># const PORT = process.env.PORT || 3000;   ← best of both</span>
+
+<span class="c"># Stage the resolved file</span>
+git add src/config.js
+
+<span class="c"># Complete the merge</span>
+git commit <span class="v">-m</span> <span class="s">"merge: resolve PORT conflict, use env var"</span>
+
+<span class="c"># Check — no more conflicts</span>
+git status</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">Merge made by the 'recursive' strategy.</span>
+<span class="ok"> src/config.js | 2 +-</span>
+<span class="ok"> 1 file changed, 1 insertion(+), 1 deletion(-)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GI3 -->
+<div class="pu-card" style="--pu-clr:#34d399">
+  <div class="pu-card-header">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">git stash — Save Work Without Committing</div><div class="pu-desc">Mid-task and need to switch branches urgently? Stash it.</div></div>
+    <div class="pu-badge">stash</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># You are halfway through a feature when a hotfix comes in</span>
+
+<span class="c"># Stash your current work (like a clipboard)</span>
+git stash push <span class="v">-m</span> <span class="s">"WIP: halfway through auth feature"</span>
+
+<span class="c"># Now your working directory is clean — switch branches safely</span>
+git checkout main
+git checkout <span class="v">-b</span> hotfix/login-crash
+<span class="c"># ... fix the bug, commit, push, merge ...</span>
+
+<span class="c"># Come back to your feature branch</span>
+git checkout feature/add-auth
+
+<span class="c"># See what is stashed</span>
+git stash list
+
+<span class="c"># Restore your stashed work</span>
+git stash pop     <span class="c"># applies latest stash AND removes it from stash list</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">stash@{0}: On feature/add-auth: WIP: halfway through auth feature
+
+<span class="ok">On branch feature/add-auth</span>
+<span class="ok">Changes not staged for commit:</span>
+<span class="hi">  modified: src/auth/middleware.js</span>
+<span class="dim">Dropped stash@{0}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GI4 -->
+<div class="pu-card" style="--pu-clr:#34d399">
+  <div class="pu-card-header">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">git rebase — Clean Up History Before a PR</div><div class="pu-desc">Squash messy WIP commits into one clean commit before requesting review</div></div>
+    <div class="pu-badge">rebase</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># You have 4 messy commits on your feature branch:</span>
+<span class="c"># abc123 WIP</span>
+<span class="c"># def456 fix typo</span>
+<span class="c"># ghi789 almost done</span>
+<span class="c"># jkl012 finally works</span>
+
+<span class="c"># Squash last 4 commits interactively</span>
+git rebase <span class="v">-i</span> HEAD~<span class="num">4</span>
+
+<span class="c"># Editor opens — change to:</span>
+<span class="c"># pick abc123 WIP</span>
+<span class="c"># squash def456 fix typo</span>
+<span class="c"># squash ghi789 almost done</span>
+<span class="c"># squash jkl012 finally works</span>
+
+<span class="c"># → save → another editor opens for the combined commit message</span>
+<span class="c"># Write: "feat: add JWT authentication"</span>
+
+<span class="c"># Force push (you rewrote history)</span>
+git push <span class="v">--force-with-lease</span> origin feature/add-auth</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">Successfully rebased and updated refs/heads/feature/add-auth.</span>
+
+git log --oneline
+<span class="hi">f9c3a2b feat: add JWT authentication</span>  <span class="dim">← 4 commits became 1, clean!</span>
+<span class="dim">a81b3d1 feat: previous work</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GI5 -->
+<div class="pu-card" style="--pu-clr:#34d399">
+  <div class="pu-card-header">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Undo Mistakes — reset, revert & restore</div><div class="pu-desc">The right tool for every "oh no" moment — without losing work</div></div>
+    <div class="pu-badge">undo</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c">─── Scenario 1: Unstage a file (not yet committed) ───</span>
+git restore <span class="v">--staged</span> src/secrets.js   <span class="c"># remove from staging, keep changes</span>
+
+<span class="c">─── Scenario 2: Discard ALL local changes (dangerous!) ───</span>
+git restore .                        <span class="c"># reverts working directory to last commit</span>
+
+<span class="c">─── Scenario 3: Undo last commit but KEEP the changes ───</span>
+git reset HEAD~<span class="num">1</span>                     <span class="c"># unpacks last commit back to working dir</span>
+
+<span class="c">─── Scenario 4: Undo a commit that was ALREADY PUSHED ───</span>
+<span class="c"># NEVER force-push to shared branches!</span>
+<span class="c"># Use revert — creates a new "undo" commit</span>
+git revert abc123                    <span class="c"># creates commit that reverses abc123</span>
+git push origin main                 <span class="c"># safe to push</span>
+
+<span class="c">─── Scenario 5: I committed to wrong branch! ───</span>
+git log --oneline <span class="v">-1</span>               <span class="c"># copy the commit hash</span>
+git reset HEAD~<span class="num">1</span>                    <span class="c"># undo the commit on wrong branch</span>
+git checkout correct-branch
+git cherry-pick abc123               <span class="c"># apply that commit here</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">RULE</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box"><strong>revert</strong> = safe for shared branches (adds new commit). <strong>reset</strong> = rewrites history, only use on your own local branches. <strong>--force-with-lease</strong> > --force (checks nobody else pushed first).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pu-gitpu -->
+

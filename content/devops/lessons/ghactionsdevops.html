@@ -1,0 +1,595 @@
+
+
+  <details class="found-details">
+    <summary>🧱 Foundation for GitHub Actions</summary>
+    <div class="found-body">
+
+      <div class="found-p">Before workflow files and YAML syntax fly past you — let's build this from true zero: what CI/CD actually is, the complete journey from a git push to a finished pipeline run, the vocabulary every workflow file uses, and what a DevOps engineer actually spends their day doing with all of this.</div>
+
+      <div class="found-h" style="font-size:14px;">GitHub Actions — Complete Foundation for DevOps</div>
+
+      <div class="found-sub">1. First: what even is "CI/CD"?</div>
+      <div class="found-p">CI/CD is just automation that runs every time you push code, so a computer checks your work instead of you checking it manually, or worse — finding out it's broken after it's already live.</div>
+      <div class="found-pre">You push code 💻 ──triggers──→ Automated checks run 🤖 ──→ Pass ✅ / Fail ❌</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">CI (Continuous Integration)</strong> — automatically test and check every change, every time, so broken code gets caught in minutes, not days.<br><strong style="color:#e2e8f0;">CD (Continuous Deployment/Delivery)</strong> — automatically ship code that passes those checks, so releasing isn't a manual, nerve-wracking event.</div>
+
+      <div class="found-sub">2. Why GitHub Actions specifically?</div>
+      <div class="found-p">GitHub Actions is GitHub's own built-in automation system — the workflow files live right inside your repo, and it runs automatically whenever something happens to that repo (a push, a pull request, a schedule).</div>
+      <div class="found-p">No separate server to set up, no separate tool to log into — if your code is already on GitHub, the automation lives right next to it.</div>
+      <div class="found-key">🔑 The uncomfortable truth: teams that skip CI/CD don't actually save time — they just move the cost to later, when a bug reaches production instead of getting caught in a two-minute automated check. That's exactly why "add a CI pipeline" is one of the very first things brought into almost every real project.</div>
+
+      <div class="found-sub">3. The complete flow — what actually happens when you push code</div>
+      <div class="found-p">This is the single most important mental model in this whole section. Walk through it slowly:</div>
+      <div class="found-pre">You run: git push
+        │
+        ↓
+   GitHub receives the push 📨
+        │
+        ↓
+   GitHub checks: does a workflow file
+   in .github/workflows/ care about "push"?
+        │
+        ↓  yes
+┌───────────────────────┐
+│   GitHub spins up a     │  ← a fresh, temporary virtual machine
+│   runner 🖥️              │     ("runs-on: ubuntu-latest")
+└───────────┬─────────────┘
+            │
+            ↓
+   Steps run, top to bottom, in order:
+   checkout code → install deps → run tests → build
+            │
+            ↓
+   Any step fails? → ❌ red X, everyone gets notified
+   All steps pass?  → ✅ green check, safe to merge/deploy
+            │
+            ↓
+   Runner is destroyed — nothing persists between runs</div>
+      <div class="found-p">Every arrow in that diagram is something a DevOps engineer configures, and eventually has to debug when a run mysteriously fails. That's the whole job, condensed into one picture.</div>
+
+      <div class="found-sub">4. Core vocabulary — the words every workflow file uses</div>
+      <div class="found-p">These five words show up in literally every GitHub Actions file you'll ever read. Get comfortable with them now and the YAML stops looking scary.</div>
+      <div class="found-pre">Workflow  → the whole automated process (one .yml file)
+  └── Job     → a group of steps that runs on one runner
+        └── Step  → one single command or action
+Trigger   → what starts the workflow ("on: push")
+Runner    → the machine the job actually runs on
+Action    → a reusable, pre-built step someone else wrote</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Workflow</strong> — the entire automated pipeline, defined in one YAML file.<br><strong style="color:#e2e8f0;">Job</strong> — a set of steps that all run together on the same runner (a workflow can have several jobs, and by default they run in parallel).<br><strong style="color:#e2e8f0;">Step</strong> — one single action inside a job — run a command, or use a pre-built action.<br><strong style="color:#e2e8f0;">Trigger (event)</strong> — the thing that starts the workflow: a push, a pull request, a schedule, even a manual button click.<br><strong style="color:#e2e8f0;">Runner</strong> — the actual virtual machine your steps execute on, fresh and disposable every single run.<br><strong style="color:#e2e8f0;">Action</strong> — a packaged, reusable step someone already built (like <span class="found-code">actions/checkout</span>) so you don't write everything from scratch.</div>
+
+      <div class="found-sub">5. Anatomy of a workflow file — read it top to bottom</div>
+      <div class="found-p">Every single piece maps directly to the vocabulary above. Nothing here is arbitrary:</div>
+      <div class="found-pre">name: CI                        ← just a label, shows up in the GitHub UI
+
+on:                              ← the TRIGGER
+  push:
+    branches: [main]
+
+jobs:                            ← one or more JOBS
+  test:
+    runs-on: ubuntu-latest       ← the RUNNER
+
+    steps:                       ← the STEPS, top to bottom
+      - uses: actions/checkout@v4   ← an ACTION (reusable step)
+      - run: npm install            ← a raw command
+      - run: npm test                ← a raw command</div>
+      <div class="found-p">That's a complete, real, working CI workflow. Everything more advanced you'll ever see — matrices, secrets, multiple jobs, deploy steps — is this same shape, just with more of it.</div>
+
+      <div class="found-sub">6. Syntax you actually type</div>
+      <div class="found-p">Theory is nothing without the file itself. These are the pieces you will genuinely reach for, in the order you'd actually build a workflow file.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">on: — "when should this even run?"</div>
+      <div class="found-pre">on:
+  push:
+    branches: [main]
+  pull_request:</div>
+      <div class="found-p">Runs on every push to <span class="found-code">main</span>, and also on every pull request — so problems get caught before merge, not just after.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">runs-on: — "what machine does this execute on?"</div>
+      <div class="found-pre">runs-on: ubuntu-latest</div>
+      <div class="found-p">A brand-new, disposable Linux VM, spun up just for this run and destroyed right after — that's why nothing you install "sticks around" between runs.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">uses: — "run a pre-built action someone else wrote"</div>
+      <div class="found-pre">- uses: actions/checkout@v4</div>
+      <div class="found-p">Without this exact line, your workflow never actually gets your repo's code onto the runner — it's the single most common first step in almost every workflow that exists.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">run: — "just execute this shell command"</div>
+      <div class="found-pre">- run: npm ci
+- run: npm test</div>
+      <div class="found-p">The plain, no-magic escape hatch — any shell command you could type yourself, running exactly the same way here.</div>
+
+      <div class="found-p" style="font-weight:700;color:#e2e8f0;">env: / secrets. — "pass in configuration and credentials safely"</div>
+      <div class="found-pre">- run: deploy.sh
+  env:
+    API_KEY: ${{ secrets.API_KEY }}</div>
+      <div class="found-p">Secrets are stored encrypted in the repo's settings, never printed in logs — this is how a real API key gets into a pipeline without ever being visible in the code.</div>
+
+      <div class="found-sub">7. What does a DevOps engineer actually DO with GitHub Actions, day to day?</div>
+      <div class="found-p">This is the part most tutorials skip. Here's what it actually looks like in a real job:</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Writing and maintaining CI workflows</strong> — the run-tests-on-every-push pipeline that catches broken code before it merges.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Debugging red ❌ runs</strong> — reading the logs of a failed job to figure out exactly which step, and which line, broke.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Wiring up deploy pipelines</strong> — adding a job that builds a Docker image and ships it, but only after the test job has already passed.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Managing secrets</strong> — adding and rotating API keys and credentials in the repo's secret store, never in plain text.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Speeding up slow pipelines</strong> — caching dependencies, running jobs in parallel, so a five-minute pipeline becomes ninety seconds.</div>
+      <div class="found-p"><strong style="color:#e2e8f0;">Gatekeeping merges</strong> — configuring GitHub so a pull request literally cannot be merged until the required checks turn green.</div>
+
+      <div class="found-sub">8. The full picture, one more time</div>
+      <div class="found-pre">                 git push 💻
+                      │
+                      ↓
+              GitHub sees the trigger
+                      │
+                      ↓
+             ┌─────────────────────┐
+             │   Fresh Runner 🖥️      │
+             └──────────┬────────────┘
+                        │
+                 Steps run, in order
+                        │
+              ┌─────────┴─────────┐
+              ↓                   ↓
+          ✅ All pass         ❌ One fails
+              │                   │
+              ↓                   ↓
+       Safe to merge/deploy   Notified, run stops</div>
+      <div class="found-p">Every box is something you'll configure. Every arrow is something you'll eventually have to debug when it stops working.</div>
+
+      <div class="found-h">🧠 GitHub Actions cheat sheet</div>
+      <table class="found-table">
+        <thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Workflow</td><td>The whole automated process — one YAML file</td></tr>
+          <tr><td>Job</td><td>A group of steps running on one runner</td></tr>
+          <tr><td>Step</td><td>One single command or action inside a job</td></tr>
+          <tr><td>Trigger (on:)</td><td>What starts the workflow — push, PR, schedule</td></tr>
+          <tr><td>Runner</td><td>The disposable VM the job executes on</td></tr>
+          <tr><td>Action (uses:)</td><td>A reusable, pre-built step someone else wrote</td></tr>
+          <tr><td>run:</td><td>Execute a raw shell command</td></tr>
+          <tr><td>secrets.</td><td>Encrypted credentials, never shown in logs</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 Kid-friendly memory trick</div>
+      <div class="found-p">Think of a workflow file like a school checklist pinned to the wall:</div>
+      <div class="found-pre">on: push
+ ↓
+The RULE for when the checklist even gets used
+("check it every time homework is turned in")
+
+Job
+ ↓
+One STUDENT'S checklist
+
+Steps
+ ↓
+Each individual BOX to tick, in order
+
+uses: (Action)
+ ↓
+A box someone ELSE already wrote for you
+("use the standard spelling checker")
+
+run:
+ ↓
+A box YOU wrote yourself
+("count to 10 out loud")
+
+All boxes ticked → ✅
+One box missed → ❌, and everyone finds out immediately</div>
+
+      <div class="found-key">🔑 Key takeaway<br><br>Everything in GitHub Actions traces back to one idea: <em>something happens (a trigger) → a fresh machine spins up (a runner) → it does a list of things (steps) → you find out pass or fail, instantly, every single time.</em> Once that loop clicks, every workflow file you read is just the same four ideas, arranged differently.</div>
+
+    </div>
+  </details>
+
+
+
+  <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.22);border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#38bdf8;">🐙 GitHub Actions for DevOps — built for someone who has never touched it.</strong> If the words "workflow," "job," "runner," or "on: push" mean nothing to you yet, you're exactly who this tab is for. No assumptions, no skipped steps.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 0 — TRUE ZERO. Not "why it exists" in DevOps-speak —
+       an actual everyday analogy first.
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🐣 Start Here — What Is GitHub Actions, Really?</div>
+
+  <div class="analogy">
+    <div><div class="analogy-label">🏫 Think of it like a homework auto-checker</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📄</span><div class="analogy-text"><strong>You turn in homework</strong><br>(you push code to GitHub)</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🤖</span><div class="analogy-text"><strong>A robot checks it instantly</strong><br>(runs the checklist you wrote)</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">✅</span><div class="analogy-text"><strong>You get a pass/fail before anyone looks</strong><br>(green ✅ or red ❌ on GitHub)</div></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin:16px 0 20px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    In plain words: <strong style="color:#e2e8f0;">GitHub Actions is a robot that lives inside GitHub and watches your repository.</strong> You write down a checklist once — "run the tests," "make sure it still builds" — save it as a file, and from then on, every time you push code, the robot automatically runs through that exact checklist on a brand-new, clean computer. It never forgets a step, never gets tired, and never skips something because it's in a rush. That's the entire idea. Everything else on this page is just details on top of that one concept.
+  </div>
+
+  <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#f43f5e;">Why does this even need to exist?</strong> Without it, "did I break anything?" only gets answered when a human remembers to check — by running tests by hand, or worse, after a real user hits the bug in production. GitHub Actions moves that check to happen automatically, on every single change, before a human ever needs to notice.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       STAGE 0.5 — the 5 words, kept genuinely simple
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🔤 The 5 Words You Actually Need to Know First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 14px;">Not a dense reference table yet — just five plain-English ideas, in the order they matter.</div>
+  <div class="cmd-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-bottom:20px;">
+    <div class="cmd-card" style="border-left-color:#38bdf8;"><div class="cmd-head"><span class="cmd-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);">1. Workflow</span></div><div class="cmd-desc">The checklist itself. A single file that says what to check and when.</div></div>
+    <div class="cmd-card" style="border-left-color:#22c55e;"><div class="cmd-head"><span class="cmd-label" style="color:#22c55e;background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.2);">2. Trigger</span></div><div class="cmd-desc">The moment that starts the checklist — usually "someone pushed code."</div></div>
+    <div class="cmd-card" style="border-left-color:#a855f7;"><div class="cmd-head"><span class="cmd-label" style="color:#a855f7;background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.2);">3. Runner</span></div><div class="cmd-desc">The brand-new, empty computer GitHub gives you just for this one check.</div></div>
+    <div class="cmd-card" style="border-left-color:#f97316;"><div class="cmd-head"><span class="cmd-label" style="color:#f97316;background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.2);">4. Job</span></div><div class="cmd-desc">One whole section of the checklist, run entirely on one runner.</div></div>
+    <div class="cmd-card" style="border-left-color:#eab308;"><div class="cmd-head"><span class="cmd-label" style="color:#eab308;background:rgba(234,179,8,0.08);border-color:rgba(234,179,8,0.2);">5. Step</span></div><div class="cmd-desc">One single line of that checklist — done in order, one at a time.</div></div>
+  </div>
+
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#64748b;"># the smallest possible workflow — read it top to bottom, out loud:</span><br>
+    <span style="color:#38bdf8;">name</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"Check my code"</span><span style="color:#475569;"> &nbsp;&nbsp;# just a label, for humans</span><br>
+    <span style="color:#38bdf8;">on</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">push</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# the TRIGGER — "run this whenever code is pushed"</span><br>
+    <span style="color:#38bdf8;">jobs</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;check-it</span><span style="color:#e2e8f0;">:</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# the JOB — you can name it anything</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;runs-on</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">ubuntu-latest</span><span style="color:#475569;"> &nbsp;&nbsp;# the RUNNER — a free, brand-new Linux machine</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;steps</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- </span><span style="color:#38bdf8;">run</span><span style="color:#e2e8f0;">: echo </span><span style="color:#22c55e;">"Hello!"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;# a STEP — one single task</span>
+  </div>
+
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:14px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#22c55e;">That's really it.</strong> Save that as <code style="color:#fbbf24;">.github/workflows/check.yml</code> inside any GitHub repo, push it, and click the <strong style="color:#e2e8f0;">Actions</strong> tab on GitHub — you'll watch that exact file run, live, in your browser. Every other feature you'll ever use in GitHub Actions is just adding more steps, more jobs, or fancier triggers on top of this same four-part shape.
+  </div>
+
+  <div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.22);border-radius:4px;padding:14px;margin-bottom:28px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#a78bfa;">📖 Want the deeper version first?</strong> The <strong style="color:#a78bfa;">🐙 GitHub Actions</strong> tab goes further into this same foundation — exactly <em>when</em> in a project's life to add each piece, a full vocabulary reference table, a 6-step line-by-line build of a real workflow file, and what the GitHub UI itself actually looks like. Read that whenever you want more depth. <strong style="color:#e2e8f0;">Everything below here is the hands-on practice layer</strong> — click around, break nothing, and see real examples of the features that come next.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERACTIVE FEATURE EXPLORER
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🖥️ Try It — Click Any GitHub Actions Feature to See Its YAML</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same click-to-explore pattern as the other "for DevOps" tabs — except here, "running" it means seeing the actual YAML plus what the Actions log looks like when it fires.</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">.github/workflows/ci.yml</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">#</span> <span id="ghaCmd">click any feature below</span></div>
+      <div class="pu-output" id="ghaOutput"><span class="dim">↳ the YAML and a simulated Actions run log show up here</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="ghaInfo">
+    <div><strong>🧩 YAML:</strong> <code id="ghaSyntax">click a feature below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="ghaDoes">Pick any feature below to get started — triggers, jobs, secrets, caching, matrix builds, and deploy steps are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="ghaWhere">—</span></div>
+  </div>
+
+  <div class="ld-cat">🚀 Triggers — "When Does This Run?"</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('onPush',this)">on: push</button>
+    <button class="ld-pill" onclick="runGhaCmd('onPushBranches',this)">on: push (branches)</button>
+    <button class="ld-pill" onclick="runGhaCmd('onPR',this)">on: pull_request</button>
+    <button class="ld-pill" onclick="runGhaCmd('onManual',this)">on: workflow_dispatch</button>
+    <button class="ld-pill" onclick="runGhaCmd('onSchedule',this)">on: schedule</button>
+  </div>
+
+  <div class="ld-cat">🏗️ Jobs &amp; Steps</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('multipleJobs',this)">two parallel jobs</button>
+    <button class="ld-pill" onclick="runGhaCmd('jobNeeds',this)">needs: (job order)</button>
+    <button class="ld-pill" onclick="runGhaCmd('ifCondition',this)">if: (conditional step)</button>
+    <button class="ld-pill" onclick="runGhaCmd('continueOnError',this)">continue-on-error</button>
+  </div>
+
+  <div class="ld-cat">📥 Actions &amp; Setup</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('checkout',this)">actions/checkout</button>
+    <button class="ld-pill" onclick="runGhaCmd('setupNode',this)">actions/setup-node</button>
+    <button class="ld-pill" onclick="runGhaCmd('runCommand',this)">run: (shell command)</button>
+    <button class="ld-pill" onclick="runGhaCmd('marketplaceAction',this)">marketplace action</button>
+  </div>
+
+  <div class="ld-cat">🔐 Secrets &amp; Env Vars</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('secretsUsage',this)">secrets.API_KEY</button>
+    <button class="ld-pill" onclick="runGhaCmd('envVars',this)">env: block</button>
+    <button class="ld-pill" onclick="runGhaCmd('githubToken',this)">secrets.GITHUB_TOKEN</button>
+  </div>
+
+  <div class="ld-cat">📦 Artifacts &amp; Caching</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('uploadArtifact',this)">upload-artifact</button>
+    <button class="ld-pill" onclick="runGhaCmd('downloadArtifact',this)">download-artifact</button>
+    <button class="ld-pill" onclick="runGhaCmd('cacheDeps',this)">actions/cache</button>
+  </div>
+
+  <div class="ld-cat">🧮 Matrix Builds</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('matrixBasic',this)">matrix (versions)</button>
+    <button class="ld-pill" onclick="runGhaCmd('matrixOS',this)">matrix (OS × version)</button>
+  </div>
+
+  <div class="ld-cat">🐳 Docker &amp; Deploy</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('dockerBuildPush',this)">build + push Docker image</button>
+    <button class="ld-pill" onclick="runGhaCmd('deploySSH',this)">deploy over SSH</button>
+    <button class="ld-pill" onclick="runGhaCmd('deployKubernetes',this)">kubectl apply step</button>
+  </div>
+
+  <div class="ld-cat">🛡️ Environments &amp; Safety</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runGhaCmd('environmentProtection',this)">environment: (approval)</button>
+    <button class="ld-pill" onclick="runGhaCmd('concurrencyGroup',this)">concurrency:</button>
+    <button class="ld-pill" onclick="runGhaCmd('permissions',this)">permissions:</button>
+    <button class="ld-pill" onclick="runGhaCmd('reusableWorkflow',this)">reusable workflow</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       REAL SCENARIOS
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn GitHub Actions by Solving the Problem First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually write, then click ▶ Run to reveal the YAML and why.</div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> You just wrote your first test suite and want it to run automatically every time anyone pushes code.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">on: push<br>jobs:<br>  test:<br>    runs-on: ubuntu-latest<br>    steps:<br>      - uses: actions/checkout@v4<br>      - run: npm test</div>
+      <div class="pu-output"><span class="ok">✓ Tests passed (12 passed, 0 failed) — 8s</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> checkout first (the runner starts empty), then run the actual test command — this is genuinely the single most common workflow that exists, and the right first one to add to any project.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> Your test suite now takes 3 minutes because it reinstalls every npm package from scratch on every single run.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">- uses: actions/cache@v4<br>  with:<br>    path: ~/.npm<br>    key: npm-${{ hashFiles('package-lock.json') }}</div>
+      <div class="pu-output"><span class="ok">Cache restored from key: npm-8f2a1c...</span><br>npm install completed in 4s <span class="dim">(was 45s)</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> caching keys off the lockfile's hash — if dependencies haven't changed, the cache hits and install becomes nearly instant; change the lockfile, and a fresh cache is built automatically.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> You need to verify your app works on both Node 18 and Node 20 before merging, without copy-pasting the whole job twice.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">strategy:<br>  matrix:<br>    node-version: [18, 20]<br>steps:<br>  - uses: actions/setup-node@v4<br>    with:<br>      node-version: ${{ matrix.node-version }}</div>
+      <div class="pu-output"><span class="ok">✓ test (node-version: 18) — passed</span><br><span class="ok">✓ test (node-version: 20) — passed</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> matrix runs the exact same job once per combination automatically — one job definition, two real runs, zero duplicated YAML.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> Your deploy step needs a database password, and you know it can never go directly in the YAML file.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">- run: ./deploy.sh<br>  env:<br>    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}</div>
+      <div class="pu-output">Deploying...<br><span class="ok">Connected to database ***</span> <span class="dim">(value automatically masked in every log)</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> the real value lives only in Settings → Secrets, encrypted — the YAML just references its name, and GitHub automatically hides it if a step ever accidentally prints it.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> A deploy job must never run unless the test job passed first — no exceptions.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">jobs:<br>  test:<br>    runs-on: ubuntu-latest<br>    steps: [...]<br>  deploy:<br>    needs: test<br>    runs-on: ubuntu-latest<br>    steps: [...]</div>
+      <div class="pu-output"><span class="ok">✓ test — passed</span><br><span class="ok">✓ deploy — started only after test succeeded</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> jobs run in parallel by default — <code>needs:</code> is the one line that forces an order, and if the job it needs fails, deploy is skipped entirely, automatically.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> You want to build a Docker image and push it to a registry every time code lands on main.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">on:<br>  push:<br>    branches: [main]<br>steps:<br>  - uses: docker/build-push-action@v5<br>    with:<br>      push: true<br>      tags: myapp:${{ github.sha }}</div>
+      <div class="pu-output"><span class="ok">Successfully pushed myapp:a3f9d2c</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> tagging the image with the commit SHA means every build is uniquely traceable back to the exact code that produced it — no ambiguous "latest" guessing later.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> Deploying to production should require a real human to click approve first — no fully automatic deploys to prod.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">jobs:<br>  deploy:<br>    environment: production<br>    runs-on: ubuntu-latest<br>    steps: [...]</div>
+      <div class="pu-output"><span class="warn">Waiting for approval on environment "production"...</span><br><span class="ok">Approved by ibrahiem17 — deploy proceeding</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> an <code>environment</code> with required reviewers configured in Settings pauses the job until someone with permission clicks approve — a real safety switch for real production.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> Someone pushes three commits in quick succession, and you don't want three overlapping deploys racing each other.</div></div>
+    <div class="scenario-cmd-label">What would you write?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">concurrency:<br>  group: deploy-production<br>  cancel-in-progress: true</div>
+      <div class="pu-output"><span class="warn">Canceling previous run in group "deploy-production"</span><br><span class="ok">Starting latest run</span></div>
+      <div class="scenario-why"><strong>Why this shape:</strong> concurrency groups make sure only the newest run in that group survives — the two stale, in-between deploys get canceled automatically instead of racing to production.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       THE REAL GITHUB UI — recreated pixel-close (not a live
+       screenshot, so it never goes stale or breaks offline), with
+       numbered callouts on exactly where to click for the most
+       basic, everyday tasks.
+       ══════════════════════════════════════════════════════════ -->
+  
+  <div class="section-title" style="margin-top:28px;">🖼️ What It Actually Looks Like — The Real GitHub Interface</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Everything above was YAML and theory. This is the actual screen you'll be looking at — recreated pixel-for-pixel so it works offline and never goes stale, but laid out exactly like the real thing. Five basic tasks, in the order you'll actually do them.</div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">1</span>&nbsp; Finding the Actions Tab</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp</span>
+    </div>
+    <div class="gh-repo-nav">
+      <span class="gh-repo-tab">&lt;&gt; Code</span>
+      <span class="gh-repo-tab">◎ Issues</span>
+      <span class="gh-repo-tab">⇄ Pull requests</span>
+      <span class="gh-repo-tab active" style="background:rgba(247,129,102,0.08);border-radius:4px 4px 0 0;">▶ Actions</span>
+      <span class="gh-repo-tab">▤ Projects</span>
+      <span class="gh-repo-tab">📖 Wiki</span>
+      <span class="gh-repo-tab">⚙ Settings</span>
+    </div>
+    <div class="gh-content" style="text-align:center;color:#484f58;font-size:11px;padding:22px 14px;">↑ every repository has this tab — nothing to install, nothing to configure to see it</div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">1</span><span>Open any repo on GitHub and look at the top row of tabs — <strong style="color:#e2e8f0;">Actions</strong> is always right there, next to Pull requests. This is the control room for every workflow that repo has ever run, past and present.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">2</span>&nbsp; Reading the List of Runs</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/actions</span>
+    </div>
+    <div class="gh-repo-nav"><span class="gh-repo-tab active">▶ Actions</span></div>
+    <div class="gh-content">
+      <div class="gh-run-row">
+        <span class="gh-status pending">●</span>
+        <div><div class="gh-run-title">Update dependencies</div><div class="gh-run-meta">CI #48 · Push · main · <em>running now</em></div></div>
+        <span class="gh-run-time">—</span>
+      </div>
+      <div class="gh-run-row">
+        <span class="gh-status ok">✓</span>
+        <div><div class="gh-run-title">Fix login validation bug</div><div class="gh-run-meta">CI #47 · Push · main · 3 minutes ago</div></div>
+        <span class="gh-run-time">1m 42s</span>
+      </div>
+      <div class="gh-run-row">
+        <span class="gh-status fail">✕</span>
+        <div><div class="gh-run-title">Add payment retry logic</div><div class="gh-run-meta">CI #46 · Pull request #12 · 22 minutes ago</div></div>
+        <span class="gh-run-time">38s</span>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">2</span><span><span style="color:#3fb950;">●</span> green check = passed, <span style="color:#f85149;">●</span> red X = failed, <span style="color:#d29922;">●</span> yellow dot = still running right now. This list alone answers "is my last change actually okay?" without opening anything else.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">3</span>&nbsp; Opening a Run to Read Its Log</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/actions/runs/47</span>
+    </div>
+    <div class="gh-split">
+      <div class="gh-sidebar">
+        <div style="font-size:9.5px;color:#484f58;padding:0 12px 6px;text-transform:uppercase;letter-spacing:.05em;">Jobs</div>
+        <div class="gh-sidebar-item active">✓ test</div>
+      </div>
+      <div style="flex:1;padding:8px 0;">
+        <div class="gh-job-step">✓ Set up job</div>
+        <div class="gh-job-step">✓ Run actions/checkout@v4</div>
+        <div class="gh-job-step">✓ Run actions/setup-node@v4</div>
+        <div class="gh-job-step open">▾ Run npm test</div>
+        <div class="gh-log-box">
+          <div class="gh-log-line">&gt; myapp@1.0.0 test</div>
+          <div class="gh-log-line">&gt; jest</div>
+          <div class="gh-log-line" style="color:#3fb950;">PASS src/auth.test.js</div>
+          <div class="gh-log-line" style="color:#3fb950;">Tests: 12 passed, 12 total</div>
+        </div>
+        <div class="gh-job-step">✓ Post actions/checkout@v4</div>
+        <div class="gh-job-step">✓ Complete job</div>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">3</span><span>Click any run, then click any step to expand it — every single step has its own log. When something goes red, this is where you actually go to read <em>why</em>, not just <em>that</em> it failed.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">4</span>&nbsp; Adding Your First Secret</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/settings/secrets/actions</span>
+    </div>
+    <div class="gh-split">
+      <div class="gh-sidebar">
+        <div class="gh-sidebar-item">General</div>
+        <div class="gh-sidebar-item">Collaborators</div>
+        <div class="gh-sidebar-item active">🔒 Secrets and variables</div>
+      </div>
+      <div style="flex:1;padding:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:11.5px;color:#e6edf3;font-weight:700;">Repository secrets</span>
+          <span class="gh-btn gh-btn-primary">+ New repository secret</span>
+        </div>
+        <div style="border:1px solid #30363d;border-radius:8px;padding:12px;background:#161b22;">
+          <div class="gh-form-row"><label class="gh-form-label">Name *</label><input class="gh-form-input" value="DOCKER_TOKEN" readonly></div>
+          <div class="gh-form-row"><label class="gh-form-label">Secret *</label><input class="gh-form-input" value="••••••••••••••••••••" readonly></div>
+          <span class="gh-btn gh-btn-primary">Add secret</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">4</span><span>Settings → <strong style="color:#e2e8f0;">Secrets and variables → Actions</strong> → New repository secret. The <strong style="color:#e2e8f0;">Name</strong> you type here is exactly what <code style="color:#fbbf24;">secrets.DOCKER_TOKEN</code> refers to in your YAML. Once saved, you can overwrite it — you can never view it again.</span></div>
+
+  <div style="font-size:12px;color:#e6edf3;font-weight:700;margin-bottom:8px;"><span class="gh-num">5</span>&nbsp; Manually Triggering a Workflow</div>
+  <div class="gh-mock">
+    <div class="gh-browserbar">
+      <span class="gh-dot" style="background:#ff5f56"></span><span class="gh-dot" style="background:#ffbd2e"></span><span class="gh-dot" style="background:#27c93f"></span>
+      <span class="gh-url">github.com/ibrahiem17/myapp/actions/workflows/ci.yml</span>
+    </div>
+    <div class="gh-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:11.5px;color:#e6edf3;font-weight:700;">CI</span>
+        <span class="gh-btn gh-btn-default">Run workflow ▾</span>
+      </div>
+      <div class="gh-popover">
+        <div style="font-size:10px;color:#8b949e;margin-bottom:8px;">Use workflow from</div>
+        <div class="gh-form-input" style="margin-bottom:10px;">Branch: main ▾</div>
+        <span class="gh-btn gh-btn-primary" style="width:100%;justify-content:center;box-sizing:border-box;">Run workflow</span>
+      </div>
+    </div>
+  </div>
+  <div class="gh-caption"><span class="gh-num">5</span><span>This button only shows up if the workflow has <code style="color:#fbbf24;">on: workflow_dispatch</code>. Pick a branch, click <strong style="color:#e2e8f0;">Run workflow</strong>, and it appears at the top of the runs list within a second or two — no push needed at all.</span></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       QUIZ
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎮 Test Yourself — GitHub Actions for DevOps Quiz</div>
+  <div class="quiz-game" id="quiz-ghactionsdevops">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">🐙</div>
+      <div class="quiz-start-title">GitHub Actions for DevOps Quiz</div>
+      <div class="quiz-start-desc">50 questions — starting from true basics (what's a workflow, what's a runner) and building up to triggers, secrets, matrix builds, caching, and real troubleshooting scenarios. Shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-ghactionsdevops', GHADEVOPS_QUIZ_JOKES, GHADEVOPS_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
+      </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+    </div>
+
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-ghactionsdevops')">↻ Play Again</button>
+    </div>
+  </div>
+

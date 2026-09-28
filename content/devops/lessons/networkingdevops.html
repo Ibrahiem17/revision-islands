@@ -1,0 +1,213 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🌐 Networking, the practical way</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🧠</span><div class="analogy-text"><strong>Learn the idea</strong><br>One concept at a time</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>Run the real command</strong><br>See the real output</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🧪</span><div class="analogy-text"><strong>Build a tiny lab</strong><br>Prove it to yourself</div></div>
+  </div>
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    The <strong style="color:#e2e8f0;">🌐 Networking</strong> tab next to this one covers the deep theory — OSI-style concepts, the full request journey, why any of this exists. This tab is the <strong style="color:#38bdf8;">hands-on, practical companion</strong>: 13 topics, in the exact order a DevOps engineer would actually learn them, each one built the same way — <strong style="color:#e2e8f0;">what it is, the real command, the real output, and a tiny lab</strong> to actually prove it to yourself. Built for someone who's never typed a single one of these commands before.
+  </div>
+
+  <div class="section-title">🚀 The Order I'd Learn These In</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:16px 20px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:2.1;display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+    <div><span class="found-code">1</span>&nbsp; IP Addressing<br><span class="found-code">2</span>&nbsp; DNS<br><span class="found-code">3</span>&nbsp; Ports<br><span class="found-code">4</span>&nbsp; TCP vs UDP<br><span class="found-code">5</span>&nbsp; HTTP / HTTPS<br><span class="found-code">6</span>&nbsp; SSH</div>
+    <div><span class="found-code">7</span>&nbsp; Firewalls<br><span class="found-code">8</span>&nbsp; Routing<br><span class="found-code">9</span>&nbsp; Nginx (Reverse Proxy)<br><span class="found-code">10</span> Load Balancing<br><span class="found-code">11</span> APIs + JSON<br><span class="found-code">12</span> AWS Networking &nbsp;<span class="found-code">13</span> Troubleshooting</div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🧪</div>
+    <div>
+      <div class="loop-title">The formula behind every topic below</div>
+      <div class="loop-desc">Learn the concept <span class="loop-arrow">→</span> use Linux commands <span class="loop-arrow">→</span> try a tiny app example <span class="loop-arrow">→</span> (eventually) deploy it to AWS <span class="loop-arrow">→</span> break it on purpose <span class="loop-arrow">→</span> fix it. <span class="loop-arrow">|</span> That loop — not memorizing definitions — is genuinely how DevOps engineers actually learn networking.</div>
+    </div>
+  </div>
+
+  <div class="section-title">🖥️ Try It — Click Any Command Below to "Run" It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 12px;">Same simulator as Linux for DevOps — pick any command from any topic below, in any order. Every command runs <strong style="color:#94a3b8;">3 separate times</strong>, in 3 different real situations — each in its own box.</div>
+
+  <div id="ndRunsArea">
+    <div class="ld-term">
+      <div class="ld-term-bar">
+        <span class="ld-dot" style="background:#ff5f56"></span>
+        <span class="ld-dot" style="background:#ffbd2e"></span>
+        <span class="ld-dot" style="background:#27c93f"></span>
+        <span class="ld-term-title">devops@server: ~</span>
+      </div>
+      <div class="ld-term-body">
+        <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> click any command below</div>
+        <div class="pu-output"><span class="dim">↳ output shows up here the moment you click something</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ld-info" id="ndInfo">
+    <div><strong>🧩 Syntax (the general shape):</strong> <code id="ndSyntax">click a command below</code></div>
+    <div style="margin-top:6px;"><strong>▶️ What it does:</strong> <span id="ndDoes">Pick any command below to get started — IP addressing, DNS, ports, SSH, firewalls, Nginx, and more are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="ndWhere">—</span></div>
+  </div>
+
+  <div class="sl-breakdown" id="ndBreakdownBox" style="margin-top:10px;">
+    <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+    <div class="sl-breakdown-list" id="ndBreakdownList"><span class="dim">Click a command above — every piece of its syntax gets broken down here, one at a time.</span></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:24px;">
+    <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+    <div id="ndWhyUseful"><span class="dim">Click a command above to see a real problem it solves, with a real example.</span></div>
+  </div>
+
+  <!-- ============ TOPIC 1: IP ADDRESSING ============ -->
+  <div class="ld-cat">1️⃣ 📍 IP Addressing ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">An IP address is just a machine's "phone number" on a network. Every device gets one — a <strong style="color:#e2e8f0;">private</strong> one (like 192.168.1.100) that only works inside your own network, and often a <strong style="color:#e2e8f0;">public</strong> one that the whole internet can see. <span class="found-code">127.0.0.1</span> is special — it always means "this machine, talking to itself." CIDR notation like <span class="found-code">/24</span> says how many addresses are in a block — the deep math is in the 🌐 Networking tab; here, just recognize it when you see it.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ipAddr',this)">ip addr</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('hostnameI',this)">hostname -I</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ifconfigMe',this)">curl ifconfig.me</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run <span class="found-code">ip addr</span> on your own machine, and separately run <span class="found-code">curl ifconfig.me</span>. Write down both numbers. One is your <strong>private</strong> IP (only your router/home network can reach it) — the other is your <strong>public</strong> IP (what the entire internet sees you as). If you're behind a router — which almost everyone is — these two numbers will be completely different. That difference <em>is</em> the whole lesson.</div>
+
+  <!-- ============ TOPIC 2: DNS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">2️⃣ 🌍 DNS ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">DNS is the internet's phonebook — it turns a name like <span class="found-code">google.com</span> into an IP address, because humans remember names and computers need numbers. An <strong style="color:#e2e8f0;">A record</strong> maps a name to an IPv4 address (the most common one). <strong style="color:#e2e8f0;">AAAA</strong> does the same for IPv6. <strong style="color:#e2e8f0;">CNAME</strong> points one name at another name instead of an IP. <strong style="color:#e2e8f0;">MX</strong> says where email for a domain should go. <strong style="color:#e2e8f0;">TXT</strong> holds arbitrary text, often used to prove you own a domain.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('nslookup',this)">nslookup</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('dig',this)">dig</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('host',this)">host</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run <span class="found-code">dig</span> (or <span class="found-code">nslookup</span>) against three different domains — <span class="found-code">github.com</span>, <span class="found-code">google.com</span>, and <span class="found-code">amazon.com</span> — and write down the IP address each one resolves to. Notice they're all completely different numbers, run by completely different companies, and DNS is the only reason typing a name instead of a raw IP works at all.</div>
+
+  <!-- ============ TOPIC 3: PORTS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">3️⃣ 🔌 Ports ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">If an IP address is a building, a port is the specific apartment number inside it — one machine can run many services at once, each one "listening" on its own port. A port is <strong style="color:#e2e8f0;">listening</strong> if something is actively waiting for connections on it, and <strong style="color:#e2e8f0;">closed</strong> if nothing is. Worth memorizing: <span class="found-code">22</span> SSH · <span class="found-code">53</span> DNS · <span class="found-code">80</span> HTTP · <span class="found-code">443</span> HTTPS · <span class="found-code">3306</span> MySQL · <span class="found-code">5432</span> PostgreSQL · <span class="found-code">6379</span> Redis · <span class="found-code">27017</span> MongoDB.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ssTuln',this)">ss -tuln</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('lsofPort',this)">lsof -i :3000</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Start any tiny local web server (even <span class="found-code">python3 -m http.server 3000</span> works) so it's listening on port 3000. Open <span class="found-code">http://localhost:3000</span> in a browser to confirm it responds — then, in a terminal, use <span class="found-code">ss -tuln</span> to find port 3000 in the listening list, and <span class="found-code">lsof -i :3000</span> to see exactly which process owns it. Stop the server and run both commands again — notice port 3000 disappears from both.</div>
+
+  <!-- ============ TOPIC 4: TCP vs UDP ============ -->
+  <div class="ld-cat" style="margin-top:24px;">4️⃣ 🔀 TCP vs UDP ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;"><strong style="color:#e2e8f0;">TCP</strong> is reliable and connection-oriented — it checks every piece of data arrived, in order, and resends anything lost. Slower, but nothing goes missing. <strong style="color:#e2e8f0;">UDP</strong> is connectionless and faster — it just fires data and doesn't look back. Nothing is guaranteed to arrive, but there's no handshake overhead either. Neither is "better" — they're for different jobs.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ssT',this)">ss -t</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ssU',this)">ss -u</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Without looking it up, guess whether each of these is TCP or UDP, then check your reasoning: SSH, HTTP, DNS, a live video call. (Answer: SSH → TCP, HTTP → TCP — a dropped byte in a web page would actually break it. DNS → UDP, video calls → UDP — speed matters more than a perfectly reliable single lookup or frame.) The pattern: <em>anything where losing a little data is fine, but delay isn't, leans UDP — everything else leans TCP.</em></div>
+
+  <!-- ============ TOPIC 5: HTTP/HTTPS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">5️⃣ 🌐 HTTP and HTTPS ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">Every web request is a <strong style="color:#e2e8f0;">request</strong> going out and a <strong style="color:#e2e8f0;">response</strong> coming back — each one has <strong style="color:#e2e8f0;">headers</strong> (metadata) and often a <strong style="color:#e2e8f0;">body</strong> (the actual content). The method says the intent: <span class="found-code">GET</span> read, <span class="found-code">POST</span> create, <span class="found-code">PUT</span>/<span class="found-code">PATCH</span> update, <span class="found-code">DELETE</span> remove. The status code says the outcome: <span class="found-code">200</span>/<span class="found-code">201</span> success, <span class="found-code">301</span> redirected, <span class="found-code">400</span>/<span class="found-code">401</span>/<span class="found-code">403</span>/<span class="found-code">404</span> a problem with the request, <span class="found-code">500</span>/<span class="found-code">502</span>/<span class="found-code">503</span> a problem on the server. <strong style="color:#e2e8f0;">HTTPS</strong> is the exact same thing, wrapped in TLS/SSL encryption using a certificate, so nobody in between can read or tamper with it.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlPlain',this)">curl</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlI',this)">curl -I</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlV',this)">curl -v</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Make a tiny Express API — literally just <span class="found-code">app.get("/", (req, res) =&gt; res.send("Hello"))</span> — run it locally, then hit it three different ways: <span class="found-code">curl localhost:3000</span> (see the body), <span class="found-code">curl -I localhost:3000</span> (see only the status/headers), and <span class="found-code">curl -v localhost:3000</span> (see the entire request AND response). Same endpoint, three completely different levels of detail.</div>
+
+  <!-- ============ TOPIC 6: SSH ============ -->
+  <div class="ld-cat" style="margin-top:24px;">6️⃣ 🔑 SSH ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">SSH is how you remotely log into another machine's terminal, securely. <strong style="color:#e2e8f0;">Password authentication</strong> works but is weaker and annoying to type every time. <strong style="color:#e2e8f0;">SSH keys</strong> are the real-world default: a <strong style="color:#e2e8f0;">private key</strong> that stays on your machine forever and a <strong style="color:#e2e8f0;">public key</strong> you copy onto every server you want to access — the server can verify it's really you without a password ever crossing the network.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('sshKeygen',this)">ssh-keygen</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('sshConnect',this)">ssh user@ip</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('scpCopy',this)">scp</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('useraddExpireNet',this)">useradd -e</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('chageListNet',this)">chage -l</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Launch a small AWS EC2 instance (the <strong style="color:#38bdf8;">☁️ VPC &amp; EC2</strong> tab covers this in depth), generate a key pair with <span class="found-code">ssh-keygen</span> if you haven't already, and connect to your new instance with <span class="found-code">ssh -i your-key.pem user@your-instance-ip</span>. The moment your terminal prompt changes to show the instance's hostname, you're genuinely operating a real remote computer.</div>
+
+  <!-- ============ TOPIC 7: FIREWALLS ============ -->
+  <div class="ld-cat" style="margin-top:24px;">7️⃣ 🛡️ Firewalls ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A firewall decides what traffic is allowed in or out. <strong style="color:#e2e8f0;">Inbound</strong> is traffic coming TO this machine; <strong style="color:#e2e8f0;">outbound</strong> is traffic leaving it. An <strong style="color:#e2e8f0;">allow</strong> rule lets specific traffic through; a <strong style="color:#e2e8f0;">deny</strong> rule blocks it. The golden rule everywhere in DevOps: only open exactly the ports that need to be open.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ufwStatus',this)">sudo ufw status</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ufwAllow80',this)">sudo ufw allow 80</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('ufwAllow443',this)">sudo ufw allow 443</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> With your Node app running on port 3000, block it with <span class="found-code">sudo ufw deny 3000</span> and try to reach it — it should now time out or refuse the connection, even though the app itself is still running fine. Then run <span class="found-code">sudo ufw allow 3000</span> and try again — it works instantly. This is the clearest possible proof that "the app is running" and "the app is reachable" are two completely separate questions.</div>
+
+  <!-- ============ TOPIC 8: ROUTING ============ -->
+  <div class="ld-cat" style="margin-top:24px;">8️⃣ 🛣️ Routing ⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A <strong style="color:#e2e8f0;">router</strong> forwards traffic between networks. Every machine has a <strong style="color:#e2e8f0;">default gateway</strong> — the router it sends anything to when it doesn't have a more specific route. The <strong style="color:#e2e8f0;">routing table</strong> is the actual list of rules deciding where each destination's traffic goes.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('ipRoute',this)">ip route</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('traceroute',this)">traceroute</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run <span class="found-code">traceroute google.com</span> and read every hop out loud, in order: your laptop → your router → your ISP → the wider internet → Google's own network. Each line is a real, physical (or virtual) network your request actually passed through in milliseconds — this is what "the internet" concretely is.</div>
+
+  <!-- ============ TOPIC 9: REVERSE PROXY ============ -->
+  <div class="ld-cat" style="margin-top:24px;">9️⃣ 🔁 Reverse Proxies (Nginx) ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A <strong style="color:#e2e8f0;">reverse proxy</strong> sits in front of your real app and forwards ("proxies") requests to it — users only ever talk to the proxy, never directly to your app. This is also called <strong style="color:#e2e8f0;">port forwarding</strong> in the simplest case: taking a request on one port and quietly handing it to a different port behind the scenes.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('nginxInstall',this)">sudo apt install nginx</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('nginxConfig',this)">nginx proxy_pass config</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> With your Node app still running on port 3000, install Nginx and add the <span class="found-code">proxy_pass http://localhost:3000;</span> config from the pill above. Reload Nginx, then visit your server on plain port 80 (no ":3000" in the URL) — you should see your app's exact response. Browser → Nginx → Node.js, three hops, one seamless response.</div>
+
+  <!-- ============ TOPIC 10: LOAD BALANCING ============ -->
+  <div class="ld-cat" style="margin-top:24px;">🔟 ⚖️ Load Balancing ⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">Load balancing exists because one server can only handle so much, and one server dying shouldn't take your whole app down with it. A load balancer <strong style="color:#e2e8f0;">distributes</strong> incoming traffic across several identical backends, which is exactly what gives a system <strong style="color:#e2e8f0;">high availability</strong> — no single point of failure.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('nginxUpstream',this)">nginx upstream (2 backends)</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Run two copies of the exact same tiny Node app — one on port 3000, one on port 3001 (each printing which port it's on, so you can tell them apart). Put Nginx in front of both using the <span class="found-code">upstream</span> block from the pill above. Refresh the page in your browser a few times and watch the response alternate between "3000" and "3001" — that alternation IS load balancing, happening live in front of you.</div>
+
+  <!-- ============ TOPIC 11: APIs + JSON ============ -->
+  <div class="ld-cat" style="margin-top:24px;">1️⃣1️⃣ 📦 APIs and JSON ⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 10px;">A <strong style="color:#e2e8f0;">REST API</strong> is just a web server whose responses are meant to be read by code instead of a browser. <strong style="color:#e2e8f0;">JSON</strong> is the plain-text format almost every API speaks — nested keys and values, easy for both humans and programs to read. An API "request" and "response" are genuinely just HTTP, exactly like everything else in this tab.</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlApi',this)">curl (call an API)</button>
+    <button class="ld-pill" onclick="runNetDevopsCmd('curlJq',this)">curl | jq</button>
+  </div>
+  <div class="found-key" style="margin-top:10px;">🧪 <strong>Build a lab:</strong> Install <span class="found-code">jq</span> (<span class="found-code">sudo apt install jq</span>), then run <span class="found-code">curl https://jsonplaceholder.typicode.com/posts/1</span> and read the dense, one-line result. Now pipe the exact same command into <span class="found-code">jq</span> and compare — same data, but suddenly indented and genuinely readable. This one habit will save you real time on every API you ever debug.</div>
+
+  <!-- ============ TOPIC 12: AWS NETWORKING ============ -->
+  <div class="ld-cat" style="margin-top:24px;">1️⃣2️⃣ ☁️ AWS Networking ⭐⭐⭐⭐⭐</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 12px;">A <strong style="color:#e2e8f0;">VPC</strong> is your own private network inside AWS — nothing in it is reachable by anyone until you explicitly allow it. Inside a VPC, <strong style="color:#e2e8f0;">subnets</strong> split it into smaller pieces — a <strong style="color:#e2e8f0;">public subnet</strong> can reach the internet, a <strong style="color:#e2e8f0;">private subnet</strong> can't (on purpose — that's where your database usually lives). An <strong style="color:#e2e8f0;">Internet Gateway</strong> is what actually provides that internet access. A <strong style="color:#e2e8f0;">Security Group</strong> acts like a firewall around individual resources. A <strong style="color:#e2e8f0;">Route Table</strong> controls where each subnet's traffic is allowed to go. This is genuinely everything above (IPs, ports, firewalls, routing) — just AWS's specific names for the same ideas. The <strong style="color:#38bdf8;">☁️ VPC &amp; EC2</strong> tab covers building these step by step in real depth.</div>
+  <div class="found-pre" style="margin-bottom:12px;">VPC
+ └─ Public subnet
+      └─ Internet Gateway (gives it internet access)
+      └─ Security Group (firewall around your instance)
+      └─ EC2 instance ← your actual server</div>
+  <div class="found-key">🧪 <strong>Build a lab:</strong> Following the <strong style="color:#38bdf8;">☁️ VPC &amp; EC2</strong> tab, create a VPC → a public subnet → attach an Internet Gateway → open a Security Group rule for port 22 (and 80, once your app is on it) → launch an EC2 instance inside that subnet. Then deploy your tiny Node app to it. Every single piece you just clicked through has a name from earlier in THIS tab — a VPC is a network, a subnet is a smaller network, a Security Group is a firewall, and SSH is still just SSH.</div>
+
+  <!-- ============ TOPIC 13: TROUBLESHOOTING ============ -->
+  <div class="section-title" style="margin-top:28px;">1️⃣3️⃣ 🧯 Troubleshooting ⭐⭐⭐⭐⭐ — Probably the Most Important Skill in This Whole Tab</div>
+  <div style="font-size:11.5px;color:#94a3b8;line-height:1.8;margin:0 0 14px;">When something breaks, you don't need to be a genius — you need to check things <em>in order</em>, one layer at a time, and stop as soon as you find the one that's actually broken. This exact order works for almost every "it's not working" networking problem you'll ever hit:</div>
+  <div class="found-pre" style="font-size:11px;">Application isn't working.
+        │
+        ↓
+Is the application running?              →  ps aux / ss -tuln
+        │
+        ↓
+Is the port open?                        →  ss -tuln / lsof -i :port
+        │
+        ↓
+Can I ping the server?                   →  ping &lt;ip&gt;
+        │
+        ↓
+Does DNS work?                           →  dig / nslookup
+        │
+        ↓
+Can I SSH into it?                       →  ssh user@ip
+        │
+        ↓
+Is the firewall blocking it?             →  sudo ufw status
+        │
+        ↓
+Is Nginx configured correctly?           →  cat /etc/nginx/sites-available/default
+        │
+        ↓
+Are the AWS Security Groups correct?     →  check inbound rules in the AWS console</div>
+  <div class="loop-box" style="margin-top:14px;">
+    <div class="loop-icon">🧯</div>
+    <div>
+      <div class="loop-title">Every single command in that checklist is already above, in this exact tab</div>
+      <div class="loop-desc">That's not a coincidence — troubleshooting isn't a 14th skill on top of everything else, it's just the other 12 topics, used together, in order, under pressure. <span class="loop-arrow">|</span> The engineers who look calm during an outage aren't smarter — they just have this exact list memorized.</div>
+    </div>
+  </div>
+

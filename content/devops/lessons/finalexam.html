@@ -1,0 +1,319 @@
+
+
+  <div style="background:linear-gradient(135deg,rgba(56,189,248,0.06),rgba(168,85,247,0.06));border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:16px;margin-bottom:24px;text-align:center;">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#f8fafc;margin-bottom:6px;">🏆 Final Exam — The Hardest Questions</div>
+    <div style="font-size:11px;color:#64748b;">These are the questions that separate junior from mid/senior DevOps engineers. Read every answer. Own every concept.</div>
+  </div>
+
+  <div class="section-title">🔥 Deep Design Questions</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a855f7;background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.2);">FE01</span><span class="qa-q-text">Design a zero-downtime database migration strategy for a production app with millions of users.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        This tests understanding of backward compatibility, deployment sequencing, and rollback safety.<br><br>
+        <strong>The core problem:</strong> You can't take the DB offline. You can't deploy app + DB migration simultaneously — the old app will hit new schema during rollout, and the new app will hit old schema before migration completes.<br><br>
+        <strong>The Expand-Contract Pattern (3 phases):</strong><br><br>
+        <strong>Phase 1 — Expand (backward compatible change):</strong><br>
+        Add the new column/table as nullable. Deploy nothing yet. Existing app still works with old schema. Run the migration to add the column.<br><br>
+        <strong>Phase 2 — Migrate (dual-write or backfill):</strong><br>
+        Deploy new version of app that writes to BOTH old and new columns. Backfill existing rows with a background job. Once backfill completes and new column has all data, both versions of the app work.<br><br>
+        <strong>Phase 3 — Contract (remove old column):</strong><br>
+        Deploy app version that only reads/writes new column. Then drop the old column in a separate migration.<br><br>
+        <strong>Key rule:</strong> Never deploy a breaking schema change and application change simultaneously. Always make schema changes backward compatible first.<br><br>
+        <span class="qa-pill">expand → migrate → contract</span><span class="qa-pill">backward compatible first</span><span class="qa-pill">never simultaneous app + schema deploy</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a855f7;background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.2);">FE02</span><span class="qa-q-text">How do you secure a Kubernetes cluster end-to-end? Walk through every layer.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Layer 1 — API Server access:</strong><br>
+        Disable anonymous authentication. Use RBAC — no wildcard permissions. Audit logging on. Never expose the API server to the internet — use a bastion or VPN.<br><br>
+        <strong>Layer 2 — Node security:</strong><br>
+        Workers in private subnets. Security groups block all but necessary ports. OS hardened. Automated patch management via managed node groups (EKS handles this).<br><br>
+        <strong>Layer 3 — Pod security:</strong><br>
+        Run containers as non-root (<code>runAsNonRoot: true</code>). Read-only root filesystem. Drop all Linux capabilities, add back only what's needed. Pod Security Admission enforces these standards.<br><br>
+        <strong>Layer 4 — Network security:</strong><br>
+        NetworkPolicies — by default all pods can talk to all pods. Apply least-privilege NetworkPolicies: payment service can only talk to DB, not to the logging service.<br><br>
+        <strong>Layer 5 — Secrets:</strong><br>
+        Never store real secrets in K8s Secrets unencrypted. Use Sealed Secrets or External Secrets Operator (sync from AWS Secrets Manager). Encrypt etcd at rest.<br><br>
+        <strong>Layer 6 — Images:</strong><br>
+        Only pull from trusted registries. Scan images for CVEs in CI (Trivy, Snyk). Use image digest pinning instead of mutable tags (<code>:latest</code> is dangerous).<br><br>
+        <strong>Layer 7 — Audit + Monitoring:</strong><br>
+        K8s audit logs → Cloudwatch/SIEM. Runtime threat detection (Falco watches for suspicious syscalls). Alert on privilege escalation attempts.<br><br>
+        <span class="qa-pill">RBAC + no wildcards</span><span class="qa-pill">non-root pods</span><span class="qa-pill">NetworkPolicies</span><span class="qa-pill">encrypted secrets</span><span class="qa-pill">image scanning</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a855f7;background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.2);">FE03</span><span class="qa-q-text">Design a disaster recovery plan for a multi-region AWS application with an RTO of 1 hour and RPO of 5 minutes.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>RTO (Recovery Time Objective)</strong> = how long can you be down? 1 hour max.<br>
+        <strong>RPO (Recovery Point Objective)</strong> = how much data can you lose? 5 minutes max.<br><br>
+        <strong>Data strategy (RPO = 5 mins):</strong><br>
+        RDS Multi-AZ for same-region HA (synchronous replication, ~0 RPO). Cross-region: enable RDS Read Replica in us-west-2 with async replication (lag ~1-3 mins, meets 5 min RPO). For S3: enable Cross-Region Replication with versioning.<br><br>
+        <strong>Compute strategy (RTO = 1 hour):</strong><br>
+        Run a "warm standby" in the secondary region — ECS/EKS cluster at minimum capacity (1 pod per service). Can scale up in ~10 minutes. Keep AMIs replicated cross-region for fast EC2 launch.<br><br>
+        <strong>Networking:</strong><br>
+        Route 53 health checks on primary region. Failover routing policy: if primary health check fails, Route 53 automatically routes traffic to secondary region's ALB. DNS TTL set to 60 seconds so failover propagates in ~1 min.<br><br>
+        <strong>Runbook automation:</strong><br>
+        Pre-written runbook (ideally automated with AWS Systems Manager). Promotes RDS read replica to primary. Scales up secondary compute. Updates any hardcoded endpoints. Target: RTO under 15 minutes in practice.<br><br>
+        <strong>Regular DR drills:</strong><br>
+        Test the failover quarterly. "Game days" — actually fail over to secondary. A DR plan never tested is not a DR plan.<br><br>
+        <span class="qa-pill">RDS cross-region replica (5 min lag)</span><span class="qa-pill">warm standby compute</span><span class="qa-pill">Route 53 health check + failover</span><span class="qa-pill">drill quarterly</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a855f7;background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.2);">FE04</span><span class="qa-q-text">Your microservices system has 50 services. Deploys have become slow and risky. How do you redesign the CI/CD architecture?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Problem analysis:</strong> With 50 services, a monorepo pipeline that rebuilds everything on every commit is catastrophic. A polyrepo without shared standards leads to 50 different pipeline configs.<br><br>
+        <strong>Solution: Service-specific pipelines with shared templates:</strong><br><br>
+        <strong>1. Affected-only builds:</strong> Only build and deploy services whose code actually changed. Use tools like Nx, Turborepo (monorepo) or trigger detection scripts that check which directories changed via <code>git diff</code>.<br><br>
+        <strong>2. Pipeline templates:</strong> Create reusable GitHub Actions workflow templates / Jenkins shared libraries. Every service uses the same tested template. Change the template once, all services get it.<br><br>
+        <strong>3. GitOps for deployments:</strong> Separate application code repos from deployment config repos. CI writes the new image tag to the deployment repo. ArgoCD picks it up and syncs. Rollback = revert a Git commit.<br><br>
+        <strong>4. Parallel execution:</strong> Independent services build and test in parallel. Only sequential steps are: test → build image → deploy to staging → integration test → deploy to prod.<br><br>
+        <strong>5. Contract testing:</strong> Instead of expensive full integration tests, use consumer-driven contract tests (Pact). Each service tests its interface contracts independently — no full stack needed.<br><br>
+        <strong>6. Progressive delivery:</strong> All production deploys via canary (5% → 25% → 100%). Automated rollback if error rate spikes. Operators monitor, not babysit.<br><br>
+        <span class="qa-pill">affected-only builds</span><span class="qa-pill">shared pipeline templates</span><span class="qa-pill">GitOps for deploy</span><span class="qa-pill">canary everywhere</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#a855f7;background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.2);">FE05</span><span class="qa-q-text">How would you migrate a legacy monolith from bare-metal servers to AWS with zero downtime?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Phase 1 — Lift and Shift (0 risk):</strong><br>
+        Mirror the monolith to EC2 first. Don't refactor yet. Use AWS Server Migration Service or manually replicate. Set up the same environment. Validate it works identically.<br><br>
+        <strong>Phase 2 — Database migration:</strong><br>
+        Use AWS DMS (Database Migration Service) to continuously sync the on-premise DB to RDS with CDC (Change Data Capture) replication running live. Zero data loss.<br><br>
+        <strong>Phase 3 — Traffic shifting:</strong><br>
+        Both environments running simultaneously. Use weighted DNS (Route 53) to shift 5% → 25% → 50% → 100% of traffic to AWS. Monitor error rates at each step. Rollback = flip DNS weight back.<br><br>
+        <strong>Phase 4 — Cutover:</strong><br>
+        Once 100% traffic on AWS, freeze on-premise writes, run final DB sync, promote RDS as primary. Decommission on-premise.<br><br>
+        <strong>Phase 5 — Containerize (optional, later):</strong><br>
+        Once stable on AWS, containerize into Docker/ECS. Then, if needed, break apart into microservices (Strangler Fig pattern).<br><br>
+        <strong>Key principle:</strong> Lift and shift first. Optimize after. Never try to refactor AND migrate at the same time — too risky.<br><br>
+        <span class="qa-pill">lift and shift first</span><span class="qa-pill">DMS for live DB sync</span><span class="qa-pill">weighted DNS cutover</span><span class="qa-pill">containerize after</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">🔥 More Scenario Questions</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE06</span><span class="qa-q-text">A Kubernetes pod is stuck in "Pending" state for 20 minutes. Walk through every possible cause.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        Pending = the pod has been accepted by K8s but no node has been assigned yet. The Scheduler couldn't place it.<br><br>
+        <strong>Run first:</strong> <code>kubectl describe pod &lt;name&gt;</code> — read the Events. The answer is almost always in there.<br><br>
+        <strong>Cause 1 — Insufficient resources:</strong> Pod requests 4 CPU but no node has 4 free CPUs. Events say "Insufficient cpu" or "Insufficient memory". Fix: scale up the node group or reduce resource requests.<br><br>
+        <strong>Cause 2 — No matching node (NodeSelector/Affinity):</strong> Pod has a nodeSelector requiring <code>type: gpu</code> but no GPU nodes exist. Fix: add the right nodes or remove the constraint.<br><br>
+        <strong>Cause 3 — Taints and Tolerations:</strong> All nodes have taints the pod doesn't tolerate. Fix: add tolerations to the pod spec.<br><br>
+        <strong>Cause 4 — PVC not bound:</strong> Pod requires a PersistentVolumeClaim that hasn't been provisioned yet or the StorageClass can't provision in this AZ. Events say "waiting for volume to be created". Fix: check PVC status with <code>kubectl get pvc</code>.<br><br>
+        <strong>Cause 5 — Image pull limit (indirect):</strong> Sometimes indirectly — if init containers are failing during scheduling evaluation.<br><br>
+        <strong>Cause 6 — Cluster autoscaler delay:</strong> Node group needs to scale up to accommodate the pod. Check if a new node is being provisioned with <code>kubectl get nodes</code>.<br><br>
+        <span class="qa-pill">describe pod = look at Events</span><span class="qa-pill">insufficient resources</span><span class="qa-pill">nodeSelector mismatch</span><span class="qa-pill">PVC not bound</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE07</span><span class="qa-q-text">Your Docker image is 2.4GB. The team wants it under 100MB. How do you do it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Step 1 — Diagnose first:</strong> <code>docker image history myapp:latest</code> — see which layers are large. <code>dive myapp:latest</code> (tool) for interactive layer inspection.<br><br>
+        <strong>Step 2 — Switch to Alpine or Distroless base:</strong><br>
+        <code>FROM node:18</code> = ~950MB. <code>FROM node:18-alpine</code> = ~170MB. <code>FROM gcr.io/distroless/nodejs18</code> = ~100MB. This alone often cuts 80%.<br><br>
+        <strong>Step 3 — Multi-stage build:</strong><br>
+        Build in a full image (with compilers, dev dependencies). Copy only the final compiled artifact to a minimal runtime image. The build tools never end up in production.<br><br>
+        <strong>Step 4 — .dockerignore:</strong><br>
+        Add <code>node_modules/</code>, <code>.git/</code>, <code>tests/</code>, <code>*.md</code>, <code>coverage/</code>. These shouldn't be COPY'd into the image.<br><br>
+        <strong>Step 5 — Combine RUN commands:</strong><br>
+        Each <code>RUN</code> is a layer. Combine: <code>RUN apt-get update &amp;&amp; apt-get install -y curl &amp;&amp; rm -rf /var/lib/apt/lists/*</code>. Cleaning up in the same layer prevents the garbage from persisting.<br><br>
+        <strong>Step 6 — Don't install dev dependencies:</strong><br>
+        <code>npm install --production</code> or <code>npm ci --only=production</code>. Dev packages can be 10x the size of prod packages.<br><br>
+        <span class="qa-pill">dive to inspect layers</span><span class="qa-pill">alpine/distroless base</span><span class="qa-pill">multi-stage build</span><span class="qa-pill">.dockerignore</span><span class="qa-pill">combine RUN commands</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE08</span><span class="qa-q-text">You run `terraform apply` and it destroys a production database. It wasn't supposed to. Why did this happen and how do you prevent it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Why it happened — common causes:</strong><br><br>
+        <strong>1. Resource rename:</strong> Someone renamed the Terraform resource block (e.g., <code>resource "aws_db_instance" "db"</code> → <code>resource "aws_db_instance" "prod_db"</code>). Terraform sees the old one as deleted and new one as created. Result: destroy + create.<br><br>
+        <strong>2. Force-replace flag:</strong> Someone ran <code>terraform apply -replace=aws_db_instance.db</code>.<br><br>
+        <strong>3. Changed an immutable attribute:</strong> Some AWS resource attributes can't be updated in-place (e.g., changing RDS engine version). Terraform destroys and recreates.<br><br>
+        <strong>Prevention — multiple layers:</strong><br><br>
+        <strong>lifecycle prevent_destroy:</strong><br>
+        <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:3px;padding:8px;margin:6px 0;font-size:10px;color:#fbbf24;">resource "aws_db_instance" "prod_db" {
+  lifecycle {
+    prevent_destroy = true
+  }
+}</pre>
+        Terraform will refuse to destroy this resource. Any plan attempting to destroy it will fail.<br><br>
+        <strong>Require plan review:</strong> Never run <code>terraform apply</code> directly in prod. CI/CD pipeline generates a plan, posts it as PR comment, requires human approval before applying.<br><br>
+        <strong>terraform state mv:</strong> If you need to rename a resource, use <code>terraform state mv old_name new_name</code> to rename it in the state file without destroying it.<br><br>
+        <strong>Separate state per environment:</strong> Prod infra in a completely separate state file and workspace. Mistakes in dev don't affect prod.<br><br>
+        <span class="qa-pill">prevent_destroy lifecycle</span><span class="qa-pill">plan before apply</span><span class="qa-pill">terraform state mv for renames</span><span class="qa-pill">separate state per env</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE09</span><span class="qa-q-text">Your AWS bill doubled this month with no new features shipped. How do you investigate?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>1. AWS Cost Explorer:</strong> Filter by service. Which service increased most? Filter by resource tag to find the specific resource.<br><br>
+        <strong>2. Common culprits to check:</strong><br>
+        • <strong>NAT Gateway:</strong> Often a hidden cost driver. Every GB processed costs money. Check if something is routing unnecessary traffic through NAT (e.g., EC2 downloading S3 data via NAT instead of VPC endpoint).<br>
+        • <strong>Data transfer:</strong> Cross-AZ or cross-region data transfer adds up. Are services unnecessarily talking across AZs?<br>
+        • <strong>EC2 instances left running:</strong> Someone spun up large instances for testing and forgot. Check for untagged resources.<br>
+        • <strong>CloudWatch Logs:</strong> An app logging verbosely — millions of log events per day. Check log ingestion costs.<br>
+        • <strong>RDS storage:</strong> RDS auto-storage-scaling kicked in, can't scale back down.<br>
+        • <strong>Snapshot/backup accumulation:</strong> Old AMI snapshots or DB snapshots accumulating for months.<br><br>
+        <strong>3. AWS Cost Anomaly Detection:</strong> Enable this — it uses ML to detect unusual spending patterns and alerts you before the bill arrives.<br><br>
+        <strong>4. Tagging enforcement:</strong> Every resource should have <code>Environment</code>, <code>Owner</code>, <code>Project</code> tags. Without tags, you can't trace which team/service caused the cost.<br><br>
+        <span class="qa-pill">Cost Explorer by service</span><span class="qa-pill">NAT Gateway = hidden cost</span><span class="qa-pill">check untagged resources</span><span class="qa-pill">Cost Anomaly Detection</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE10</span><span class="qa-q-text">Explain how you would implement a GitOps workflow for Kubernetes from scratch.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>The components you need:</strong><br><br>
+        <strong>1. Two Git repos:</strong><br>
+        • App repo: source code, Dockerfile, tests<br>
+        • Config repo: Kubernetes manifests, Helm charts, Kustomize overlays per environment<br><br>
+        <strong>2. CI pipeline (in app repo):</strong><br>
+        On merge to main: run tests → build Docker image → push to ECR with commit SHA as tag → update the image tag in the config repo (automated PR or direct commit to a branch)<br><br>
+        <strong>3. ArgoCD (in the cluster):</strong><br>
+        Install ArgoCD. Create an Application resource pointing at your config repo + path + target namespace. ArgoCD continuously polls the config repo. When image tag changes, ArgoCD syncs the cluster to the new state.<br><br>
+        <strong>4. Environment promotion:</strong><br>
+        Config repo has <code>envs/staging/</code> and <code>envs/production/</code> directories. CI auto-updates staging. Promotion to prod = merge PR that updates prod's image tag. ArgoCD detects and deploys.<br><br>
+        <strong>5. Rollback:</strong><br>
+        <code>git revert</code> the tag update commit in the config repo. ArgoCD detects and rolls the cluster back. No kubectl needed in production.<br><br>
+        <strong>Security benefit:</strong> No CI/CD system needs write access to the cluster. The cluster pulls from Git. Much smaller attack surface.<br><br>
+        <span class="qa-pill">app repo + config repo separate</span><span class="qa-pill">CI updates config repo image tag</span><span class="qa-pill">ArgoCD polls + syncs</span><span class="qa-pill">rollback = git revert</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE11</span><span class="qa-q-text">How would you debug a memory leak in a Dockerized production application?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Step 1 — Confirm it's a leak:</strong><br>
+        <code>kubectl top pods</code> or <code>docker stats</code> — watch memory over time. Does it grow continuously and never come down? That's a leak. Does it grow and then GC kicks in and it drops? That's normal.<br><br>
+        <strong>Step 2 — Confirm via container restarts:</strong><br>
+        <code>kubectl get pods</code> — high RESTARTS count + OOMKilled in describe = memory is hitting the container limit. Immediate evidence of a leak.<br><br>
+        <strong>Step 3 — Correlate with traffic:</strong><br>
+        Does memory grow proportionally with requests? Might be a connection or object that's not being properly released per request.<br><br>
+        <strong>Step 4 — Language-specific profiling:</strong><br>
+        • <strong>Node.js:</strong> <code>--inspect</code> flag → Chrome DevTools heap snapshots<br>
+        • <strong>Java:</strong> JVM heap dumps (<code>jmap -dump</code>) → VisualVM or Eclipse MAT<br>
+        • <strong>Python:</strong> <code>tracemalloc</code>, <code>objgraph</code><br><br>
+        <strong>Step 5 — Short-term mitigation:</strong><br>
+        Set memory limits and enable automatic pod restarts. HPA or scheduled restart as a bandage while you fix the root cause. Communicate to the team — don't silently paper over it.<br><br>
+        <strong>Step 6 — Fix and verify:</strong><br>
+        Deploy fix, run extended load test, verify memory stays flat over time. Only then close the ticket.<br><br>
+        <span class="qa-pill">kubectl top pods = memory over time</span><span class="qa-pill">OOMKilled = hitting limit</span><span class="qa-pill">heap dump for root cause</span><span class="qa-pill">memory limits = short-term mitigation</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE12</span><span class="qa-q-text">Production is getting DDoS'd. Traffic is 50x normal. Walk through your response.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Immediate (first 5 minutes):</strong><br>
+        Check CloudWatch — is this real user traffic or attack traffic? Look at request patterns: same IP? Same User-Agent? Same endpoint being hammered? Bots usually have patterns.<br><br>
+        <strong>Layer 1 — AWS Shield:</strong><br>
+        AWS Shield Standard is already on by default — protects against L3/L4 DDoS. If attacks are sophisticated, AWS Shield Advanced (paid) adds 24/7 DRT (DDoS Response Team) support and cost protection.<br><br>
+        <strong>Layer 2 — AWS WAF (Web Application Firewall):</strong><br>
+        Attach WAF to CloudFront or ALB. Create rate-based rules: block IPs sending more than 1000 req/5min. Create geo-blocking rules if traffic is from unexpected countries. Enable AWS managed rule groups (bot protection).<br><br>
+        <strong>Layer 3 — CloudFront:</strong><br>
+        If not already in front of your app, enable CloudFront. Acts as a buffer — absorbs traffic at the edge, not at your origin. Enable cache for static content (takes load off origin).<br><br>
+        <strong>Layer 4 — Auto Scaling:</strong><br>
+        If legitimate traffic is also spiking (viral event), ensure ASG and HPA are configured to scale fast enough. ALB spreads the load.<br><br>
+        <strong>Layer 5 — Rate limiting at application level:</strong><br>
+        API gateway rate limiting per IP. Nginx <code>limit_req_zone</code>.<br><br>
+        <strong>After the attack:</strong><br>
+        Review WAF logs to understand the attack pattern. Tune rules. Add Cloudflare or AWS Shield Advanced if appropriate. Post-mortem.<br><br>
+        <span class="qa-pill">WAF rate-based rules</span><span class="qa-pill">CloudFront as DDoS buffer</span><span class="qa-pill">AWS Shield Standard = free baseline</span><span class="qa-pill">geo-blocking for bot traffic</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE13</span><span class="qa-q-text">How do you handle configuration management across 4 environments (dev/staging/uat/prod) without duplicating Terraform code?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>The problem:</strong> If you copy-paste your Terraform for each environment, you have 4x maintenance burden and they drift apart.<br><br>
+        <strong>Solution 1 — Terraform Workspaces:</strong><br>
+        Same code, different state files. <code>terraform workspace new staging</code> creates an isolated state. Use <code>terraform.workspace</code> variable to vary config per environment.<br>
+        Downside: all environments share the same code — risky if environments need very different configurations.<br><br>
+        <strong>Solution 2 — Terraform Modules + Separate Variable Files (recommended):</strong><br>
+        Write reusable modules (e.g., <code>module "vpc"</code>, <code>module "ecs_service"</code>). Each environment has its own directory with a <code>main.tf</code> that calls the modules and a <code>terraform.tfvars</code> with environment-specific values.<br>
+        <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:3px;padding:8px;margin:6px 0;font-size:10px;color:#fbbf24;">envs/
+  prod/main.tf     # calls modules, uses prod.tfvars
+  staging/main.tf  # calls same modules, uses staging.tfvars
+modules/
+  vpc/
+  ecs_service/</pre>
+        <strong>Solution 3 — Terragrunt:</strong><br>
+        DRY wrapper for Terraform. Define common config once, inherit and override per environment. Manages remote state config automatically.<br><br>
+        <span class="qa-pill">modules = reusable code</span><span class="qa-pill">tfvars per environment</span><span class="qa-pill">separate state per env</span><span class="qa-pill">Terragrunt for DRY</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE14</span><span class="qa-q-text">You need to run a one-time data migration job in Kubernetes. What's the right way to do it?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Use a Kubernetes Job, not a Deployment.</strong><br><br>
+        A <strong>Job</strong> runs one or more pods to completion and then stops. It's designed for batch work: database migrations, data transformations, one-off scripts.<br><br>
+        <strong>Key properties:</strong><br>
+        • <code>restartPolicy: OnFailure</code> — retry on failure, but don't restart after success<br>
+        • <code>completions: 1</code> — need exactly 1 successful run<br>
+        • <code>backoffLimit: 3</code> — retry up to 3 times before marking as failed<br><br>
+        <strong>For database migrations specifically:</strong><br>
+        Use an <strong>Init Container</strong> in your deployment — runs the migration before the main containers start. This ensures the schema is always up to date before the app starts serving traffic. But it runs on every pod restart, so the migration must be idempotent.<br><br>
+        Alternatively, run the migration as a <strong>Helm hook</strong> (<code>helm.sh/hook: pre-upgrade</code>) — runs the migration job before Helm applies the new deployment.<br><br>
+        <strong>What NOT to do:</strong> Don't run migrations inside the app on startup (race condition with multiple replicas). Don't use a Deployment (keeps restarting after success).<br><br>
+        <span class="qa-pill">Job = runs to completion</span><span class="qa-pill">Init Container = before main app starts</span><span class="qa-pill">Helm pre-upgrade hook</span><span class="qa-pill">never Deployment for one-time work</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#38bdf8;background:rgba(56,189,248,0.1);border-color:rgba(56,189,248,0.2);">FE15</span><span class="qa-q-text">What is observability and how is it different from monitoring? What are the three pillars?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Monitoring</strong> = watching known things. You define what metrics to collect and alert on. You can only answer questions you thought to ask in advance. "Is CPU above 80%?"<br><br>
+        <strong>Observability</strong> = understanding a system's internal state from its external outputs. You can answer questions you didn't think to ask. "Why is user 12345 getting slow responses only when making requests from Germany at 3 PM on Tuesdays?"<br><br>
+        <strong>The 3 Pillars of Observability:</strong><br><br>
+        <strong>1. Metrics</strong> — numerical measurements over time. CPU, memory, request rate, error rate. Good for alerting, dashboards, trending. Tools: Prometheus, CloudWatch.<br><br>
+        <strong>2. Logs</strong> — timestamped events. "User X failed to authenticate at 14:32:11". Good for debugging specific incidents. Tools: ELK Stack, Loki, CloudWatch Logs.<br><br>
+        <strong>3. Traces (Distributed Tracing)</strong> — follow a single request as it travels through multiple microservices. Shows exactly where time was spent and which service caused a slowdown. Tools: Jaeger, Zipkin, AWS X-Ray. This is the pillar most teams are missing.<br><br>
+        <strong>Correlation:</strong> The real power is when you can go from a metric alert → the relevant logs → the trace for the slow request. Tools like Grafana Tempo or Datadog connect all three.<br><br>
+        <span class="qa-pill">observability = understand why</span><span class="qa-pill">3 pillars: metrics + logs + traces</span><span class="qa-pill">traces = most valuable for microservices</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">🔑 The Interview Mindset Cheatsheet</div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:16px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.9;">
+    <strong style="color:#38bdf8;">For every "walk me through" question:</strong><br>
+    1. State what the <strong style="color:#e2e8f0;">problem actually is</strong> first<br>
+    2. Give a <strong style="color:#e2e8f0;">structured approach</strong> (not random commands)<br>
+    3. Name the <strong style="color:#e2e8f0;">tools you'd use</strong> and why<br>
+    4. Mention what you'd do to <strong style="color:#e2e8f0;">prevent it next time</strong><br><br>
+    <strong style="color:#38bdf8;">For every "design" question:</strong><br>
+    1. Clarify requirements first (RTO? RPO? Scale? Budget?)<br>
+    2. Start simple, add complexity<br>
+    3. Explain tradeoffs — show you know there's no perfect answer<br>
+    4. Connect everything back to the business impact<br><br>
+    <strong style="color:#38bdf8;">Words that impress interviewers:</strong><br>
+    "least privilege" · "idempotent" · "immutable" · "shift left" · "blast radius" · "blameless post-mortem" · "error budget" · "observability" · "GitOps" · "DORA metrics" · "backward compatible"
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🏆</div>
+    <div>
+      <div class="loop-title">You've read the whole thing. Now own it.</div>
+      <div class="loop-desc">
+        Review the tabs you're weakest on. Re-read the scenarios. Practice answering the questions out loud — hearing yourself explain it is different from reading it. And remember: they're not testing if you've memorized everything. <strong style="color:#fb923c;">They're testing if you think like a DevOps engineer.</strong>
+      </div>
+    </div>
+  </div>
+

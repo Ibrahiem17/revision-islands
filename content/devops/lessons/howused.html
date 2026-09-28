@@ -1,0 +1,1558 @@
+
+
+<div class="analogy">
+  <div><div class="analogy-label">🎬 How It's Actually Used — One Real Story, Start to Finish</div></div>
+  <div class="analogy-item"><span class="analogy-icon">🧑‍💻</span><div class="analogy-text"><strong>Not "here → here"</strong><br>Every real click, file, command</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🔗</span><div class="analogy-text"><strong>One connected chain</strong><br>Each step causes the next</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">✅</span><div class="analogy-text"><strong>Ends up live</strong><br>Same as a real office job</div></div>
+</div>
+
+<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+  Every other tab in this cheatsheet teaches you one <em>piece</em> — a Docker command, a kubectl command, a YAML file. This tab is different: it's <strong style="color:#e2e8f0;">one single real task, followed all the way through</strong>, so you can see exactly how those pieces connect in an actual job. Nothing here is abstract — every file and command below is something a real DevOps engineer or backend dev would actually type or click, in this exact order.<br><br>
+  <strong style="color:#38bdf8;">The scenario:</strong> you're on a small team running a Node.js API. QA files a bug: <em>"The /health endpoint always returns 200 OK, even when the database is completely disconnected — our monitoring never catches real outages."</em> You're assigned the ticket. Here is <strong style="color:#e2e8f0;">everything</strong> that happens between you reading that sentence and the fix being live in production.
+</div>
+
+<div class="hu-tabs">
+  <div class="hu-tab hu-active" onclick="showHU('ex1',this)">1️⃣ Ship a Code Change</div>
+  <div class="hu-tab" onclick="showHU('ex2',this)">2️⃣ Coming Soon</div>
+  <div class="hu-tab" onclick="showHU('ex3',this)">3️⃣ Coming Soon</div>
+  <div class="hu-tab" onclick="showHU('ex4',this)">4️⃣ Coming Soon</div>
+  <div class="hu-tab" onclick="showHU('ex5',this)">5️⃣ Coming Soon</div>
+</div>
+
+<div class="hu-panel hu-active" id="hu-ex1">
+
+<div class="section-title">🎬 Example 1 of 5 — Shipping a Code Change to Production</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Click any step below to open it — click again to close it.</div>
+
+<!-- STEP 1 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Start from a clean main, create a branch</div><div class="pu-desc">You never edit code directly on main — ever</div></div>
+    <div class="pu-badge">git</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code"><span class="c"># make sure you're starting from the latest, real main branch</span>
+git checkout main
+git pull origin main
+
+<span class="c"># create + switch to a new branch for JUST this fix</span>
+git checkout <span class="v">-b</span> fix/health-check-db</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">This is the single most repeated habit in any real dev/DevOps job. A feature branch keeps your unfinished, unproven work completely isolated from the code everyone else is running. Nothing you do for the next several steps can break anything for anyone else.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>now you actually go find the bug</em></div>
+
+<!-- STEP 2 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Open the real file and find the actual bug</div><div class="pu-desc">This is the whole reason the ticket exists</div></div>
+    <div class="pu-badge">before</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">routes/health.js — as it is right now</div>
+        <div class="pu-code"><span class="k">const</span> express = require(<span class="s">'express'</span>);
+<span class="k">const</span> router = express.Router();
+
+router.get(<span class="s">'/health'</span>, (req, res) => {
+  res.status(<span class="num">200</span>).json({ status: <span class="s">'ok'</span> }); <span class="c">// always "ok" — never checks anything!</span>
+});
+
+module.exports = router;</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Found it in about ten seconds. The endpoint doesn't check anything at all — it's hardcoded to say "ok" no matter what. That's exactly why monitoring never noticed the database had gone down: the health check was lying the whole time.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>so you fix it</em></div>
+
+<!-- STEP 3 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Make the fix — small and boring, on purpose</div><div class="pu-desc">Most real fixes are a handful of lines, not a rewrite</div></div>
+    <div class="pu-badge">after</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">routes/health.js — after your edit</div>
+        <div class="pu-code"><span class="k">const</span> express = require(<span class="s">'express'</span>);
+<span class="k">const</span> router = express.Router();
+<span class="k">const</span> db = require(<span class="s">'../db'</span>);
+
+router.get(<span class="s">'/health'</span>, <span class="k">async</span> (req, res) => {
+  <span class="k">try</span> {
+    <span class="k">await</span> db.query(<span class="s">'SELECT 1'</span>); <span class="c">// actually ping the real database</span>
+    res.status(<span class="num">200</span>).json({ status: <span class="s">'ok'</span> });
+  } <span class="k">catch</span> (err) {
+    res.status(<span class="num">503</span>).json({ status: <span class="s">'db unreachable'</span> }); <span class="c">// now it can actually fail</span>
+  }
+});
+
+module.exports = router;</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Four real lines changed. It now runs one tiny query against the database — if that fails, the endpoint honestly reports 503 instead of lying. This is what "fixing a bug" looks like 90% of the time in a real job: small, targeted, boring.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>before you tell anyone, you check it yourself</em></div>
+
+<!-- STEP 4 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Run it locally — never push code you haven't tested</div><div class="pu-desc">The cheapest place to catch a mistake is your own laptop</div></div>
+    <div class="pu-badge">local</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">npm <span class="fn">test</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">  Health endpoint
+<span class="ok">    ✓ returns 200 when db is reachable (42ms)</span>
+<span class="ok">    ✓ returns 503 when db is down (38ms)</span>
+
+<span class="hi">2 passing</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">This takes seconds and happens before a single other person or system is involved. Catching a mistake here costs you nothing. Catching it later — in CI, or worse, in production — costs everyone time.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>it works locally, so now it leaves your laptop</em></div>
+
+<!-- STEP 5 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Commit and push the branch</div><div class="pu-desc">Your change becomes visible to the team for the first time</div></div>
+    <div class="pu-badge">git</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">git add routes/health.js
+git commit <span class="v">-m</span> <span class="s">"fix: health check now verifies DB connection"</span>
+git push origin fix/health-check-db</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">The commit message says what changed and why — the fix: prefix follows Conventional Commits (covered in the Git tab). Six months from now, someone reading history understands this instantly without asking you.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>this is where GitHub itself starts reacting to what you did</em></div>
+
+<!-- STEP 6 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">06</div>
+    <div><div class="pu-title">Open a Pull Request — the literal clicks</div><div class="pu-desc">Not a diagram — this is exactly what's on your screen</div></div>
+    <div class="pu-badge">GitHub UI</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="dim">1.</span> GitHub shows a yellow banner on the repo page:
+   <span class="hi">"fix/health-check-db had recent pushes — Compare &amp; pull request"</span>
+<span class="dim">2.</span> You click <span class="ok">[ Compare &amp; pull request ]</span>
+<span class="dim">3.</span> Title field: <span class="hi">"Fix: health check now verifies DB connection"</span>
+<span class="dim">4.</span> Description box:
+   <span class="hi">"QA reported /health always returns 200 even when the DB is down.
+    This adds a real DB ping so monitoring can actually detect outages."</span>
+<span class="dim">5.</span> Reviewers panel, right side → you add your tech lead
+<span class="dim">6.</span> You click <span class="ok">[ Create pull request ]</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">The PR isn't optional busywork — it's the gate. From this point, nothing you wrote can reach main without going through everything below.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>you didn't click anything for this next part — it just happens</em></div>
+
+<!-- STEP 7 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">07</div>
+    <div><div class="pu-title">CI fires automatically on your PR</div><div class="pu-desc">This YAML file already existed — you didn't write it today</div></div>
+    <div class="pu-badge">GitHub Actions</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">.github/workflows/ci.yml — already sitting in the repo</div>
+        <div class="pu-code"><span class="k">name</span>: CI
+
+<span class="k">on</span>:
+  <span class="k">pull_request</span>:
+    <span class="k">branches</span>: [main]
+
+<span class="k">jobs</span>:
+  <span class="k">test</span>:
+    <span class="k">runs-on</span>: ubuntu-latest
+    <span class="k">steps</span>:
+      - <span class="k">uses</span>: actions/checkout@v4
+      - <span class="k">uses</span>: actions/setup-node@v4
+        <span class="k">with</span>:
+          <span class="k">node-version</span>: <span class="num">18</span>
+      - <span class="k">run</span>: npm install
+      - <span class="k">run</span>: npm test</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">ON YOUR PR PAGE</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">✓ CI / test (pull_request) — Successful in 34s</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Someone on your team set this file up once, months ago. Since then it has run on <strong>every single pull request</strong>, automatically, forever — no one has to remember to run tests manually. This is the entire, literal meaning of "CI": a YAML file plus a trigger. If this check were red, GitHub would grey out the Merge button — broken code physically cannot merge.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>the robot approved it — now a human does</em></div>
+
+<!-- STEP 8 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">08</div>
+    <div><div class="pu-title">Code review — a real teammate reads your diff</div><div class="pu-desc">The human safety net sitting right next to the automated one</div></div>
+    <div class="pu-badge">review</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Your teammate opens the PR → "Files changed" tab
+Reads the red/green diff of routes/health.js
+Leaves a comment: <span class="hi">"LGTM, good catch 👍"</span>
+Clicks <span class="ok">[ Approve ]</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">LGTM = "looks good to me," probably the most-typed phrase in software. Tests catch things a human might miss; a human catches things tests can't — like "wait, should this actually be a 500, not a 503?"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#f97316;">↓ <em>one click here is the trigger for literally everything after it</em></div>
+
+<!-- STEP 9 -->
+<div class="pu-card hu-card" style="--pu-clr:#f97316">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">09</div>
+    <div><div class="pu-title">Merge — the click that starts the release</div><div class="pu-desc">Nothing else needs to happen manually from here</div></div>
+    <div class="pu-badge">GitHub UI</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN</span>
+      <div class="pu-step-content">
+        <div class="pu-output">You click the big green <span class="ok">[ Merge pull request ]</span> button
+→ then <span class="ok">[ Confirm merge ]</span>
+→ GitHub shows: <span class="hi">"Pull request successfully merged and closed"</span>
+→ your fix/health-check-db branch's code is now inside main</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">This single click is the cause of every remaining step below. You will not touch a keyboard again for the rest of this example — everything from here runs by itself.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#f97316;">↓ <em>a SECOND, completely different pipeline wakes up — not the one from step 7</em></div>
+
+<!-- STEP 10 -->
+<div class="pu-card hu-card" style="--pu-clr:#f97316">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">10</div>
+    <div><div class="pu-title">Build the Docker image and push it to the registry</div><div class="pu-desc">A different trigger, a different job, running for a different reason</div></div>
+    <div class="pu-badge">GitHub Actions</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">.github/workflows/deploy.yml — a separate file from ci.yml</div>
+        <div class="pu-code"><span class="k">name</span>: Deploy
+
+<span class="k">on</span>:
+  <span class="k">push</span>:
+    <span class="k">branches</span>: [main]   <span class="c"># not pull_request — this fires on the MERGE itself</span>
+
+<span class="k">jobs</span>:
+  <span class="k">build-and-push</span>:
+    <span class="k">runs-on</span>: ubuntu-latest
+    <span class="k">steps</span>:
+      - <span class="k">uses</span>: actions/checkout@v4
+      - <span class="k">uses</span>: docker/login-action@v3
+        <span class="k">with</span>:
+          <span class="k">username</span>: <span class="v">${{ secrets.DOCKERHUB_USER }}</span>
+          <span class="k">password</span>: <span class="v">${{ secrets.DOCKERHUB_TOKEN }}</span>
+      - <span class="k">run</span>: docker build <span class="v">-t</span> mycompany/api:<span class="v">${{ github.sha }}</span> .
+      - <span class="k">run</span>: docker push mycompany/api:<span class="v">${{ github.sha }}</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Notice the trigger: <code>on: push</code> to main — different from ci.yml's <code>on: pull_request</code>. Two separate YAML files firing at two separate moments for two separate reasons. <code>${{ github.sha }}</code> tags the image with the exact commit hash, so at any point later you can look at a running image and know precisely which code is inside it.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#f97316;">↓ <em>the image exists in the registry now — but nothing is running it yet</em></div>
+
+<!-- STEP 11 -->
+<div class="pu-card hu-card" style="--pu-clr:#f97316">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">11</div>
+    <div><div class="pu-title">Tell Kubernetes to actually run the new image</div><div class="pu-desc">The moment your fix genuinely goes live</div></div>
+    <div class="pu-badge">kubectl</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">.github/workflows/deploy.yml — one more step, same job</div>
+        <div class="pu-code">      - <span class="k">name</span>: Deploy to Kubernetes
+        <span class="k">run</span>: |
+          kubectl set image deployment/api-deployment \
+            api=mycompany/api:<span class="v">${{ github.sha }}</span> \
+            --record</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">deployment.apps/api-deployment image updated</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">kubectl set image tells the existing Deployment (from the Kubernetes tab) "swap your containers for this new image." Kubernetes then does a rolling update on its own — old pods keep serving traffic until new ones are confirmed healthy, so no user of the API notices anything happened.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#22c55e;">↓ <em>"the pipeline finished" is not the same as "it actually works" — so you check</em></div>
+
+<!-- STEP 12 -->
+<div class="pu-card hu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">12</div>
+    <div><div class="pu-title">Verify it's actually live — the step beginners skip</div><div class="pu-desc">A real engineer never trusts a green checkmark alone</div></div>
+    <div class="pu-badge">verify</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">kubectl rollout status deployment/api-deployment
+curl https://api.mycompany.com/health
+kubectl logs <span class="v">-l</span> app=api <span class="v">--tail</span>=<span class="num">20</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">deployment "api-deployment" successfully rolled out</span>
+
+{<span class="hi">"status":"ok"</span>}
+
+<span class="dim">2024-01-15 api-7d9f8 Server listening on port 3000</span>
+<span class="dim">2024-01-15 api-7d9f8 DB connection verified on /health check</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">This is the step most beginners forget. A finished pipeline just means "the steps ran" — it doesn't guarantee the fix behaves correctly against a real, running system. A real engineer always closes the loop by actually looking.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">🔁</div>
+  <div>
+    <div class="loop-title">That's the whole thing, nothing skipped</div>
+    <div class="loop-desc">Ticket <span class="loop-arrow">→</span> branch <span class="loop-arrow">→</span> code <span class="loop-arrow">→</span> local test <span class="loop-arrow">→</span> push <span class="loop-arrow">→</span> PR <span class="loop-arrow">→</span> automatic CI <span class="loop-arrow">→</span> human review <span class="loop-arrow">→</span> merge <span class="loop-arrow">→</span> automatic Docker build <span class="loop-arrow">→</span> automatic deploy <span class="loop-arrow">→</span> manual verify. <strong style="color:#fb923c;">Every tool from every other tab in this cheatsheet — Git, Docker, GitHub Actions YAML, Kubernetes — is just one link in this exact chain.</strong> That's genuinely all "DevOps" means at a real company: making this chain run itself, safely, every single day.</div>
+  </div>
+</div>
+
+</div><!-- /hu-ex1 -->
+
+<div class="hu-panel" id="hu-ex2">
+
+<div class="section-title">🐳 Example 2 of 5 — Running Your First App in Docker</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Click any step below to open it — click again to close it.</div>
+
+<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+  This one is deliberately small. <strong style="color:#e2e8f0;">No Git branches, no Pull Request, no CI, no Kubernetes</strong> — just Docker, by itself, so the basic idea actually clicks before you touch anything more advanced. Every terminal output below is written to look exactly like what your real terminal will show — same layout, same wording — so when you try this yourself on a real computer, nothing looks unfamiliar or scary.<br><br>
+  <strong style="color:#38bdf8;">The goal:</strong> take a tiny app, put it inside a container, run that container, actually talk to it, read its logs, then clean up after yourself. That's it. That's the whole example — and it's also the exact foundation underneath everything Example 1 automated.
+</div>
+
+<!-- STEP 1 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">The app — as simple as it gets</div><div class="pu-desc">One file, zero dependencies, nothing to install</div></div>
+    <div class="pu-badge">index.js</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">index.js</div>
+        <div class="pu-code"><span class="k">const</span> http = require(<span class="s">'http'</span>); <span class="c">// built into Node — nothing to npm install</span>
+
+<span class="k">const</span> server = http.createServer((req, res) => {
+  res.end(<span class="s">'Hello from inside a container! 🐳'</span>);
+});
+
+server.listen(<span class="num">3000</span>, () => {
+  console.log(<span class="s">'Server running on port 3000'</span>);
+});</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">That's genuinely the whole app. No framework, no package.json, no npm install step — on purpose. This example is about understanding Docker, not Node, so everything that isn't Docker has been stripped down to almost nothing.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>now you tell Docker how to package it</em></div>
+
+<!-- STEP 2 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Write the Dockerfile — 4 lines, explained one at a time</div><div class="pu-desc">A Dockerfile is just a short recipe, read top to bottom</div></div>
+    <div class="pu-badge">Dockerfile</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">Dockerfile</div>
+        <div class="pu-code"><span class="k">FROM</span> <span class="s">node:20-alpine</span>
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+<span class="k">COPY</span> index.js .
+<span class="k">CMD</span> [<span class="s">"node"</span>, <span class="s">"index.js"</span>]</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — line by line</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">
+          <strong>FROM node:20-alpine</strong> — start from a tiny, ready-made Linux system that already has Node.js installed. You are not building an operating system — you're borrowing one that already exists.<br><br>
+          <strong>WORKDIR /app</strong> — make a folder called /app inside that system, and treat it as the "current folder" for every line after this one.<br><br>
+          <strong>COPY index.js .</strong> — copy your index.js from your own computer into that /app folder, inside the image.<br><br>
+          <strong>CMD ["node", "index.js"]</strong> — the command that runs automatically the moment someone starts a container from this image.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>turn that recipe into an actual image</em></div>
+
+<!-- STEP 3 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Build the image</div><div class="pu-desc">This is exactly what your own terminal will print</div></div>
+    <div class="pu-badge">docker build</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker build <span class="v">-t</span> hello-app:1.0 .</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">[+] Building 1.8s (9/9) FINISHED</span>
+<span class="dim"> => [internal] load build definition from Dockerfile        0.0s</span>
+<span class="dim"> => [internal] load .dockerignore                            0.0s</span>
+<span class="dim"> => [internal] load metadata for docker.io/library/node:20-alpine  1.2s</span>
+<span class="dim"> => [1/3] FROM docker.io/library/node:20-alpine              0.0s</span>
+<span class="dim"> => [internal] load build context                             0.0s</span>
+<span class="dim"> => [2/3] WORKDIR /app                                        0.1s</span>
+<span class="dim"> => [3/3] COPY index.js .                                     0.1s</span>
+<span class="ok"> => exporting to image                                       0.2s</span>
+<span class="ok"> => => writing image sha256:9f8e7d6c5b4a3c2d1e0f9a8b7c6d5e4f</span>
+<span class="ok"> => => naming to docker.io/library/hello-app:1.0</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Each <code>=&gt;</code> line is one instruction from your Dockerfile being carried out. <code>-t hello-app:1.0</code> just gives the result a name and a version tag so you can refer to it later instead of typing a long hash.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>check that it's actually sitting on your machine now</em></div>
+
+<!-- STEP 4 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Confirm the image exists</div><div class="pu-desc">It's a saved template now — nothing is running yet</div></div>
+    <div class="pu-badge">docker images</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker images</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">REPOSITORY   TAG    IMAGE ID       CREATED         SIZE
+<span class="hi">hello-app    1.0    9f8e7d6c5b4a   3 seconds ago   134MB</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">This is the important mental split beginners usually miss: an <strong>image</strong> is just a saved, inert file sitting on disk — like a .zip you haven't extracted yet. Nothing is running. That only happens in the next step.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>now actually start it</em></div>
+
+<!-- STEP 5 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Run it as a container</div><div class="pu-desc">Every flag explained — nothing left as a mystery</div></div>
+    <div class="pu-badge">docker run</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker run <span class="v">-d</span> <span class="v">-p</span> 3000:3000 <span class="v">--name</span> hello-app hello-app:1.0</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">9f8e7d6c5b4a3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — every flag</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">
+          <strong>-d</strong> — "detached": run in the background and give me my terminal back immediately.<br><br>
+          <strong>-p 3000:3000</strong> — connect port 3000 on your real computer to port 3000 inside the container. Format is always <code>host:container</code>. Without this flag, the app runs, but nothing outside the container can ever reach it.<br><br>
+          <strong>--name hello-app</strong> — give this specific running container a name you can refer to, instead of typing that long ID every time.<br><br>
+          That long string printed back is just the full container ID — you'll rarely need the whole thing.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>double check it's really running</em></div>
+
+<!-- STEP 6 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">06</div>
+    <div><div class="pu-title">Confirm it's actually running</div><div class="pu-desc">The command you'll type more than any other Docker command</div></div>
+    <div class="pu-badge">docker ps</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker ps</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">CONTAINER ID   IMAGE           COMMAND            CREATED         STATUS         PORTS                    NAMES
+<span class="hi">9f8e7d6c5b4a   hello-app:1.0   "node index.js"    8 seconds ago   Up 8 seconds   0.0.0.0:3000-&gt;3000/tcp   hello-app</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — the columns, quickly</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">CONTAINER ID / IMAGE — which image it came from. COMMAND — what's actually running inside. STATUS — "Up 8 seconds" means healthy and alive right now. PORTS — confirms the 3000→3000 connection from step 5 actually took effect. If this list is empty, your container isn't running — that's the very first thing to check when something feels broken.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>it's running — so actually talk to it</em></div>
+
+<!-- STEP 7 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">07</div>
+    <div><div class="pu-title">Actually talk to it</div><div class="pu-desc">The entire point of everything above</div></div>
+    <div class="pu-badge">curl / browser</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">curl http://localhost:3000</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">Hello from inside a container! 🐳</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">You could type <code>localhost:3000</code> into a browser instead and see the exact same text. Walk the round trip in your head: your request left your terminal → hit port 3000 on your real machine → Docker forwarded it through the tunnel from <code>-p 3000:3000</code> → your Node server inside the container answered → the response came back out the same way. That tunnel is the entire reason the <code>-p</code> flag exists.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>see what the app itself has been saying</em></div>
+
+<!-- STEP 8 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">08</div>
+    <div><div class="pu-title">Check its logs</div><div class="pu-desc">Usually the very first thing you look at when debugging</div></div>
+    <div class="pu-badge">docker logs</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker logs hello-app</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="dim">Server running on port 3000</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Anything your app prints with <code>console.log</code> ends up here — nowhere else. When something goes wrong later with a real app, this is the first command almost anyone reaches for.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#22c55e;">↓ <em>and finally, clean up after yourself</em></div>
+
+<!-- STEP 9 -->
+<div class="pu-card hu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">09</div>
+    <div><div class="pu-title">Stop it, then remove it</div><div class="pu-desc">The image is untouched — you can start fresh anytime</div></div>
+    <div class="pu-badge">cleanup</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">docker stop hello-app
+docker rm hello-app</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">hello-app</span>
+<span class="hi">hello-app</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Docker just echoes the name back — that's genuinely all it prints, which surprises a lot of beginners expecting more output. <code>stop</code> shuts the container down gracefully. <code>rm</code> actually deletes it. Your <code>hello-app:1.0</code> image from step 3 is completely untouched — run <code>docker run</code> again any time and you get a brand-new container from the exact same image.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">🧱</div>
+  <div>
+    <div class="loop-title">This is the foundation everything else stands on</div>
+    <div class="loop-desc">Write code <span class="loop-arrow">→</span> describe it in a Dockerfile <span class="loop-arrow">→</span> build an image <span class="loop-arrow">→</span> run a container from it <span class="loop-arrow">→</span> talk to it <span class="loop-arrow">→</span> read its logs <span class="loop-arrow">→</span> clean up. <strong style="color:#fb923c;">Go back and look at Example 1's steps 10 and 11</strong> — the automatic docker build and the automatic deploy. That's this exact sequence, just triggered by a robot instead of by you typing it. Once this feels boring and obvious, Example 1 stops looking like magic.</div>
+  </div>
+</div>
+
+</div><!-- /hu-ex2 -->
+
+<div class="hu-panel" id="hu-ex3">
+
+<div class="section-title">⚡ Example 3 of 5 — Your First Full CI/CD Pipeline</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Click any step below to open it — click again to close it.</div>
+
+<div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-left:3px solid #a78bfa;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+  If YAML, GitHub Actions, "secrets," and "deployments" have ever felt intimidating, that feeling ends here. <strong style="color:#e2e8f0;">Every single thing below is something you already did with your own two hands in Example 2</strong> — build an image, run it, check it, ship it. The only difference in this example is that a computer types those exact same commands for you, automatically, every time you push code, without getting tired or making a typo. That's genuinely the entire concept of "CI/CD." Nothing more mystical than that.<br><br>
+  Every screen shown below is copied from what GitHub and Docker Hub <strong style="color:#e2e8f0;">actually</strong> show you — same labels, same layout, same wording — researched live for this exact page, so nothing surprises you the first time you open the real thing yourself.
+</div>
+
+<!-- STEP 1 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">The one new file — a GitHub Actions workflow</div><div class="pu-desc">6 steps, each one you can already explain to yourself</div></div>
+    <div class="pu-badge">.github/workflows/ci-cd.yml</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">.github/workflows/ci-cd.yml</div>
+        <div class="pu-code"><span class="k">name</span>: CI/CD
+
+<span class="k">on</span>:
+  <span class="k">push</span>:
+    <span class="k">branches</span>: [main]
+
+<span class="k">jobs</span>:
+  <span class="k">build-test-deploy</span>:
+    <span class="k">runs-on</span>: ubuntu-latest
+    <span class="k">steps</span>:
+      - <span class="k">name</span>: Checkout code
+        <span class="k">uses</span>: actions/checkout@v4
+
+      - <span class="k">name</span>: Set up Node
+        <span class="k">uses</span>: actions/setup-node@v4
+        <span class="k">with</span>:
+          <span class="k">node-version</span>: <span class="num">20</span>
+
+      - <span class="k">name</span>: Run the test
+        <span class="k">run</span>: node test.js
+
+      - <span class="k">name</span>: Log in to Docker Hub
+        <span class="k">uses</span>: docker/login-action@v3
+        <span class="k">with</span>:
+          <span class="k">username</span>: <span class="v">${{ secrets.DOCKERHUB_USER }}</span>
+          <span class="k">password</span>: <span class="v">${{ secrets.DOCKERHUB_TOKEN }}</span>
+
+      - <span class="k">name</span>: Build and push image
+        <span class="k">run</span>: |
+          docker build <span class="v">-t</span> mycompany/hello-app:<span class="v">${{ github.sha }}</span> .
+          docker push mycompany/hello-app:<span class="v">${{ github.sha }}</span>
+
+      - <span class="k">name</span>: Deploy
+        <span class="k">run</span>: kubectl set image deployment/hello-app hello-app=mycompany/hello-app:<span class="v">${{ github.sha }}</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — every named step, one sentence each</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">
+          <strong>Checkout code</strong> — downloads your repo's code onto GitHub's temporary computer, so it has something to work with.<br><br>
+          <strong>Set up Node</strong> — installs Node.js on that temporary computer. Same idea as installing it on your own laptop.<br><br>
+          <strong>Run the test</strong> — runs the exact test.js file from the next step. If it fails, everything below never runs.<br><br>
+          <strong>Log in to Docker Hub</strong> — logs into your Docker Hub account using two secret values saved once in <em>Settings → Secrets and variables → Actions</em>, so GitHub is allowed to push images on your behalf. You never type a password in the YAML itself.<br><br>
+          <strong>Build and push image</strong> — the exact same <code>docker build</code> command from Example 2, plus <code>docker push</code>, now run automatically instead of by you.<br><br>
+          <strong>Deploy</strong> — tells Kubernetes to swap in the freshly-pushed image, the same <code>kubectl set image</code> idea from Example 1's step 11.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#38bdf8;">↓ <em>but "run the test" needs an actual test.js file to run</em></div>
+
+<!-- STEP 2 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">The test — no framework, no npm install, still real</div><div class="pu-desc">Proof the app actually answers before anything ships</div></div>
+    <div class="pu-badge">test.js</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label file">FILE</span>
+      <div class="pu-step-content">
+        <div class="pu-path">test.js</div>
+        <div class="pu-code"><span class="k">const</span> http = require(<span class="s">'http'</span>);
+require(<span class="s">'./index.js'</span>); <span class="c">// this line alone starts the server on port 3000</span>
+
+setTimeout(() => {
+  http.get(<span class="s">'http://localhost:3000'</span>, (res) => {
+    <span class="k">if</span> (res.statusCode === <span class="num">200</span>) {
+      console.log(<span class="s">'✓ Server responded with 200 OK'</span>);
+      process.exit(<span class="num">0</span>);
+    } <span class="k">else</span> {
+      console.error(<span class="s">'✗ Unexpected status:'</span>, res.statusCode);
+      process.exit(<span class="num">1</span>);
+    }
+  }).on(<span class="s">'error'</span>, (err) => {
+    console.error(<span class="s">'✗ Request failed:'</span>, err.message);
+    process.exit(<span class="num">1</span>);
+  });
+}, <span class="num">500</span>);</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">No Jest, no test runner, nothing to install — just plain Node starting the server and checking it actually says "200 OK" before anything gets built or shipped. <code>process.exit(1)</code> is the one line that makes the whole pipeline stop dead if the app is broken. That's the entire mechanism behind "CI catches broken code" — an exit code, nothing more magical.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>both files exist — now the one action that starts everything</em></div>
+
+<!-- STEP 3 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Push — the exact same git you already know</div><div class="pu-desc">Identical to Example 2's git steps, plus two new files</div></div>
+    <div class="pu-badge">git</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">git add .
+git commit <span class="v">-m</span> <span class="s">"add CI/CD pipeline"</span>
+git push origin main</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Nothing new here at all — this is the identical <code>git add / commit / push</code> sequence from Example 2. You're just pushing two new files this time: the workflow YAML and test.js.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>you didn't click anything else — GitHub noticed the push on its own</em></div>
+
+<!-- STEP 4 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Open the "Actions" tab and watch it appear</div><div class="pu-desc">Real GitHub UI, verified live for this page</div></div>
+    <div class="pu-badge">github.com</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN — right after you push</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Actions
+All workflows
+
+<span class="warn">● CI/CD</span>
+  add CI/CD pipeline
+  CI/CD #1: Push #main by you
+  <span class="warn">In progress · main</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">A FEW SECONDS LATER</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">✓ CI/CD</span>
+  add CI/CD pipeline
+  CI/CD #1: Push #main by you
+  <span class="ok">Success · 38s · main</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">A small yellow dot means it's currently running. A green checkmark means every step succeeded. A red ✕ would mean something failed — most commonly your test.js from step 2. This exact list, with this exact wording, is what every single GitHub repository's Actions tab looks like, whether it's a weekend hobby project or a company with 10,000 engineers.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>click the run's name to open it — this is what's inside</em></div>
+
+<!-- STEP 5 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Open the run — watch every step tick past</div><div class="pu-desc">This exact shape, forever, on every workflow ever</div></div>
+    <div class="pu-badge">github.com</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN</span>
+      <div class="pu-step-content">
+        <div class="pu-output">build-test-deploy
+<span class="ok">succeeded in 38s</span>
+
+<span class="ok">✓</span> Set up job
+<span class="ok">✓</span> Checkout code
+<span class="ok">✓</span> Set up Node
+<span class="ok">✓</span> Run the test
+<span class="ok">✓</span> Log in to Docker Hub
+<span class="ok">✓</span> Build and push image
+<span class="ok">✓</span> Deploy
+<span class="ok">✓</span> Complete job</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Notice "Set up job" always appears first and "Complete job" always appears last — GitHub adds those automatically to every job that has ever run, on every repo. Everything between them is just your <code>steps:</code> list from the YAML, in the exact order you wrote them, each one clickable to see its own raw log if you're curious. Once you've seen this shape a single time, every future pipeline you ever open looks instantly familiar — that recognition is most of what "experience" with CI/CD actually is.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#a78bfa;">↓ <em>scroll up on that same page — there's a small summary box too</em></div>
+
+<!-- STEP 6 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">06</div>
+    <div><div class="pu-title">The Summary box — the same one on every run</div><div class="pu-desc">Also copied live from a real run, so it's exact</div></div>
+    <div class="pu-badge">github.com</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Summary
+
+Triggered via push
+main
+you
+commit a1b2c3d
+
+<span class="dim">Status</span>
+<span class="ok">Success</span>
+
+<span class="dim">Total duration</span>
+38s
+
+<span class="dim">Artifacts</span>
+–
+
+ci-cd.yml
+<span class="dim">on: push</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Triggered via push, Status, Total duration, Artifacts — this exact box appears at the top of every workflow run on GitHub, for every repo that has ever existed. It never changes shape, only the numbers inside it change.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#f97316;">↓ <em>the "build and push image" step actually did something real — go check</em></div>
+
+<!-- STEP 7 -->
+<div class="pu-card hu-card" style="--pu-clr:#f97316">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">07</div>
+    <div><div class="pu-title">Confirm the image actually landed on Docker Hub</div><div class="pu-desc">Real Docker Hub layout, checked live for this page</div></div>
+    <div class="pu-badge">hub.docker.com</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">ON SCREEN — hub.docker.com/r/mycompany/hello-app</span>
+      <div class="pu-step-content">
+        <div class="pu-output">mycompany / hello-app
+<span class="dim">Overview   Tags</span>
+
+<span class="hi">Tags</span>
+TAG                          LAST PUSHED
+<span class="hi">a1b2c3d...</span>    a few seconds ago</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Same tagging idea from Example 1's step 10 — <code>${{ github.sha }}</code> means the tag is literally the exact commit that produced it. Open the Tags page on any real Docker Hub repository and this is precisely the layout you'll see: an Overview tab and a Tags tab, a list of tags, and when each was last pushed.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#22c55e;">↓ <em>the "deploy" step ran too — same as Example 1's step 11</em></div>
+
+<!-- STEP 8 -->
+<div class="pu-card hu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">08</div>
+    <div><div class="pu-title">It's already deployed — nothing left to click</div><div class="pu-desc">The last YAML step already did this for you</div></div>
+    <div class="pu-badge">kubectl</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT — inside the "Deploy" step's log</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="ok">deployment.apps/hello-app image updated</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">You never typed this <code>kubectl</code> command yourself — GitHub's computer ran it, using the exact command written in step 1's YAML. Kubernetes then rolls the new version out on its own, the same self-healing rolling update from the Kubernetes tab.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#22c55e;">↓ <em>trust nothing until you've actually looked — same rule as always</em></div>
+
+<!-- STEP 9 -->
+<div class="pu-card hu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">09</div>
+    <div><div class="pu-title">Verify it, one more time, yourself</div><div class="pu-desc">A green checkmark is a claim — this is proof</div></div>
+    <div class="pu-badge">curl</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content">
+        <div class="pu-code">curl https://hello-app.mycompany.com</div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">Hello from inside a container! 🐳</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Same message from Example 2's step 7 — because underneath all of this automation, it's still the exact same tiny app, in the exact same kind of container, just shipped by a robot instead of by hand.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">😌</div>
+  <div>
+    <div class="loop-title">That's genuinely the whole thing — nothing was hidden from you</div>
+    <div class="loop-desc">One YAML file <span class="loop-arrow">→</span> git push <span class="loop-arrow">→</span> GitHub runs your test <span class="loop-arrow">→</span> builds the image <span class="loop-arrow">→</span> pushes it <span class="loop-arrow">→</span> deploys it <span class="loop-arrow">→</span> you verify it. <strong style="color:#fb923c;">Every scary word — pipeline, workflow, CI/CD, deployment — is just a name for this exact sequence you've now watched happen, start to finish, with real screens.</strong> Example 1 does this again with more realistic office detail (a bug ticket, a code review); this one was stripped down on purpose so the mechanism itself — not the office process around it — is what stuck.</div>
+  </div>
+</div>
+
+</div><!-- /hu-ex3 -->
+
+<div class="hu-panel" id="hu-ex4">
+
+
+<div class="section-title">🚨 Example 4 of 5 — When Something Breaks (The Most Common DevOps Day)</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Click any step below to open it — click again to close it. Yellow glowing rings mark exactly what you'd click in real life.</div>
+
+<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:14px;font-size:12px;color:#94a3b8;line-height:1.85;">
+  Examples 1–3 were all about <strong style="color:#e2e8f0;">shipping new code</strong>. But the single most common thing a DevOps engineer actually does, day after day, isn't shipping something new — it's <strong style="color:#e2e8f0;">noticing something broke and calmly fixing it</strong>, using the exact same tools already covered. This example is that story, in the smallest steps possible.
+</div>
+<div style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.18);border-radius:4px;padding:14px 16px;margin-bottom:24px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+  <strong style="color:#fbbf24;">Think of it like a toy that stopped working.</strong> You wouldn't take it apart blindly. You'd check what changed last — new batteries? — put the old batteries back if that's what worked before, and check if it works now. That's this <em>entire</em> example. Website instead of toy, that's the only difference.
+</div>
+
+<!-- STEP 1 -->
+<div class="pu-card hu-card" style="--pu-clr:#22d3ee">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">01</div>
+    <div><div class="pu-title">Notice something is wrong</div><div class="pu-desc">You can't fix a problem you don't know exists</div></div>
+    <div class="pu-badge">Grafana</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — before anything else</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Nobody sits and stares at a website hoping to catch it breaking. Instead, a dashboard watches it automatically, all day, every day — this is the <strong>Monitor</strong> phase from the Lifecycle tab, finally shown in action. The moment something looks wrong, it tells you before a single user has to complain.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">1.1</span>Normally, the dashboard just sits there calm and green</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div style="background:#111217;border:1px solid #2c2f36;border-radius:8px;overflow:hidden;">
+          <div style="background:#181b1f;border-bottom:1px solid #2c2f36;padding:8px 14px;font-size:10.5px;color:#8e8e93;">📊 Grafana — hello-app / HTTP availability (SLO)</div>
+          <div style="padding:14px;">
+            <div style="background:linear-gradient(90deg,#1a7a3c,#2fa85a);border-radius:4px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+              <strong style="color:#fff;font-size:12px;">Critical alert</strong>
+              <strong style="color:#fff;font-size:15px;letter-spacing:0.5px;">OK</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">1.2</span>Then, one afternoon — it flips to red</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div style="background:#111217;border:1px solid #2c2f36;border-radius:8px;overflow:hidden;">
+          <div style="background:#181b1f;border-bottom:1px solid #2c2f36;padding:8px 14px;font-size:10.5px;color:#8e8e93;">📊 Grafana — hello-app / HTTP availability (SLO)</div>
+          <div style="padding:14px 14px 18px;">
+            <div class="click-highlight block" style="margin-bottom:14px;">
+              <div class="click-ring"></div>
+              <div class="click-arrow">👆 THIS IS THE SIGNAL</div>
+              <div style="background:linear-gradient(90deg,#a1291f,#dc3f31);border-radius:4px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+                <strong style="color:#fff;font-size:12px;">Critical alert</strong>
+                <strong style="color:#fff;font-size:15px;letter-spacing:0.5px;">FIRING</strong>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <div style="flex:1;background:#0a0b0d;border:1px solid #22252b;border-radius:6px;padding:9px 11px;">
+                <div style="font-size:8.5px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Error rate</div>
+                <div style="font-size:19px;font-weight:800;color:#f87171;">38.2%</div>
+              </div>
+              <div style="flex:1;background:#0a0b0d;border:1px solid #22252b;border-radius:6px;padding:9px 11px;">
+                <div style="font-size:8.5px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Was, 10 min ago</div>
+                <div style="font-size:19px;font-weight:800;color:#4ade80;">0.4%</div>
+              </div>
+            </div>
+            <div style="background:#0a0b0d;border:1px solid #22252b;border-radius:6px;padding:10px 12px;">
+              <div style="font-size:8.5px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">requests failing, last 30 min</div>
+              <div style="display:flex;align-items:flex-end;gap:3px;height:44px;">
+                <div style="flex:1;height:8%;background:#2fa85a;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:6%;background:#2fa85a;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:10%;background:#2fa85a;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:7%;background:#2fa85a;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:55%;background:#dc3f31;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:82%;background:#dc3f31;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:95%;background:#dc3f31;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;height:90%;background:#dc3f31;border-radius:2px 2px 0 0;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">1.3</span>Grafana also pings the team automatically — nobody has to be staring at the screen</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div style="background:#1a1d29;border:1px solid #2c2f3a;border-radius:8px;overflow:hidden;">
+          <div style="background:#350d36;padding:8px 14px;font-size:10.5px;color:#e8d5e8;font-weight:700;"># incidents</div>
+          <div style="padding:12px 14px;">
+            <div style="display:flex;gap:10px;">
+              <div style="width:28px;height:28px;border-radius:6px;flex-shrink:0;background:#dc3f31;display:flex;align-items:center;justify-content:center;font-size:13px;">🔔</div>
+              <div>
+                <span style="font-size:11.5px;font-weight:700;color:#e2e8f0;">grafana-bot</span><span style="font-size:9.5px;color:#6b7280;margin-left:6px;">2:41 PM</span>
+                <div style="font-size:11px;color:#cbd5e1;line-height:1.6;margin-top:2px;">🔴 <strong>Critical alert firing:</strong> HTTP availability for public requests<br>Error rate 38.2% (threshold: 5%) — <span style="color:#38bdf8;">view dashboard</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>okay, something's wrong — now figure out why</em></div>
+
+<!-- STEP 2 -->
+<div class="pu-card hu-card" style="--pu-clr:#a78bfa">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">02</div>
+    <div><div class="pu-title">Figure out what changed recently</div><div class="pu-desc">Almost every "it broke" moment traces back to the last deploy</div></div>
+    <div class="pu-badge">GitHub Actions</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — before touching anything</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Apps don't randomly break on their own while sitting still. Almost always, <strong>something changed</strong> — and the most recent change is the very last thing that got deployed. Before guessing, go look at exactly what shipped last.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">2.1</span>Open the Actions tab — find the most recent run</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:6px;">
+          <div class="click-highlight block" style="margin-bottom:2px;">
+            <div class="click-ring" style="inset:-2px;"></div>
+            <div class="click-arrow">👆 CLICK THIS ROW</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;font-size:11px;background:#161b22;">
+              <span style="color:#3fb950;">✓</span><span style="color:#e6edf3;">Fix null check on checkout total</span><span style="color:#7d8590;">Success · 41s · main</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;font-size:11px;opacity:0.5;">
+            <span style="color:#3fb950;">✓</span><span style="color:#e6edf3;">Bump minor dependency</span><span style="color:#7d8590;">Success · 36s · main</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">2.2</span>Click in — see exactly what code shipped</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div class="pu-output"><span class="hi">Fix null check on checkout total #47</span>
+<span class="dim">Triggered via push · main · you · 2:36 PM</span>
+<span class="ok">Status: Success · Total duration: 41s</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY this is the important part</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Notice it says <strong style="color:#3fb950;">✓ Success</strong>. That's not a contradiction — the tests that existed all passed. It just means <strong>nobody had written a test for this exact situation yet</strong>. A green checkmark means "the bugs we thought to test for didn't happen," not "there are zero bugs." That's exactly why the Grafana dashboard from Step 1 still matters even after CI passes.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>a suspect isn't proof — go check the actual evidence</em></div>
+
+<!-- STEP 3 -->
+<div class="pu-card hu-card" style="--pu-clr:#38bdf8">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">03</div>
+    <div><div class="pu-title">Confirm it with real evidence</div><div class="pu-desc">Don't guess — look at what the running app is actually doing</div></div>
+    <div class="pu-badge">kubectl</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY — before rolling anything back</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">A suspicious commit is a theory, not proof. Kubernetes is what's actually running the app right now — so ask it directly what's happening, the same way you'd check a patient's vitals before deciding on treatment.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">3.1</span>Check the pods</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">kubectl get pods</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">NAME                          READY   STATUS             RESTARTS   AGE
+<span class="err">hello-app-7d9f6b7c8-x2k9p     0/1     CrashLoopBackOff   6          8m</span></div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">3.2</span>Read what it's actually saying</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">kubectl logs hello-app-7d9f6b7c8-x2k9p</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content">
+        <div class="pu-output">Server running on port 3000
+<span class="err">TypeError: Cannot read properties of undefined (reading 'total')</span>
+<span class="dim">    at /app/checkout.js:14:22</span>
+<span class="err">Process exited with code 1</span></div>
+      </div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box"><strong>CrashLoopBackOff</strong> just means "it crashes, Kubernetes restarts it, it crashes again" — on repeat. The log confirms the theory from Step 2: the checkout fix broke on a real input it wasn't tested against. Now it's not a guess anymore.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>now — restore service first, investigate deeper later</em></div>
+
+<!-- STEP 4 -->
+<div class="pu-card hu-card" style="--pu-clr:#f43f5e">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">04</div>
+    <div><div class="pu-title">Stop the bleeding — roll back immediately</div><div class="pu-desc">Restore service first. Debugging deeply can wait a few minutes.</div></div>
+    <div class="pu-badge">kubectl rollout undo</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY this comes before "fixing" it properly</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Real users are hitting errors <em>right now</em>. Sitting down to carefully write and test a proper fix takes time they don't have. The fastest safe move is going back to the exact version that was working ten minutes ago — Kubernetes already remembers it.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">4.1</span>Roll back to the previous version</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">kubectl rollout undo deployment/hello-app</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content"><div class="pu-output"><span class="ok">deployment.apps/hello-app rolled back</span></div></div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">4.2</span>Watch it come back up</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">kubectl rollout status deployment/hello-app</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content"><div class="pu-output"><span class="dim">Waiting for deployment "hello-app" rollout to finish...</span>
+<span class="ok">deployment "hello-app" successfully rolled out</span></div></div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">4.3</span>Double-check the pod is actually healthy</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">kubectl get pods</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content"><div class="pu-output">NAME                          READY   STATUS    RESTARTS   AGE
+<span class="ok">hello-app-5f8c9d6b4-m4t7q     1/1     Running   0          22s</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>the app is safe again — but there's one more thing, or this happens again tomorrow</em></div>
+
+<!-- STEP 5 -->
+<div class="pu-card hu-card" style="--pu-clr:#f97316">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">05</div>
+    <div><div class="pu-title">Fix it where it actually lives — the code</div><div class="pu-desc">Rolling back the app isn't enough — the bug is still sitting in Git</div></div>
+    <div class="pu-badge">git revert</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY this step can't be skipped</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Step 4 fixed the <em>running app</em>, not the <em>source code</em>. If nobody touches Git, the very next person who deploys — maybe next week, maybe by accident — will re-ship the exact same broken commit, and this whole thing happens all over again.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">5.1</span>Find the exact commit that broke it</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">git log --oneline -3</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content"><div class="pu-output"><span class="err">a3f9c1e Fix null check on checkout total</span>
+<span class="dim">7b2e0d4 Bump minor dependency</span>
+<span class="dim">c19a44f Add checkout summary page</span></div></div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">5.2</span>Undo that exact commit, and push it</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">git revert a3f9c1e
+git push origin main</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content"><div class="pu-output">[main 9c4d21a] Revert "Fix null check on checkout total"
+<span class="dim"> 1 file changed, 1 insertion(+), 4 deletions(-)</span>
+<span class="ok">To github.com/you/hello-app.git
+   a3f9c1e..9c4d21a  main -> main</span></div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box"><code>git revert</code> doesn't erase history — it adds a <em>new</em> commit that undoes the old one, so there's an honest record of what happened. That <code>git push</code> is the exact same trigger from <strong>Example 3</strong> — it automatically re-runs the whole CI/CD pipeline, tests it, builds it, and re-deploys it. Nobody has to remember any extra step.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>"should be fixed now" is a guess — go confirm it like a real user would</em></div>
+
+<!-- STEP 6 -->
+<div class="pu-card hu-card" style="--pu-clr:#22c55e">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">06</div>
+    <div><div class="pu-title">Verify it's actually fixed</div><div class="pu-desc">"Looks fixed to me" isn't good enough — check it from the outside</div></div>
+    <div class="pu-badge">curl + Grafana</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">It's tempting to assume "the pipeline went green, so it's fine." Confirm it the same way a real visitor would — actually hit the app — and then confirm the dashboard agrees over time, not just in the first second.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">6.1</span>Hit the live endpoint directly</div>
+    <div class="pu-step">
+      <span class="pu-step-label cmd">CMD</span>
+      <div class="pu-step-content"><div class="pu-code">curl https://hello-app.example.com/checkout</div></div>
+    </div>
+    <div class="pu-step">
+      <span class="pu-step-label out">OUTPUT</span>
+      <div class="pu-step-content"><div class="pu-output"><span class="ok">HTTP/1.1 200 OK</span>
+{"status":"ok","message":"Hello from inside a container! 🐳"}</div></div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">6.2</span>Watch the dashboard confirm it over the next few minutes</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div style="background:#111217;border:1px solid #2c2f36;border-radius:8px;overflow:hidden;">
+          <div style="background:#181b1f;border-bottom:1px solid #2c2f36;padding:8px 14px;font-size:10.5px;color:#8e8e93;">📊 Grafana — hello-app / HTTP availability (SLO)</div>
+          <div style="padding:14px;">
+            <div class="click-highlight block">
+              <div class="click-ring"></div>
+              <div class="click-arrow">👆 BACK TO GREEN</div>
+              <div style="background:linear-gradient(90deg,#1a7a3c,#2fa85a);border-radius:4px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+                <strong style="color:#fff;font-size:12px;">Critical alert</strong>
+                <strong style="color:#fff;font-size:15px;letter-spacing:0.5px;">OK</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;margin:2px 0 16px;font-size:11px;color:#475569;">↓ <em>one last thing — fixing it quietly isn't the whole job</em></div>
+
+<!-- STEP 7 -->
+<div class="pu-card hu-card" style="--pu-clr:#fbbf24">
+  <div class="pu-card-header" onclick="this.closest('.hu-card').classList.toggle('hu-open')">
+    <div class="pu-num">07</div>
+    <div><div class="pu-title">Tell the team what happened</div><div class="pu-desc">So it doesn't quietly repeat next month</div></div>
+    <div class="pu-badge">Slack</div>
+  </div>
+  <div class="pu-body">
+    <div class="pu-step">
+      <span class="pu-step-label note">WHY this counts as part of the job</span>
+      <div class="pu-step-content">
+        <div class="pu-note-box">Fixing it silently helps for exactly one day. Writing three short sentences — what broke, what fixed it, what changes going forward — helps the whole team, forever. This is the "close the loop" step that feeds back into <strong>Plan</strong>, all the way back at the start of the Lifecycle tab.</div>
+      </div>
+    </div>
+
+    <div class="substep-head"><span class="substep-tag">7.1</span>Post a short update to the team channel</div>
+    <div class="pu-step">
+      <span class="pu-step-label out">UI</span>
+      <div class="pu-step-content">
+        <div style="background:#1a1d29;border:1px solid #2c2f3a;border-radius:8px;overflow:hidden;">
+          <div style="background:#350d36;padding:8px 14px;font-size:10.5px;color:#e8d5e8;font-weight:700;"># incidents</div>
+          <div style="padding:12px 14px;">
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <div style="width:28px;height:28px;border-radius:6px;flex-shrink:0;background:#0891b2;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:700;">YOU</div>
+              <div>
+                <span style="font-size:11.5px;font-weight:700;color:#e2e8f0;">you</span><span style="font-size:9.5px;color:#6b7280;margin-left:6px;">2:58 PM</span>
+                <div style="font-size:11px;color:#cbd5e1;line-height:1.7;margin-top:2px;">🔴 <strong>What happened:</strong> checkout crashed for some users after the 2:36 PM deploy (null value on total).<br>✅ <strong>Fix:</strong> rolled back immediately, reverted the commit, redeployed — back to normal by 2:58 PM.<br>📋 <strong>Next:</strong> adding a test for this exact case before we touch checkout again.</div>
+              </div>
+            </div>
+            <div class="click-highlight block">
+              <div class="click-ring" style="inset:-3px;"></div>
+              <div class="click-arrow">👆 TYPE, THEN SEND</div>
+              <div style="border:1px solid #3a3d4a;border-radius:6px;padding:8px 10px;font-size:11px;color:#6b7280;background:#22252f;">Message #incidents</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">🔁</div>
+  <div>
+    <div class="loop-title">This loop — not shipping new features — is most of the actual job</div>
+    <div class="loop-desc">Ship (Examples 1–3) <span class="loop-arrow">→</span> Monitor (Step 1) <span class="loop-arrow">→</span> Investigate (Steps 2–3) <span class="loop-arrow">→</span> Stop the bleeding (Step 4) <span class="loop-arrow">→</span> Fix the source (Step 5) <span class="loop-arrow">→</span> Verify (Step 6) <span class="loop-arrow">→</span> Communicate (Step 7) <span class="loop-arrow">→</span> back to shipping again. Every tool used above is one you already met in an earlier example — nothing here was new, just used for a different reason.</div>
+  </div>
+</div>
+
+</div>
+
+<div class="hu-panel" id="hu-ex5">
+  <div style="text-align:center;padding:60px 20px;color:#475569;font-size:12px;">
+    <div style="font-size:32px;margin-bottom:12px;">🔜</div>
+    Example 5 isn't written yet — coming soon.
+  </div>
+</div>
+

@@ -1,0 +1,77 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🤖 What "bash automation" really means</div></div>
+    <div class="analogy-item"><span class="analogy-icon">😌</span><div class="analogy-text"><strong>Not scary</strong><br>Just commands you already know, saved together</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔁</span><div class="analogy-text"><strong>Doing a boring task once</strong><br>So you never do it by hand again</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🛡️</span><div class="analogy-text"><strong>Every line has a reason</strong><br>Nothing here is "just because"</div></div>
+  </div>
+
+  <div style="background:rgba(167,139,250,0.04);border:1px solid rgba(167,139,250,0.15);border-left:3px solid #a78bfa;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    This tab exists for one reason: so that the next time someone hands you a real automation task, you're not confused or scared — you've already seen exactly this shape before. Five genuinely different, deliberately <strong style="color:#e2e8f0;">extremely basic</strong> automation scripts below — organizing files, cleaning up old ones, backing something up, watching disk space, and a scheduled daily report. For every single one: the full script, <strong style="color:#a78bfa;">what every line does and why it's there</strong>, what happens when you actually run it, and what changed afterward. Nothing here assumes you've written a script before. If you want the deeper syntax reference (loops, functions, error handling), that's the <strong style="color:#38bdf8;">🐚 Shell Scripting</strong> tab — this one is just: read five real scripts, calmly, end to end.
+  </div>
+
+  <div class="section-title">🧩 The Shape Every One of These Follows</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 14px;">Before the 5 scripts — notice this same pattern repeats in every single one below. Once it clicks, nothing here feels random.</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Say what and where</span><span class="stage-tool">variables, near the top</span></div><div class="stage-desc">The folder, the file, the number — whatever this script is actually about, named clearly in a variable right at the top. Change the task by changing these lines, never the logic below.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Make sure it's safe to continue</span><span class="stage-tool">a quick check, before acting</span></div><div class="stage-desc">Does the folder exist? Is a number actually a number? A small check here means the script stops cleanly instead of doing something wrong somewhere it shouldn't.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Do the actual thing</span><span class="stage-tool">the one line that matters</span></div><div class="stage-desc">Every script here really has just one or two lines doing the real work — moving a file, deleting old ones, copying a folder. Everything else exists to set that line up safely.</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Say what happened</span><span class="stage-tool">echo, at the end</span></div><div class="stage-desc">A script that finishes silently leaves you wondering if it worked. One friendly line at the end removes all the doubt.</div></div></div>
+  </div>
+
+  <div class="section-title">💻 Try It — Pick a Script, Read It, Then Run It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 14px;">Read the problem, read the script, read why each line is there — then click ▶ Run script and see it actually happen.</div>
+
+  <div id="baIntro" style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.18);border-left:3px solid #38bdf8;border-radius:4px;padding:12px 14px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.85;">Pick a script below to get started.</div>
+
+  <div class="sl-editor">
+    <div class="sl-editor-bar">
+      <span class="sl-dot" style="background:#ff5f56"></span>
+      <span class="sl-dot" style="background:#ffbd2e"></span>
+      <span class="sl-dot" style="background:#27c93f"></span>
+      <span class="sl-filename" id="baFilename">pick-a-script-below.sh</span>
+      <button class="sl-run-btn" onclick="runBashScript()">▶ Run script</button>
+    </div>
+    <div class="pu-code" id="baCode"><span class="dim"># click any script below to load it here</span></div>
+  </div>
+  <div class="sl-output-wrap">
+    <div class="sl-output-label">Output</div>
+    <div class="pu-output" id="baOutput"><span class="dim">↳ nothing run yet — pick a script, then click ▶ Run script above</span></div>
+  </div>
+
+  <div class="sl-breakdown" style="margin-top:14px;">
+    <div class="sl-breakdown-label">📝 Line-by-Line — What Each Line Does, and Why We Write It</div>
+    <div class="sl-breakdown-list" id="baBreakdownList"><span class="dim">Pick a script below — every line gets explained here, one at a time, in order.</span></div>
+  </div>
+
+  <div id="baCronBox" style="display:none;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:4px;padding:12px 14px;margin-top:10px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#fbbf24;font-weight:700;margin-bottom:8px;">⏰ MAKE IT RUN ITSELF — CRONTAB</div>
+    <div class="pu-code" style="margin-bottom:8px;" id="baCronLine">—</div>
+    <div id="baCronDesc">—</div>
+  </div>
+
+  <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px 16px;margin-top:10px;margin-bottom:20px;">
+    <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#22c55e;font-weight:700;margin-bottom:8px;">✅ THE EFFECT — WHAT ACTUALLY CHANGED</div>
+    <div id="baEffect"><span class="dim">Click "▶ Run script" above to see the before/after.</span></div>
+  </div>
+
+  <div class="sl-cat">🤖 5 Genuinely Different, Genuinely Basic Automations</div>
+  <div class="sl-pills">
+    <button class="sl-pill" onclick="loadBashLesson('fileOrganizer',this)">1. 🗂️ Organize a messy folder</button>
+    <button class="sl-pill" onclick="loadBashLesson('cleanup',this)">2. 🧹 Delete old files automatically</button>
+    <button class="sl-pill" onclick="loadBashLesson('backup',this)">3. 💾 Back up a folder, with a timestamp</button>
+    <button class="sl-pill" onclick="loadBashLesson('diskWatchdog',this)">4. 🩺 Warn me if disk space is low</button>
+    <button class="sl-pill" onclick="loadBashLesson('dailyReport',this)">5. ⏰ Write a report every morning, by itself</button>
+  </div>
+
+  <div class="loop-box" style="margin-top:24px;">
+    <div class="loop-icon">🤖</div>
+    <div>
+      <div class="loop-title">That's genuinely it — you've now seen the whole shape</div>
+      <div class="loop-desc">A variable for what changes <span class="loop-arrow">→</span> a quick safety check <span class="loop-arrow">→</span> the one real line of work <span class="loop-arrow">→</span> a friendly confirmation at the end. <span class="loop-arrow">|</span> Every automation script you'll ever be asked to write — no matter how big it eventually gets — starts from exactly this same, small, unscary shape.</div>
+    </div>
+  </div>
+

@@ -1,0 +1,1059 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🏋️ Why This Tab Exists</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📖</span><div class="analogy-text"><strong>Theory</strong><br>You know what Docker is</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>Hands-On</strong><br>You can actually do it in an interview</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">💼</span><div class="analogy-text"><strong>Hired</strong><br>You solve the task live without freezing</div></div>
+  </div>
+
+  <div class="section-title">🐳 TASK 1 — Containerize a Node.js App (End-to-End)</div>
+
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:14px 16px;margin-bottom:16px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#38bdf8;">The Scenario:</strong> You have a Node.js app. Your interviewer says: <em style="color:#e2e8f0;">"Containerize this so it runs the same everywhere — locally, on CI, and in production."</em> Here's exactly what you do.
+  </div>
+
+  <div class="pipeline">
+
+    <div class="stage s1">
+      <div class="stage-connector">
+        <div class="stage-dot">📁</div>
+        <div class="stage-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-header">
+          <span class="stage-num">STEP 01</span>
+          <span class="stage-name">Understand your app</span>
+          <span class="stage-tool" style="--clr:#f97316;">RECON</span>
+        </div>
+        <div class="stage-desc">
+          Before writing a single line of Dockerfile, answer 3 questions:<br>
+          <strong style="color:#e2e8f0;">1. What runtime does it need?</strong> (Node 18? Python 3.11?)<br>
+          <strong style="color:#e2e8f0;">2. What port does it listen on?</strong> (3000? 8080?)<br>
+          <strong style="color:#e2e8f0;">3. What command starts it?</strong> (<code>node index.js</code>? <code>npm start</code>?)
+        </div>
+        <div class="stage-tip">💡 Say this out loud in your interview. It shows you think before you type — that's senior behavior.</div>
+      </div>
+    </div>
+
+    <div class="stage s2">
+      <div class="stage-connector">
+        <div class="stage-dot">📝</div>
+        <div class="stage-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-header">
+          <span class="stage-num">STEP 02</span>
+          <span class="stage-name">Write the Dockerfile</span>
+          <span class="stage-tool" style="--clr:#eab308;">DOCKERFILE</span>
+        </div>
+        <div class="stage-desc">Create a file literally called <code>Dockerfile</code> (no extension) in your project root:</div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px 14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin:8px 0;overflow-x:auto;"># 1. Base image — the OS + runtime your app needs
+FROM node:18-alpine
+
+# 2. Set the working directory INSIDE the container
+WORKDIR /app
+
+# 3. Copy dependency files FIRST (layer caching trick)
+COPY package*.json ./
+
+# 4. Install dependencies
+RUN npm install --production
+
+# 5. Copy the rest of your app code
+COPY . .
+
+# 6. Tell Docker which port your app uses
+EXPOSE 3000
+
+# 7. The command that starts your app
+CMD ["node", "index.js"]</pre>
+        <div class="stage-tip">💡 <strong style="color:#e2e8f0;">Why COPY package.json BEFORE COPY . ?</strong> Docker caches layers. If your code changes but dependencies don't, it skips <code>npm install</code> on rebuild — saving minutes every time.</div>
+      </div>
+    </div>
+
+    <div class="stage s3">
+      <div class="stage-connector">
+        <div class="stage-dot">🚫</div>
+        <div class="stage-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-header">
+          <span class="stage-num">STEP 03</span>
+          <span class="stage-name">Add a .dockerignore</span>
+          <span class="stage-tool" style="--clr:#22c55e;">OPTIMIZE</span>
+        </div>
+        <div class="stage-desc">Create <code>.dockerignore</code> in your project root — tells Docker what NOT to copy into the image:</div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;">node_modules
+.git
+.env
+*.log
+README.md</pre>
+        <div class="stage-tip">💡 Without this, <code>node_modules</code> (sometimes 500MB+) gets copied in, bloating your image. This is a common interview gotcha.</div>
+      </div>
+    </div>
+
+    <div class="stage s4">
+      <div class="stage-connector">
+        <div class="stage-dot">🔨</div>
+        <div class="stage-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-header">
+          <span class="stage-num">STEP 04</span>
+          <span class="stage-name">Build the image</span>
+          <span class="stage-tool" style="--clr:#38bdf8;">docker build</span>
+        </div>
+        <div class="stage-desc">Run this from the directory containing your Dockerfile:</div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;"># Syntax: docker build -t name:tag context
+docker build -t myapp:latest .
+
+# With your Docker Hub username (needed for pushing):
+docker build -t ibrahiem/myapp:v1.0 .</pre>
+        <div class="stage-desc" style="margin-top:8px;">
+          <strong style="color:#e2e8f0;">Breaking it down:</strong><br>
+          <code>-t myapp:latest</code> → tag the image with name:version<br>
+          <code>.</code> → build context (current directory)
+        </div>
+        <div class="stage-tip">💡 You'll see each Dockerfile instruction execute as a numbered step. Each step = one layer. Failed step = fix that layer and rebuild from cache.</div>
+      </div>
+    </div>
+
+    <div class="stage s5">
+      <div class="stage-connector">
+        <div class="stage-dot">▶️</div>
+        <div class="stage-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-header">
+          <span class="stage-num">STEP 05</span>
+          <span class="stage-name">Run the container</span>
+          <span class="stage-tool" style="--clr:#818cf8;">docker run</span>
+        </div>
+        <div class="stage-desc">Spin up a container from your image:</div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;"># Run detached + map port + name it
+docker run -d -p 3000:3000 --name my-container myapp:latest
+
+# Run with env variable
+docker run -d -p 3000:3000 -e NODE_ENV=production myapp:latest</pre>
+        <div class="stage-desc" style="margin-top:8px;">
+          <strong style="color:#e2e8f0;">Port mapping:</strong> <code>-p 3000:3000</code> = host:container<br>
+          So <code>localhost:3000</code> on your machine → hits port 3000 inside the container
+        </div>
+        <div class="stage-tip">💡 <code>-d</code> runs it in the background. Without it, logs flood your terminal and Ctrl+C kills the container.</div>
+      </div>
+    </div>
+
+    <div class="stage s6">
+      <div class="stage-connector">
+        <div class="stage-dot">🐛</div>
+        <div class="stage-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-header">
+          <span class="stage-num">STEP 06</span>
+          <span class="stage-name">Debug when things break</span>
+          <span class="stage-tool" style="--clr:#f43f5e;">DEBUG</span>
+        </div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;"># See all containers (including stopped)
+docker ps -a
+
+# Read crash output
+docker logs my-container
+
+# Follow logs in real-time
+docker logs -f my-container
+
+# Open a shell INSIDE the running container
+docker exec -it my-container sh
+
+# Inspect container details (IP, env vars, mounts)
+docker inspect my-container</pre>
+        <div class="stage-tip">💡 <code>docker exec -it &lt;name&gt; sh</code> is your "get inside the box" command — exactly like SSH into a server. Check files, test network, verify env vars.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">☁️ TASK 2 — Push Your Image to Docker Hub</div>
+  <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:4px;padding:14px 16px;margin-bottom:20px;">
+    <pre style="font-size:11px;color:#fbbf24;line-height:2;margin:0;"># 1. Login
+docker login
+
+# 2. Tag with your Docker Hub username
+docker tag myapp:latest ibrahiem/myapp:v1.0
+
+# 3. Push
+docker push ibrahiem/myapp:v1.0
+
+# 4. Pull on another machine / CI server
+docker pull ibrahiem/myapp:v1.0
+docker run -d -p 3000:3000 ibrahiem/myapp:v1.0</pre>
+  </div>
+
+  <div class="section-title">🎼 TASK 3 — Multi-Container App with Docker Compose</div>
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#38bdf8;">Scenario:</strong> Your app needs a <strong style="color:#e2e8f0;">Node.js backend</strong> + <strong style="color:#e2e8f0;">MongoDB database</strong>. Docker Compose wires them together with one file.
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;"># docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://db:27017/myapp
+    depends_on:
+      - db
+
+  db:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:</pre>
+  <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;margin-bottom:20px;">
+    <pre style="font-size:11px;color:#fbbf24;line-height:2;margin:0;">docker compose up -d          # start everything
+docker compose down           # stop everything
+docker compose down -v        # stop + wipe volumes
+docker compose up -d --build  # rebuild after code change</pre>
+  </div>
+
+  <div class="section-title">⚡ TASK 4 — GitHub Actions: Auto Build &amp; Push on Push to main</div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;"># .github/workflows/docker-build.yml
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/myapp:latest</pre>
+  <div style="border:1px solid rgba(251,191,36,0.2);background:rgba(251,191,36,0.04);border-left:3px solid #fbbf24;border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#fbbf24;">⚠️ Secrets:</strong> Go to GitHub → Repo Settings → Secrets and Variables → Actions → add <code>DOCKER_USERNAME</code> and <code>DOCKER_TOKEN</code>. The workflow reads them as <code>${{ secrets.X }}</code> — never visible in logs.
+  </div>
+
+  <div class="section-title">🎯 Interview Q&amp;A — What They're Really Testing</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">HO01</span><span class="qa-q-text">"Walk me through how you'd containerize an application."</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER SCRIPT</div><div class="qa-a-text">
+        "First I'd understand the app — runtime, port, start command. Then write a Dockerfile: official base image like <code>node:18-alpine</code>, set WORKDIR, copy package files first for layer caching, run <code>npm install</code>, copy remaining code. Add <code>.dockerignore</code> to exclude node_modules and .env. Build with <code>docker build -t myapp:latest .</code>, run with <code>docker run -d -p 3000:3000 myapp</code>. For production I'd also do a multi-stage build — build stage installs dev deps, final stage only copies the compiled output."
+        <br><br><span class="qa-pill">explain the why</span><span class="qa-pill">mention layer caching</span><span class="qa-pill">.dockerignore</span><span class="qa-pill">mention multi-stage</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">HO02</span><span class="qa-q-text">"What's the difference between CMD and ENTRYPOINT in a Dockerfile?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>CMD</strong> = the default command to run. It can be fully overridden at <code>docker run</code>: <code>docker run myapp node other.js</code> replaces CMD entirely.<br><br>
+        <strong>ENTRYPOINT</strong> = the executable that always runs. Arguments from <code>docker run</code> are appended to it, not replacing it.<br><br>
+        <strong>Best practice combo:</strong>
+        <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:3px;padding:8px;margin:6px 0;font-size:10px;color:#fbbf24;">ENTRYPOINT ["node"]
+CMD ["index.js"]
+# docker run myapp           → node index.js
+# docker run myapp server.js → node server.js</pre>
+        <span class="qa-pill">CMD = overridable default</span><span class="qa-pill">ENTRYPOINT = always runs</span><span class="qa-pill">combine both for flexibility</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">HO03</span><span class="qa-q-text">"How do you minimize Docker image size?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>4 techniques in order of impact:</strong><br><br>
+        <strong>1. Alpine base images</strong> — <code>node:18-alpine</code> is ~50MB vs <code>node:18</code> at ~350MB.<br><br>
+        <strong>2. Multi-stage builds</strong> — build in one stage, copy only output to a clean final stage. Dev deps never reach production:
+        <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:3px;padding:8px;margin:6px 0;font-size:10px;color:#fbbf24;">FROM node:18-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN npm install && npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+CMD ["node", "dist/index.js"]</pre>
+        <strong>3. .dockerignore</strong> — exclude node_modules, .git, test files, logs.<br><br>
+        <strong>4. Chain RUN commands</strong> — each <code>RUN</code> = one layer. Use <code>&amp;&amp;</code> and clean up in the same layer.<br><br>
+        <span class="qa-pill">alpine base</span><span class="qa-pill">multi-stage builds</span><span class="qa-pill">.dockerignore</span><span class="qa-pill">chain RUN commands</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">HO04</span><span class="qa-q-text">"Your container starts but crashes immediately. How do you debug it?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">DEBUG SCRIPT</div><div class="qa-a-text">
+        1. <code>docker ps -a</code> — confirm container exists, check its status (Exited? Restarting?)<br>
+        2. <code>docker logs &lt;container&gt;</code> — read the crash output. 90% of the time the error is right there.<br>
+        3. If it exits too fast: <code>docker run -it myapp sh</code> — override CMD with a shell, investigate manually.<br>
+        4. <code>docker inspect &lt;container&gt;</code> — check env vars, mounts, network config.<br>
+        5. Check if port is already used on host: <code>lsof -i :3000</code><br><br>
+        <span class="qa-pill">docker logs first</span><span class="qa-pill">docker ps -a for status</span><span class="qa-pill">exec -it sh to get inside</span><span class="qa-pill">inspect for env/config</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">HO05</span><span class="qa-q-text">"How do containers differ from VMs?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>VMs virtualize hardware. Containers virtualize the OS.</strong><br><br>
+        <strong>VM:</strong> Each VM has its own full OS kernel. A hypervisor manages hardware. Heavy — gigabytes each, minutes to boot.<br><br>
+        <strong>Container:</strong> All containers share the host OS kernel. Docker isolates processes using Linux namespaces and cgroups. Lightweight — megabytes, seconds to start.<br><br>
+        <strong>The analogy:</strong> VMs = separate houses (own plumbing, electricity). Containers = apartments in one building — shared infrastructure, isolated living spaces.<br><br>
+        <span class="qa-pill">VMs = full OS per instance</span><span class="qa-pill">containers = shared kernel</span><span class="qa-pill">containers = faster + lighter</span><span class="qa-pill">VMs = stronger isolation</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">⚡ Quick Reference — Commands You Must Know Cold</div>
+  <div class="cmd-grid">
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker build</span><span class="cmd-tag">build</span></div><div class="cmd-desc">Build an image from a Dockerfile in current dir.</div><div class="cmd-ex">docker build -t myapp:latest .</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker run</span><span class="cmd-tag">run</span></div><div class="cmd-desc"><code>-d</code>=detached, <code>-p</code>=ports, <code>-e</code>=env var, <code>--name</code>=name it.</div><div class="cmd-ex">docker run -d -p 3000:3000 --name app myapp:latest</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker ps -a</span><span class="cmd-tag">inspect</span></div><div class="cmd-desc">List all containers including stopped ones.</div><div class="cmd-ex">docker ps -a</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker logs</span><span class="cmd-tag">debug</span></div><div class="cmd-desc">Print logs from a container. <code>-f</code> to follow live.</div><div class="cmd-ex">docker logs -f my-container</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker exec</span><span class="cmd-tag">debug</span></div><div class="cmd-desc">Run a command inside a running container. <code>-it sh</code> opens a shell.</div><div class="cmd-ex">docker exec -it my-container sh</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker stop / rm</span><span class="cmd-tag">cleanup</span></div><div class="cmd-desc">Stop then remove a container. Force: <code>docker rm -f</code>.</div><div class="cmd-ex">docker stop app && docker rm app</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker images</span><span class="cmd-tag">inspect</span></div><div class="cmd-desc">List all local images with sizes.</div><div class="cmd-ex">docker images</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker push</span><span class="cmd-tag">publish</span></div><div class="cmd-desc">Push image to Docker Hub / ECR. Must be tagged with registry prefix.</div><div class="cmd-ex">docker push ibrahiem/myapp:v1.0</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker compose up</span><span class="cmd-tag">compose</span></div><div class="cmd-desc">Start all services in docker-compose.yml. <code>--build</code> to rebuild.</div><div class="cmd-ex">docker compose up -d --build</div></div>
+    <div class="cmd-card"><div class="cmd-head"><span class="cmd-label">docker inspect</span><span class="cmd-tag">debug</span></div><div class="cmd-desc">Full JSON details on a container — IP, env vars, volumes, network.</div><div class="cmd-ex">docker inspect my-container</div></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 5: LINUX SERVER SETUP -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">🐧 TASK 5 — Set Up a Linux Server from Scratch</div>
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:14px 16px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#22c55e;">The Scenario:</strong> You just got SSH access to a fresh Ubuntu server. The interviewer says: <em style="color:#e2e8f0;">"It's yours — secure it and make it production-ready."</em>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">① Update the system first</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">sudo apt update && sudo apt upgrade -y</pre>
+      <div style="font-size:10.5px;color:#64748b;margin-top:6px;">Always start here. Stale packages = unpatched vulnerabilities.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">② Create a non-root user</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">adduser ibrahiem
+usermod -aG sudo ibrahiem
+su - ibrahiem</pre>
+      <div style="font-size:10.5px;color:#64748b;margin-top:6px;">Never run apps as root. Blast radius of a hack = everything if you do.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">③ Set up SSH key auth</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># On your LOCAL machine:
+ssh-keygen -t ed25519 -C "ibrahiem@dev"
+ssh-copy-id ibrahiem@SERVER_IP</pre>
+      <div style="font-size:10.5px;color:#64748b;margin-top:6px;">Keys can't be brute-forced. Passwords can. Disable password auth after this.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">④ Harden SSH config</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># /etc/ssh/sshd_config
+PermitRootLogin no
+PasswordAuthentication no
+Port 2222          # optional: change default port
+
+sudo systemctl restart sshd</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">⑤ Configure UFW firewall</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">sudo ufw allow OpenSSH
+sudo ufw allow 80      # HTTP
+sudo ufw allow 443     # HTTPS
+sudo ufw enable
+sudo ufw status</pre>
+      <div style="font-size:10.5px;color:#64748b;margin-top:6px;">Deny all by default, allow only what you need. Principle of least privilege.</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">⑥ Install & manage a service</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">sudo apt install nginx -y
+sudo systemctl enable nginx   # start on boot
+sudo systemctl start nginx
+sudo systemctl status nginx</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">⑦ Monitor system health</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">top / htop          # CPU & memory live
+df -h               # disk usage
+free -h             # RAM usage
+lsof -i :80         # what's using port 80?
+journalctl -xe      # system logs</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">⑧ Set up cron job</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">crontab -e
+# Run backup every day at 2am:
+0 2 * * * /home/ibrahiem/backup.sh
+
+# Check cron format: min hr day month weekday</pre>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 6: GIT WORKFLOW -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">🌿 TASK 6 — Git: The Real-World Feature Branch Workflow</div>
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:14px 16px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#22c55e;">The Scenario:</strong> <em style="color:#e2e8f0;">"Show me how you'd work on a new feature without breaking main."</em> This is the workflow used at every real company.
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:2;margin-bottom:14px;overflow-x:auto;"># 1. Always start from an updated main
+git checkout main
+git pull origin main
+
+# 2. Create a feature branch
+git checkout -b feature/user-auth
+
+# 3. Work, commit with meaningful messages
+git add .
+git commit -m "feat: add JWT authentication middleware"
+git commit -m "test: add unit tests for auth service"
+
+# 4. Keep your branch up to date with main (avoid merge conflicts later)
+git fetch origin
+git rebase origin/main        # replay your commits on top of latest main
+
+# 5. Push your branch
+git push origin feature/user-auth
+
+# 6. Open a Pull Request on GitHub → code review → merge
+
+# 7. After merge, clean up
+git checkout main
+git pull origin main
+git branch -d feature/user-auth
+git push origin --delete feature/user-auth</pre>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f97316;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:6px;">🔥 Fix a merge conflict</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">git merge feature/other
+# CONFLICT → open the file, find <<<< markers
+# Edit to keep the right code
+git add conflicted-file.js
+git commit -m "resolve merge conflict"</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f97316;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:6px;">⏪ Undo last commit (keep changes)</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">git reset --soft HEAD~1
+# Changes go back to staging area
+# git reset --hard HEAD~1 = DESTROYS changes</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f97316;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:6px;">🚑 Stash work mid-task</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">git stash              # save dirty state
+git checkout main      # switch to hotfix
+# ... fix hotfix ...
+git checkout feature/x
+git stash pop          # restore your work</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f97316;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:6px;">🏷️ Tag a release</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">git tag -a v1.0.0 -m "Production release"
+git push origin v1.0.0
+# List all tags:
+git tag</pre>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 7: AWS EC2 DEPLOY -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">☁️ TASK 7 — Deploy an App on AWS EC2 (End-to-End)</div>
+  <div style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:4px;padding:14px 16px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#fbbf24;">The Scenario:</strong> <em style="color:#e2e8f0;">"Take this app and deploy it to AWS so it's publicly accessible."</em>
+  </div>
+  <div class="pipeline">
+    <div class="stage s1">
+      <div class="stage-connector"><div class="stage-dot">🖥️</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 01</span><span class="stage-name">Launch EC2 instance</span><span class="stage-tool" style="--clr:#f97316;">AWS Console</span></div>
+        <div class="stage-desc">
+          EC2 → Launch Instance → <strong style="color:#e2e8f0;">Ubuntu 22.04 LTS</strong> → <strong style="color:#e2e8f0;">t2.micro</strong> (free tier)<br>
+          Key pair: create new → download <code>.pem</code> file (you can't get it again)<br>
+          Security group: Allow SSH (22), HTTP (80), HTTPS (443) — from <code>0.0.0.0/0</code> for public
+        </div>
+        <div class="stage-tip">💡 Security groups are stateful firewalls. Inbound rule for port 80 = HTTP traffic can reach your app.</div>
+      </div>
+    </div>
+    <div class="stage s2">
+      <div class="stage-connector"><div class="stage-dot">🔑</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 02</span><span class="stage-name">SSH into your server</span><span class="stage-tool" style="--clr:#eab308;">SSH</span></div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;"># Fix permissions on your key (required)
+chmod 400 my-key.pem
+
+# Connect
+ssh -i my-key.pem ubuntu@YOUR_EC2_PUBLIC_IP</pre>
+        <div class="stage-tip">💡 Without <code>chmod 400</code>, SSH refuses the key — "permissions too open" error.</div>
+      </div>
+    </div>
+    <div class="stage s3">
+      <div class="stage-connector"><div class="stage-dot">⚙️</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 03</span><span class="stage-name">Install Docker on the EC2</span><span class="stage-tool" style="--clr:#22c55e;">Docker</span></div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;">sudo apt update
+sudo apt install docker.io -y
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker $USER   # run docker without sudo
+# Log out and back in for group to apply</pre>
+      </div>
+    </div>
+    <div class="stage s4">
+      <div class="stage-connector"><div class="stage-dot">🚀</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 04</span><span class="stage-name">Pull & run your app</span><span class="stage-tool" style="--clr:#38bdf8;">Deploy</span></div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;">docker pull ibrahiem/myapp:latest
+docker run -d -p 80:3000 --name app --restart=always ibrahiem/myapp:latest</pre>
+        <div class="stage-desc" style="margin-top:8px;"><strong style="color:#e2e8f0;"><code>-p 80:3000</code></strong> — map host port 80 (HTTP) → container port 3000<br>
+        <strong style="color:#e2e8f0;"><code>--restart=always</code></strong> — auto-restart if server reboots or container crashes</div>
+      </div>
+    </div>
+    <div class="stage s5">
+      <div class="stage-connector"><div class="stage-dot">🌍</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 05</span><span class="stage-name">Verify it's live</span><span class="stage-tool" style="--clr:#818cf8;">Verify</span></div>
+        <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin:8px 0;"># From your local machine:
+curl http://YOUR_EC2_PUBLIC_IP
+# Or open the IP in your browser</pre>
+        <div class="stage-tip">💡 If it doesn't load: check <code>docker ps</code>, check <code>docker logs app</code>, check security group allows port 80.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AWS S3 -->
+  <div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:4px;padding:14px 16px;margin-bottom:20px;">
+    <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:10px;">☁️ BONUS — S3: Store & Serve Files from AWS</div>
+    <pre style="font-size:11px;color:#fbbf24;line-height:2;margin:0;"># Install AWS CLI
+sudo apt install awscli -y
+aws configure   # enter Access Key, Secret, region (ap-south-1), output (json)
+
+# Create a bucket
+aws s3 mb s3://ibrahiem-app-bucket
+
+# Upload a file
+aws s3 cp ./dist/index.html s3://ibrahiem-app-bucket/
+
+# List bucket contents
+aws s3 ls s3://ibrahiem-app-bucket/
+
+# Sync entire build folder
+aws s3 sync ./dist s3://ibrahiem-app-bucket/ --delete
+
+# Make file publicly readable (for static hosting)
+aws s3api put-bucket-policy --bucket ibrahiem-app-bucket \
+  --policy file://public-policy.json</pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 8: GITHUB ACTIONS FULL PIPELINE -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">⚡ TASK 8 — Full CI/CD Pipeline: Test → Build → Deploy</div>
+  <div style="background:rgba(129,140,248,0.05);border:1px solid rgba(129,140,248,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#818cf8;">The Scenario:</strong> <em style="color:#e2e8f0;">"Set up a pipeline that runs tests on every PR, and deploys to production only when merged to main."</em>
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:14px;overflow-x:auto;"># .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [main]          # runs tests on every PR
+  push:
+    branches: [main]          # deploys only when merged
+
+jobs:
+  # ─── JOB 1: Test (runs on every PR) ───────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci              # faster + stricter than npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run linter
+        run: npm run lint
+
+  # ─── JOB 2: Build & Push (only on merge to main) ──────────
+  build-and-push:
+    needs: test                 # only runs if test job passes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+            ${{ secrets.DOCKER_USERNAME }}/myapp:${{ github.sha }}
+
+  # ─── JOB 3: Deploy to EC2 ─────────────────────────────────
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into EC2 and redeploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+            docker stop app || true
+            docker rm app || true
+            docker run -d -p 80:3000 --name app --restart=always \
+              ${{ secrets.DOCKER_USERNAME }}/myapp:latest</pre>
+  <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#818cf8;">Secrets needed:</strong> <code>DOCKER_USERNAME</code>, <code>DOCKER_TOKEN</code>, <code>EC2_HOST</code> (public IP), <code>EC2_SSH_KEY</code> (contents of your .pem file)<br>
+    <strong style="color:#818cf8;">The flow:</strong> PR opened → tests run → PR blocked if fail → merge to main → build image → push to Hub → SSH into EC2 → pull new image → restart container ✅
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 9: KUBERNETES DEPLOY -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">☸️ TASK 9 — Deploy an App to Kubernetes</div>
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#38bdf8;">The Scenario:</strong> <em style="color:#e2e8f0;">"You have a Dockerized app. Deploy it to Kubernetes with 3 replicas and expose it via a Service."</em>
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;"># deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 3                       # 3 copies running at all times
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: myapp
+          image: ibrahiem/myapp:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+---
+# service.yaml — exposes the app
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  selector:
+    app: myapp                      # routes to pods with label app=myapp
+  ports:
+    - protocol: TCP
+      port: 80                      # Service port
+      targetPort: 3000              # container port
+  type: LoadBalancer                # gives a public IP (on cloud), NodePort (local)</pre>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:1.9;margin-bottom:20px;">kubectl apply -f deployment.yaml   # create/update deployment
+kubectl apply -f service.yaml      # create/update service
+
+kubectl get pods                   # verify pods are Running
+kubectl get svc                    # get external IP
+kubectl describe pod myapp-xyz     # debug a specific pod
+kubectl logs myapp-xyz             # see pod logs
+kubectl rollout status deploy/myapp  # watch rollout progress
+
+# Scale up/down
+kubectl scale deployment myapp --replicas=5
+
+# Rolling update (change image version)
+kubectl set image deployment/myapp myapp=ibrahiem/myapp:v2.0
+kubectl rollout undo deployment/myapp  # rollback if broken</pre>
+
+  <!-- K8s Debugging flow -->
+  <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px 16px;margin-bottom:20px;">
+    <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#f43f5e;margin-bottom:10px;">🚨 K8s Pod Not Starting — Debug Flow</div>
+    <pre style="font-size:11px;color:#fbbf24;line-height:2;margin:0;">kubectl get pods                         # STATUS = CrashLoopBackOff / Pending / Error?
+kubectl describe pod &lt;pod-name&gt;          # Events section at the bottom — the real error
+kubectl logs &lt;pod-name&gt;                  # App crash output
+kubectl logs &lt;pod-name&gt; --previous       # Logs from crashed previous instance
+kubectl exec -it &lt;pod-name&gt; -- sh        # Shell into the pod (if it's running)
+
+# Common causes:
+# CrashLoopBackOff = app crashes on startup → check logs
+# Pending = no node has enough resources → check resource requests
+# ImagePullBackOff = image name wrong or registry auth missing
+# OOMKilled = container exceeded memory limit → raise limits</pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 10: TERRAFORM -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">🏗️ TASK 10 — Provision Infrastructure with Terraform</div>
+  <div style="background:rgba(129,140,248,0.05);border:1px solid rgba(129,140,248,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#818cf8;">The Scenario:</strong> <em style="color:#e2e8f0;">"Provision an EC2 instance and S3 bucket on AWS using Terraform. No clicking in the console."</em>
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;"># main.tf
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+# ── EC2 Instance ───────────────────────────────────────────
+resource "aws_instance" "app_server" {
+  ami           = "ami-0c55b159cbfafe1f0"   # Ubuntu 22.04 us-east-1
+  instance_type = var.instance_type
+
+  tags = {
+    Name        = "myapp-server"
+    Environment = var.environment
+  }
+}
+
+# ── S3 Bucket ──────────────────────────────────────────────
+resource "aws_s3_bucket" "app_assets" {
+  bucket = "ibrahiem-app-assets-${var.environment}"
+  tags = {
+    Environment = var.environment
+  }
+}
+
+# variables.tf
+variable "aws_region"     { default = "us-east-1" }
+variable "instance_type"  { default = "t2.micro" }
+variable "environment"    { default = "staging" }
+
+# outputs.tf
+output "ec2_public_ip" {
+  value = aws_instance.app_server.public_ip
+}
+output "s3_bucket_name" {
+  value = aws_s3_bucket.app_assets.bucket
+}</pre>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:2;margin-bottom:14px;">terraform init        # download providers
+terraform plan        # preview what will be created/changed/destroyed
+terraform apply       # actually create resources (asks for confirmation)
+terraform apply -auto-approve   # skip confirmation (use in CI)
+terraform destroy     # tear everything down
+terraform output      # print output values after apply
+terraform state list  # see all resources in state</pre>
+  <div style="border:1px solid rgba(251,191,36,0.2);background:rgba(251,191,36,0.04);border-left:3px solid #fbbf24;border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#fbbf24;">⚠️ Never commit <code>terraform.tfstate</code> to Git.</strong> It contains secrets and resource IDs. Store it in S3 with DynamoDB locking for team use:<br>
+    <code>terraform { backend "s3" { bucket = "my-tf-state" key = "prod/terraform.tfstate" region = "us-east-1" dynamodb_table = "tf-locks" } }</code>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 11: NGINX REVERSE PROXY -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">🌐 TASK 11 — Configure Nginx as a Reverse Proxy</div>
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#22c55e;">The Scenario:</strong> <em style="color:#e2e8f0;">"Your Node app runs on port 3000. Make it accessible on port 80 (HTTP) so users don't need to type :3000."</em>
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;"># /etc/nginx/sites-available/myapp
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;    # forward to your app
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_cache_bypass $http_upgrade;
+    }
+}</pre>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:2;margin-bottom:14px;"># Enable the config (symlink to sites-enabled)
+sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/
+
+# Test config for syntax errors BEFORE reloading
+sudo nginx -t
+
+# Apply config
+sudo systemctl reload nginx
+
+# Add HTTPS with Let's Encrypt (free SSL)
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d yourdomain.com</pre>
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:12px 14px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.8;">
+    <strong style="color:#38bdf8;">Why a reverse proxy?</strong> Your app can't run on port 80 without root (security risk). Nginx runs on 80 as root, then forwards to your unprivileged app on 3000. Bonus: Nginx also handles SSL termination, rate limiting, gzip compression, and can load balance across multiple app instances.
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 12: BASH SCRIPTING -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">⌨️ TASK 12 — Write a DevOps Bash Script</div>
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#22c55e;">The Scenario:</strong> <em style="color:#e2e8f0;">"Write a script that checks if a service is running and restarts it if not."</em> A classic DevOps automation task.
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;">#!/bin/bash
+# healthcheck.sh — auto-restart a service if it dies
+
+SERVICE="nginx"
+LOG_FILE="/var/log/healthcheck.log"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Check if the service is running
+if systemctl is-active --quiet "$SERVICE"; then
+    echo "[$TIMESTAMP] $SERVICE is running ✅" >> "$LOG_FILE"
+else
+    echo "[$TIMESTAMP] $SERVICE is DOWN. Restarting..." >> "$LOG_FILE"
+    systemctl restart "$SERVICE"
+
+    # Check if restart succeeded
+    if systemctl is-active --quiet "$SERVICE"; then
+        echo "[$TIMESTAMP] $SERVICE restarted successfully ✅" >> "$LOG_FILE"
+    else
+        echo "[$TIMESTAMP] CRITICAL: $SERVICE failed to restart ❌" >> "$LOG_FILE"
+        # Send an alert (email, Slack webhook, etc.)
+    fi
+fi</pre>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:6px;">Script essentials</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">#!/bin/bash          # shebang line
+chmod +x script.sh   # make executable
+./script.sh          # run it
+
+set -e    # exit on any error
+set -u    # error on undefined vars
+set -o pipefail  # catch pipe failures</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:6px;">Variables & conditionals</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">NAME="ibrahiem"
+echo "Hello, $NAME"
+
+if [ "$ENV" == "prod" ]; then
+  echo "production mode"
+elif [ "$ENV" == "dev" ]; then
+  echo "dev mode"
+fi</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:6px;">Loops & functions</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">for server in web1 web2 web3; do
+  echo "Deploying to $server"
+  ssh $server "docker pull myapp:latest"
+done
+
+backup() {
+  tar -czf backup-$(date +%F).tar.gz /app
+}
+backup</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:6px;">Useful one-liners</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># Find files over 100MB
+find / -size +100M -type f 2>/dev/null
+
+# Kill all containers
+docker rm -f $(docker ps -aq)
+
+# Watch a log file live
+tail -f /var/log/nginx/error.log</pre>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- TASK 13: MONITORING SETUP -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">📊 TASK 13 — Set Up Monitoring with Prometheus + Grafana</div>
+  <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#f43f5e;">The Scenario:</strong> <em style="color:#e2e8f0;">"How would you set up monitoring for your application? What metrics would you track?"</em>
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;overflow-x:auto;"># docker-compose.monitoring.yml
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  node-exporter:               # exports Linux system metrics
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+
+volumes:
+  grafana-data:</pre>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:12px;"># prometheus.yml — tells Prometheus what to scrape
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'myapp'
+    static_configs:
+      - targets: ['app:3000']      # your app must expose /metrics endpoint</pre>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f43f5e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f43f5e;margin-bottom:6px;">The 4 Golden Signals</div>
+      <div style="font-size:10.5px;color:#94a3b8;line-height:1.8;">
+        <strong style="color:#e2e8f0;">Latency</strong> — how long requests take<br>
+        <strong style="color:#e2e8f0;">Traffic</strong> — requests per second<br>
+        <strong style="color:#e2e8f0;">Errors</strong> — error rate (4xx/5xx)<br>
+        <strong style="color:#e2e8f0;">Saturation</strong> — how full is your system (CPU/memory at limit?)
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f43f5e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f43f5e;margin-bottom:6px;">PromQL — key queries</div>
+      <pre style="font-size:10px;color:#fbbf24;line-height:1.9;margin:0;"># CPU usage %
+100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+# HTTP error rate
+rate(http_requests_total{status=~"5.."}[5m])
+
+# Memory used
+node_memory_MemAvailable_bytes</pre>
+    </div>
+    <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f43f5e;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f43f5e;margin-bottom:6px;">Access Grafana</div>
+      <div style="font-size:10.5px;color:#94a3b8;line-height:1.8;">
+        Open <code>http://localhost:3001</code><br>
+        Login: <code>admin / admin</code><br>
+        Add Prometheus as data source: <code>http://prometheus:9090</code><br>
+        Import dashboard ID <strong style="color:#e2e8f0;">1860</strong> (Node Exporter Full) — instant system dashboard
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- MASTER TASK REFERENCE -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="section-title">🗺️ Master Task Map — What You Can Now Do</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#38bdf8;font-weight:700;margin-bottom:4px;">🐳 TASK 1–4 · Docker</div>
+      <div style="color:#64748b;">Containerize app · push to Hub · Docker Compose · GitHub Actions build</div>
+    </div>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#22c55e;font-weight:700;margin-bottom:4px;">🐧 TASK 5 · Linux</div>
+      <div style="color:#64748b;">Harden server · SSH keys · UFW firewall · cron · system health</div>
+    </div>
+    <div style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#f97316;font-weight:700;margin-bottom:4px;">🌿 TASK 6 · Git</div>
+      <div style="color:#64748b;">Feature branch workflow · conflict resolution · stash · tagging</div>
+    </div>
+    <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#fbbf24;font-weight:700;margin-bottom:4px;">☁️ TASK 7 · AWS EC2</div>
+      <div style="color:#64748b;">Launch EC2 · SSH in · install Docker · deploy app · S3 CLI</div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#818cf8;font-weight:700;margin-bottom:4px;">⚡ TASK 8 · CI/CD</div>
+      <div style="color:#64748b;">Test on PR · build on merge · deploy to EC2 via SSH in Actions</div>
+    </div>
+    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#38bdf8;font-weight:700;margin-bottom:4px;">☸️ TASK 9 · Kubernetes</div>
+      <div style="color:#64748b;">Deployment YAML · Service · scale · rolling update · debug pods</div>
+    </div>
+    <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#818cf8;font-weight:700;margin-bottom:4px;">🏗️ TASK 10 · Terraform</div>
+      <div style="color:#64748b;">EC2 + S3 with IaC · variables · outputs · remote state</div>
+    </div>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#22c55e;font-weight:700;margin-bottom:4px;">🌐 TASK 11 · Nginx</div>
+      <div style="color:#64748b;">Reverse proxy · SSL with Certbot · reload without downtime</div>
+    </div>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#22c55e;font-weight:700;margin-bottom:4px;">⌨️ TASK 12 · Bash</div>
+      <div style="color:#64748b;">Healthcheck scripts · loops · functions · one-liners</div>
+    </div>
+    <div style="background:rgba(244,63,94,0.06);border:1px solid rgba(244,63,94,0.2);border-radius:4px;padding:10px 12px;font-size:10.5px;">
+      <div style="color:#f43f5e;font-weight:700;margin-bottom:4px;">📊 TASK 13 · Monitoring</div>
+      <div style="color:#64748b;">Prometheus + Grafana stack · 4 golden signals · PromQL · Node Exporter</div>
+    </div>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">🏆</div>
+    <div>
+      <div class="loop-title">You now have the full DevOps playbook.</div>
+      <div class="loop-desc">
+        Pick one task per day. Don't just read it — actually execute it in a terminal. Spin up an EC2, write that Terraform file, set up that pipeline. The muscle memory is what gets you hired. <strong style="color:#fb923c;">Theory gets you interviews. Doing it live gets you the offer.</strong>
+      </div>
+    </div>
+  </div>
+

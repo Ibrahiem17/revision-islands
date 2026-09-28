@@ -1,0 +1,651 @@
+
+
+  <!-- WHY SECTION -->
+  <div class="analogy">
+    <div><div class="analogy-label">🏥 The Hospital Analogy</div></div>
+    <div class="analogy-item"><span class="analogy-icon">🩺</span><div class="analogy-text"><strong>Your App = Patient</strong><br>Can't tell you when it's sick</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📡</span><div class="analogy-text"><strong>Prometheus = Sensors</strong><br>Constantly measures vitals</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📊</span><div class="analogy-text"><strong>Grafana = Monitor Screen</strong><br>Makes vitals readable</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🚨</span><div class="analogy-text"><strong>Alertmanager = Pager</strong><br>Wakes you up when critical</div></div>
+  </div>
+
+  <!-- WHY PROMETHEUS -->
+  <div class="section-title">🤔 WHY — The Problem They Solve</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:20px;">
+    <div style="background:rgba(244,63,94,0.06);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f43f5e;margin-bottom:8px;">😰 Without monitoring</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        Your app crashes at 3am. You find out when a customer tweets about it.<br><br>
+        Users say "it's slow." You have no idea <em style="color:#e2e8f0;">what</em> is slow, <em style="color:#e2e8f0;">when</em> it started, or <em style="color:#e2e8f0;">why</em>.<br><br>
+        Memory leak eats up your server over 3 days. You find out when it crashes.
+      </div>
+    </div>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:8px;">✅ With Prometheus + Grafana</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        Alert fires at 3am <em style="color:#e2e8f0;">before</em> the crash — memory was trending up.<br><br>
+        You open Grafana, see <em style="color:#e2e8f0;">exactly which endpoint</em> got slow and <em style="color:#e2e8f0;">which commit</em> caused it.<br><br>
+        You spot the memory leak on a graph a week before it becomes a crisis.
+      </div>
+    </div>
+    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:8px;">💼 Why interviewers care</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        Any production system needs monitoring. If you can say <em style="color:#e2e8f0;">"I set up Prometheus + Grafana, wrote PromQL queries, and configured alerts"</em> — you're describing real production work that most juniors have never touched.
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="section-title">🏛️ How It All Fits Together</div>
+  <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:6px;padding:20px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.9;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+        <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:4px;padding:8px 14px;min-width:140px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🖥️ 🐳 ☸️</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;font-size:11px;">Your App / Services</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">exposes <code>/metrics</code></div>
+        </div>
+        <div style="color:#475569;font-size:20px;padding-top:18px;">→</div>
+        <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:8px 14px;min-width:140px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">📡</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;color:#ef4444;font-size:11px;">Prometheus</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">scrapes every 15s, stores in TSDB</div>
+        </div>
+        <div style="color:#475569;font-size:20px;padding-top:18px;">→</div>
+        <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:4px;padding:8px 14px;min-width:140px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">📊</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;font-size:11px;">Grafana</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">queries Prometheus, renders dashboards</div>
+        </div>
+        <div style="color:#475569;font-size:20px;padding-top:18px;">→</div>
+        <div style="background:rgba(129,140,248,0.12);border:1px solid rgba(129,140,248,0.3);border-radius:4px;padding:8px 14px;min-width:140px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:4px;">🚨</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;color:#818cf8;font-size:11px;">Alertmanager</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">routes to Slack / PagerDuty / email</div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #1e293b;padding-top:12px;font-size:11px;color:#64748b;line-height:1.9;">
+        <strong style="color:#e2e8f0;">Also in the stack:</strong> <strong style="color:#fbbf24;">Node Exporter</strong> — runs on each Linux server, exports CPU/RAM/disk/network metrics to Prometheus.
+        &nbsp;|&nbsp; <strong style="color:#fbbf24;">cAdvisor</strong> — exports Docker container metrics.
+        &nbsp;|&nbsp; <strong style="color:#fbbf24;">kube-state-metrics</strong> — exports Kubernetes object metrics (pod status, deployment replicas, etc.)
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMETHEUS DEEP DIVE -->
+  <div class="section-title">📡 PROMETHEUS — Deep Dive</div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:16px;">
+    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-left:3px solid #ef4444;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px;">🔄 Pull-Based Scraping</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        Prometheus <strong style="color:#e2e8f0;">pulls</strong> metrics from targets — targets don't push to Prometheus.<br><br>
+        Each target exposes a <code>/metrics</code> HTTP endpoint. Prometheus hits it every 15s (configurable) and stores the data.<br><br>
+        <strong style="color:#e2e8f0;">Why pull, not push?</strong> Prometheus knows if a target goes down (it stops responding). Push-based systems don't know if silence = healthy or dead.
+      </div>
+    </div>
+    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-left:3px solid #ef4444;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px;">🗄️ Time-Series Database (TSDB)</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        All data stored as <strong style="color:#e2e8f0;">metric_name + labels + timestamp + value</strong>.<br><br>
+        Example entry: <code style="color:#fbbf24;">http_requests_total{method="GET", status="200", endpoint="/api"} 1452 1714000000</code><br><br>
+        Labels let you slice data: "show me only POST errors on /login". Stored efficiently on disk — compresses well since values change slowly.
+      </div>
+    </div>
+    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-left:3px solid #ef4444;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px;">📏 4 Metric Types</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        <strong style="color:#e2e8f0;">Counter</strong> — only goes up. Total requests, total errors. Use <code>rate()</code> to get per-second rate.<br>
+        <strong style="color:#e2e8f0;">Gauge</strong> — goes up and down. Current memory, active connections, queue size.<br>
+        <strong style="color:#e2e8f0;">Histogram</strong> — samples observations into buckets. Request duration, response size. Enables p95/p99 latency.<br>
+        <strong style="color:#e2e8f0;">Summary</strong> — like histogram but calculates quantiles client-side. Less flexible.
+      </div>
+    </div>
+    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-left:3px solid #ef4444;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px;">🎯 Service Discovery</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        In Kubernetes you don't hardcode targets. Prometheus uses <strong style="color:#e2e8f0;">service discovery</strong> to auto-find pods with the right annotations:<br><br>
+        <code style="color:#fbbf24;">prometheus.io/scrape: "true"</code><br>
+        <code style="color:#fbbf24;">prometheus.io/port: "3000"</code><br><br>
+        Any new pod with these annotations gets automatically scraped.
+      </div>
+    </div>
+  </div>
+
+  <!-- /metrics endpoint example -->
+  <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#ef4444;margin-bottom:10px;">📄 What a /metrics endpoint looks like</div>
+    <pre style="font-size:10.5px;color:#e2e8f0;line-height:1.9;margin:0;"># HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",status="200",path="/api/users"} 8473
+http_requests_total{method="POST",status="201",path="/api/users"} 312
+http_requests_total{method="GET",status="404",path="/api/users"} 17
+http_requests_total{method="POST",status="500",path="/api/login"} 3
+
+# HELP process_resident_memory_bytes Resident memory size in bytes
+# TYPE process_resident_memory_bytes gauge
+process_resident_memory_bytes 52428800
+
+# HELP http_request_duration_seconds HTTP request latency
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{le="0.05"} 7231
+http_request_duration_seconds_bucket{le="0.1"} 7890
+http_request_duration_seconds_bucket{le="0.5"} 8450
+http_request_duration_seconds_bucket{le="+Inf"} 8473</pre>
+    <div style="font-size:10.5px;color:#64748b;margin-top:8px;">💡 Prometheus scrapes this URL on your app every 15s and stores every line as a time-series data point. Your app exposes this — you add a library like <code>prom-client</code> (Node.js) or <code>prometheus_client</code> (Python).</div>
+  </div>
+
+  <!-- PROMQL -->
+  <div class="section-title">🔍 PromQL — The Query Language</div>
+  <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:4px;padding:14px 16px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+    PromQL is how you ask Prometheus questions about your data. Grafana uses PromQL to build its panels. Alertmanager uses PromQL to decide when to fire alerts. <strong style="color:#e2e8f0;">You don't need to memorize all of it — you need to understand the patterns.</strong>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:20px;">
+
+    <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-left:3px solid #ef4444;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ef4444;margin-bottom:8px;">📈 Request Rate (most used)</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># Requests per second over last 5 mins
+rate(http_requests_total[5m])
+
+# Only GET requests
+rate(http_requests_total{method="GET"}[5m])
+
+# Error rate (5xx only)
+rate(http_requests_total{status=~"5.."}[5m])</pre>
+      <div style="font-size:10px;color:#475569;margin-top:6px;">rate() takes a counter (always increasing) and calculates per-second rate. Always use rate() on counters — never the raw value.</div>
+    </div>
+
+    <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-left:3px solid #ef4444;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ef4444;margin-bottom:8px;">💾 Memory & CPU</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># Memory used (bytes)
+node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+
+# Memory used %
+(1 - (node_memory_MemAvailable_bytes /
+      node_memory_MemTotal_bytes)) * 100
+
+# CPU usage % (all cores, 5m avg)
+100 - (avg by(instance)(
+  rate(node_cpu_seconds_total{mode="idle"}[5m])
+) * 100)</pre>
+    </div>
+
+    <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-left:3px solid #ef4444;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ef4444;margin-bottom:8px;">⏱️ Latency (p95 / p99)</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># 95th percentile latency over 5m
+histogram_quantile(0.95,
+  rate(http_request_duration_seconds_bucket[5m])
+)
+
+# 99th percentile (the "worst" users)
+histogram_quantile(0.99,
+  rate(http_request_duration_seconds_bucket[5m])
+)</pre>
+      <div style="font-size:10px;color:#475569;margin-top:6px;">p95 = 95% of requests are faster than this. Interviewers love when you talk p99 instead of average — average hides pain.</div>
+    </div>
+
+    <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-left:3px solid #ef4444;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ef4444;margin-bottom:8px;">💽 Disk Usage</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># Disk used %
+(1 - (node_filesystem_avail_bytes{mountpoint="/"} /
+      node_filesystem_size_bytes{mountpoint="/"})) * 100
+
+# Predict when disk will fill (linear extrapolation)
+predict_linear(
+  node_filesystem_avail_bytes[6h], 4*3600
+)</pre>
+    </div>
+
+    <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-left:3px solid #ef4444;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ef4444;margin-bottom:8px;">🐳 Container Metrics</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;"># Container CPU usage
+rate(container_cpu_usage_seconds_total{
+  name="my-container"
+}[5m])
+
+# Container memory usage
+container_memory_usage_bytes{name="my-container"}
+
+# Kubernetes pod restarts (bad sign!)
+kube_pod_container_status_restarts_total</pre>
+    </div>
+
+    <div style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-left:3px solid #ef4444;border-radius:4px;padding:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#ef4444;margin-bottom:8px;">🔢 Aggregation Functions</div>
+      <pre style="font-size:10.5px;color:#fbbf24;line-height:1.9;margin:0;">sum(metric)         # total across all instances
+avg(metric)         # average
+max(metric)         # worst case
+min(metric)
+count(metric)       # number of time series
+
+# Group by a label:
+sum by(endpoint)(rate(http_requests_total[5m]))
+# → request rate per endpoint</pre>
+    </div>
+
+  </div>
+
+  <!-- PROMETHEUS CONFIG -->
+  <div class="section-title">⚙️ prometheus.yml — The Config File Explained</div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:20px;overflow-x:auto;"># prometheus.yml
+global:
+  scrape_interval: 15s          # how often to scrape all targets
+  evaluation_interval: 15s      # how often to evaluate alert rules
+  scrape_timeout: 10s
+
+# Rules files (alert rules live here)
+rule_files:
+  - "alert_rules.yml"
+
+# Alertmanager connection
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# What to scrape
+scrape_configs:
+  # Prometheus monitors itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Linux server metrics via Node Exporter
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Your Node.js application
+  - job_name: 'myapp'
+    static_configs:
+      - targets: ['app:3000']
+    metrics_path: '/metrics'     # default — can be changed
+
+  # Docker containers via cAdvisor
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # Kubernetes auto-discovery
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: 'true'</pre>
+
+  <!-- ALERTING -->
+  <div class="section-title">🚨 Alert Rules — When Prometheus Pages You</div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:14px;overflow-x:auto;"># alert_rules.yml
+groups:
+  - name: application_alerts
+    rules:
+
+      # Fire if error rate > 1% for 5 minutes
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.01
+        for: 5m                   # must be true for 5 mins before firing
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.instance }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      # Fire if CPU > 80% for 10 minutes
+      - alert: HighCPU
+        expr: |
+          100 - (avg by(instance)(
+            rate(node_cpu_seconds_total{mode="idle"}[5m])
+          ) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+
+      # Fire if disk will fill within 4 hours
+      - alert: DiskFillingSoon
+        expr: predict_linear(node_filesystem_avail_bytes[6h], 4*3600) < 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk filling up on {{ $labels.instance }}"
+
+      # Fire if pod is crash-looping
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash-looping"</pre>
+
+  <!-- ALERTMANAGER CONFIG -->
+  <div style="background:rgba(129,140,248,0.05);border:1px solid rgba(129,140,248,0.2);border-radius:4px;padding:14px;margin-bottom:20px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#818cf8;margin-bottom:10px;">📬 Alertmanager — Route Alerts to Slack</div>
+    <pre style="font-size:10.5px;color:#e2e8f0;line-height:1.9;margin:0;"># alertmanager.yml
+global:
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK'
+
+route:
+  group_by: ['alertname']
+  group_wait: 30s               # wait before sending first alert in group
+  group_interval: 5m            # time before re-sending grouped alerts
+  repeat_interval: 4h           # time before re-sending unresolved alerts
+  receiver: 'slack-notifications'
+
+receivers:
+  - name: 'slack-notifications'
+    slack_configs:
+      - channel: '#alerts'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'</pre>
+  </div>
+
+  <!-- GRAFANA DEEP DIVE -->
+  <div class="section-title">📊 GRAFANA — Deep Dive</div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:16px;">
+    <div style="background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:8px;">🎨 What Grafana actually does</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        Grafana is purely a <strong style="color:#e2e8f0;">visualization layer</strong>. It stores no metrics itself.<br><br>
+        It connects to data sources (Prometheus, CloudWatch, Loki, MySQL, ElasticSearch — 50+ supported) and turns query results into panels: graphs, gauges, stat numbers, tables, heatmaps, geo maps.
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:8px;">📋 Dashboards</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        A dashboard = collection of panels.<br>Each panel = a PromQL query + visualization type.<br><br>
+        <strong style="color:#e2e8f0;">Variables</strong> — dropdowns at the top. <code>$instance</code> lets you switch which server you're viewing without editing queries. Defined as label values from Prometheus.
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:8px;">📦 Pre-built Dashboards (use these!)</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        grafana.com/dashboards has thousands of community dashboards. Import by ID:<br><br>
+        <code style="color:#fbbf24;">1860</code> — Node Exporter Full (Linux server)<br>
+        <code style="color:#fbbf24;">3119</code> — Docker + cAdvisor containers<br>
+        <code style="color:#fbbf24;">315</code> — Kubernetes cluster overview<br>
+        <code style="color:#fbbf24;">6417</code> — Kubernetes pod resources<br>
+        <code style="color:#fbbf24;">11074</code> — Node Exporter for Prometheus
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:8px;">🔔 Grafana Alerting</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+        Grafana has its own alert engine (separate from Prometheus Alertmanager). You define alert rules on panels — if the PromQL value crosses a threshold, fire an alert.<br><br>
+        Routes to Slack, PagerDuty, email, webhooks. In modern setups, teams pick one: Grafana alerts OR Prometheus Alertmanager. Not both.
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL DOCKER COMPOSE STACK -->
+  <div class="section-title">🐳 Full Monitoring Stack — Docker Compose</div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:14px;overflow-x:auto;"># docker-compose.monitoring.yml
+version: '3.8'
+
+services:
+  # ── Prometheus ──────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prometheus-data:/prometheus          # persist data
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'  # keep 15 days of data
+    restart: unless-stopped
+
+  # ── Grafana ─────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=securepassword
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ── Node Exporter (Linux server metrics) ───────────────────
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+    restart: unless-stopped
+
+  # ── cAdvisor (Docker container metrics) ────────────────────
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  # ── Alertmanager ────────────────────────────────────────────
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:</pre>
+
+  <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:4px;padding:10px 14px;font-size:11px;color:#fbbf24;line-height:2;margin-bottom:20px;">docker compose -f docker-compose.monitoring.yml up -d
+
+# Access:
+# Prometheus UI:    http://localhost:9090
+# Grafana:          http://localhost:3001  (admin / securepassword)
+# Alertmanager:     http://localhost:9093
+# Node Exporter:    http://localhost:9100/metrics
+# cAdvisor:         http://localhost:8080</pre>
+
+  <!-- INSTRUMENT YOUR APP -->
+  <div class="section-title">🔧 Instrument Your App — Add /metrics to Node.js</div>
+  <div style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:4px;padding:14px 16px;margin-bottom:12px;font-size:11.5px;color:#94a3b8;">
+    <strong style="color:#38bdf8;">Key insight:</strong> Prometheus can only collect metrics that your app exposes. You need to instrument your code — add a <code>/metrics</code> endpoint. This is a 10-minute task with the <code>prom-client</code> library.
+  </div>
+  <pre style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;font-size:11px;color:#e2e8f0;line-height:1.9;margin-bottom:20px;overflow-x:auto;">// Install: npm install prom-client
+const express = require('express');
+const client = require('prom-client');
+
+const app = express();
+
+// ── Auto-collect default Node.js metrics (CPU, memory, GC, etc.)
+client.collectDefaultMetrics({ prefix: 'myapp_' });
+
+// ── Custom counter: track HTTP requests
+const httpRequests = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status']
+});
+
+// ── Custom histogram: track request duration
+const requestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route'],
+  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5]
+});
+
+// ── Middleware to auto-instrument all routes
+app.use((req, res, next) => {
+  const end = requestDuration.startTimer({ method: req.method, route: req.path });
+  res.on('finish', () => {
+    httpRequests.inc({ method: req.method, route: req.path, status: res.statusCode });
+    end();
+  });
+  next();
+});
+
+// ── The /metrics endpoint Prometheus will scrape
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
+app.listen(3000);</pre>
+
+  <!-- STEP BY STEP SETUP GUIDE -->
+  <div class="section-title">🗂️ Step-by-Step: First Time Setup</div>
+  <div class="pipeline">
+    <div class="stage s1">
+      <div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 01</span><span class="stage-name">Start the stack</span></div>
+        <pre style="background:rgba(0,0,0,0.3);border:1px solid #1e293b;border-radius:3px;padding:8px;font-size:10.5px;color:#fbbf24;margin:6px 0;">docker compose -f docker-compose.monitoring.yml up -d
+docker compose ps   # verify all containers are Up</pre>
+      </div>
+    </div>
+    <div class="stage s2">
+      <div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 02</span><span class="stage-name">Verify Prometheus targets</span></div>
+        <div class="stage-desc">Open <code>http://localhost:9090/targets</code> — every scrape target should show <strong style="color:#22c55e;">UP</strong> in green. If a target is DOWN, check: is the service running? Is the port correct? Is the container on the same Docker network?</div>
+      </div>
+    </div>
+    <div class="stage s3">
+      <div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 03</span><span class="stage-name">Test a PromQL query</span></div>
+        <div class="stage-desc">Open <code>http://localhost:9090/graph</code>, type a query: <code>up</code> — shows all targets (1=up, 0=down). Then try <code>node_memory_MemAvailable_bytes</code>. Click "Graph" tab to see the time series.</div>
+      </div>
+    </div>
+    <div class="stage s4">
+      <div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 04</span><span class="stage-name">Connect Grafana to Prometheus</span></div>
+        <div class="stage-desc">Open <code>http://localhost:3001</code> → login → <strong>Connections → Data Sources → Add new → Prometheus</strong><br>URL: <code>http://prometheus:9090</code> (use container name, not localhost — they're on the same Docker network)<br>Click <strong>Save &amp; Test</strong> — should show green checkmark.</div>
+      </div>
+    </div>
+    <div class="stage s5">
+      <div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 05</span><span class="stage-name">Import a dashboard</span></div>
+        <div class="stage-desc"><strong>Dashboards → Import → Enter ID: 1860 → Load → Select Prometheus data source → Import</strong><br>You now have a full Linux server dashboard with CPU, memory, disk, network — all live.</div>
+      </div>
+    </div>
+    <div class="stage s6">
+      <div class="stage-connector"><div class="stage-dot">6</div><div class="stage-line"></div></div>
+      <div class="stage-body">
+        <div class="stage-header"><span class="stage-num">STEP 06</span><span class="stage-name">Create your own panel</span></div>
+        <div class="stage-desc"><strong>Dashboard → Add panel → Enter PromQL query → pick visualization type</strong><br>Try: <code>rate(http_requests_total[5m])</code> with "Time series" chart. Add a title. Save. You just built a custom panel.</div>
+        <div class="stage-tip">💡 Save dashboards as JSON and commit to Git. This is "dashboards as code" — reproducible across environments.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q&A -->
+  <div class="section-title">🎯 Interview Q&amp;A — Prometheus + Grafana</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">PG01</span><span class="qa-q-text">"Why would you choose Prometheus over CloudWatch or Datadog?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Prometheus advantages:</strong> Open source (free), runs on your infra (data never leaves), massively popular in Kubernetes ecosystems, huge community + pre-built dashboards, pull-based model gives better insight into target health.<br><br>
+        <strong>CloudWatch advantages:</strong> Zero setup for AWS services (EC2, Lambda, RDS auto-report to it), tight AWS integration, managed service — no ops overhead.<br><br>
+        <strong>Datadog advantages:</strong> Managed, one platform for metrics + logs + traces + APM, great UI, works across cloud providers. Expensive.<br><br>
+        <strong>Real answer:</strong> Prometheus + Grafana for on-prem or K8s-heavy setups. CloudWatch when you're fully AWS serverless. Datadog when the company has money and wants one tool for everything.<br><br>
+        <span class="qa-pill">Prometheus = free + K8s native</span><span class="qa-pill">CloudWatch = AWS managed</span><span class="qa-pill">Datadog = expensive but unified</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">PG02</span><span class="qa-q-text">"What's the difference between a counter and a gauge? Give examples."</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>Counter</strong> — only ever increases (or resets to 0 on restart). Total requests served, total errors, total bytes sent. You never query the raw value — use <code>rate(counter[5m])</code> to get a meaningful per-second rate.<br><br>
+        <strong>Gauge</strong> — can go up or down freely. Current memory usage, current active connections, current temperature, queue depth. You query the raw value directly.<br><br>
+        <strong>Memory trick:</strong> If the metric can decrease on its own during normal operation — gauge. If it only decreases when the app restarts — counter.<br><br>
+        <span class="qa-pill">counter = total ever, use rate()</span><span class="qa-pill">gauge = current value, query directly</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">PG03</span><span class="qa-q-text">"An alert fired for high memory at 3am. Walk me through your response."</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER SCRIPT</div><div class="qa-a-text">
+        "First I'd open Grafana and check the memory panel — is it still climbing or has it stabilized? I'd check the time range: did it start after a deployment? Did it correlate with a traffic spike?<br><br>
+        I'd check container-level memory — which pod/container is consuming it. <code>docker stats</code> or <code>kubectl top pods</code>.<br><br>
+        If memory is still climbing: check for a memory leak — is the app holding references it shouldn't? Restart the pod as a short-term fix. Open a ticket for root cause analysis.<br><br>
+        If it was a one-time spike: check if a batch job ran. Was there an unusual traffic pattern? Document it and adjust the alert threshold if it was a false positive.<br><br>
+        Post-incident: write a brief blameless post-mortem, note what the alert fired on, what caused it, what we fixed."<br><br>
+        <span class="qa-pill">Grafana first</span><span class="qa-pill">correlate with deploys/traffic</span><span class="qa-pill">container-level drill-down</span><span class="qa-pill">blameless post-mortem</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">PG04</span><span class="qa-q-text">"Why is average latency a bad metric? What should you use instead?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        Average hides the worst user experiences. If 999 requests take 10ms and 1 takes 10,000ms, the average is ~20ms — looks fine. But that 1 user had a terrible experience.<br><br>
+        <strong>Use percentiles instead:</strong><br>
+        <strong>p50 (median)</strong> — half of users are faster/slower. Better than average.<br>
+        <strong>p95</strong> — 95% of users are faster than this. Your typical "slow" experience.<br>
+        <strong>p99</strong> — the experience of your worst 1%. Often what SLOs are written against.<br><br>
+        PromQL: <code>histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))</code><br><br>
+        Interviewers love this answer — it shows you understand how real performance works.<br><br>
+        <span class="qa-pill">average = hides outliers</span><span class="qa-pill">p95/p99 = real user experience</span><span class="qa-pill">SLOs written against percentiles</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">PG05</span><span class="qa-q-text">"What are the 4 Golden Signals and what would you alert on?"</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+        <strong>1. Latency</strong> — how long requests take. Alert: p99 latency &gt; 500ms for 5 minutes.<br><br>
+        <strong>2. Traffic</strong> — how many requests per second. No alert directly — use it as context. A latency spike during 10x traffic is different from a spike during normal load.<br><br>
+        <strong>3. Errors</strong> — error rate (4xx/5xx). Alert: error rate &gt; 1% for 5 minutes. 5xx is user-facing failure. 4xx is usually client error (less critical unless it's 401 auth failures = potential attack).<br><br>
+        <strong>4. Saturation</strong> — how full is the system. Alert: CPU &gt; 80% for 10 minutes, memory &gt; 85%, disk &gt; 90%, connection pool utilization &gt; 90%.<br><br>
+        These come from Google's SRE book. Saying "4 Golden Signals" in an interview is an instant signal you've thought seriously about production systems.<br><br>
+        <span class="qa-pill">latency + traffic + errors + saturation</span><span class="qa-pill">Google SRE origin</span><span class="qa-pill">traffic = context, not alert target</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">📡</div>
+    <div>
+      <div class="loop-title">The setup that impresses interviewers</div>
+      <div class="loop-desc">
+        Spin up the full stack locally with Docker Compose. Add <code>prom-client</code> to one of your projects. Write 3 alert rules. Import dashboard <code>1860</code>. Take a screenshot of your working Grafana dashboard. <strong style="color:#fb923c;">That screenshot has gotten engineers hired.</strong>
+      </div>
+    </div>
+  </div>
+

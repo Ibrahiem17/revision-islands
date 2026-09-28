@@ -1,0 +1,954 @@
+
+
+
+<!-- Hero -->
+<div class="jk-hero">
+  <div class="jk-hero-title">🔧 <span>Jenkins</span> — The DevOps Workhorse</div>
+  <div class="jk-hero-sub">Jenkins is the world's most widely deployed open-source automation server. It's the engine that runs CI/CD pipelines at thousands of companies. While GitHub Actions is newer and simpler, Jenkins is still dominant in enterprise environments — and Pakistani software houses use it heavily. If you see "CI/CD" in a job description, there's a 60% chance it means Jenkins.</div>
+</div>
+
+<!-- WHY JENKINS -->
+<div class="section-title">🤔 WHY Jenkins Exists — The Problem It Solves</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+  <div style="background:rgba(244,63,94,0.05);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+    <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:8px;">😰 Without Jenkins</div>
+    Dev pushes code → someone manually pulls it → manually runs tests → manually builds Docker image → manually deploys to server → manually checks if it works. Every. Single. Time. One person forgetting a step = broken production.
+  </div>
+  <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;font-size:11px;color:#94a3b8;line-height:1.8;">
+    <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;margin-bottom:8px;">✅ With Jenkins</div>
+    Dev pushes code → Jenkins <strong style="color:#e2e8f0;">automatically detects</strong> the push → runs tests → builds image → pushes to registry → deploys → notifies on Slack. Zero human involvement. Consistent every time. This is CI/CD.
+  </div>
+</div>
+
+<!-- JENKINS vs GITHUB ACTIONS -->
+<div class="section-title">⚖️ Jenkins vs GitHub Actions — When to Use Which</div>
+<div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+  <table class="concept-table" style="margin-bottom:0;">
+    <thead><tr><th>Factor</th><th>Jenkins</th><th>GitHub Actions</th></tr></thead>
+    <tbody>
+      <tr><td>Hosting</td><td style="color:#94a3b8;">Self-hosted (you run the server)</td><td style="color:#94a3b8;">Cloud (GitHub manages it)</td></tr>
+      <tr><td>Cost</td><td style="color:#94a3b8;">Free (but needs a server — ~$10-20/mo)</td><td style="color:#94a3b8;">Free for public repos, paid for private CI minutes</td></tr>
+      <tr><td>Setup time</td><td style="color:#94a3b8;">Hours (install, configure, plugins)</td><td style="color:#94a3b8;">Minutes (just add a .yml file)</td></tr>
+      <tr><td>Flexibility</td><td style="color:#94a3b8;">Extreme — run anywhere, any pipeline</td><td style="color:#94a3b8;">High — but tied to GitHub ecosystem</td></tr>
+      <tr><td>Enterprise use</td><td style="color:#94a3b8;"><strong style="color:#22c55e;">Dominant</strong> — most large companies use it</td><td style="color:#94a3b8;">Growing but newer</td></tr>
+      <tr><td>Plugin ecosystem</td><td style="color:#94a3b8;">1,800+ plugins (Docker, K8s, AWS, Slack...)</td><td style="color:#94a3b8;">Marketplace actions</td></tr>
+      <tr><td>Private network access</td><td style="color:#94a3b8;"><strong style="color:#22c55e;">Yes</strong> — runs on your infra, inside VPC</td><td style="color:#94a3b8;">Needs self-hosted runner for private resources</td></tr>
+      <tr><td>When to choose</td><td style="color:#22c55e;">Enterprise, complex pipelines, private infra, on-prem</td><td style="color:#94a3b8;">Startups, public repos, GitHub-first teams</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CORE CONCEPTS -->
+<div class="section-title">🧠 Core Concepts — What Everything Means</div>
+<div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+  <table class="concept-table" style="margin-bottom:0;">
+    <thead><tr><th>Term</th><th>Type</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td>Pipeline</td><td style="color:#64748b;">Core</td><td style="color:#94a3b8;">A script that defines your entire CI/CD workflow. Written in Groovy DSL in a file called <code style="color:#fbbf24;">Jenkinsfile</code>. Lives in your repo root.</td></tr>
+      <tr><td>Jenkinsfile</td><td style="color:#64748b;">Core</td><td style="color:#94a3b8;">The file that defines your pipeline. Checked into Git so pipeline changes are versioned alongside code. "Pipeline as Code."</td></tr>
+      <tr><td>Stage</td><td style="color:#64748b;">Pipeline</td><td style="color:#94a3b8;">A named phase of the pipeline: Build, Test, Deploy. Stages are shown as boxes in the Jenkins UI — makes failures easy to spot.</td></tr>
+      <tr><td>Step</td><td style="color:#64748b;">Pipeline</td><td style="color:#94a3b8;">A single task inside a stage. <code style="color:#fbbf24;">sh 'npm test'</code>, <code style="color:#fbbf24;">docker.build()</code>, <code style="color:#fbbf24;">git clone</code> are all steps.</td></tr>
+      <tr><td>Agent</td><td style="color:#64748b;">Execution</td><td style="color:#94a3b8;">Where the pipeline runs. <code style="color:#fbbf24;">agent any</code> = any available machine. <code style="color:#fbbf24;">agent { docker 'node:18' }</code> = run inside a Docker container. <code style="color:#fbbf24;">agent none</code> = define per stage.</td></tr>
+      <tr><td>Node / Executor</td><td style="color:#64748b;">Infrastructure</td><td style="color:#94a3b8;">A machine that runs jobs. The Jenkins master delegates work to agents/nodes. Each node can run N executors (parallel jobs).</td></tr>
+      <tr><td>Build</td><td style="color:#64748b;">Run</td><td style="color:#94a3b8;">A single execution of a pipeline. Each build gets a number (#1, #2...) and a status: SUCCESS, FAILURE, UNSTABLE, ABORTED.</td></tr>
+      <tr><td>Job / Project</td><td style="color:#64748b;">Config</td><td style="color:#94a3b8;">A configured task in Jenkins. Freestyle Job = click-based config. Pipeline Job = Jenkinsfile. Multibranch Pipeline = auto-creates jobs per branch.</td></tr>
+      <tr><td>Workspace</td><td style="color:#64748b;">Files</td><td style="color:#94a3b8;">The directory on the agent where the build runs and files are checked out. Cleaned between builds with <code style="color:#fbbf24;">cleanWs()</code>.</td></tr>
+      <tr><td>Artifact</td><td style="color:#64748b;">Output</td><td style="color:#94a3b8;">Build output you want to keep: Docker images, .jar files, test reports. Archived with <code style="color:#fbbf24;">archiveArtifacts</code>.</td></tr>
+      <tr><td>Trigger</td><td style="color:#64748b;">Automation</td><td style="color:#94a3b8;">What kicks off a build. Git push (webhook), schedule (cron), manual, or upstream job completion.</td></tr>
+      <tr><td>Webhook</td><td style="color:#64748b;">Integration</td><td style="color:#94a3b8;">GitHub/GitLab pings Jenkins the second code is pushed. Jenkins then automatically starts the pipeline. No polling needed.</td></tr>
+      <tr><td>Credential</td><td style="color:#64748b;">Security</td><td style="color:#94a3b8;">Secrets stored in Jenkins (passwords, tokens, SSH keys). Referenced in pipeline as <code style="color:#fbbf24;">credentials('myid')</code> — never hardcoded.</td></tr>
+      <tr><td>Plugin</td><td style="color:#64748b;">Extension</td><td style="color:#94a3b8;">Jenkins gets all its integrations from plugins. Docker, Kubernetes, AWS, Slack, GitHub, SonarQube — all plugins. 1,800+ available.</td></tr>
+      <tr><td>Blue Ocean</td><td style="color:#64748b;">UI</td><td style="color:#94a3b8;">A modern Jenkins UI plugin that shows pipelines as visual flowcharts instead of raw console logs. Easier to understand.</td></tr>
+      <tr><td>Shared Library</td><td style="color:#64748b;">Reuse</td><td style="color:#94a3b8;">Reusable Groovy code shared across multiple Jenkinsfiles. Like a function library for your pipelines. Stored in a separate Git repo.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PIPELINE VISUAL -->
+<div class="section-title">🎬 What a Running Pipeline Looks Like</div>
+<div class="pipeline-visual">
+  <div class="pv-header">
+    <div class="pv-dot" style="background:#22c55e;"></div>
+    <div class="pv-dot" style="background:#fbbf24;"></div>
+    <div class="pv-dot" style="background:#f43f5e;"></div>
+    <span style="color:#475569;margin-left:6px;font-family:'JetBrains Mono',monospace;">Jenkins — Build #47 — feature/user-auth — 2m 34s</span>
+    <span style="margin-left:auto;color:#22c55e;font-size:10px;font-family:'JetBrains Mono',monospace;">● SUCCESS</span>
+  </div>
+  <div class="pv-stages">
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">📥</span>
+        <span class="ps-name">Checkout</span>
+        <span class="ps-time" style="color:#475569;">3s</span>
+      </div>
+    </div>
+    <div class="pv-arrow-pipe">→</div>
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">📦</span>
+        <span class="ps-name">Install Deps</span>
+        <span class="ps-time" style="color:#475569;">28s</span>
+      </div>
+    </div>
+    <div class="pv-arrow-pipe">→</div>
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">🧪</span>
+        <span class="ps-name">Test</span>
+        <span class="ps-time" style="color:#475569;">45s</span>
+      </div>
+    </div>
+    <div class="pv-arrow-pipe">→</div>
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">🔍</span>
+        <span class="ps-name">Lint</span>
+        <span class="ps-time" style="color:#475569;">12s</span>
+      </div>
+    </div>
+    <div class="pv-arrow-pipe">→</div>
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">🐳</span>
+        <span class="ps-name">Docker Build</span>
+        <span class="ps-time" style="color:#475569;">34s</span>
+      </div>
+    </div>
+    <div class="pv-arrow-pipe">→</div>
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">☁️</span>
+        <span class="ps-name">Push Registry</span>
+        <span class="ps-time" style="color:#475569;">18s</span>
+      </div>
+    </div>
+    <div class="pv-arrow-pipe">→</div>
+    <div class="pv-stage">
+      <div class="pv-stage-box stage-success">
+        <span class="ps-icon">🚀</span>
+        <span class="ps-name">Deploy</span>
+        <span class="ps-time" style="color:#475569;">14s</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INNER TABS for Jenkinsfile examples -->
+<div class="section-title">📝 Jenkinsfile Examples — From Simple to Production</div>
+<div class="jk-tabs-inner">
+  <button class="jk-tab-inner active" onclick="showJkPanel('basic')">① Basic</button>
+  <button class="jk-tab-inner" onclick="showJkPanel('docker')">② Docker Build</button>
+  <button class="jk-tab-inner" onclick="showJkPanel('fullpipeline')">③ Full CI/CD</button>
+  <button class="jk-tab-inner" onclick="showJkPanel('multibranch')">④ Multi-Branch</button>
+  <button class="jk-tab-inner" onclick="showJkPanel('parallel')">⑤ Parallel</button>
+</div>
+
+<!-- ① BASIC -->
+<div class="jk-panel-inner active" id="jkp-basic">
+  <div class="groovy-block">
+    <div class="groovy-header"><span class="groovy-title">Jenkinsfile — Basic Pipeline (start here)</span><span class="groovy-lang">Groovy DSL</span></div>
+    <div class="groovy-body"><span class="g-comment">// Every Jenkinsfile starts with 'pipeline { }'</span>
+<span class="g-keyword">pipeline</span> {
+
+    <span class="g-comment">// 'agent any' = run on any available Jenkins node/executor</span>
+    <span class="g-keyword">agent</span> <span class="g-fn">any</span>
+
+    <span class="g-comment">// environment block: define env vars available to all stages</span>
+    <span class="g-keyword">environment</span> {
+        APP_NAME = <span class="g-string">'my-node-app'</span>
+        NODE_ENV = <span class="g-string">'production'</span>
+    }
+
+    <span class="g-keyword">stages</span> {
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Checkout'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// Pull the code from Git (Jenkins does this automatically</span>
+                <span class="g-comment">// if you set up a Multibranch Pipeline — or call it explicitly)</span>
+                <span class="g-fn">git</span> <span class="g-var">branch:</span> <span class="g-string">'main'</span>, <span class="g-var">url:</span> <span class="g-string">'https://github.com/ibrahiem/myapp.git'</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Install'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// sh = run a shell command on the agent</span>
+                <span class="g-fn">sh</span> <span class="g-string">'npm ci'</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Test'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'npm test'</span>
+            }
+            <span class="g-keyword">post</span> {
+                <span class="g-comment">// always runs regardless of test result</span>
+                <span class="g-keyword">always</span> {
+                    <span class="g-comment">// Publish JUnit test results to Jenkins UI</span>
+                    <span class="g-fn">junit</span> <span class="g-string">'test-results/**/*.xml'</span>
+                }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Build'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'npm run build'</span>
+            }
+        }
+    }
+
+    <span class="g-comment">// post: runs after ALL stages finish</span>
+    <span class="g-keyword">post</span> {
+        <span class="g-keyword">success</span> {
+            <span class="g-fn">echo</span> <span class="g-string">'✅ Pipeline succeeded!'</span>
+            <span class="g-comment">// slackSend channel: '#deploys', message: "Build #${BUILD_NUMBER} passed"</span>
+        }
+        <span class="g-keyword">failure</span> {
+            <span class="g-fn">echo</span> <span class="g-string">'❌ Pipeline FAILED — check console output'</span>
+            <span class="g-fn">mail</span> <span class="g-var">to:</span> <span class="g-string">'team@company.com'</span>, <span class="g-var">subject:</span> <span class="g-string">"Build Failed: ${JOB_NAME}"</span>
+        }
+        <span class="g-keyword">always</span> {
+            <span class="g-comment">// Clean up workspace to save disk space</span>
+            <span class="g-fn">cleanWs</span>()
+        }
+    }
+}</div>
+  </div>
+  <div class="tip-box">💡 <strong>Key rule:</strong> The pipeline only fails if a <code>sh</code> command exits with a non-zero code. <code>npm test</code> failing → exits 1 → stage fails → pipeline stops. This is why your tests must exit properly.</div>
+</div>
+
+<!-- ② DOCKER BUILD -->
+<div class="jk-panel-inner" id="jkp-docker">
+  <div class="groovy-block">
+    <div class="groovy-header"><span class="groovy-title">Jenkinsfile — Docker Build + Push to Registry</span><span class="groovy-lang">Groovy DSL</span></div>
+    <div class="groovy-body"><span class="g-keyword">pipeline</span> {
+    <span class="g-keyword">agent</span> <span class="g-fn">any</span>
+
+    <span class="g-keyword">environment</span> {
+        <span class="g-comment">// credentials() fetches a Jenkins credential by ID</span>
+        <span class="g-comment">// NEVER put passwords directly in the Jenkinsfile</span>
+        DOCKER_HUB_CREDS = <span class="g-fn">credentials</span>(<span class="g-string">'docker-hub-credentials'</span>)
+        IMAGE_NAME = <span class="g-string">"ibrahiem/myapp"</span>
+        IMAGE_TAG  = <span class="g-string">"${BUILD_NUMBER}"</span>  <span class="g-comment">// Jenkins built-in: build number</span>
+    }
+
+    <span class="g-keyword">stages</span> {
+        <span class="g-keyword">stage</span>(<span class="g-string">'Checkout'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">checkout</span> <span class="g-fn">scm</span>  <span class="g-comment">// auto-checks out the triggering branch</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Build Docker Image'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-keyword">script</span> {
+                    <span class="g-comment">// Using the Docker Pipeline plugin</span>
+                    <span class="g-var">dockerImage</span> = <span class="g-fn">docker.build</span>(<span class="g-string">"${IMAGE_NAME}:${IMAGE_TAG}"</span>)
+                }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Push to Docker Hub'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-keyword">script</span> {
+                    <span class="g-comment">// withRegistry logs in, pushes, then logs out automatically</span>
+                    <span class="g-fn">docker.withRegistry</span>(<span class="g-string">'https://registry.hub.docker.com'</span>, <span class="g-string">'docker-hub-credentials'</span>) {
+                        <span class="g-var">dockerImage</span>.<span class="g-fn">push</span>(<span class="g-string">"${IMAGE_TAG}"</span>)
+                        <span class="g-var">dockerImage</span>.<span class="g-fn">push</span>(<span class="g-string">'latest'</span>)  <span class="g-comment">// also tag as 'latest'</span>
+                    }
+                }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Cleanup'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// Remove local image to free disk space on the Jenkins agent</span>
+                <span class="g-fn">sh</span> <span class="g-string">"docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"</span>
+            }
+        }
+    }
+}</div>
+  </div>
+  <div class="tip-box">💡 <code>credentials('id')</code> injects the secret as env vars at runtime. For username/password credentials, Jenkins auto-creates <code>_USR</code> and <code>_PSW</code> suffixes. The raw password never appears in logs — Jenkins masks it with <code>****</code>.</div>
+</div>
+
+<!-- ③ FULL PIPELINE -->
+<div class="jk-panel-inner" id="jkp-fullpipeline">
+  <div class="groovy-block">
+    <div class="groovy-header"><span class="groovy-title">Jenkinsfile — Full Production CI/CD Pipeline</span><span class="groovy-lang">Groovy DSL</span></div>
+    <div class="groovy-body"><span class="g-keyword">pipeline</span> {
+    <span class="g-keyword">agent</span> <span class="g-fn">any</span>
+
+    <span class="g-keyword">environment</span> {
+        DOCKER_CREDS    = <span class="g-fn">credentials</span>(<span class="g-string">'docker-hub-creds'</span>)
+        AWS_CREDS       = <span class="g-fn">credentials</span>(<span class="g-string">'aws-credentials'</span>)
+        EC2_KEY         = <span class="g-fn">credentials</span>(<span class="g-string">'ec2-ssh-key'</span>)
+        IMAGE           = <span class="g-string">"ibrahiem/myapp:${BUILD_NUMBER}"</span>
+        EC2_HOST        = <span class="g-string">'54.12.34.56'</span>
+    }
+
+    <span class="g-comment">// Automatically trigger on Git push (requires GitHub webhook setup)</span>
+    <span class="g-keyword">triggers</span> {
+        <span class="g-fn">githubPush</span>()
+    }
+
+    <span class="g-keyword">options</span> {
+        <span class="g-fn">timeout</span>(<span class="g-var">time:</span> <span class="g-string">30</span>, <span class="g-var">unit:</span> <span class="g-string">'MINUTES'</span>)  <span class="g-comment">// kill if takes > 30min</span>
+        <span class="g-fn">disableConcurrentBuilds</span>()              <span class="g-comment">// no parallel runs of same job</span>
+        <span class="g-fn">buildDiscarder</span>(<span class="g-fn">logRotator</span>(<span class="g-var">numToKeepStr:</span> <span class="g-string">'10'</span>)) <span class="g-comment">// keep last 10 builds</span>
+    }
+
+    <span class="g-keyword">stages</span> {
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'🔍 Checkout'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">checkout</span> <span class="g-fn">scm</span>
+                <span class="g-fn">echo</span> <span class="g-string">"Building branch: ${BRANCH_NAME}, commit: ${GIT_COMMIT}"</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'📦 Install'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'npm ci --prefer-offline'</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'🧪 Test'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'npm test -- --ci --reporters=jest-junit'</span>
+            }
+            <span class="g-keyword">post</span> {
+                <span class="g-keyword">always</span> { <span class="g-fn">junit</span> <span class="g-string">'junit.xml'</span> }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'🔍 Code Quality'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// SonarQube static analysis (requires SonarQube plugin + server)</span>
+                <span class="g-fn">withSonarQubeEnv</span>(<span class="g-string">'SonarQube'</span>) {
+                    <span class="g-fn">sh</span> <span class="g-string">'sonar-scanner -Dsonar.projectKey=myapp'</span>
+                }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'🐳 Docker Build + Push'</span>) {
+            <span class="g-keyword">when</span> {
+                <span class="g-comment">// Only run this stage when on main branch</span>
+                <span class="g-fn">branch</span> <span class="g-string">'main'</span>
+            }
+            <span class="g-keyword">steps</span> {
+                <span class="g-keyword">script</span> {
+                    <span class="g-fn">docker.withRegistry</span>(<span class="g-string">''</span>, <span class="g-string">'docker-hub-creds'</span>) {
+                        <span class="g-keyword">def</span> <span class="g-var">img</span> = <span class="g-fn">docker.build</span>(<span class="g-string">"${IMAGE}"</span>)
+                        <span class="g-var">img</span>.<span class="g-fn">push</span>()
+                        <span class="g-var">img</span>.<span class="g-fn">push</span>(<span class="g-string">'latest'</span>)
+                    }
+                }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'🚀 Deploy to Staging'</span>) {
+            <span class="g-keyword">when</span> { <span class="g-fn">branch</span> <span class="g-string">'main'</span> }
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// SSH into EC2 and redeploy</span>
+                <span class="g-fn">sshagent</span>([<span class="g-string">'ec2-ssh-key'</span>]) {
+                    <span class="g-fn">sh</span> <span class="g-string">"""
+                        ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} '
+                            docker pull ibrahiem/myapp:latest
+                            docker stop myapp || true
+                            docker rm myapp   || true
+                            docker run -d -p 80:3000 --name myapp --restart=always ibrahiem/myapp:latest
+                        '
+                    """</span>
+                }
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'✅ Smoke Test'</span>) {
+            <span class="g-keyword">when</span> { <span class="g-fn">branch</span> <span class="g-string">'main'</span> }
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// Hit the health endpoint after deploy — fail if not 200</span>
+                <span class="g-fn">sh</span> <span class="g-string">"""
+                    sleep 10
+                    curl --fail http://${EC2_HOST}/health || exit 1
+                """</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'🚢 Deploy to Production'</span>) {
+            <span class="g-keyword">when</span> { <span class="g-fn">branch</span> <span class="g-string">'main'</span> }
+            <span class="g-keyword">steps</span> {
+                <span class="g-comment">// Manual approval gate before prod</span>
+                <span class="g-fn">input</span> <span class="g-var">message:</span> <span class="g-string">'Deploy to PRODUCTION? (approve within 30 min)'</span>,
+                      <span class="g-var">ok:</span> <span class="g-string">'Deploy'</span>,
+                      <span class="g-var">submitter:</span> <span class="g-string">'ibrahiem,senior-devops'</span>
+                <span class="g-fn">sh</span> <span class="g-string">'./scripts/deploy-prod.sh'</span>
+            }
+        }
+    }
+
+    <span class="g-keyword">post</span> {
+        <span class="g-keyword">success</span> {
+            <span class="g-fn">slackSend</span>(
+                <span class="g-var">channel:</span> <span class="g-string">'#deployments'</span>,
+                <span class="g-var">color:</span> <span class="g-string">'good'</span>,
+                <span class="g-var">message:</span> <span class="g-string">"✅ Build #${BUILD_NUMBER} deployed: ${JOB_NAME}"</span>
+            )
+        }
+        <span class="g-keyword">failure</span> {
+            <span class="g-fn">slackSend</span>(
+                <span class="g-var">channel:</span> <span class="g-string">'#deployments'</span>,
+                <span class="g-var">color:</span> <span class="g-string">'danger'</span>,
+                <span class="g-var">message:</span> <span class="g-string">"❌ Build #${BUILD_NUMBER} FAILED at: ${STAGE_NAME}"</span>
+            )
+        }
+        <span class="g-keyword">always</span> { <span class="g-fn">cleanWs</span>() }
+    }
+}</div>
+  </div>
+</div>
+
+<!-- ④ MULTIBRANCH -->
+<div class="jk-panel-inner" id="jkp-multibranch">
+  <div class="groovy-block">
+    <div class="groovy-header"><span class="groovy-title">Jenkinsfile — Multi-Branch Strategy (real-world)</span><span class="groovy-lang">Groovy DSL</span></div>
+    <div class="groovy-body"><span class="g-comment">// This single Jenkinsfile handles ALL branches differently</span>
+<span class="g-comment">// Set up a "Multibranch Pipeline" job in Jenkins to use this</span>
+<span class="g-keyword">pipeline</span> {
+    <span class="g-keyword">agent</span> <span class="g-fn">any</span>
+
+    <span class="g-keyword">stages</span> {
+        <span class="g-keyword">stage</span>(<span class="g-string">'Test'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'npm ci && npm test'</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Build Image'</span>) {
+            <span class="g-comment">// Only build Docker image on main or develop — not on every feature branch</span>
+            <span class="g-keyword">when</span> {
+                <span class="g-fn">anyOf</span> {
+                    <span class="g-fn">branch</span> <span class="g-string">'main'</span>
+                    <span class="g-fn">branch</span> <span class="g-string">'develop'</span>
+                }
+            }
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">"docker build -t myapp:${GIT_COMMIT[0..7]} ."</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Deploy Staging'</span>) {
+            <span class="g-comment">// Auto-deploy develop branch to staging environment</span>
+            <span class="g-keyword">when</span> { <span class="g-fn">branch</span> <span class="g-string">'develop'</span> }
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'./deploy.sh staging'</span>
+            }
+        }
+
+        <span class="g-keyword">stage</span>(<span class="g-string">'Deploy Production'</span>) {
+            <span class="g-comment">// Only main branch goes to production — and needs approval</span>
+            <span class="g-keyword">when</span> { <span class="g-fn">branch</span> <span class="g-string">'main'</span> }
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">input</span> <span class="g-string">'Approve production deployment?'</span>
+                <span class="g-fn">sh</span> <span class="g-string">'./deploy.sh production'</span>
+            }
+        }
+    }
+}
+
+<span class="g-comment">/*
+  Branch strategy with Multibranch Pipeline:
+  feature/* → runs Test only
+  develop   → Test + Build + Deploy Staging (auto)
+  main      → Test + Build + Deploy Production (with approval)
+  PR        → Test only (Jenkins creates a PR job automatically)
+*/</span></div>
+  </div>
+  <div class="tip-box">💡 <strong>Multibranch Pipeline</strong> is the most powerful Jenkins job type. It scans your repo, auto-creates a Jenkins job for every branch that has a Jenkinsfile, and deletes the job when the branch is deleted. One Jenkins job config → all branches covered automatically.</div>
+</div>
+
+<!-- ⑤ PARALLEL -->
+<div class="jk-panel-inner" id="jkp-parallel">
+  <div class="groovy-block">
+    <div class="groovy-header"><span class="groovy-title">Jenkinsfile — Parallel Stages (faster pipelines)</span><span class="groovy-lang">Groovy DSL</span></div>
+    <div class="groovy-body"><span class="g-keyword">pipeline</span> {
+    <span class="g-keyword">agent</span> <span class="g-fn">any</span>
+
+    <span class="g-keyword">stages</span> {
+        <span class="g-keyword">stage</span>(<span class="g-string">'Checkout'</span>) {
+            <span class="g-keyword">steps</span> { <span class="g-fn">checkout</span> <span class="g-fn">scm</span> }
+        }
+
+        <span class="g-comment">// Run unit tests, linting, and security scan simultaneously</span>
+        <span class="g-comment">// Total time = slowest job (not sum of all)</span>
+        <span class="g-keyword">stage</span>(<span class="g-string">'Quality Checks'</span>) {
+            <span class="g-keyword">parallel</span> {
+
+                <span class="g-keyword">stage</span>(<span class="g-string">'Unit Tests'</span>) {
+                    <span class="g-keyword">steps</span> {
+                        <span class="g-fn">sh</span> <span class="g-string">'npm run test:unit'</span>
+                    }
+                }
+
+                <span class="g-keyword">stage</span>(<span class="g-string">'Lint'</span>) {
+                    <span class="g-keyword">steps</span> {
+                        <span class="g-fn">sh</span> <span class="g-string">'npm run lint'</span>
+                    }
+                }
+
+                <span class="g-keyword">stage</span>(<span class="g-string">'Security Scan'</span>) {
+                    <span class="g-keyword">steps</span> {
+                        <span class="g-comment">// npm audit checks for known vulnerabilities</span>
+                        <span class="g-fn">sh</span> <span class="g-string">'npm audit --audit-level=high'</span>
+                    }
+                }
+
+                <span class="g-keyword">stage</span>(<span class="g-string">'Integration Tests'</span>) {
+                    <span class="g-keyword">steps</span> {
+                        <span class="g-fn">sh</span> <span class="g-string">'npm run test:integration'</span>
+                    }
+                }
+            }
+        }
+
+        <span class="g-comment">// This stage only runs after ALL parallel stages above pass</span>
+        <span class="g-keyword">stage</span>(<span class="g-string">'Build &amp; Deploy'</span>) {
+            <span class="g-keyword">steps</span> {
+                <span class="g-fn">sh</span> <span class="g-string">'docker build -t myapp:latest . && ./deploy.sh'</span>
+            }
+        }
+    }
+}
+
+<span class="g-comment">/*
+  Without parallel:  Unit(45s) + Lint(12s) + Security(20s) + Integration(40s) = 117s
+  With parallel:     max(45s, 12s, 20s, 40s) = 45s total  ← 60% faster
+*/</span></div>
+  </div>
+</div>
+
+<script>
+function showJkPanel(name) {
+  document.querySelectorAll('.jk-panel-inner').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.jk-tab-inner').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('jkp-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+<!-- ══ JENKINS BUILD SIMULATOR ══ -->
+<div class="section-title">🎮 Jenkins Build Simulator — Run a Pipeline Live</div>
+<div class="jk-sim">
+  <div class="jk-sim-header">
+    <span style="font-size:16px;">🔧</span>
+    <span class="jk-sim-title">Jenkins Pipeline Executor</span>
+    <span style="margin-left:auto;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#475569;border:1px solid #1e293b;border-radius:2px;padding:2px 8px;">Simulated</span>
+  </div>
+  <div class="jk-sim-body">
+
+    <!-- Build status bar -->
+    <div class="jk-status-bar" id="jk-status-bar" style="color:#475569;border-color:#1e293b;background:rgba(255,255,255,0.02);">
+      <div class="jsb-dot" id="jk-status-dot" style="background:#334155;"></div>
+      <span id="jk-status-text">Select a scenario and click Build ▶</span>
+      <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;" id="jk-build-num"></span>
+    </div>
+
+    <!-- Scenario buttons -->
+    <div class="jk-build-btns">
+      <button class="jk-btn jk-btn-green" id="jk-btn-success" onclick="runJkBuild('success')">▶ Build — All Stages Pass</button>
+      <button class="jk-btn jk-btn-red"   id="jk-btn-testfail" onclick="runJkBuild('testfail')">✕ Build — Tests Fail</button>
+      <button class="jk-btn jk-btn-yellow" id="jk-btn-dockerfail" onclick="runJkBuild('dockerfail')">⚠ Build — Docker Push Fails</button>
+    </div>
+
+    <!-- Stage indicators -->
+    <div id="jk-stage-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+      <div class="pv-stage-box stage-pending" id="jks-checkout" style="min-width:70px;padding:6px 10px;font-size:10px;">
+        <span class="ps-icon" style="font-size:14px;">📥</span>
+        <span class="ps-name" style="font-size:10px;">Checkout</span>
+      </div>
+      <div style="align-self:center;color:#1e293b;">›</div>
+      <div class="pv-stage-box stage-pending" id="jks-install" style="min-width:70px;padding:6px 10px;">
+        <span class="ps-icon" style="font-size:14px;">📦</span>
+        <span class="ps-name" style="font-size:10px;">Install</span>
+      </div>
+      <div style="align-self:center;color:#1e293b;">›</div>
+      <div class="pv-stage-box stage-pending" id="jks-test" style="min-width:70px;padding:6px 10px;">
+        <span class="ps-icon" style="font-size:14px;">🧪</span>
+        <span class="ps-name" style="font-size:10px;">Test</span>
+      </div>
+      <div style="align-self:center;color:#1e293b;">›</div>
+      <div class="pv-stage-box stage-pending" id="jks-docker" style="min-width:70px;padding:6px 10px;">
+        <span class="ps-icon" style="font-size:14px;">🐳</span>
+        <span class="ps-name" style="font-size:10px;">Docker</span>
+      </div>
+      <div style="align-self:center;color:#1e293b;">›</div>
+      <div class="pv-stage-box stage-pending" id="jks-deploy" style="min-width:70px;padding:6px 10px;">
+        <span class="ps-icon" style="font-size:14px;">🚀</span>
+        <span class="ps-name" style="font-size:10px;">Deploy</span>
+      </div>
+    </div>
+
+    <!-- Terminal output -->
+    <div class="jk-terminal" id="jk-terminal">
+      <span class="jkt-dim">// Jenkins Console Output will appear here</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var buildNum = 46;
+  var running = false;
+
+  var scenarios = {
+    success: [
+      {d:0,   cls:'jkt-stage', t:'[Pipeline] Start of Pipeline'},
+      {d:200, cls:'jkt-stage', t:'[Pipeline] stage: Checkout', stage:'checkout', ss:'running'},
+      {d:400, cls:'jkt-cmd',   t:'  + git clone https://github.com/ibrahiem/myapp.git'},
+      {d:900, cls:'jkt-ok',    t:'  Checked out branch: main  commit: a3f8c22', stage:'checkout', ss:'success'},
+      {d:1100,cls:'jkt-stage', t:'[Pipeline] stage: Install', stage:'install', ss:'running'},
+      {d:1300,cls:'jkt-cmd',   t:'  + npm ci --prefer-offline'},
+      {d:2000,cls:'jkt-ok',    t:'  added 247 packages in 1.4s', stage:'install', ss:'success'},
+      {d:2200,cls:'jkt-stage', t:'[Pipeline] stage: Test', stage:'test', ss:'running'},
+      {d:2400,cls:'jkt-cmd',   t:'  + npm test -- --ci'},
+      {d:2700,cls:'jkt-info',  t:'  PASS src/auth.test.js (3 tests)'},
+      {d:2900,cls:'jkt-info',  t:'  PASS src/api.test.js  (8 tests)'},
+      {d:3100,cls:'jkt-ok',    t:'  Tests: 11 passed, 0 failed  Time: 4.2s', stage:'test', ss:'success'},
+      {d:3300,cls:'jkt-stage', t:'[Pipeline] stage: Docker Build + Push', stage:'docker', ss:'running'},
+      {d:3500,cls:'jkt-cmd',   t:'  + docker build -t ibrahiem/myapp:47 .'},
+      {d:3800,cls:'jkt-info',  t:'  Step 1/7 : FROM node:18-alpine'},
+      {d:4000,cls:'jkt-info',  t:'  Step 4/7 : RUN npm install --production'},
+      {d:4300,cls:'jkt-info',  t:'  Successfully built a9f3e1b2c4d5'},
+      {d:4500,cls:'jkt-cmd',   t:'  + docker push ibrahiem/myapp:47'},
+      {d:4800,cls:'jkt-ok',    t:'  Pushed ibrahiem/myapp:47 to Docker Hub ✓', stage:'docker', ss:'success'},
+      {d:5000,cls:'jkt-stage', t:'[Pipeline] stage: Deploy to Staging', stage:'deploy', ss:'running'},
+      {d:5200,cls:'jkt-cmd',   t:'  + ssh ubuntu@54.12.34.56 \'docker pull ibrahiem/myapp:latest && docker run...\''},
+      {d:5700,cls:'jkt-info',  t:'  Container started: 8f3a2b1c9d0e'},
+      {d:6000,cls:'jkt-cmd',   t:'  + curl --fail http://54.12.34.56/health'},
+      {d:6300,cls:'jkt-ok',    t:'  {"status":"ok","version":"47"}  →  200 OK', stage:'deploy', ss:'success'},
+      {d:6600,cls:'jkt-stage', t:'[Pipeline] post: SUCCESS'},
+      {d:6800,cls:'jkt-ok',    t:'  Slack notification sent → #deployments'},
+      {d:7000,cls:'jkt-ok',    t:'  Workspace cleaned.'},
+      {d:7200,cls:'jkt-ok',    t:'  Finished: SUCCESS  ✅  Duration: 1m 14s', final:'success'},
+    ],
+    testfail: [
+      {d:0,   cls:'jkt-stage', t:'[Pipeline] Start of Pipeline'},
+      {d:200, cls:'jkt-stage', t:'[Pipeline] stage: Checkout', stage:'checkout', ss:'running'},
+      {d:600, cls:'jkt-ok',    t:'  Checked out branch: feature/new-login  commit: b7e9d34', stage:'checkout', ss:'success'},
+      {d:800, cls:'jkt-stage', t:'[Pipeline] stage: Install', stage:'install', ss:'running'},
+      {d:1400,cls:'jkt-ok',    t:'  added 247 packages in 1.1s', stage:'install', ss:'success'},
+      {d:1600,cls:'jkt-stage', t:'[Pipeline] stage: Test', stage:'test', ss:'running'},
+      {d:1900,cls:'jkt-cmd',   t:'  + npm test -- --ci'},
+      {d:2200,cls:'jkt-ok',    t:'  PASS src/api.test.js (8 tests)'},
+      {d:2500,cls:'jkt-error', t:'  FAIL src/auth.test.js'},
+      {d:2700,cls:'jkt-error', t:'    ● login › should return JWT token on valid credentials'},
+      {d:2900,cls:'jkt-error', t:'      Expected: 200   Received: 401'},
+      {d:3100,cls:'jkt-error', t:'      at Object.<anonymous> (src/auth.test.js:34:5)'},
+      {d:3400,cls:'jkt-error', t:'  Tests: 1 FAILED, 10 passed  →  PIPELINE ABORTING', stage:'test', ss:'fail'},
+      {d:3700,cls:'jkt-stage', t:'[Pipeline] stage: Docker Build + Push  →  SKIPPED (previous stage failed)', stage:'docker', ss:'pending'},
+      {d:3900,cls:'jkt-stage', t:'[Pipeline] stage: Deploy  →  SKIPPED', stage:'deploy', ss:'pending'},
+      {d:4200,cls:'jkt-stage', t:'[Pipeline] post: FAILURE'},
+      {d:4500,cls:'jkt-error', t:'  Slack alert sent → #deployments: ❌ Build #48 FAILED at: Test'},
+      {d:4800,cls:'jkt-error', t:'  Finished: FAILURE  ❌  Duration: 0m 42s', final:'failure'},
+    ],
+    dockerfail: [
+      {d:0,   cls:'jkt-stage', t:'[Pipeline] Start of Pipeline'},
+      {d:200, cls:'jkt-stage', t:'[Pipeline] stage: Checkout', stage:'checkout', ss:'running'},
+      {d:600, cls:'jkt-ok',    t:'  Checked out branch: main  commit: c9a1f56', stage:'checkout', ss:'success'},
+      {d:800, cls:'jkt-stage', t:'[Pipeline] stage: Install', stage:'install', ss:'running'},
+      {d:1400,cls:'jkt-ok',    t:'  Packages installed ✓', stage:'install', ss:'success'},
+      {d:1600,cls:'jkt-stage', t:'[Pipeline] stage: Test', stage:'test', ss:'running'},
+      {d:2300,cls:'jkt-ok',    t:'  Tests: 11 passed, 0 failed ✓', stage:'test', ss:'success'},
+      {d:2500,cls:'jkt-stage', t:'[Pipeline] stage: Docker Build + Push', stage:'docker', ss:'running'},
+      {d:2800,cls:'jkt-cmd',   t:'  + docker build -t ibrahiem/myapp:49 .'},
+      {d:3200,cls:'jkt-ok',    t:'  Successfully built d4e7f8a9b0c1'},
+      {d:3400,cls:'jkt-cmd',   t:'  + docker push ibrahiem/myapp:49'},
+      {d:3700,cls:'jkt-error', t:'  denied: requested access to the resource is denied'},
+      {d:3900,cls:'jkt-error', t:'  ERROR: docker push failed — check Docker Hub credentials in Jenkins'},
+      {d:4100,cls:'jkt-warn',  t:'  HINT: Credentials ID used: "docker-hub-creds" — does this exist?', stage:'docker', ss:'fail'},
+      {d:4400,cls:'jkt-stage', t:'[Pipeline] stage: Deploy  →  SKIPPED', stage:'deploy', ss:'pending'},
+      {d:4700,cls:'jkt-error', t:'  Finished: FAILURE  ❌  Duration: 1m 02s', final:'failure'},
+    ]
+  };
+
+  function setStageClass(id, cls) {
+    var el = document.getElementById('jks-' + id);
+    if (!el) return;
+    el.className = 'pv-stage-box ' + (cls === 'running' ? 'stage-running' : cls === 'success' ? 'stage-success' : cls === 'fail' ? 'stage-fail' : 'stage-pending');
+  }
+
+  window.runJkBuild = function(scenario) {
+    if (running) return;
+    running = true;
+    buildNum++;
+
+    // disable buttons
+    ['jk-btn-success','jk-btn-testfail','jk-btn-dockerfail'].forEach(function(id){
+      document.getElementById(id).disabled = true;
+    });
+
+    // reset
+    var term = document.getElementById('jk-terminal');
+    term.innerHTML = '';
+    ['checkout','install','test','docker','deploy'].forEach(function(s){ setStageClass(s, 'pending'); });
+
+    var bar = document.getElementById('jk-status-bar');
+    var dot = document.getElementById('jk-status-dot');
+    var txt = document.getElementById('jk-status-text');
+    var num = document.getElementById('jk-build-num');
+    bar.style.color = '#fbbf24'; bar.style.borderColor = 'rgba(251,191,36,0.3)'; bar.style.background = 'rgba(251,191,36,0.04)';
+    dot.style.background = '#fbbf24';
+    txt.textContent = 'Running...';
+    num.textContent = '#' + buildNum;
+
+    var lines = scenarios[scenario];
+    var maxD = 0;
+
+    lines.forEach(function(line) {
+      maxD = Math.max(maxD, line.d);
+      setTimeout(function() {
+        var span = document.createElement('span');
+        span.className = 'jkt-line ' + line.cls;
+        span.textContent = line.t;
+        term.appendChild(span);
+        term.scrollTop = term.scrollHeight;
+
+        if (line.stage && line.ss) setStageClass(line.stage, line.ss);
+
+        if (line.final) {
+          var isOk = line.final === 'success';
+          bar.style.color = isOk ? '#22c55e' : '#f43f5e';
+          bar.style.borderColor = isOk ? 'rgba(34,197,94,0.4)' : 'rgba(244,63,94,0.4)';
+          bar.style.background = isOk ? 'rgba(34,197,94,0.06)' : 'rgba(244,63,94,0.06)';
+          dot.style.background = isOk ? '#22c55e' : '#f43f5e';
+          txt.textContent = isOk ? '✅ SUCCESS' : '❌ FAILURE — Check console output above';
+        }
+      }, line.d);
+    });
+
+    setTimeout(function() {
+      running = false;
+      ['jk-btn-success','jk-btn-testfail','jk-btn-dockerfail'].forEach(function(id){
+        document.getElementById(id).disabled = false;
+      });
+    }, maxD + 500);
+  };
+})();
+</script>
+
+<!-- IMPORTANT PLUGINS -->
+<div class="section-title">🔌 Essential Jenkins Plugins — Know These by Name</div>
+<div class="jk-grid">
+  <div class="jk-card" style="--jc:#38bdf8;">
+    <div class="jk-card-title">📦 Pipeline</div>
+    <div class="jk-card-body">The core plugin. Enables the <code>pipeline { }</code> DSL in Jenkinsfiles. Without this, you only have Freestyle jobs. Installed by default in modern Jenkins.</div>
+  </div>
+  <div class="jk-card" style="--jc:#38bdf8;">
+    <div class="jk-card-title">🐳 Docker Pipeline</div>
+    <div class="jk-card-body">Adds <code>docker.build()</code>, <code>docker.withRegistry()</code>, <code>agent { docker 'node:18' }</code>. Lets you run build steps inside containers. Essential for any Docker workflow.</div>
+  </div>
+  <div class="jk-card" style="--jc:#f97316;">
+    <div class="jk-card-title">🌿 Git / GitHub</div>
+    <div class="jk-card-body">Git integration + GitHub webhook support. Enables <code>checkout scm</code> and auto-triggering pipelines on push. Usually one of the first plugins you install.</div>
+  </div>
+  <div class="jk-card" style="--jc:#f97316;">
+    <div class="jk-card-title">🔐 Credentials Binding</div>
+    <div class="jk-card-body">Enables <code>credentials('id')</code> and <code>withCredentials()</code>. Lets you securely inject secrets into pipelines as env vars. Values are masked in logs. Critical for security.</div>
+  </div>
+  <div class="jk-card" style="--jc:#22c55e;">
+    <div class="jk-card-title">☁️ AWS Steps</div>
+    <div class="jk-card-body">Adds native AWS CLI steps. Push to ECR, update ECS services, invalidate CloudFront. Easier than raw shell AWS CLI calls in pipelines.</div>
+  </div>
+  <div class="jk-card" style="--jc:#22c55e;">
+    <div class="jk-card-title">☸️ Kubernetes</div>
+    <div class="jk-card-body">Run Jenkins agents as Kubernetes pods. Each build spins up a fresh pod, runs, then destroys itself. No persistent agents to maintain. Modern Jenkins at scale.</div>
+  </div>
+  <div class="jk-card" style="--jc:#a78bfa;">
+    <div class="jk-card-title">💬 Slack Notification</div>
+    <div class="jk-card-body">Adds <code>slackSend()</code> step. Post build results, deployment notifications, and alerts directly to Slack channels. Most teams set this up day one.</div>
+  </div>
+  <div class="jk-card" style="--jc:#a78bfa;">
+    <div class="jk-card-title">🔍 SonarQube Scanner</div>
+    <div class="jk-card-body">Static code analysis integration. Adds <code>withSonarQubeEnv()</code>. Runs code quality + security vulnerability scans as a pipeline stage. Common in enterprise.</div>
+  </div>
+  <div class="jk-card" style="--jc:#fbbf24;">
+    <div class="jk-card-title">📊 Blue Ocean</div>
+    <div class="jk-card-body">Modern visual UI for pipelines. Shows stages as swimlanes, highlights failures clearly. Much better than the default Jenkins UI for understanding pipeline results.</div>
+  </div>
+  <div class="jk-card" style="--jc:#fbbf24;">
+    <div class="jk-card-title">🔑 SSH Agent</div>
+    <div class="jk-card-body">Adds <code>sshagent()</code> wrapper. Lets you SSH into servers using keys stored in Jenkins Credentials. Used for deploy-over-SSH workflows.</div>
+  </div>
+</div>
+
+<!-- BUILT-IN VARIABLES -->
+<div class="section-title">📌 Built-In Jenkins Environment Variables</div>
+<div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+  <table class="concept-table" style="margin-bottom:0;">
+    <thead><tr><th>Variable</th><th>Example Value</th><th>What it contains</th></tr></thead>
+    <tbody>
+      <tr><td>BUILD_NUMBER</td><td style="color:#64748b;">47</td><td style="color:#94a3b8;">Auto-incrementing build number. Use as Docker image tag: <code>myapp:${BUILD_NUMBER}</code></td></tr>
+      <tr><td>BUILD_ID</td><td style="color:#64748b;">2024-01-15_10-30-00</td><td style="color:#94a3b8;">Build timestamp. Unique per build.</td></tr>
+      <tr><td>JOB_NAME</td><td style="color:#64748b;">my-app/main</td><td style="color:#94a3b8;">Full job name including folder. Use in notifications.</td></tr>
+      <tr><td>BRANCH_NAME</td><td style="color:#64748b;">feature/auth</td><td style="color:#94a3b8;">Git branch that triggered this build. Use in <code>when { branch '...' }</code> conditions.</td></tr>
+      <tr><td>GIT_COMMIT</td><td style="color:#64748b;">a3f8c22d91b4...</td><td style="color:#94a3b8;">Full SHA of the triggering commit. Use first 7 chars as image tag for traceability.</td></tr>
+      <tr><td>GIT_BRANCH</td><td style="color:#64748b;">origin/main</td><td style="color:#94a3b8;">Full ref of the branch.</td></tr>
+      <tr><td>WORKSPACE</td><td style="color:#64748b;">/var/jenkins/workspace/job</td><td style="color:#94a3b8;">Absolute path to the build workspace on the agent.</td></tr>
+      <tr><td>JENKINS_URL</td><td style="color:#64748b;">http://jenkins:8080/</td><td style="color:#94a3b8;">Base URL of Jenkins. Useful for building links in notifications.</td></tr>
+      <tr><td>BUILD_URL</td><td style="color:#64748b;">http://jenkins:8080/job/47/</td><td style="color:#94a3b8;">Direct link to this build. Include in Slack messages so team can jump to logs.</td></tr>
+      <tr><td>STAGE_NAME</td><td style="color:#64748b;">Test</td><td style="color:#94a3b8;">Name of the currently running stage. Use in failure notifications: "Failed at: ${STAGE_NAME}"</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- WEBHOOK SETUP -->
+<div class="section-title">🔗 Setting Up GitHub → Jenkins Webhooks</div>
+<div class="jk-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #f97316;border-radius:4px;padding:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#f97316;margin-bottom:10px;">① Jenkins side — expose it publicly</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+      Jenkins must be accessible from GitHub's servers.<br>
+      If running locally for testing: use <strong style="color:#e2e8f0;">ngrok</strong>: <code>ngrok http 8080</code> → gets a public URL.<br>
+      In production: expose Jenkins behind Nginx with a real domain + SSL.<br>
+      Install the <strong style="color:#e2e8f0;">GitHub plugin</strong> in Jenkins.
+    </div>
+  </div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:10px;">② GitHub side — add webhook</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+      GitHub repo → Settings → Webhooks → Add webhook<br>
+      Payload URL: <code>http://your-jenkins.com/github-webhook/</code><br>
+      Content type: <code>application/json</code><br>
+      Trigger: <strong style="color:#e2e8f0;">Just the push event</strong> (or PR events too)<br>
+      Click Add Webhook → GitHub sends a test ping.
+    </div>
+  </div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#22c55e;margin-bottom:10px;">③ Jenkins job — enable trigger</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
+      Job → Configure → Build Triggers → ✅ <strong style="color:#e2e8f0;">GitHub hook trigger for GITScm polling</strong><br><br>
+      Or in Jenkinsfile (Pipeline as Code):<br>
+      <code>triggers { githubPush() }</code><br><br>
+      Now every push to GitHub instantly starts a Jenkins build. No polling. No delay.
+    </div>
+  </div>
+</div>
+
+<!-- Q&A -->
+<div class="section-title" style="margin-top:20px;">🎯 Jenkins Interview Q&amp;A</div>
+<div class="qa-list">
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">JK01</span><span class="qa-q-text">"What is a Jenkinsfile and why should it be committed to Git?"</span><span class="qa-chevron">▼</span></div>
+    <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+      A Jenkinsfile is a text file that defines a Jenkins pipeline using Groovy DSL. It lives in the root of your repository.<br><br>
+      Committing it to Git gives you <strong>Pipeline as Code</strong>: the pipeline definition changes are versioned alongside the application code. If you break the pipeline, you can git blame to find who changed it. You can have different Jenkinsfiles per branch — the main branch deploys to production, develop deploys to staging. New team members get the pipeline automatically when they clone the repo. No clicking in the Jenkins UI to set up a pipeline.<br><br>
+      <span class="qa-pill-jk">pipeline as code</span><span class="qa-pill-jk">versioned with app</span><span class="qa-pill-jk">per-branch pipelines</span><span class="qa-pill-jk">no manual UI config</span>
+    </div></div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">JK02</span><span class="qa-q-text">"What's the difference between Declarative and Scripted pipelines?"</span><span class="qa-chevron">▼</span></div>
+    <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+      <strong>Declarative Pipeline</strong> — uses the structured <code>pipeline { stages { stage { steps { } } } }</code> syntax. Opinionated, easier to read, has built-in validation. Best practice for most teams. What all the examples in this cheatsheet use.<br><br>
+      <strong>Scripted Pipeline</strong> — starts with <code>node { }</code>, is pure Groovy code. More flexible but harder to read and maintain. No structure enforcement. Used when you need to do something Declarative can't express.<br><br>
+      <strong>Recommendation:</strong> Always use Declarative. If you need a one-off complex Groovy logic inside it, wrap it in a <code>script { }</code> block within a Declarative pipeline — best of both worlds.<br><br>
+      <span class="qa-pill-jk">Declarative = structured, recommended</span><span class="qa-pill-jk">Scripted = flexible, legacy</span><span class="qa-pill-jk">use script{} block for complex logic</span>
+    </div></div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">JK03</span><span class="qa-q-text">"How do you store and use secrets in Jenkins? Why not hardcode them?"</span><span class="qa-chevron">▼</span></div>
+    <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+      Jenkins has a built-in <strong>Credentials store</strong>. You add secrets there (Manage Jenkins → Credentials) and give them an ID. In the Jenkinsfile you reference them by ID — the actual value is never in the code.<br><br>
+      Types: <strong>Username/Password</strong> (Docker Hub, registries), <strong>Secret Text</strong> (API tokens, Slack tokens), <strong>SSH Private Key</strong> (deploy to servers), <strong>AWS Credentials</strong>.<br><br>
+      Usage in pipeline: <code>environment { CREDS = credentials('my-id') }</code> — Jenkins injects as <code>CREDS_USR</code> and <code>CREDS_PSW</code>. Or use <code>withCredentials([string(credentialsId: 'id', variable: 'TOKEN')]) { sh '...$TOKEN...' }</code><br><br>
+      <strong>Why not hardcode:</strong> Secrets in a Jenkinsfile get committed to Git. Anyone with repo access sees them. Jenkins masks credential values in logs automatically — if you hardcode them, they print in plain text.<br><br>
+      <span class="qa-pill-jk">Jenkins Credentials store</span><span class="qa-pill-jk">credentials('id') in pipeline</span><span class="qa-pill-jk">values masked in logs</span><span class="qa-pill-jk">never in Git</span>
+    </div></div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">JK04</span><span class="qa-q-text">"A Jenkins build is failing but you don't know why. Walk me through debugging it."</span><span class="qa-chevron">▼</span></div>
+    <div class="qa-a"><div class="qa-a-badge">DEBUG SCRIPT</div><div class="qa-a-text">
+      "First I check the <strong>Console Output</strong> of the failing build — the full log shows exactly which shell command failed and what error it returned. 90% of issues are visible here.<br><br>
+      I look for the stage that turned red in Blue Ocean, then find the exact failed <code>sh</code> step and its exit code.<br><br>
+      Common causes: missing credentials (check the Credentials store), Docker daemon not running on agent, network issue pulling image, test actually failing (which is correct behavior — fix the code), disk full on agent, permission denied on workspace.<br><br>
+      If the error is unclear, I add a debug step: <code>sh 'env'</code> to print all env vars, or <code>sh 'docker info'</code> to check Docker status. I can also replay the build with modified Jenkinsfile using the <strong>Replay</strong> button — no code commit needed.<br><br>
+      If the agent is the issue: check System → Nodes → view the agent log."<br><br>
+      <span class="qa-pill-jk">Console Output first</span><span class="qa-pill-jk">Blue Ocean for visual</span><span class="qa-pill-jk">Replay to test fixes</span><span class="qa-pill-jk">check agent nodes</span>
+    </div></div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">JK05</span><span class="qa-q-text">"What is a Jenkins agent/node and why would you use multiple?"</span><span class="qa-chevron">▼</span></div>
+    <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+      The <strong>Jenkins master</strong> manages the UI, schedules jobs, and stores build history. <strong>Agents (nodes)</strong> are the machines that actually run the pipeline steps.<br><br>
+      <strong>Why multiple agents:</strong> Isolation — each build gets a clean environment. Parallelism — run multiple builds simultaneously. Different environments — one agent for Node.js builds, one for Java, one with Docker. Security — production deployment agent can be in the private network, inaccessible from the internet. Resource scaling — add more agents when build queue grows.<br><br>
+      <strong>Modern approach (Kubernetes agent):</strong> <code>agent { kubernetes { yaml '...' } }</code> — Jenkins spins up a fresh Kubernetes pod per build, runs the pipeline, then destroys the pod. Zero agent maintenance. Each build is perfectly isolated.<br><br>
+      <span class="qa-pill-jk">master = scheduler + UI</span><span class="qa-pill-jk">agents = execution</span><span class="qa-pill-jk">K8s agents = modern, ephemeral</span><span class="qa-pill-jk">isolation per build</span>
+    </div></div>
+  </div>
+
+  <div class="qa-item">
+    <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#ef4444;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">JK06</span><span class="qa-q-text">"How do you trigger a Jenkins pipeline automatically on a Git push?"</span><span class="qa-chevron">▼</span></div>
+    <div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+      Two approaches:<br><br>
+      <strong>1. Webhook (recommended):</strong> GitHub sends an HTTP POST to <code>http://jenkins/github-webhook/</code> the instant code is pushed. Jenkins receives it and immediately starts the build. Zero delay. Requires Jenkins to be publicly accessible or GitHub Enterprise with network access.<br><br>
+      <strong>2. Polling (fallback):</strong> Jenkins checks Git on a schedule: <code>triggers { pollSCM('H/5 * * * *') }</code> = check every 5 minutes. Works even if Jenkins is behind a firewall. But introduces up to 5-minute delay.<br><br>
+      In the Jenkinsfile: <code>triggers { githubPush() }</code> for webhooks or <code>triggers { pollSCM('H * * * *') }</code> for hourly polling.<br><br>
+      <strong>Recommendation:</strong> Always set up webhooks for production. Use polling only when network constraints prevent webhooks (e.g., Jenkins is in a private VPC with no public IP).<br><br>
+      <span class="qa-pill-jk">webhook = instant, recommended</span><span class="qa-pill-jk">polling = delayed, fallback</span><span class="qa-pill-jk">triggers{} block in Jenkinsfile</span>
+    </div></div>
+  </div>
+
+</div>
+
+<!-- INSTALL SNIPPET -->
+<div class="section-title">🐳 Running Jenkins with Docker (fastest way to start)</div>
+<div class="groovy-block">
+  <div class="groovy-header"><span class="groovy-title">docker-compose.yml — Jenkins + Docker-in-Docker</span><span class="groovy-lang">YAML</span></div>
+  <div class="groovy-body" style="color:#e2e8f0;"><span class="g-comment"># docker-compose.jenkins.yml</span>
+<span class="g-keyword">version</span>: <span class="g-string">'3.8'</span>
+
+<span class="g-keyword">services</span>:
+  <span class="g-stage">jenkins</span>:
+    <span class="g-keyword">image</span>: jenkins/jenkins:lts        <span class="g-comment"># LTS = Long Term Support (stable)</span>
+    <span class="g-keyword">container_name</span>: jenkins
+    <span class="g-keyword">restart</span>: unless-stopped
+    <span class="g-keyword">ports</span>:
+      - <span class="g-string">"8080:8080"</span>                   <span class="g-comment"># Jenkins UI</span>
+      - <span class="g-string">"50000:50000"</span>                 <span class="g-comment"># Agent communication port</span>
+    <span class="g-keyword">volumes</span>:
+      - jenkins-data:/var/jenkins_home   <span class="g-comment"># Persist jobs, configs, builds</span>
+      - /var/run/docker.sock:/var/run/docker.sock  <span class="g-comment"># Docker-in-Docker</span>
+    <span class="g-keyword">environment</span>:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false  <span class="g-comment"># skip wizard (optional)</span>
+
+<span class="g-keyword">volumes</span>:
+  jenkins-data:
+
+<span class="g-comment">---
+# Start Jenkins:
+# docker compose -f docker-compose.jenkins.yml up -d
+# 
+# Get initial admin password:
+# docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+#
+# Open: http://localhost:8080
+# Install suggested plugins → create admin user → done!
+#
+# IMPORTANT: Mount /var/run/docker.sock so Jenkins can run Docker commands
+# inside pipelines (docker build, docker push, etc.)</span></div>
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">🔧</div>
+  <div>
+    <div class="loop-title">The path from zero to Jenkins in 30 minutes</div>
+    <div class="loop-desc">
+      Run Jenkins with Docker Compose above. Install suggested plugins. Create a Freestyle job first (just to understand the UI). Then create a Pipeline job pointing to a GitHub repo with a Jenkinsfile. Add a webhook. Push a commit. Watch it build automatically. <strong style="color:#fb923c;">That moment when your code push triggers a Jenkins build is when DevOps clicks.</strong>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,34 @@
+
+  <div class="analogy">
+    <div><div class="analogy-label">🔄 End-to-End DevOps</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📌</span><div class="analogy-text"><strong>Phase 1: Plan</strong><br>Jira ticket → feature branch</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚡</span><div class="analogy-text"><strong>Phase 2-4: CI/CD</strong><br>Build → Test → Deploy</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📊</span><div class="analogy-text"><strong>Phase 5-7: Ops</strong><br>Monitor → Scale → Feedback</div></div>
+  </div>
+  <div class="section-title">🎬 The Full DevOps Lifecycle — 7 Phases</div>
+  <div class="pipeline" style="margin-bottom:28px;">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Plan &amp; Code</span><span class="stage-tool">Jira / Git / GitHub</span></div><div class="stage-desc">PM creates Jira ticket. Developer pulls latest code, creates feature branch: <code class="stage-cmd">git checkout -b feature-payment</code>. Writes app code + YAML configs. Commits, pushes, opens PR for review.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Continuous Integration (CI)</span><span class="stage-tool">GitHub Actions / Jenkins</span></div><div class="stage-desc">PR merges → automated factory takes over. Runs tests + quality checks → reads Dockerfile → builds image → pushes immutable image to AWS ECR tagged <code class="stage-cmd">v2.0</code>. Nobody clicks anything.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Infrastructure as Code</span><span class="stage-tool">Terraform</span></div><div class="stage-desc">Pipeline runs Terraform. Verifies VPC, security groups, K8s cluster are exactly as defined in code. If feature needs a new database, Terraform provisions RDS automatically. Infrastructure is code — reviewable, versioned, reproducible.</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Continuous Deployment (CD)</span><span class="stage-tool">Kubernetes / ECS</span></div><div class="stage-desc">Image built, infra ready. Pipeline updates manifests to use <code class="stage-cmd">v2.0</code>. Kubernetes rolling update: spins up new pods, waits for health checks, gracefully terminates old v1.0 pods. <strong>Zero downtime.</strong></div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Operate &amp; Monitor</span><span class="stage-tool">Prometheus / Grafana / CloudWatch</span></div><div class="stage-desc">Telemetry constantly collected. CloudWatch monitors EC2 nodes. Prometheus scrapes K8s pod metrics. Grafana shows live dashboards. The DevOps team watches for anomalies.</div></div></div>
+    <div class="stage s6"><div class="stage-connector"><div class="stage-dot">6</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Scale &amp; Incident Response</span><span class="stage-tool">HPA / PagerDuty / ELK</span></div><div class="stage-desc"><strong>Scaling:</strong> Traffic spikes 500%. HPA spins up 50 more pods. AWS Auto Scaling adds nodes. Scales down when traffic drops.<br><br><strong>Incident:</strong> v2.0 memory leak → containers crash → Prometheus alerts PagerDuty → you check logs → identify bad commit → press rollback → back to v1.0 in seconds.</div></div></div>
+    <div class="stage s1" style="--clr:#a855f7;--line-top:#a855f7;--line-bot:#a855f7;"><div class="stage-connector"><div class="stage-dot" style="border-color:#a855f7;">7</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name" style="color:#a855f7;">Continuous Feedback</span><span class="stage-tool">Jira / Post-Mortem</span></div><div class="stage-desc">Logs from the incident become a new Jira ticket handed to devs to fix. <strong>The loop begins again at Phase 1.</strong> This is what "continuous improvement" means.</div></div></div>
+  </div>
+  <div class="section-title">🛠️ The Full Toolchain</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;width:130px;">PHASE</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">TOOLS</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#a78bfa;">Plan</td><td style="padding:7px 12px;color:#94a3b8;">Jira, Linear, GitHub Issues</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#f97316;">Code</td><td style="padding:7px 12px;color:#94a3b8;">Git, GitHub/GitLab, VS Code, Linux terminal</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#22c55e;">Build + Test</td><td style="padding:7px 12px;color:#94a3b8;">Docker, Makefile, Jest/Pytest/JUnit, GitHub Actions, Jenkins</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#38bdf8;">Infra</td><td style="padding:7px 12px;color:#94a3b8;">Terraform, Ansible, CloudFormation, AWS CDK</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#818cf8;">Deploy</td><td style="padding:7px 12px;color:#94a3b8;">Kubernetes (kubectl, Helm), ECS, ArgoCD, FluxCD</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#f43f5e;">Monitor</td><td style="padding:7px 12px;color:#94a3b8;">Prometheus, Grafana, CloudWatch, ELK Stack, Datadog</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;">Incident</td><td style="padding:7px 12px;color:#94a3b8;">PagerDuty, OpsGenie, Slack, blameless post-mortems</td></tr>
+      </tbody>
+    </table>
+  </div>

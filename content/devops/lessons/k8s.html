@@ -1,0 +1,292 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">☸️ What is Kubernetes?</div></div>
+    <div class="analogy-item"><span class="analogy-icon">👔</span><div class="analogy-text"><strong>K8s = Workforce Manager</strong><br>Manages container workforce</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📋</span><div class="analogy-text"><strong>Desired State</strong><br>You describe it, K8s achieves it</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">🔁</span><div class="analogy-text"><strong>Self-healing</strong><br>Crashed pod? Auto-restart</div></div>
+  </div>
+
+  <div class="section-title">🏛️ Core Architecture</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;font-size:13px;margin-bottom:10px;">🧠 Control Plane (Master Node)</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.85;">
+        Controls everything in the cluster:<br><br>
+        <strong style="color:#e2e8f0;">API Server</strong> — entry point for all commands. Every kubectl command hits this.<br>
+        <strong style="color:#e2e8f0;">Scheduler</strong> — decides which worker node a new pod should run on.<br>
+        <strong style="color:#e2e8f0;">Controller Manager</strong> — watches cluster state, makes sure reality matches desired state.<br>
+        <strong style="color:#e2e8f0;">etcd</strong> — the cluster's database. Stores all state. If etcd dies, cluster is blind.
+      </div>
+    </div>
+    <div style="background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.2);border-left:3px solid #22c55e;border-radius:4px;padding:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#22c55e;font-size:13px;margin-bottom:10px;">⚙️ Worker Nodes</div>
+      <div style="font-size:11px;color:#94a3b8;line-height:1.85;">
+        Runs actual applications:<br><br>
+        <strong style="color:#e2e8f0;">Kubelet</strong> — agent on every worker node. Talks to the control plane, ensures pods are running.<br>
+        <strong style="color:#e2e8f0;">Container Runtime</strong> — Docker (or containerd). Actually runs the containers.<br>
+        <strong style="color:#e2e8f0;">Pods</strong> — the actual workloads run here. One or more containers per pod.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📦 The 8 Objects You Must Know</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;width:130px;">OBJECT</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;">WHAT IT DOES</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Pod</td><td style="padding:7px 12px;color:#94a3b8;">Smallest deployable unit. Wraps one or more containers sharing network and storage. Usually 1 container per pod. Pods are ephemeral — they die and get new IPs.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Deployment</td><td style="padding:7px 12px;color:#94a3b8;">Manages desired state: "I want 3 replicas of this pod." K8s creates/kills pods to match. Handles rolling updates. Use for stateless apps (APIs, web servers).</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">StatefulSet</td><td style="padding:7px 12px;color:#94a3b8;">Like Deployment but for stateful apps. Pods get stable names (pod-0, pod-1). Persistent volume per pod. Use for databases, Kafka, Zookeeper.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Service</td><td style="padding:7px 12px;color:#94a3b8;">Stable network endpoint in front of pods. Pods die and get new IPs — the Service IP never changes. 3 types: ClusterIP (internal), NodePort (node IP), LoadBalancer (external).</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Ingress</td><td style="padding:7px 12px;color:#94a3b8;">External HTTP/HTTPS routing into the cluster. Path-based rules: /api → backend, / → frontend. One entry point instead of many LoadBalancers. Needs an Ingress Controller (Nginx).</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">ConfigMap</td><td style="padding:7px 12px;color:#94a3b8;">Inject non-sensitive config into pods (env vars, config files). Decouples config from image — change config without rebuilding the image.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Secret</td><td style="padding:7px 12px;color:#94a3b8;">Like ConfigMap but for sensitive data (passwords, tokens). Base64-encoded — NOT encrypted by default. Use sealed secrets or external secret managers in prod.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Namespace</td><td style="padding:7px 12px;color:#94a3b8;">Logical isolation within one cluster. Separate dev, staging, prod environments. Set resource quotas per namespace.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">HPA</td><td style="padding:7px 12px;color:#94a3b8;">Horizontal Pod Autoscaler. Auto-scales replicas based on CPU % or custom metrics. K8s watches load and adds/removes pods automatically.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🔑 Service Types</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;width:140px;">TYPE</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">USE CASE</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">ClusterIP</td><td style="padding:8px 12px;color:#94a3b8;">Internal communication only. Default type. Service is only reachable from inside the cluster. Use for internal microservice-to-microservice calls.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">NodePort</td><td style="padding:8px 12px;color:#94a3b8;">Exposes service on a static port on every node's IP. Reachable from outside via NodeIP:port. Simple but not production-grade.</td></tr>
+        <tr><td style="padding:8px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">LoadBalancer</td><td style="padding:8px 12px;color:#94a3b8;">Creates a cloud provider load balancer (AWS ALB, etc.). Gives you an external IP. Production way to expose services. Use Ingress to avoid one LB per service.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🔧 Deployment vs StatefulSet</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:6px;">Deployment — Stateless Apps</div>
+      Any replica is identical. Easy rolling updates built-in. Easy scale up/down.<br><br>
+      <strong style="color:#e2e8f0;">Use for:</strong> APIs, web servers, workers, anything where one pod = any other pod.
+    </div>
+    <div style="background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.2);border-left:3px solid #f97316;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.75;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f97316;margin-bottom:6px;">StatefulSet — Stateful Apps</div>
+      Pods get stable names: pod-0, pod-1, pod-2. Each pod gets its own Persistent Volume.<br><br>
+      <strong style="color:#e2e8f0;">Use for:</strong> Databases, Kafka, Zookeeper — apps that care about identity and data.
+    </div>
+  </div>
+
+  <div class="section-title">⌨️ Essential kubectl Commands</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2.1;overflow-x:auto;">
+    <span style="color:#fbbf24;">kubectl get pods -n production</span><span style="color:#475569;"> &nbsp;&nbsp;# List pods in a namespace</span><br>
+    <span style="color:#fbbf24;">kubectl describe pod &lt;name&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Full details — events, errors</span><br>
+    <span style="color:#fbbf24;">kubectl logs &lt;pod&gt; -f</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Follow pod logs (like tail -f)</span><br>
+    <span style="color:#fbbf24;">kubectl apply -f deployment.yaml</span><span style="color:#475569;"> &nbsp;# Create or update from YAML</span><br>
+    <span style="color:#fbbf24;">kubectl exec -it &lt;pod&gt; -- /bin/bash</span><span style="color:#475569;"> # Shell into running pod</span><br>
+    <span style="color:#fbbf24;">kubectl scale deploy myapp --replicas=5</span><span style="color:#475569;"> # Scale manually</span><br>
+    <span style="color:#fbbf24;">kubectl rollout status deploy/myapp</span><span style="color:#475569;"> &nbsp;# Watch rollout progress</span><br>
+    <span style="color:#fbbf24;">kubectl rollout undo deploy/myapp</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;# Rollback to previous version</span>
+  </div>
+
+  <div class="section-title">🔍 ConfigMap vs Secret</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;"><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;width:130px;">FEATURE</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">CONFIGMAP</th><th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;">SECRET</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">Data type</td><td style="padding:7px 12px;color:#94a3b8;">Non-sensitive config</td><td style="padding:7px 12px;color:#94a3b8;">Sensitive data</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#e2e8f0;">Example</td><td style="padding:7px 12px;color:#94a3b8;">DB_HOST, API_URL, config files</td><td style="padding:7px 12px;color:#94a3b8;">Passwords, tokens, TLS certs</td></tr>
+        <tr><td style="padding:7px 12px;color:#e2e8f0;">Encoding</td><td style="padding:7px 12px;color:#94a3b8;">Plain text</td><td style="padding:7px 12px;color:#94a3b8;">Base64 (not encrypted by default!)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">📦 Helm — Kubernetes Package Manager</div>
+  <div style="background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.2);border-left:3px solid #a855f7;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    Helm is the <strong style="color:#e2e8f0;">package manager for Kubernetes</strong> — like npm for Node. Instead of writing raw YAML for every resource, you use a <strong>Helm chart</strong> — a reusable, parameterized template.<br><br>
+    <code style="color:#fbbf24;">helm install myapp ./chart</code> — deploys everything in one command.<br>
+    <code style="color:#fbbf24;">helm upgrade myapp ./chart</code> — rolls out changes.<br>
+    <code style="color:#fbbf24;">helm rollback myapp 1</code> — rollback to revision 1.<br><br>
+    Public charts available at <strong>Artifact Hub</strong> for common tools (nginx, prometheus, postgres, etc.)
+  </div>
+
+  <div class="section-title">🔄 Persistent Volumes (Stateful Apps)</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#e2e8f0;">PV (Persistent Volume)</strong> — storage resource provisioned in the cluster (an actual disk).<br>
+    <strong style="color:#e2e8f0;">PVC (Persistent Volume Claim)</strong> — a pod's request for storage. "I need 10GB." K8s binds it to a matching PV.<br><br>
+    This decouples storage from the pod lifecycle. When a pod dies and is recreated, it reattaches to the same PVC — data is still there. Essential for databases in Kubernetes.
+  </div>
+
+  <div class="section-title">🔀 Ingress — Smart HTTP Router</div>
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11px;color:#94a3b8;line-height:1.85;font-family:'JetBrains Mono',monospace;">
+    <span style="color:#64748b;"># Instead of 3 separate LoadBalancers:</span><br>
+    <span style="color:#e2e8f0;">Internet</span> <span style="color:#38bdf8;">→</span> <span style="color:#fbbf24;">Ingress Controller (Nginx)</span> <span style="color:#38bdf8;">→</span> routes by path/host<br><br>
+    <span style="color:#fbbf24;">/api/*</span> &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#38bdf8;">→</span> backend-service (ClusterIP)<br>
+    <span style="color:#fbbf24;">/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#38bdf8;">→</span> frontend-service (ClusterIP)<br>
+    <span style="color:#fbbf24;">api.co</span> &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#38bdf8;">→</span> api-service<br>
+    <span style="color:#fbbf24;">app.co</span> &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#38bdf8;">→</span> app-service<br>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">☸️</div>
+    <div>
+      <div class="loop-title">The K8s DevOps Flow</div>
+      <div class="loop-desc">Build Docker image <span class="loop-arrow">→</span> Push to registry <span class="loop-arrow">→</span> Deploy using Kubernetes YAML (<code style="color:#fbbf24;">kubectl apply</code>) <span class="loop-arrow">→</span> K8s schedules pods on worker nodes <span class="loop-arrow">→</span> Service exposes them <span class="loop-arrow">→</span> Ingress routes external traffic <span class="loop-arrow">→</span> HPA scales on load.</div>
+    </div>
+  </div>
+
+  <div class="section-title">🔄 How a Deploy Actually Works — Step by Step</div>
+  <div class="pipeline">
+    <div class="stage s1"><div class="stage-connector"><div class="stage-dot">1</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">kubectl apply -f app.yaml</span></div><div class="stage-desc">You send the request. Goes to the <strong>API Server</strong> — the single entry point for everything in K8s.</div></div></div>
+    <div class="stage s2"><div class="stage-connector"><div class="stage-dot">2</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Stored in etcd</span></div><div class="stage-desc">Desired state saved: "Run 3 pods of this image." etcd is the cluster's source of truth.</div></div></div>
+    <div class="stage s3"><div class="stage-connector"><div class="stage-dot">3</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Scheduler decides</span></div><div class="stage-desc">Scheduler looks at available worker nodes and chooses the best one for each pod (resources, taints, affinity rules).</div></div></div>
+    <div class="stage s4"><div class="stage-connector"><div class="stage-dot">4</div><div class="stage-line"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Workers execute</span></div><div class="stage-desc">Kubelet on the assigned node receives the instruction. Container runtime pulls the image and starts the container. Pods are now running.</div></div></div>
+    <div class="stage s5"><div class="stage-connector"><div class="stage-dot">5</div><div class="stage-line" style="background:transparent;"></div></div><div class="stage-body"><div class="stage-header"><span class="stage-name">Continuous monitoring</span></div><div class="stage-desc">Controller Manager watches. If a pod crashes, it creates a new one immediately. Desired state = reality at all times. This is self-healing.</div></div></div>
+  </div>
+
+  <div class="section-title">⌨️ Complete kubectl Reference</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2;overflow-x:auto;">
+    <span style="color:#64748b;"># ── CLUSTER ──────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">kubectl cluster-info</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Is cluster running?</span><br>
+    <span style="color:#fbbf24;">kubectl get nodes</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Worker nodes + status</span><br><br>
+    <span style="color:#64748b;"># ── PODS ─────────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">kubectl get pods</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# List pods (default ns)</span><br>
+    <span style="color:#fbbf24;">kubectl get pods -n production</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# List pods in namespace</span><br>
+    <span style="color:#fbbf24;">kubectl get pods -o wide</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# + which node each pod is on</span><br>
+    <span style="color:#fbbf24;">kubectl run nginx --image=nginx</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Quick pod for testing</span><br>
+    <span style="color:#fbbf24;">kubectl delete pod &lt;name&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Delete pod</span><br><br>
+    <span style="color:#64748b;"># ── DEPLOYMENTS ──────────────────────────────</span><br>
+    <span style="color:#fbbf24;">kubectl create deployment app --image=nginx</span><span style="color:#475569;"> # Create</span><br>
+    <span style="color:#fbbf24;">kubectl get deployments</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# List</span><br>
+    <span style="color:#fbbf24;">kubectl scale deployment app --replicas=3</span><span style="color:#475569;"> &nbsp;&nbsp;# Scale</span><br>
+    <span style="color:#fbbf24;">kubectl set image deployment/app nginx=nginx:latest</span> <span style="color:#475569;"># Update image</span><br>
+    <span style="color:#fbbf24;">kubectl rollout undo deployment app</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Rollback</span><br>
+    <span style="color:#fbbf24;">kubectl rollout status deployment app</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Watch rollout</span><br><br>
+    <span style="color:#64748b;"># ── SERVICES ─────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">kubectl expose deployment app --type=NodePort --port=80</span><br>
+    <span style="color:#fbbf24;">kubectl get svc</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# List services</span><br><br>
+    <span style="color:#64748b;"># ── DEBUG (INTERVIEW GOLD) ───────────────────</span><br>
+    <span style="color:#fbbf24;">kubectl describe pod &lt;name&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Full details + events</span><br>
+    <span style="color:#fbbf24;">kubectl logs &lt;pod&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Pod output</span><br>
+    <span style="color:#fbbf24;">kubectl logs -f &lt;pod&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Follow logs live</span><br>
+    <span style="color:#fbbf24;">kubectl exec -it &lt;pod&gt; -- /bin/bash</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Shell into pod</span><br>
+    <span style="color:#fbbf24;">kubectl get events</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Cluster events</span><br>
+    <span style="color:#fbbf24;">kubectl apply -f app.yaml</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Apply from YAML</span><br>
+    <span style="color:#fbbf24;">kubectl port-forward pod/&lt;name&gt; 8080:80</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;# Test locally</span><br><br>
+    <span style="color:#64748b;"># ── SHORTCUTS ────────────────────────────────</span><br>
+    <span style="color:#fbbf24;">kubectl get po</span> <span style="color:#475569;">&nbsp;&nbsp;kubectl get svc</span> <span style="color:#475569;">&nbsp;&nbsp;kubectl get deploy</span>
+  </div>
+
+  <div class="section-title">🔥 Debug a Failing Pod — The Interview Flow</div>
+  <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.85;">
+    <strong style="color:#e2e8f0;">Step 1:</strong> <code style="color:#fbbf24;">kubectl get pods</code> — is the pod Running, Pending, CrashLoopBackOff, or Error?<br>
+    <strong style="color:#e2e8f0;">Step 2:</strong> <code style="color:#fbbf24;">kubectl describe pod &lt;name&gt;</code> — check Events section at the bottom. Most answers are here (image pull fail, OOM killed, liveness probe fail).<br>
+    <strong style="color:#e2e8f0;">Step 3:</strong> <code style="color:#fbbf24;">kubectl logs &lt;pod&gt;</code> — read the application's own error output.<br>
+    <strong style="color:#e2e8f0;">If pod won't start:</strong> Image name wrong? Resources exceeded? ConfigMap/Secret missing? Node has space?<br>
+    <strong style="color:#e2e8f0;">If pod keeps crashing:</strong> CrashLoopBackOff = app crashes on startup. Check logs immediately after start: <code style="color:#fbbf24;">kubectl logs &lt;pod&gt; --previous</code>
+  </div>
+
+  <div class="section-title">📦 More K8s Workload Types</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(129,140,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;width:130px;">TYPE</th><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;">WHAT IT DOES</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">DaemonSet</td><td style="padding:7px 12px;color:#94a3b8;">Runs exactly <strong>one pod on every node</strong>. When a new node joins the cluster, the pod is automatically added. Use for: log collectors (Fluentd), monitoring agents (Prometheus node-exporter), network plugins. Can't scale — always = number of nodes.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Job</td><td style="padding:7px 12px;color:#94a3b8;">Runs a pod to <strong>completion</strong> (not indefinitely). Pod runs, completes its task, exits with code 0. Use for: database migrations, batch processing, one-off scripts. Retries on failure.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">CronJob</td><td style="padding:7px 12px;color:#94a3b8;">Like a Kubernetes-native cron job. Creates a Job on a schedule. <code>schedule: "0 2 * * *"</code> = daily at 2 AM. Use for: nightly reports, cleanup tasks, backups.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">initContainer</td><td style="padding:7px 12px;color:#94a3b8;">Runs <em>before</em> the main container starts. Completes then exits. Use for: run DB migrations before app starts, wait for a dependency to be ready, copy config files.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">⚙️ Resource Requests vs Limits</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#e2e8f0;">Requests</strong> — the amount K8s <em>reserves</em> for the pod. Scheduler uses this to decide which node has enough capacity.<br>
+    <strong style="color:#e2e8f0;">Limits</strong> — the maximum the pod can consume. If it exceeds CPU limit, it's throttled. If it exceeds memory limit, it's <strong style="color:#f43f5e;">OOMKilled</strong>.<br><br>
+    Always set both. No requests = scheduler can't plan. No limits = one bad pod can starve all others on the node.
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.9;overflow-x:auto;">
+    <span style="color:#38bdf8;">resources</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">requests</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">memory</span><span style="color:#e2e8f0;">: "256Mi"</span> <span style="color:#475569;">&nbsp;# reserved</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">cpu</span><span style="color:#e2e8f0;">: "250m"</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;# 0.25 cores reserved</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">limits</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">memory</span><span style="color:#e2e8f0;">: "512Mi"</span> <span style="color:#475569;">&nbsp;# OOMKilled if exceeded</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">cpu</span><span style="color:#e2e8f0;">: "500m"</span> <span style="color:#475569;">&nbsp;&nbsp;&nbsp;&nbsp;# throttled if exceeded</span>
+  </div>
+
+  <div class="section-title">🚧 Taints, Tolerations &amp; Node Affinity</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:5px;">Taint &amp; Toleration</div>
+      <strong style="color:#e2e8f0;">Taint</strong> — mark a node as "not for general use." Only pods with a matching <strong>toleration</strong> can be scheduled there.<br><br>Use case: Dedicate GPU nodes only to ML workloads. Taint the GPU node. Only ML pods tolerate it.
+    </div>
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:5px;">Node Affinity</div>
+      Schedule pods <em>preferring</em> or <em>requiring</em> specific nodes based on labels. Less strict than taints — you express preference, not exclusion.<br><br>Use case: "Schedule payment service pods on nodes in us-east-1a only."
+    </div>
+  </div>
+
+  <div class="section-title">🔧 More Essential kubectl Commands</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:2;overflow-x:auto;">
+    <span style="color:#fbbf24;">kubectl top pods</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# real-time CPU/memory per pod</span><br>
+    <span style="color:#fbbf24;">kubectl top nodes</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# real-time CPU/memory per node</span><br>
+    <span style="color:#fbbf24;">kubectl get events --sort-by='.lastTimestamp'</span><span style="color:#475569;"> # latest events first</span><br>
+    <span style="color:#fbbf24;">kubectl cordon &lt;node&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# prevent new pods on node (no drain)</span><br>
+    <span style="color:#fbbf24;">kubectl drain &lt;node&gt; --ignore-daemonsets</span><span style="color:#475569;"> &nbsp;&nbsp;# evict all pods, then maintenance</span><br>
+    <span style="color:#fbbf24;">kubectl uncordon &lt;node&gt;</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# re-allow scheduling</span><br>
+    <span style="color:#fbbf24;">kubectl get pvc</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# persistent volume claims</span><br>
+    <span style="color:#fbbf24;">kubectl get hpa</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# horizontal pod autoscalers</span><br>
+    <span style="color:#fbbf24;">kubectl auth can-i create pods</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# check RBAC permissions</span>
+  </div>
+
+  <div class="section-title">📦 Resource Requests &amp; Limits — CRITICAL</div>
+  <div style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.2);border-left:3px solid #fbbf24;border-radius:4px;padding:13px;margin-bottom:14px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#fbbf24;">Requests</strong> — what the container is <em>guaranteed</em>. The Scheduler uses this to decide which node has enough capacity for the pod.<br>
+    <strong style="color:#fbbf24;">Limits</strong> — the maximum the container can use. If it exceeds the memory limit, it gets OOMKilled. If it exceeds CPU limit, it gets throttled (not killed).
+  </div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
+    <span style="color:#38bdf8;">resources</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">requests</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">memory</span><span style="color:#e2e8f0;">: "128Mi"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# guaranteed RAM</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">cpu</span><span style="color:#e2e8f0;">: "250m"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# guaranteed CPU (250 millicores = 0.25 CPU)</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">limits</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">memory</span><span style="color:#e2e8f0;">: "512Mi"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# max RAM — exceed this → OOMKilled</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">cpu</span><span style="color:#e2e8f0;">: "1000m"</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# max CPU — exceed this → throttled (not killed)</span>
+  </div>
+
+  <div class="section-title">🔢 More K8s Objects You'll Be Asked About</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:rgba(129,140,248,0.08);border-bottom:1px solid #1e293b;"><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;width:150px;">OBJECT</th><th style="padding:8px 12px;color:#818cf8;font-weight:700;text-align:left;">WHAT IT DOES</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">DaemonSet</td><td style="padding:7px 12px;color:#94a3b8;">Ensures <em>one pod runs on every node</em> in the cluster. Use for: log collectors (Fluentd), monitoring agents (node-exporter), network plugins. When a new node joins, DaemonSet automatically schedules a pod on it.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Job</td><td style="padding:7px 12px;color:#94a3b8;">Runs one or more pods to <em>completion</em>. Pod must finish successfully, then the Job is done. Use for: database migrations, batch processing, one-off tasks. Unlike Deployment, pods are not restarted after success.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">CronJob</td><td style="padding:7px 12px;color:#94a3b8;">Runs a Job on a cron schedule. <code>schedule: "0 2 * * *"</code> = daily at 2 AM. Use for: nightly backups, scheduled reports, cache warming.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Init Container</td><td style="padding:7px 12px;color:#94a3b8;">Runs <em>before</em> the main app container starts. Must complete successfully. Use for: wait until DB is ready, download config files, set up permissions. Multiple init containers run sequentially.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">Sidecar</td><td style="padding:7px 12px;color:#94a3b8;">A second container in the same pod as the main app. Shares network + storage. Use for: log shippers, service mesh proxies (Envoy/Istio), secret injection, monitoring agents.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">NetworkPolicy</td><td style="padding:7px 12px;color:#94a3b8;">Controls which pods can talk to which pods. By default, all pods can talk to all pods. NetworkPolicy lets you say "only the frontend service can talk to the API service on port 3000." Needs a CNI plugin that supports it (Calico, Cilium).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">🎯 Taints, Tolerations &amp; Node Affinity</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:rgba(244,63,94,0.04);border:1px solid rgba(244,63,94,0.2);border-left:3px solid #f43f5e;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#f43f5e;margin-bottom:6px;">Taints &amp; Tolerations</div>
+      <strong style="color:#e2e8f0;">Taint</strong> a node to <em>repel</em> pods: <code style="color:#fbbf24;">kubectl taint nodes gpu-node gpu=true:NoSchedule</code><br><br>
+      Pods won't be scheduled there UNLESS they have a <strong style="color:#e2e8f0;">toleration</strong> for that taint. Use for: dedicating GPU nodes only to ML workloads, isolating production nodes.
+    </div>
+    <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.2);border-left:3px solid #38bdf8;border-radius:4px;padding:13px;font-size:11px;color:#94a3b8;line-height:1.8;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:#38bdf8;margin-bottom:6px;">Node Affinity</div>
+      <em>Attract</em> pods to specific nodes based on labels. Softer than taints — "prefer to run on SSD nodes" or "must run on us-east-1a nodes".<br><br>
+      <code style="color:#fbbf24;">nodeSelector</code> is the simpler version: only schedule this pod on nodes with label <code>disktype=ssd</code>.
+    </div>
+  </div>
+
+  <div class="section-title">📊 kubectl top — Live Resource Usage</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:12px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;overflow-x:auto;">
+    <span style="color:#fbbf24;">kubectl top nodes</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# CPU/RAM usage across all nodes</span><br>
+    <span style="color:#fbbf24;">kubectl top pods -n production</span><span style="color:#475569;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# CPU/RAM per pod in namespace</span><br>
+    <span style="color:#fbbf24;">kubectl top pods --sort-by=memory</span><span style="color:#475569;"> &nbsp;&nbsp;# sort by memory usage (find hogs)</span>
+  </div>
+

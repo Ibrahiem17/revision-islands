@@ -1,0 +1,140 @@
+
+  <div class="analogy">
+    <div><div class="analogy-label">📄 YAML = Yet Another Markup Language?</div></div>
+    <div class="analogy-item"><span class="analogy-icon">😄</span><div class="analogy-text"><strong>YAML Ain't Markup Language</strong><br>It's a data serialization format</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚙️</span><div class="analogy-text"><strong>Used everywhere in DevOps</strong><br>GitHub Actions, K8s, Docker Compose</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">⚠️</span><div class="analogy-text"><strong>Indentation matters!</strong><br>2 spaces, not tabs</div></div>
+  </div>
+
+
+  <div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+    Same click-to-explore pattern as <strong style="color:#38bdf8;">Linux for DevOps</strong>. Click any piece of syntax below — it "runs" in the little file preview, and underneath you'll always see <strong style="color:#e2e8f0;">what it does</strong>, <strong style="color:#e2e8f0;">where you'll use it</strong>, a full <strong style="color:#e2e8f0;">syntax breakdown</strong>, and a <strong style="color:#e2e8f0;">real reason it's actually useful</strong>. The first section covers YAML itself — the general rules behind every config file you'll ever open. The second section covers the specific keywords GitHub Actions reads out of that YAML.
+  </div>
+
+  <div class="section-title">🖥️ Try It — Click Any YAML Concept to See It</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">example.yml</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">#</span> <span id="yamlCmd">click any concept below</span></div>
+      <div class="pu-output" id="yamlOutput"><span class="dim">↳ the YAML and what it actually parses to show up here</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="yamlInfo">
+    <div><strong>🧩 Syntax (the general shape):</strong> <code id="yamlSyntax">click a concept below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="yamlDoes">Pick a concept below to get started — every syntax rule in YAML, and every keyword GitHub Actions reads, is here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="yamlWhere">—</span></div>
+  </div>
+
+  <div class="sl-breakdown" id="yamlBreakdownBox" style="margin-top:10px;">
+    <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+    <div class="sl-breakdown-list" id="yamlBreakdownList"><span class="dim">Click a concept above — every piece of its syntax gets broken down here, one at a time.</span></div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:20px;">
+    <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+    <div id="yamlWhyUseful"><span class="dim">Click a concept above to see a real problem it solves, with a real example.</span></div>
+  </div>
+
+  <div class="ld-cat">📝 Core Syntax</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('keyValue',this)">key: value</button>
+    <button class="ld-pill" onclick="runYamlCmd('nesting',this)">nesting (indentation)</button>
+    <button class="ld-pill" onclick="runYamlCmd('lists',this)">- list items</button>
+    <button class="ld-pill" onclick="runYamlCmd('comments',this)"># comments</button>
+  </div>
+
+  <div class="ld-cat">🧵 Strings &amp; Special Values</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('stringsQuoted',this)">"quoted" vs unquoted</button>
+    <button class="ld-pill" onclick="runYamlCmd('multilineBlock',this)">| block scalar</button>
+    <button class="ld-pill" onclick="runYamlCmd('multilineFolded',this)">&gt; folded scalar</button>
+    <button class="ld-pill" onclick="runYamlCmd('booleanNull',this)">true / false / null</button>
+  </div>
+
+  <div class="ld-cat">🔗 Flow Style &amp; Reuse</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('flowStyle',this)">[a, b] / {k: v}</button>
+    <button class="ld-pill" onclick="runYamlCmd('anchorsAliases',this)">&amp;anchor / *alias</button>
+    <button class="ld-pill" onclick="runYamlCmd('multiDoc',this)">--- multi-document</button>
+  </div>
+
+  <div class="ld-cat">⚙️ GitHub Actions Keywords</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runYamlCmd('name',this)">name:</button>
+    <button class="ld-pill" onclick="runYamlCmd('on',this)">on:</button>
+    <button class="ld-pill" onclick="runYamlCmd('jobsKeyword',this)">jobs:</button>
+    <button class="ld-pill" onclick="runYamlCmd('runsOn',this)">runs-on:</button>
+    <button class="ld-pill" onclick="runYamlCmd('steps',this)">steps:</button>
+    <button class="ld-pill" onclick="runYamlCmd('run',this)">run:</button>
+    <button class="ld-pill" onclick="runYamlCmd('uses',this)">uses:</button>
+    <button class="ld-pill" onclick="runYamlCmd('with',this)">with:</button>
+    <button class="ld-pill" onclick="runYamlCmd('envKeyword',this)">env:</button>
+    <button class="ld-pill" onclick="runYamlCmd('needs',this)">needs:</button>
+  </div>
+
+
+  <div class="section-title">⚙️ GitHub Actions — Key Keywords</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;overflow:hidden;margin-bottom:20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead>
+        <tr style="background:rgba(56,189,248,0.08);border-bottom:1px solid #1e293b;">
+          <th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;width:120px;">KEYWORD</th>
+          <th style="text-align:left;padding:8px 12px;color:#38bdf8;font-weight:700;letter-spacing:1px;">WHAT IT DOES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">name</td><td style="padding:7px 12px;color:#94a3b8;">Display name for the workflow or step. Shows in GitHub Actions UI.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">on</td><td style="padding:7px 12px;color:#94a3b8;">Trigger — what event starts the workflow. <code style="color:#fbbf24;">push</code>, <code style="color:#fbbf24;">pull_request</code>, <code style="color:#fbbf24;">schedule</code>, <code style="color:#fbbf24;">workflow_dispatch</code></td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">jobs</td><td style="padding:7px 12px;color:#94a3b8;">Top-level grouping. A workflow has multiple jobs. Jobs run in parallel by default.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">runs-on</td><td style="padding:7px 12px;color:#94a3b8;">Which runner (machine) to use. <code style="color:#fbbf24;">ubuntu-latest</code>, <code style="color:#fbbf24;">windows-latest</code>, <code style="color:#fbbf24;">macos-latest</code></td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">steps</td><td style="padding:7px 12px;color:#94a3b8;">Ordered list of tasks within a job. Run sequentially top to bottom.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">run</td><td style="padding:7px 12px;color:#94a3b8;">Shell command to execute. <code style="color:#fbbf24;">run: npm test</code>, <code style="color:#fbbf24;">run: docker build .</code></td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">uses</td><td style="padding:7px 12px;color:#94a3b8;">Use a pre-built action. <code style="color:#fbbf24;">uses: actions/checkout@v3</code>, <code style="color:#fbbf24;">uses: docker/login-action@v2</code></td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">with</td><td style="padding:7px 12px;color:#94a3b8;">Input parameters for a <code style="color:#fbbf24;">uses</code> action. Key-value pairs passed to the action.</td></tr>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);"><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">env</td><td style="padding:7px 12px;color:#94a3b8;">Set environment variables. Can be at workflow, job, or step level.</td></tr>
+        <tr><td style="padding:7px 12px;color:#fbbf24;font-family:'JetBrains Mono',monospace;">needs</td><td style="padding:7px 12px;color:#94a3b8;">Job dependency. <code style="color:#fbbf24;">needs: build</code> means this job waits for 'build' job to succeed first.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">📄 Example GitHub Actions Workflow</div>
+  <div style="background:rgba(0,0,0,0.4);border:1px solid #1e293b;border-radius:4px;padding:16px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.9;overflow-x:auto;">
+    <span style="color:#64748b;"># .github/workflows/ci.yml</span><br>
+    <span style="color:#38bdf8;">name</span><span style="color:#e2e8f0;">:</span> <span style="color:#fbbf24;">CI Pipeline</span><br><br>
+    <span style="color:#38bdf8;">on</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">push</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">branches</span><span style="color:#e2e8f0;">: [main, develop]</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#38bdf8;">pull_request</span><span style="color:#e2e8f0;">:</span><br><br>
+    <span style="color:#38bdf8;">jobs</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#a78bfa;">build-and-test</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">runs-on</span><span style="color:#e2e8f0;">: ubuntu-latest</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">steps</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- </span><span style="color:#38bdf8;">uses</span><span style="color:#e2e8f0;">: </span><span style="color:#fbbf24;">actions/checkout@v3</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- </span><span style="color:#38bdf8;">name</span><span style="color:#e2e8f0;">: </span><span style="color:#fbbf24;">Install deps</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">run</span><span style="color:#e2e8f0;">: npm install</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- </span><span style="color:#38bdf8;">name</span><span style="color:#e2e8f0;">: </span><span style="color:#fbbf24;">Run tests</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">run</span><span style="color:#e2e8f0;">: npm test</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#a78bfa;">deploy</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">needs</span><span style="color:#e2e8f0;">: build-and-test</span> <span style="color:#64748b;"># waits for above</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">runs-on</span><span style="color:#e2e8f0;">: ubuntu-latest</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">steps</span><span style="color:#e2e8f0;">:</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- </span><span style="color:#38bdf8;">name</span><span style="color:#e2e8f0;">: </span><span style="color:#fbbf24;">Build Docker image</span><br>
+    <span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#38bdf8;">run</span><span style="color:#e2e8f0;">: docker build -t myapp .</span>
+  </div>
+
+  <div class="loop-box">
+    <div class="loop-icon">📄</div>
+    <div>
+      <div class="loop-title">Pipelines automate: Build → Test → Deploy</div>
+      <div class="loop-desc">Workflow = the whole file. <span class="loop-arrow">|</span> Trigger (<code style="color:#fbbf24;">on</code>) = what starts it. <span class="loop-arrow">|</span> Jobs = parallel work units. <span class="loop-arrow">|</span> Steps = sequential commands inside a job. <span class="loop-arrow">|</span> <code style="color:#fbbf24;">needs</code> = job ordering.</div>
+    </div>
+  </div>
+

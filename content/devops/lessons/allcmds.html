@@ -1,0 +1,714 @@
+
+
+
+<!-- Quick nav -->
+<div class="cmds-nav">
+  <a class="cmds-nav-btn" href="#cmds-linux">🐧 Linux</a>
+  <a class="cmds-nav-btn" href="#cmds-files">📁 Files</a>
+  <a class="cmds-nav-btn" href="#cmds-processes">⚙️ Processes</a>
+  <a class="cmds-nav-btn" href="#cmds-networking-os">🌐 Network OS</a>
+  <a class="cmds-nav-btn" href="#cmds-permissions">🔐 Permissions</a>
+  <a class="cmds-nav-btn" href="#cmds-ssh">🔑 SSH</a>
+  <a class="cmds-nav-btn" href="#cmds-bash">⌨️ Bash</a>
+  <a class="cmds-nav-btn" href="#cmds-git">🌿 Git</a>
+  <a class="cmds-nav-btn" href="#cmds-docker">🐳 Docker</a>
+  <a class="cmds-nav-btn" href="#cmds-k8s">☸️ Kubernetes</a>
+  <a class="cmds-nav-btn" href="#cmds-terraform">🏗️ Terraform</a>
+  <a class="cmds-nav-btn" href="#cmds-aws">☁️ AWS CLI</a>
+  <a class="cmds-nav-btn" href="#cmds-prometheus">📡 Prometheus</a>
+  <a class="cmds-nav-btn" href="#cmds-nginx">🌐 Nginx</a>
+  <a class="cmds-nav-btn" href="#cmds-systemd">🔧 Systemd</a>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- LINUX — NAVIGATION & FILES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-linux">
+  <div class="cmd-section-header" style="--sc:#22c55e;">
+    <span class="cmd-section-icon">🐧</span>
+    <span class="cmd-section-title">Linux — Navigation &amp; File System</span>
+    <span class="cmd-section-sub">Core OS</span>
+  </div>
+
+  <div class="subsection-label" id="cmds-files">📁 Navigation &amp; Directory</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>pwd</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">navigate</span></td><td>Print Working Directory — shows your current location. Run it when you're lost.</td></tr>
+      <tr><td>ls</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">navigate</span></td><td>List directory contents. <code>ls -la</code> = show hidden files + permissions + size. <code>ls -lh</code> = human-readable sizes. <code>ls -lt</code> = sorted by time (newest first).</td></tr>
+      <tr><td>cd /path/to/dir</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">navigate</span></td><td>Change directory. <code>cd ..</code> = go up one level. <code>cd ~</code> = go home. <code>cd -</code> = go back to previous directory.</td></tr>
+      <tr><td>mkdir -p dir/sub/sub2</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">create</span></td><td>Make directory. <code>-p</code> = create all parent directories in the path without error if they already exist.</td></tr>
+      <tr><td>rm -rf /path</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">delete</span></td><td>Remove files/dirs recursively and force (no prompt). <strong>Irreversible.</strong> <code>rm file.txt</code> = single file. <code>rm -r dir/</code> = directory.</td></tr>
+      <tr><td>cp -r src/ dest/</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">copy</span></td><td>Copy files or directories. <code>-r</code> = recursive (required for dirs). <code>cp file.txt /backup/</code> = copy file to backup dir.</td></tr>
+      <tr><td>mv old new</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">move</span></td><td>Move or rename. <code>mv app.js server.js</code> = rename. <code>mv dist/ /var/www/</code> = move directory.</td></tr>
+      <tr><td>find / -name "*.log"</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">search</span></td><td>Find files. <code>find . -name "*.env"</code> = find .env files from here. <code>find /var -size +100M</code> = files over 100MB. <code>find . -mtime -1</code> = modified in last day.</td></tr>
+      <tr><td>ln -s /real/path link</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">link</span></td><td>Create symlink (symbolic link). Like a shortcut. Used heavily in Nginx: <code>ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled/</code></td></tr>
+      <tr><td>tree -L 2</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">navigate</span></td><td>Show directory tree. <code>-L 2</code> = 2 levels deep. Install with <code>apt install tree</code>. Great for showing project structure.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">📄 Reading &amp; Editing Files</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>cat file.txt</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">read</span></td><td>Print entire file to terminal. For large files use <code>less</code> instead.</td></tr>
+      <tr><td>less file.txt</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">read</span></td><td>Page through a large file. <code>j/k</code>=down/up, <code>g</code>=top, <code>G</code>=bottom, <code>/keyword</code>=search, <code>q</code>=quit. Use for logs.</td></tr>
+      <tr><td>head -n 20 file</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">read</span></td><td>Show first N lines of a file. Default 10. Great for checking file format quickly.</td></tr>
+      <tr><td>tail -n 50 file</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">read</span></td><td>Show last N lines. <code>tail -f /var/log/nginx/access.log</code> = follow log in real-time (live stream).</td></tr>
+      <tr><td>grep "error" file.log</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">search</span></td><td>Search for pattern. <code>grep -i</code>=case insensitive, <code>grep -r "text" ./dir</code>=recursive, <code>grep -n</code>=show line numbers, <code>grep -v "ok"</code>=exclude matches.</td></tr>
+      <tr><td>grep -rn "TODO" ./src</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">search</span></td><td>Recursive grep with line numbers. DevOps use: find all hardcoded secrets, TODOs, or config references across a codebase.</td></tr>
+      <tr><td>awk '{print $1}' file</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">process</span></td><td>Column extractor. <code>$1</code>=1st column, <code>$2</code>=2nd. <code>awk -F: '{print $1}' /etc/passwd</code>=print all usernames.</td></tr>
+      <tr><td>sed -i 's/old/new/g' f</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">edit</span></td><td>Stream editor. Replace all occurrences of "old" with "new" in-place. DevOps use: update config values in scripts without opening editor.</td></tr>
+      <tr><td>wc -l file.txt</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">count</span></td><td>Count lines. <code>wc -w</code>=words, <code>wc -c</code>=bytes. <code>cat file | wc -l</code>=count lines in output.</td></tr>
+      <tr><td>sort file.txt</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">process</span></td><td>Sort lines alphabetically. <code>sort -n</code>=numeric, <code>sort -r</code>=reverse, <code>sort -u</code>=unique only.</td></tr>
+      <tr><td>uniq</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">process</span></td><td>Remove duplicate consecutive lines. Always pipe from <code>sort</code> first: <code>sort file | uniq -c</code>=count occurrences.</td></tr>
+      <tr><td>cut -d',' -f2 file.csv</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">process</span></td><td>Cut columns by delimiter. <code>-d','</code>=delimiter, <code>-f2</code>=second field. Extract columns from CSVs or colon-separated files.</td></tr>
+      <tr><td>diff file1 file2</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">compare</span></td><td>Show differences between files. <code>diff -u</code>=unified format (like git diff). Use to compare config files.</td></tr>
+      <tr><td>nano file.txt</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">edit</span></td><td>Simple terminal editor. <code>Ctrl+O</code>=save, <code>Ctrl+X</code>=exit. Use for quick edits on servers.</td></tr>
+      <tr><td>vim file.txt</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">edit</span></td><td>Powerful editor. <code>i</code>=insert mode, <code>Esc</code>=normal mode, <code>:w</code>=save, <code>:q!</code>=quit no save, <code>:wq</code>=save+quit, <code>/word</code>=search.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🔗 Pipes, Redirects &amp; Combining Commands</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>cmd1 | cmd2</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">pipe</span></td><td>Pipe output of cmd1 as input to cmd2. <code>cat access.log | grep "500" | wc -l</code> = count 500 errors in log.</td></tr>
+      <tr><td>cmd &gt; file.txt</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">redirect</span></td><td>Redirect stdout to file (overwrites). <code>echo "hello" &gt; output.txt</code></td></tr>
+      <tr><td>cmd &gt;&gt; file.txt</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">redirect</span></td><td>Append stdout to file. <code>echo "new line" &gt;&gt; log.txt</code></td></tr>
+      <tr><td>cmd 2&gt; error.log</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">redirect</span></td><td>Redirect stderr to file. <code>2&gt;&1</code> = redirect stderr to stdout (combine both streams).</td></tr>
+      <tr><td>cmd1 &amp;&amp; cmd2</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">chain</span></td><td>Run cmd2 only if cmd1 succeeds. <code>npm test &amp;&amp; npm run build</code> = build only if tests pass.</td></tr>
+      <tr><td>cmd1 || cmd2</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">chain</span></td><td>Run cmd2 only if cmd1 fails. <code>docker stop app || true</code> = don't fail if container not running.</td></tr>
+      <tr><td>cmd &amp;</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">background</span></td><td>Run command in background. Returns to prompt immediately. Use <code>jobs</code> to list, <code>fg</code> to bring back.</td></tr>
+      <tr><td>xargs</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">process</span></td><td>Build and run commands from stdin. <code>find . -name "*.log" | xargs rm</code> = delete all found log files.</td></tr>
+      <tr><td>tee file.txt</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">split</span></td><td>Write to file AND stdout simultaneously. <code>./deploy.sh | tee deploy.log</code> = see output AND save it.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label" id="cmds-permissions">🔐 Permissions &amp; Ownership</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>chmod 755 file</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">permissions</span></td><td>Change permissions. <code>755</code>=rwxr-xr-x (owner=all, group+others=read+exec). <code>chmod +x script.sh</code>=make executable. <code>chmod 600 key.pem</code>=owner read/write only (required for SSH keys).</td></tr>
+      <tr><td>chown user:group file</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">ownership</span></td><td>Change file owner and group. <code>chown -R www-data:www-data /var/www</code> = recursively give nginx user ownership of web root.</td></tr>
+      <tr><td>ls -la</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>See permissions for all files. Format: <code>-rwxr-xr-x 1 user group size date name</code>. First char: <code>-</code>=file, <code>d</code>=dir, <code>l</code>=symlink.</td></tr>
+      <tr><td>sudo command</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">privilege</span></td><td>Run as superuser. Required for system changes. <code>sudo -i</code>=become root (stay root). <code>sudo !!</code>=rerun last command as sudo.</td></tr>
+      <tr><td>su - username</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">privilege</span></td><td>Switch user. <code>-</code> loads the user's full environment. Exit back with <code>exit</code>.</td></tr>
+      <tr><td>whoami</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Print current user. Useful to confirm you're running as the right user in scripts.</td></tr>
+      <tr><td>id username</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show user ID, group ID, and all groups. <code>id ubuntu</code> = see ubuntu user's groups.</td></tr>
+      <tr><td>adduser username</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">users</span></td><td>Create new user interactively. <code>useradd -m -s /bin/bash user</code> = non-interactive version.</td></tr>
+      <tr><td>usermod -aG sudo user</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">users</span></td><td>Add user to a group. <code>-a</code>=append (don't remove from other groups), <code>-G</code>=group. Essential for granting sudo access.</td></tr>
+      <tr><td>passwd username</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">users</span></td><td>Change user password. Run as root to change any user's password.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label" id="cmds-processes">⚙️ Processes &amp; System Resources</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>top</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">monitor</span></td><td>Live process monitor. CPU + memory usage. Press <code>q</code>=quit, <code>k</code>=kill process (enter PID), <code>P</code>=sort by CPU, <code>M</code>=sort by memory.</td></tr>
+      <tr><td>htop</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">monitor</span></td><td>Better top with colors + mouse support. Install: <code>apt install htop</code>. F6=sort, F9=kill, F10=quit.</td></tr>
+      <tr><td>ps aux</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>List all running processes. <code>ps aux | grep nginx</code>=find nginx processes. Columns: USER PID %CPU %MEM COMMAND.</td></tr>
+      <tr><td>ps aux | grep name</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Find specific process. Returns PID which you can use to kill.</td></tr>
+      <tr><td>kill PID</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">kill</span></td><td>Send signal to process. Default signal is SIGTERM (graceful). <code>kill -9 PID</code>=SIGKILL (force, no cleanup). Always try without -9 first.</td></tr>
+      <tr><td>killall nginx</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">kill</span></td><td>Kill all processes by name. <code>pkill -f pattern</code>=kill by pattern match.</td></tr>
+      <tr><td>nohup cmd &gt; out.log &amp;</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">background</span></td><td>Run command that survives terminal close. Output goes to out.log. Essential for long-running tasks on servers.</td></tr>
+      <tr><td>free -h</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">memory</span></td><td>Show RAM usage in human-readable format. Check "available" column (not "free") for actual usable memory.</td></tr>
+      <tr><td>df -h</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">disk</span></td><td>Disk space usage per filesystem. <code>-h</code>=human readable. Check "Use%" column. &gt;90% = danger zone.</td></tr>
+      <tr><td>du -sh /var/log/*</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">disk</span></td><td>Directory/file sizes. <code>-s</code>=summary, <code>-h</code>=human readable. <code>du -sh * | sort -h</code>=find biggest directories.</td></tr>
+      <tr><td>lsof -i :3000</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">network</span></td><td>List Open Files. See what process is using port 3000. Use when "address already in use" error.</td></tr>
+      <tr><td>uptime</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>How long server has been running + load averages (1m/5m/15m). Load &gt; number of CPU cores = overloaded.</td></tr>
+      <tr><td>uname -a</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>System info: kernel version, architecture, OS. Use <code>cat /etc/os-release</code> for distro info.</td></tr>
+      <tr><td>env</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Print all environment variables. <code>printenv VAR_NAME</code>=print specific var. <code>export KEY=value</code>=set for current session.</td></tr>
+      <tr><td>crontab -e</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">schedule</span></td><td>Edit cron jobs for current user. <code>crontab -l</code>=list all cron jobs. Format: <code>MIN HR DAY MON DOW command</code>.</td></tr>
+      <tr><td>history</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">util</span></td><td>Show command history. <code>!42</code>=run command #42. <code>history | grep docker</code>=search history. <code>Ctrl+R</code>=reverse search.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label" id="cmds-networking-os">🌐 Networking (OS Level)</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>ip addr show</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">network</span></td><td>Show network interfaces and IPs. Modern replacement for <code>ifconfig</code>. <code>ip a</code> short form.</td></tr>
+      <tr><td>ping -c 4 google.com</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">test</span></td><td>Test connectivity. <code>-c 4</code>=send 4 packets then stop. Use to test DNS resolution and basic connectivity.</td></tr>
+      <tr><td>curl -I https://site.com</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">http</span></td><td>HTTP request. <code>-I</code>=headers only. <code>curl -X POST -d '{"a":1}' -H "Content-Type: application/json" http://api/endpoint</code> = POST JSON.</td></tr>
+      <tr><td>wget https://url/file</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">download</span></td><td>Download file from URL. <code>-O filename</code>=save with specific name. <code>wget -q</code>=quiet mode.</td></tr>
+      <tr><td>netstat -tulpn</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">network</span></td><td>Show all listening ports + which process. <code>ss -tulpn</code>=modern replacement. Shows TCP/UDP listeners with PIDs.</td></tr>
+      <tr><td>ss -tulpn</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">network</span></td><td>Socket statistics. Faster than netstat. <code>-t</code>=TCP, <code>-u</code>=UDP, <code>-l</code>=listening, <code>-p</code>=show process, <code>-n</code>=numeric ports.</td></tr>
+      <tr><td>nslookup domain.com</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">dns</span></td><td>DNS lookup. Shows what IP a domain resolves to. Use to debug DNS issues.</td></tr>
+      <tr><td>dig domain.com</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">dns</span></td><td>Detailed DNS lookup. <code>dig domain.com A</code>=A record, <code>dig domain.com MX</code>=mail records. More info than nslookup.</td></tr>
+      <tr><td>traceroute domain.com</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">trace</span></td><td>Show every network hop to destination. Use to find where packets are being dropped or slow.</td></tr>
+      <tr><td>ufw allow 80</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">firewall</span></td><td>Ubuntu firewall. <code>ufw enable</code>=turn on. <code>ufw status</code>=list rules. <code>ufw deny 22</code>=block SSH. <code>ufw allow from 1.2.3.4</code>=allow specific IP.</td></tr>
+      <tr><td>iptables -L</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">firewall</span></td><td>List all iptables firewall rules. Low-level — prefer ufw for Ubuntu. Kubernetes uses iptables internally for networking.</td></tr>
+      <tr><td>tcpdump -i eth0 port 80</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Capture network packets. Use to see actual traffic on a port. <code>-w file.pcap</code>=save for Wireshark analysis.</td></tr>
+      <tr><td>nc -zv host port</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">test</span></td><td>Netcat — test if port is open. <code>nc -zv db.host 5432</code>=check if Postgres port reachable. Essential for debugging connectivity between services.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SSH -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-ssh">
+  <div class="cmd-section-header" style="--sc:#fbbf24;">
+    <span class="cmd-section-icon">🔑</span>
+    <span class="cmd-section-title">SSH — Secure Shell</span>
+    <span class="cmd-section-sub">Remote Access</span>
+  </div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>ssh user@host</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">connect</span></td><td>Connect to remote server. Uses default key (~/.ssh/id_rsa) or password. <code>ssh ubuntu@54.12.34.56</code></td></tr>
+      <tr><td>ssh -i key.pem user@host</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">connect</span></td><td>Connect with specific key file. Required for AWS EC2. Always <code>chmod 400 key.pem</code> first or SSH rejects it.</td></tr>
+      <tr><td>ssh -p 2222 user@host</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">connect</span></td><td>Connect on non-default port. Default SSH port is 22. Some servers use custom ports for security.</td></tr>
+      <tr><td>ssh-keygen -t ed25519</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">keygen</span></td><td>Generate new SSH key pair. ed25519 is modern and secure. <code>-t rsa -b 4096</code>=RSA (older but universal). Creates public + private key.</td></tr>
+      <tr><td>ssh-copy-id user@host</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">setup</span></td><td>Copy your public key to server's authorized_keys. After this, passwordless login works. Requires password auth enabled first.</td></tr>
+      <tr><td>cat ~/.ssh/id_ed25519.pub</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Print your public key. Paste this into GitHub, AWS, or server authorized_keys to enable key-based auth.</td></tr>
+      <tr><td>ssh-add ~/.ssh/id_ed25519</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">agent</span></td><td>Add key to SSH agent (so you don't re-enter passphrase). <code>ssh-add -l</code>=list added keys.</td></tr>
+      <tr><td>scp file.txt user@host:~</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">transfer</span></td><td>Secure copy file to remote server. <code>scp -r dir/ user@host:/path/</code>=copy directory. <code>scp user@host:file.txt .</code>=download from server.</td></tr>
+      <tr><td>rsync -avz src/ user@h:dst/</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">transfer</span></td><td>Efficient sync. Only transfers changed files. <code>-a</code>=archive (preserve permissions), <code>-v</code>=verbose, <code>-z</code>=compress. Better than scp for large directories.</td></tr>
+      <tr><td>ssh -L 8080:localhost:80 h</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">tunnel</span></td><td>Local port forwarding. Tunnel remote port 80 to your local 8080. Access internal services through firewall.</td></tr>
+      <tr><td>ssh -N -f -L tunnel</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">tunnel</span></td><td><code>-N</code>=no remote command, <code>-f</code>=background. Create background tunnel without interactive shell.</td></tr>
+    </tbody>
+  </table>
+  <div class="tip-box">💡 <strong>~/.ssh/config</strong> — create this file to save connection aliases:<br>
+  <code>Host myserver<br>&nbsp;&nbsp;HostName 54.12.34.56<br>&nbsp;&nbsp;User ubuntu<br>&nbsp;&nbsp;IdentityFile ~/.ssh/my-key.pem</code><br>
+  Now just run <code>ssh myserver</code> instead of the full command every time.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- BASH SCRIPTING -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-bash">
+  <div class="cmd-section-header" style="--sc:#22c55e;">
+    <span class="cmd-section-icon">⌨️</span>
+    <span class="cmd-section-title">Bash Scripting Essentials</span>
+    <span class="cmd-section-sub">Automation</span>
+  </div>
+  <table class="cmdt">
+    <thead><tr><th>Command / Syntax</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>#!/bin/bash</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">shebang</span></td><td>First line of every bash script. Tells the OS which interpreter to use. Without it, the script may run in sh (different behavior).</td></tr>
+      <tr><td>chmod +x script.sh</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">execute</span></td><td>Make script executable. Then run with <code>./script.sh</code>. Or run without chmod: <code>bash script.sh</code>.</td></tr>
+      <tr><td>set -euo pipefail</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">safety</span></td><td>Put at top of scripts. <code>-e</code>=exit on any error, <code>-u</code>=error on undefined variable, <code>-o pipefail</code>=catch errors in pipes. Production scripts always have this.</td></tr>
+      <tr><td>VAR="value"</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">variable</span></td><td>Set variable. No spaces around <code>=</code>. Access with <code>$VAR</code> or <code>${VAR}</code>. <code>${VAR:-default}</code>=use default if unset.</td></tr>
+      <tr><td>export VAR="value"</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">variable</span></td><td>Export variable to child processes. Without export, only current shell sees it.</td></tr>
+      <tr><td>echo "text $VAR"</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">output</span></td><td>Print text. <code>echo -n</code>=no newline. <code>echo -e "\n"</code>=interpret escape sequences. Use for debug output in scripts.</td></tr>
+      <tr><td>if [ "$X" == "y" ]; then</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">condition</span></td><td>If statement. Spaces inside <code>[ ]</code> are required. <code>-eq</code>=numeric equal, <code>-z</code>=string empty, <code>-f</code>=file exists, <code>-d</code>=dir exists.</td></tr>
+      <tr><td>[[ "$X" == "y" ]]</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">condition</span></td><td>Double brackets — safer, supports regex. Use <code>[[ ]]</code> in bash scripts instead of <code>[ ]</code>. <code>[[ "$s" =~ ^[0-9]+$ ]]</code>=regex match.</td></tr>
+      <tr><td>for i in 1 2 3; do</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">loop</span></td><td>For loop. <code>for f in *.log; do echo "$f"; done</code>. <code>for i in {1..5}</code>=range. <code>for i in $(cat hosts.txt)</code>=loop over file lines.</td></tr>
+      <tr><td>while [ condition ]</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">loop</span></td><td>While loop. <code>while true; do check; sleep 5; done</code>=polling loop. Common for health checks.</td></tr>
+      <tr><td>function name() { }</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">function</span></td><td>Define function. Call it by name. <code>$1 $2</code>=positional args. <code>$@</code>=all args. <code>$#</code>=arg count.</td></tr>
+      <tr><td>$(command)</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">subshell</span></td><td>Command substitution — capture output. <code>DATE=$(date +%F)</code>=store today's date. <code>echo "Pods: $(kubectl get pods | wc -l)"</code></td></tr>
+      <tr><td>read -r varname</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">input</span></td><td>Read user input into variable. <code>read -p "Enter name: " NAME</code>. <code>-r</code>=raw (don't interpret backslashes).</td></tr>
+      <tr><td>exit 0 / exit 1</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">control</span></td><td>Exit script with code. <code>0</code>=success, non-zero=error. CI/CD systems check exit codes — a non-zero exit fails the pipeline step.</td></tr>
+      <tr><td>trap 'cleanup' EXIT</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">control</span></td><td>Run cleanup function on exit (even on error). Use to delete temp files, stop services, send notifications when script ends.</td></tr>
+      <tr><td>source ./file.sh</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">import</span></td><td>Load another script in current shell (so its variables/functions become available). <code>. ./file.sh</code> is the same.</td></tr>
+      <tr><td>logger "message"</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">logging</span></td><td>Write to system log (/var/log/syslog). Use in cron jobs so output is preserved in system logs.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- GIT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-git">
+  <div class="cmd-section-header" style="--sc:#f97316;">
+    <span class="cmd-section-icon">🌿</span>
+    <span class="cmd-section-title">Git — Version Control</span>
+    <span class="cmd-section-sub">Source Control</span>
+  </div>
+
+  <div class="subsection-label">🔧 Setup &amp; Config</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>git config --global user.name "x"</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">config</span></td><td>Set your name for commits. Required before first commit on a new machine.</td></tr>
+      <tr><td>git config --global user.email</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">config</span></td><td>Set your email. Must match GitHub email for contributions to count on your profile.</td></tr>
+      <tr><td>git init</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">init</span></td><td>Initialize new git repo in current directory. Creates .git/ folder.</td></tr>
+      <tr><td>git clone URL</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">init</span></td><td>Clone remote repo. <code>git clone URL dir-name</code>=clone into specific folder. <code>git clone --depth 1 URL</code>=shallow clone (just latest commit, faster).</td></tr>
+      <tr><td>git remote -v</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show remote connections. Verify origin URL. <code>git remote add origin URL</code>=add remote. <code>git remote set-url origin URL</code>=change URL.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">📸 Staging &amp; Committing</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>git status</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>See what's changed, staged, untracked. Always run before committing. Shows current branch too.</td></tr>
+      <tr><td>git add .</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">stage</span></td><td>Stage all changes. <code>git add file.txt</code>=stage one file. <code>git add -p</code>=interactive patch staging (choose hunks to stage).</td></tr>
+      <tr><td>git commit -m "feat: msg"</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">commit</span></td><td>Save staged changes with message. Use Conventional Commits format: <code>feat:</code>, <code>fix:</code>, <code>chore:</code>, <code>docs:</code>, <code>refactor:</code>.</td></tr>
+      <tr><td>git commit --amend</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">edit</span></td><td>Edit last commit message or add more files to it. <strong>Never amend pushed commits</strong> — rewrites history.</td></tr>
+      <tr><td>git diff</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show unstaged changes. <code>git diff --staged</code>=staged changes. <code>git diff main..feature</code>=diff between branches.</td></tr>
+      <tr><td>git log --oneline</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">history</span></td><td>Compact commit history. <code>git log --oneline --graph --all</code>=visual branch graph. <code>git log -5</code>=last 5 commits.</td></tr>
+      <tr><td>git show abc1234</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show what a specific commit changed. Can use full or partial SHA.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🌿 Branching &amp; Merging</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>git branch</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">branch</span></td><td>List local branches. <code>git branch -a</code>=all including remote. <code>git branch -d name</code>=delete branch. <code>git branch name</code>=create without switching.</td></tr>
+      <tr><td>git checkout -b feature/x</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">branch</span></td><td>Create and switch to new branch. <code>git switch -c feature/x</code>=modern equivalent. Always branch from updated main.</td></tr>
+      <tr><td>git checkout main</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">branch</span></td><td>Switch branches. <code>git switch main</code>=modern syntax. <code>git checkout -</code>=switch to previous branch.</td></tr>
+      <tr><td>git merge feature/x</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">merge</span></td><td>Merge feature branch into current branch. Creates merge commit. <code>git merge --squash</code>=squash all commits into one before merge.</td></tr>
+      <tr><td>git rebase main</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">rebase</span></td><td>Replay your commits on top of main. Cleaner history than merge. <strong>Don't rebase shared branches.</strong> Used to keep feature branch up to date.</td></tr>
+      <tr><td>git rebase -i HEAD~3</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">rebase</span></td><td>Interactive rebase — squash/edit/reorder last 3 commits. Use before opening a PR to clean up messy commits.</td></tr>
+      <tr><td>git cherry-pick abc1234</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">cherry-pick</span></td><td>Apply a single commit from another branch onto current branch. Hotfix use case: cherry-pick a fix from develop to main without merging all of develop.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🔄 Remote Operations</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>git fetch origin</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">sync</span></td><td>Download changes from remote WITHOUT merging. Safe — doesn't change your working directory. Then <code>git merge</code> or <code>git rebase</code> separately.</td></tr>
+      <tr><td>git pull origin main</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">sync</span></td><td>Fetch + merge in one step. <code>git pull --rebase</code>=fetch + rebase (cleaner history). Use before starting work each day.</td></tr>
+      <tr><td>git push origin feature/x</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">push</span></td><td>Push branch to remote. <code>git push -u origin branch</code>=set upstream (then just <code>git push</code>). <code>git push --force-with-lease</code>=safe force push after rebase.</td></tr>
+      <tr><td>git push origin --delete br</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">delete</span></td><td>Delete remote branch after PR is merged.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">⏪ Undoing &amp; Recovery</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>git reset --soft HEAD~1</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">undo</span></td><td>Undo last commit, keep changes staged. Useful to re-commit with different message.</td></tr>
+      <tr><td>git reset --mixed HEAD~1</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">undo</span></td><td>Undo last commit, keep changes unstaged. Default reset behavior.</td></tr>
+      <tr><td>git reset --hard HEAD~1</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">undo</span></td><td>Undo last commit, DISCARD all changes. <strong>Destructive — files are gone.</strong> Use <code>git reflog</code> to recover if needed.</td></tr>
+      <tr><td>git revert abc1234</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">undo</span></td><td>Create new commit that undoes a previous commit. Safe — doesn't rewrite history. Use on shared/main branches.</td></tr>
+      <tr><td>git stash</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">stash</span></td><td>Save dirty working state temporarily. <code>git stash pop</code>=restore. <code>git stash list</code>=see all stashes. <code>git stash drop</code>=delete stash.</td></tr>
+      <tr><td>git stash push -m "name"</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">stash</span></td><td>Stash with a descriptive name. Makes it easy to find later with <code>git stash list</code>.</td></tr>
+      <tr><td>git reflog</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">recovery</span></td><td>Log of ALL HEAD movements — even after hard reset. Your last resort for recovering "deleted" commits. Find the SHA, then <code>git checkout SHA</code>.</td></tr>
+      <tr><td>git clean -fd</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">clean</span></td><td>Delete untracked files and directories. <code>-n</code>=dry run (preview what will be deleted). <strong>Irreversible.</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🏷️ Tags &amp; Releases</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>git tag -a v1.0.0 -m "msg"</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">tag</span></td><td>Create annotated tag (has message + metadata). Use for releases. <code>git tag v1.0.0</code>=lightweight tag.</td></tr>
+      <tr><td>git push origin v1.0.0</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">tag</span></td><td>Push a specific tag. <code>git push origin --tags</code>=push all tags.</td></tr>
+      <tr><td>git tag -d v1.0.0</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">tag</span></td><td>Delete tag locally. <code>git push origin --delete v1.0.0</code>=delete remote tag.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- DOCKER -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-docker">
+  <div class="cmd-section-header" style="--sc:#38bdf8;">
+    <span class="cmd-section-icon">🐳</span>
+    <span class="cmd-section-title">Docker — Containers</span>
+    <span class="cmd-section-sub">Containerization</span>
+  </div>
+
+  <div class="subsection-label">🏗️ Images</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>docker build -t name:tag .</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">build</span></td><td>Build image from Dockerfile in current dir. <code>-t</code>=tag (name:version). <code>--no-cache</code>=rebuild without cache. <code>-f path/Dockerfile</code>=specify Dockerfile path.</td></tr>
+      <tr><td>docker images</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>List all local images with repo, tag, ID, size. Use to spot bloated images.</td></tr>
+      <tr><td>docker image ls</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Same as docker images, newer syntax.</td></tr>
+      <tr><td>docker pull name:tag</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">registry</span></td><td>Pull image from Docker Hub (or other registry). <code>docker pull nginx:latest</code>, <code>docker pull ubuntu:22.04</code>.</td></tr>
+      <tr><td>docker push user/name:tag</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">registry</span></td><td>Push image to Docker Hub. Must <code>docker login</code> first and tag image with your username.</td></tr>
+      <tr><td>docker tag src:tag dst:tag</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">tag</span></td><td>Add alias tag to an image. <code>docker tag myapp:latest ibrahiem/myapp:v2.0</code> before pushing to Hub.</td></tr>
+      <tr><td>docker rmi image:tag</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">cleanup</span></td><td>Remove image. Can't remove if a container (even stopped) is using it. <code>docker image prune</code>=remove all dangling images.</td></tr>
+      <tr><td>docker save -o file.tar img</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">export</span></td><td>Export image to tar file (for offline transfer). <code>docker load -i file.tar</code>=import it on another machine.</td></tr>
+      <tr><td>docker history image:tag</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show all layers of an image with sizes. Helps understand what each Dockerfile instruction added.</td></tr>
+      <tr><td>docker inspect image:tag</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Full JSON metadata about image — entrypoint, env vars, exposed ports, volumes, layer digest.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">▶️ Containers — Run &amp; Manage</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>docker run -d -p 80:3000 img</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">run</span></td><td>Run container detached, map host port 80 → container port 3000. <code>-d</code>=background, <code>-p host:container</code>=port map.</td></tr>
+      <tr><td>docker run --name myapp img</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">run</span></td><td>Give container a name (easier to reference than ID). Without name, Docker generates a random one.</td></tr>
+      <tr><td>docker run -e KEY=val img</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">run</span></td><td>Pass environment variable. <code>--env-file .env</code>=load all vars from .env file.</td></tr>
+      <tr><td>docker run -v /h:/c img</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">run</span></td><td>Mount volume. <code>/h</code>=host path, <code>/c</code>=container path. <code>-v myvolume:/data</code>=named volume. Data persists after container is removed.</td></tr>
+      <tr><td>docker run --rm img</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">run</span></td><td>Auto-remove container when it exits. Good for one-off tasks and testing.</td></tr>
+      <tr><td>docker run --restart=always</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">run</span></td><td>Auto-restart container on crash or server reboot. <code>unless-stopped</code>=restart unless manually stopped. Use in production.</td></tr>
+      <tr><td>docker run -it img sh</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Run interactive container with shell. Overrides CMD. Use to explore image filesystem or test commands.</td></tr>
+      <tr><td>docker run --network name</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">network</span></td><td>Connect container to a specific network. Containers on same network can reach each other by name.</td></tr>
+      <tr><td>docker ps</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>List running containers. Shows ID, image, ports, status, name.</td></tr>
+      <tr><td>docker ps -a</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>List ALL containers including stopped. Check exit codes to debug crashes.</td></tr>
+      <tr><td>docker ps --format "table..."</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Custom output. <code>docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"</code>=clean view.</td></tr>
+      <tr><td>docker stop name</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">control</span></td><td>Gracefully stop container (SIGTERM → waits 10s → SIGKILL). Always prefer stop over kill.</td></tr>
+      <tr><td>docker start name</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">control</span></td><td>Start a stopped container.</td></tr>
+      <tr><td>docker restart name</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">control</span></td><td>Stop and start container. Use after config changes.</td></tr>
+      <tr><td>docker rm name</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">cleanup</span></td><td>Remove stopped container. <code>docker rm -f name</code>=force remove running container. <code>docker container prune</code>=remove all stopped.</td></tr>
+      <tr><td>docker kill name</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">control</span></td><td>Force kill container (SIGKILL, no cleanup). Use only when stop doesn't work.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🔍 Debug &amp; Inspect</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>docker logs name</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Print container stdout/stderr. <code>-f</code>=follow live, <code>--tail 100</code>=last 100 lines, <code>--since 1h</code>=last hour.</td></tr>
+      <tr><td>docker exec -it name sh</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Open shell in running container. Use <code>bash</code> if sh isn't available. <code>docker exec name env</code>=print env vars.</td></tr>
+      <tr><td>docker inspect name</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Full JSON details: IP, env, mounts, network, restart count. <code>docker inspect -f '{{.NetworkSettings.IPAddress}}' name</code>=extract specific field.</td></tr>
+      <tr><td>docker stats</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">monitor</span></td><td>Live CPU + memory + network usage for all running containers. Like htop for containers.</td></tr>
+      <tr><td>docker top name</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show processes running inside a container (like ps aux but from outside).</td></tr>
+      <tr><td>docker diff name</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show filesystem changes in a running container since it started.</td></tr>
+      <tr><td>docker cp name:/path ./local</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">copy</span></td><td>Copy files from container to host. <code>docker cp ./file name:/path</code>=copy host→container. Works even on stopped containers.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🌐 Networks &amp; Volumes</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>docker network ls</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">network</span></td><td>List networks. Default networks: bridge, host, none. Compose creates a custom network per project.</td></tr>
+      <tr><td>docker network create name</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">network</span></td><td>Create custom bridge network. Containers on same network resolve each other by name.</td></tr>
+      <tr><td>docker network inspect name</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">network</span></td><td>Show network details including all connected containers and their IPs.</td></tr>
+      <tr><td>docker volume ls</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">volume</span></td><td>List all volumes. Volumes persist data after containers are removed.</td></tr>
+      <tr><td>docker volume create name</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">volume</span></td><td>Create named volume. <code>docker run -v myvolume:/data img</code>=mount it in container.</td></tr>
+      <tr><td>docker volume prune</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">cleanup</span></td><td>Delete all unused volumes. <strong>Data loss if volumes contain DB data.</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🎼 Docker Compose</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>docker compose up -d</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">compose</span></td><td>Start all services in docker-compose.yml in background. Creates networks and volumes if they don't exist.</td></tr>
+      <tr><td>docker compose up -d --build</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">compose</span></td><td>Rebuild images before starting. Use after code changes.</td></tr>
+      <tr><td>docker compose down</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">compose</span></td><td>Stop and remove containers + networks. <code>-v</code>=also delete volumes. <code>--rmi all</code>=also remove images.</td></tr>
+      <tr><td>docker compose ps</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">compose</span></td><td>Show status of all services in the compose file.</td></tr>
+      <tr><td>docker compose logs -f svc</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">compose</span></td><td>Follow logs for a specific service. <code>docker compose logs -f</code>=all services.</td></tr>
+      <tr><td>docker compose exec svc sh</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">compose</span></td><td>Shell into a running compose service. <code>docker compose exec db psql -U postgres</code>.</td></tr>
+      <tr><td>docker compose restart svc</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">compose</span></td><td>Restart a specific service without touching the others.</td></tr>
+      <tr><td>docker compose pull</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">compose</span></td><td>Pull latest versions of all images defined in compose file.</td></tr>
+      <tr><td>docker compose config</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">compose</span></td><td>Validate and print the composed configuration. Useful for debugging .env variable substitution.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🧹 Cleanup</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>docker system prune</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">cleanup</span></td><td>Remove all stopped containers, unused networks, dangling images. Frees up disk space. <code>-a</code>=also remove unused images.</td></tr>
+      <tr><td>docker system df</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show Docker disk usage breakdown — images, containers, volumes, build cache.</td></tr>
+      <tr><td>docker rm -f $(docker ps -aq)</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">cleanup</span></td><td>Force remove ALL containers (running and stopped). Nuclear option for dev cleanup.</td></tr>
+      <tr><td>docker image prune -a</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">cleanup</span></td><td>Remove all images not used by any container. Frees lots of disk space on CI machines.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- KUBERNETES -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-k8s">
+  <div class="cmd-section-header" style="--sc:#818cf8;">
+    <span class="cmd-section-icon">☸️</span>
+    <span class="cmd-section-title">Kubernetes — kubectl</span>
+    <span class="cmd-section-sub">Container Orchestration</span>
+  </div>
+
+  <div class="subsection-label">📋 Get &amp; Describe Resources</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>kubectl get pods</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List pods in current namespace. STATUS: Running=healthy, Pending=not scheduled, CrashLoopBackOff=crashing, OOMKilled=out of memory.</td></tr>
+      <tr><td>kubectl get pods -n namespace</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>Get pods in a specific namespace. <code>-n kube-system</code>=system pods. <code>-A</code>=all namespaces.</td></tr>
+      <tr><td>kubectl get pods -o wide</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>Show extra columns: Node, IP address. Use when debugging which node a pod landed on.</td></tr>
+      <tr><td>kubectl get pods -w</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>Watch pods — live updates. See pod status change during a rolling deploy.</td></tr>
+      <tr><td>kubectl get all</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>Get pods, services, deployments, replicasets in current namespace. Quick namespace overview.</td></tr>
+      <tr><td>kubectl get deploy</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List deployments. Shows desired vs ready replicas. READY 3/3 = all healthy.</td></tr>
+      <tr><td>kubectl get svc</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List services. Shows ClusterIP, NodePort, or LoadBalancer external IP.</td></tr>
+      <tr><td>kubectl get nodes</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List cluster nodes with status. <code>kubectl get nodes -o wide</code>=show IPs, OS, kernel version.</td></tr>
+      <tr><td>kubectl get cm</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List ConfigMaps. <code>kubectl get cm myconfig -o yaml</code>=show contents.</td></tr>
+      <tr><td>kubectl get secret</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List secrets. Values are base64 encoded. <code>kubectl get secret mysecret -o jsonpath='{.data.password}' | base64 -d</code>=decode value.</td></tr>
+      <tr><td>kubectl get pvc</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List PersistentVolumeClaims. STATUS should be Bound. Pending=no available PV.</td></tr>
+      <tr><td>kubectl get ingress</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">get</span></td><td>List ingress resources. Shows rules for routing HTTP traffic to services.</td></tr>
+      <tr><td>kubectl describe pod podname</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Detailed info + <strong>Events</strong> section at bottom. Events show why pod is failing: image pull error, OOM, scheduling issue. Most useful debug command.</td></tr>
+      <tr><td>kubectl describe node nodename</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Node conditions, capacity, allocated resources, running pods. Use when pods are stuck in Pending.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">📝 Logs</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>kubectl logs podname</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Print pod logs. App stdout/stderr.</td></tr>
+      <tr><td>kubectl logs -f podname</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Follow logs live. Like <code>tail -f</code>.</td></tr>
+      <tr><td>kubectl logs --previous pod</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Logs from the PREVIOUS (crashed) container. Critical for CrashLoopBackOff debugging.</td></tr>
+      <tr><td>kubectl logs -l app=myapp</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Logs from all pods matching a label selector. Good for viewing all replicas at once.</td></tr>
+      <tr><td>kubectl logs pod -c container</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Logs from a specific container in a multi-container pod.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🚀 Apply &amp; Manage Resources</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>kubectl apply -f file.yaml</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">apply</span></td><td>Create or update resources from YAML. Idempotent — safe to run multiple times. <code>-f ./dir/</code>=apply all YAMLs in directory.</td></tr>
+      <tr><td>kubectl delete -f file.yaml</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">delete</span></td><td>Delete resources defined in a YAML file.</td></tr>
+      <tr><td>kubectl delete pod podname</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">delete</span></td><td>Delete a pod. If managed by a Deployment, it will be recreated. Use to force restart a pod.</td></tr>
+      <tr><td>kubectl delete pod --all</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">delete</span></td><td>Delete all pods in current namespace. Deployment will recreate them. Effectively "restart all".</td></tr>
+      <tr><td>kubectl scale deploy/name --replicas=5</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">scale</span></td><td>Scale deployment to 5 replicas. Scale to 0 = take app offline without deleting deployment.</td></tr>
+      <tr><td>kubectl set image deploy/n c=img:v2</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">update</span></td><td>Update container image in deployment. Triggers rolling update. <code>deploy/name container-name=new-image:tag</code>.</td></tr>
+      <tr><td>kubectl rollout status deploy/n</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">rollout</span></td><td>Watch rollout progress. Returns 0 when complete — use in CI to wait for deploy to finish.</td></tr>
+      <tr><td>kubectl rollout history deploy/n</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">rollout</span></td><td>List previous deploy versions with revision numbers.</td></tr>
+      <tr><td>kubectl rollout undo deploy/n</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">rollback</span></td><td>Roll back to previous version. <code>--to-revision=2</code>=roll back to specific revision. Fastest incident response.</td></tr>
+      <tr><td>kubectl rollout pause deploy/n</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">rollout</span></td><td>Pause a rolling update mid-way (canary). <code>kubectl rollout resume</code>=continue it.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🔧 Debug &amp; Execute</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>kubectl exec -it pod -- sh</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Open shell inside running pod. <code>-- bash</code> if sh not available. Check files, env vars, connectivity from inside.</td></tr>
+      <tr><td>kubectl exec pod -- env</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Print environment variables inside pod without opening interactive shell.</td></tr>
+      <tr><td>kubectl port-forward pod 8080:3000</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">debug</span></td><td>Forward pod port to localhost. Access internal service without exposing it. <code>kubectl port-forward svc/myservice 8080:80</code>.</td></tr>
+      <tr><td>kubectl cp pod:/path ./local</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">copy</span></td><td>Copy file from pod to local machine. <code>kubectl cp ./file pod:/path</code>=local to pod.</td></tr>
+      <tr><td>kubectl top pods</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">monitor</span></td><td>Live CPU + memory usage per pod. Requires metrics-server installed. <code>kubectl top nodes</code>=node resource usage.</td></tr>
+      <tr><td>kubectl run tmp --image=busybox -it --rm</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Spin up a temporary pod for debugging network connectivity inside the cluster. Run DNS tests, curl other services.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🌐 Config &amp; Context</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>kubectl config get-contexts</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">config</span></td><td>List all clusters/contexts in kubeconfig. Shows which cluster you're currently pointing at.</td></tr>
+      <tr><td>kubectl config use-context name</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">config</span></td><td>Switch to a different cluster context.</td></tr>
+      <tr><td>kubectl config current-context</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">config</span></td><td>Print active context. Always run before applying manifests to confirm you're on the right cluster.</td></tr>
+      <tr><td>kubectl get ns</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">namespace</span></td><td>List all namespaces. <code>kubectl create ns staging</code>=create namespace.</td></tr>
+      <tr><td>kubectl -n ns get pods</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">namespace</span></td><td>Run any command in a specific namespace. Always specify namespace in multi-tenant clusters.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TERRAFORM -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-terraform">
+  <div class="cmd-section-header" style="--sc:#a78bfa;">
+    <span class="cmd-section-icon">🏗️</span>
+    <span class="cmd-section-title">Terraform — Infrastructure as Code</span>
+    <span class="cmd-section-sub">IaC</span>
+  </div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>terraform init</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">setup</span></td><td>Initialize working directory. Downloads provider plugins (AWS, GCP, etc.) and sets up backend. Always run first or after adding new providers.</td></tr>
+      <tr><td>terraform init -upgrade</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">setup</span></td><td>Upgrade provider plugins to latest allowed versions.</td></tr>
+      <tr><td>terraform plan</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">preview</span></td><td>Preview what will be created/changed/destroyed. NEVER skip this. <code>+</code>=create, <code>~</code>=update, <code>-</code>=destroy. Review before apply.</td></tr>
+      <tr><td>terraform plan -out=plan.tfplan</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">preview</span></td><td>Save plan to file. Then <code>terraform apply plan.tfplan</code>=apply exactly what was planned (no surprises in CI).</td></tr>
+      <tr><td>terraform apply</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">apply</span></td><td>Apply changes. Prompts for confirmation. Creates/updates/destroys resources to match your config.</td></tr>
+      <tr><td>terraform apply -auto-approve</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">apply</span></td><td>Skip confirmation prompt. Use in CI/CD pipelines after running plan + review.</td></tr>
+      <tr><td>terraform apply -target=res</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">apply</span></td><td>Apply only a specific resource. <code>-target=aws_instance.app</code>. Use carefully — can create state drift.</td></tr>
+      <tr><td>terraform destroy</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">destroy</span></td><td>Destroy all resources managed by this config. <strong>Prompts for confirmation.</strong> Add <code>-auto-approve</code> for automation (dangerous).</td></tr>
+      <tr><td>terraform destroy -target=res</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">destroy</span></td><td>Destroy only a specific resource.</td></tr>
+      <tr><td>terraform output</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Print all output values after apply. <code>terraform output ec2_ip</code>=specific output. <code>-json</code>=machine-readable for scripts.</td></tr>
+      <tr><td>terraform show</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Show current state in human-readable format. <code>terraform show terraform.tfstate</code>=inspect state file directly.</td></tr>
+      <tr><td>terraform state list</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">state</span></td><td>List all resources in state. Use to find the resource address for targeting.</td></tr>
+      <tr><td>terraform state show res</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">state</span></td><td>Show details of a specific resource in state. <code>terraform state show aws_instance.app</code>.</td></tr>
+      <tr><td>terraform state rm resource</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">state</span></td><td>Remove resource from state (doesn't destroy it in real life). Use to "unmanage" a resource.</td></tr>
+      <tr><td>terraform import res ID</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">import</span></td><td>Import existing infrastructure into state. <code>terraform import aws_instance.app i-1234567890</code>=bring manually-created EC2 under Terraform control.</td></tr>
+      <tr><td>terraform fmt</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">format</span></td><td>Auto-format all .tf files to canonical style. Run before committing. <code>terraform fmt -check</code>=fail if formatting is wrong (for CI).</td></tr>
+      <tr><td>terraform validate</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">validate</span></td><td>Check config files for syntax errors and invalid references. Fast — doesn't check against real cloud APIs.</td></tr>
+      <tr><td>terraform workspace list</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">workspace</span></td><td>List workspaces. <code>terraform workspace new staging</code>=create staging workspace. Each workspace has isolated state.</td></tr>
+      <tr><td>terraform workspace select prod</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">workspace</span></td><td>Switch to prod workspace. Then plan/apply operates on prod state only.</td></tr>
+      <tr><td>terraform refresh</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">sync</span></td><td>Sync state file with real infrastructure (without making changes). Detects drift between state and reality.</td></tr>
+      <tr><td>terraform graph | dot -Tsvg</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Generate resource dependency graph. Pipe to graphviz to visualize. Useful for understanding complex module dependencies.</td></tr>
+    </tbody>
+  </table>
+  <div class="warn-box">⚠️ <strong>Never commit terraform.tfstate to Git.</strong> It contains secrets and resource IDs. Use S3 backend + DynamoDB locking for team usage. Add <code>*.tfstate</code> and <code>*.tfstate.backup</code> to .gitignore.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- AWS CLI -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-aws">
+  <div class="cmd-section-header" style="--sc:#fbbf24;">
+    <span class="cmd-section-icon">☁️</span>
+    <span class="cmd-section-title">AWS CLI — Amazon Web Services</span>
+    <span class="cmd-section-sub">Cloud</span>
+  </div>
+
+  <div class="subsection-label">⚙️ Setup</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>aws configure</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">setup</span></td><td>Set up AWS credentials interactively. Prompts for Access Key, Secret, region, output format. Stored in <code>~/.aws/credentials</code>.</td></tr>
+      <tr><td>aws configure --profile prod</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">setup</span></td><td>Configure a named profile. Use <code>--profile prod</code> on any command to use it. Good for managing multiple AWS accounts.</td></tr>
+      <tr><td>aws sts get-caller-identity</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">verify</span></td><td>Check who you're authenticated as. Returns Account ID, User ARN. Run to verify credentials are working.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🖥️ EC2</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>aws ec2 describe-instances</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">ec2</span></td><td>List all EC2 instances with full details. Add <code>--query</code> to filter. Very verbose — usually pipe to jq or use --query.</td></tr>
+      <tr><td>aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,State.Name,PublicIpAddress]' --output table</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">ec2</span></td><td>Clean table of instance ID, state, and public IP. Most useful EC2 list command for day-to-day use.</td></tr>
+      <tr><td>aws ec2 start-instances --instance-ids i-xxx</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">ec2</span></td><td>Start a stopped instance.</td></tr>
+      <tr><td>aws ec2 stop-instances --instance-ids i-xxx</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">ec2</span></td><td>Stop an instance (EBS persists, public IP may change).</td></tr>
+      <tr><td>aws ec2 reboot-instances --instance-ids i-xxx</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">ec2</span></td><td>Reboot instance (keeps same public IP if Elastic IP assigned).</td></tr>
+      <tr><td>aws ec2 describe-security-groups</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">ec2</span></td><td>List security groups with their inbound/outbound rules.</td></tr>
+      <tr><td>aws ec2 authorize-security-group-ingress --group-id sg-xxx --protocol tcp --port 80 --cidr 0.0.0.0/0</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">ec2</span></td><td>Add inbound rule to security group. Open port 80 to the world.</td></tr>
+      <tr><td>aws ec2 describe-key-pairs</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">ec2</span></td><td>List key pairs in this region.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🪣 S3</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>aws s3 ls</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">s3</span></td><td>List all S3 buckets in account.</td></tr>
+      <tr><td>aws s3 ls s3://bucket/</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">s3</span></td><td>List contents of a bucket or prefix. <code>--recursive</code>=list all nested objects.</td></tr>
+      <tr><td>aws s3 mb s3://bucket-name</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">s3</span></td><td>Create (Make Bucket) a new S3 bucket. Bucket names must be globally unique.</td></tr>
+      <tr><td>aws s3 cp file.txt s3://bucket/</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">s3</span></td><td>Upload file to S3. <code>aws s3 cp s3://bucket/file.txt ./</code>=download. <code>--recursive</code>=copy directory.</td></tr>
+      <tr><td>aws s3 sync ./dist s3://bucket/</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">s3</span></td><td>Sync local directory to S3. Only uploads changed files. <code>--delete</code>=remove files in S3 not in local dir.</td></tr>
+      <tr><td>aws s3 rm s3://bucket/file.txt</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">s3</span></td><td>Delete object from S3. <code>--recursive</code>=delete all objects under prefix.</td></tr>
+      <tr><td>aws s3 presign s3://bucket/file --expires-in 3600</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">s3</span></td><td>Generate a pre-signed URL valid for 3600 seconds. Share temporary access to private objects without making them public.</td></tr>
+      <tr><td>aws s3api put-bucket-versioning --bucket name --versioning-configuration Status=Enabled</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">s3</span></td><td>Enable versioning on a bucket. Protects against accidental deletes. Required for Terraform remote state bucket.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🔐 IAM</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>aws iam list-users</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">iam</span></td><td>List all IAM users in account.</td></tr>
+      <tr><td>aws iam get-user --user-name u</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">iam</span></td><td>Get details about a specific IAM user.</td></tr>
+      <tr><td>aws iam list-attached-user-policies --user-name u</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">iam</span></td><td>List policies attached to a user. Use to audit permissions.</td></tr>
+      <tr><td>aws iam list-roles</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">iam</span></td><td>List all IAM roles. EC2 instances assume roles to get AWS permissions without access keys.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">📦 ECR — Elastic Container Registry</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>aws ecr get-login-password | docker login --username AWS --password-stdin ACCOUNT.dkr.ecr.REGION.amazonaws.com</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">ecr</span></td><td>Authenticate Docker to push/pull from ECR. Run this before docker push to ECR. Token expires after 12 hours.</td></tr>
+      <tr><td>aws ecr create-repository --repository-name myapp</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">ecr</span></td><td>Create new ECR repository to store Docker images.</td></tr>
+      <tr><td>aws ecr list-images --repository-name myapp</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">ecr</span></td><td>List all images and tags in a repository.</td></tr>
+      <tr><td>aws ecr describe-images --repository-name myapp</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">ecr</span></td><td>Detailed info including image digest and push timestamps.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="subsection-label">🌐 Other Essential AWS Commands</div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>aws logs describe-log-groups</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">logs</span></td><td>List CloudWatch log groups. <code>aws logs tail /aws/lambda/fn --follow</code>=stream Lambda logs live.</td></tr>
+      <tr><td>aws logs get-log-events --log-group-name /app --log-stream-name stream</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">logs</span></td><td>Fetch log events from a specific log stream.</td></tr>
+      <tr><td>aws ssm get-parameter --name /app/db_pass --with-decryption</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">secrets</span></td><td>Get a secret from AWS Systems Manager Parameter Store. <code>--with-decryption</code>=required for SecureString params.</td></tr>
+      <tr><td>aws secretsmanager get-secret-value --secret-id myapp/db</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">secrets</span></td><td>Retrieve secret from Secrets Manager. Supports rotation. Better for app secrets than SSM for complex values.</td></tr>
+      <tr><td>aws elbv2 describe-load-balancers</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">elb</span></td><td>List Application/Network load balancers with DNS names.</td></tr>
+      <tr><td>aws rds describe-db-instances</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">rds</span></td><td>List RDS database instances with endpoints and status.</td></tr>
+      <tr><td>aws route53 list-hosted-zones</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">dns</span></td><td>List Route53 hosted zones (DNS zones you manage).</td></tr>
+      <tr><td>aws eks update-kubeconfig --name cluster --region region</td><td><span class="cmd-cat" style="color:#818cf8;border-color:rgba(129,140,248,0.3);">eks</span></td><td>Configure kubectl to connect to an EKS cluster. Adds context to <code>~/.kube/config</code>. Then use kubectl normally.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PROMETHEUS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-prometheus">
+  <div class="cmd-section-header" style="--sc:#ef4444;">
+    <span class="cmd-section-icon">📡</span>
+    <span class="cmd-section-title">Prometheus &amp; Monitoring CLI</span>
+    <span class="cmd-section-sub">Observability</span>
+  </div>
+  <table class="cmdt">
+    <thead><tr><th>Command / Query</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>promtool check config prometheus.yml</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">validate</span></td><td>Validate prometheus.yml syntax before applying. Run in CI to catch config errors before deployment.</td></tr>
+      <tr><td>promtool check rules rules.yml</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">validate</span></td><td>Validate alert rule files. Catches PromQL syntax errors in rules before they reach production.</td></tr>
+      <tr><td>curl localhost:9090/-/reload</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">manage</span></td><td>Hot-reload Prometheus config without restart. Must start Prometheus with <code>--web.enable-lifecycle</code> flag first.</td></tr>
+      <tr><td>curl localhost:9090/api/v1/targets</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>API to list all scrape targets and their health. JSON format. Use to programmatically check which targets are up.</td></tr>
+      <tr><td>curl localhost:9090/api/v1/query?query=up</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">query</span></td><td>Run a PromQL query via API. Returns JSON. Use for scripting and monitoring checks.</td></tr>
+      <tr><td>up</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Basic PromQL: shows all targets (1=up, 0=down). Paste in Prometheus UI at <code>:9090/graph</code>. First query to run when troubleshooting.</td></tr>
+      <tr><td>rate(metric_name[5m])</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Per-second rate of a counter over 5 minutes. Most used PromQL function. Always use rate() on counters — never raw values.</td></tr>
+      <tr><td>increase(metric[1h])</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Total increase over 1 hour. How many requests in the last hour? <code>increase(http_requests_total[1h])</code></td></tr>
+      <tr><td>irate(metric[5m])</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Instant rate (last two samples). More responsive to spikes than rate(). Use for dashboards, not alerts.</td></tr>
+      <tr><td>histogram_quantile(0.99, rate(hist_bucket[5m]))</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>p99 latency from a histogram metric. Replace 0.99 with 0.95 for p95. The most important latency query.</td></tr>
+      <tr><td>sum by(label)(metric)</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Aggregate and group by a label. <code>sum by(endpoint)(rate(http_requests_total[5m]))</code>=request rate per endpoint.</td></tr>
+      <tr><td>predict_linear(metric[6h], 4*3600)</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Linear prediction: will this metric hit 0 (or any threshold) in 4 hours? Use for disk-full alerts before they happen.</td></tr>
+      <tr><td>absent(metric)</td><td><span class="cmd-cat" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">promql</span></td><td>Alert if a metric is missing (target went down). <code>absent(up{job="myapp"})</code>=alert if myapp target disappears.</td></tr>
+      <tr><td>amtool check-config alertmanager.yml</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">alertmanager</span></td><td>Validate Alertmanager config file syntax.</td></tr>
+      <tr><td>amtool alert query</td><td><span class="cmd-cat" style="color:#a78bfa;border-color:rgba(167,139,250,0.3);">alertmanager</span></td><td>List all currently firing alerts. <code>amtool silence add</code>=silence an alert. Use during planned maintenance.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- NGINX -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-nginx">
+  <div class="cmd-section-header" style="--sc:#22c55e;">
+    <span class="cmd-section-icon">🌐</span>
+    <span class="cmd-section-title">Nginx — Web Server / Reverse Proxy</span>
+    <span class="cmd-section-sub">Web Server</span>
+  </div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>sudo nginx -t</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">validate</span></td><td><strong>Always run before reloading.</strong> Tests config for syntax errors. If it says "test is successful" you're safe to reload.</td></tr>
+      <tr><td>sudo systemctl reload nginx</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">manage</span></td><td>Reload config without dropping connections (graceful). Use after config changes in production. Prefer over restart.</td></tr>
+      <tr><td>sudo systemctl restart nginx</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">manage</span></td><td>Full restart (drops active connections briefly). Use only when reload doesn't work.</td></tr>
+      <tr><td>sudo systemctl status nginx</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Check if Nginx is running. Shows last log lines too.</td></tr>
+      <tr><td>sudo nginx -s reload</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">manage</span></td><td>Signal Nginx to reload. Alternative to systemctl reload.</td></tr>
+      <tr><td>sudo nginx -s stop</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">manage</span></td><td>Fast stop (drops connections). <code>sudo nginx -s quit</code>=graceful stop (waits for connections to finish).</td></tr>
+      <tr><td>sudo tail -f /var/log/nginx/error.log</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">debug</span></td><td>Follow error log in real-time. First place to look when Nginx isn't working.</td></tr>
+      <tr><td>sudo tail -f /var/log/nginx/access.log</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">debug</span></td><td>Follow access log — every request. Check if requests are reaching Nginx.</td></tr>
+      <tr><td>sudo ln -s /etc/nginx/sites-available/app /etc/nginx/sites-enabled/</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">setup</span></td><td>Enable a site config. Sites-available = configured, sites-enabled = active (symlinked). Standard Nginx pattern.</td></tr>
+      <tr><td>sudo certbot --nginx -d domain.com</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">ssl</span></td><td>Get free Let's Encrypt SSL cert and auto-configure Nginx HTTPS. Installs cert + modifies config + sets up auto-renewal.</td></tr>
+      <tr><td>sudo certbot renew --dry-run</td><td><span class="cmd-cat" style="color:#fbbf24;border-color:rgba(251,191,36,0.3);">ssl</span></td><td>Test cert renewal without actually renewing. Run to verify auto-renewal will work before the cert expires.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SYSTEMD -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="cmd-section" id="cmds-systemd">
+  <div class="cmd-section-header" style="--sc:#f97316;">
+    <span class="cmd-section-icon">🔧</span>
+    <span class="cmd-section-title">Systemd — Service Manager</span>
+    <span class="cmd-section-sub">Services</span>
+  </div>
+  <table class="cmdt">
+    <thead><tr><th>Command</th><th>Category</th><th>What it does &amp; how to use it</th></tr></thead>
+    <tbody>
+      <tr><td>systemctl status service</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Check service status — running, stopped, failed. Shows last log lines and PID.</td></tr>
+      <tr><td>systemctl start service</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">control</span></td><td>Start a service now.</td></tr>
+      <tr><td>systemctl stop service</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">control</span></td><td>Stop a service now.</td></tr>
+      <tr><td>systemctl restart service</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">control</span></td><td>Stop then start. Use after config changes that require full restart.</td></tr>
+      <tr><td>systemctl reload service</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">control</span></td><td>Graceful config reload without restarting (if the service supports it — Nginx, Apache do).</td></tr>
+      <tr><td>systemctl enable service</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">boot</span></td><td>Make service start automatically on boot. Creates symlink in systemd targets.</td></tr>
+      <tr><td>systemctl disable service</td><td><span class="cmd-cat" style="color:#f43f5e;border-color:rgba(244,63,94,0.3);">boot</span></td><td>Prevent service from starting on boot.</td></tr>
+      <tr><td>systemctl is-active service</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Returns "active" or "inactive". Use in scripts: <code>if systemctl is-active --quiet nginx; then...</code></td></tr>
+      <tr><td>systemctl is-enabled service</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>Check if service is enabled for boot.</td></tr>
+      <tr><td>systemctl list-units --type=service</td><td><span class="cmd-cat" style="color:#38bdf8;border-color:rgba(56,189,248,0.3);">inspect</span></td><td>List all running services. <code>--state=failed</code>=only show failed services.</td></tr>
+      <tr><td>journalctl -u service</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>View all logs for a specific service. <code>-f</code>=follow live. <code>--since "1 hour ago"</code>=time filter. <code>-n 50</code>=last 50 lines.</td></tr>
+      <tr><td>journalctl -xe</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Show recent journal entries with explanations. Use when a service fails to start — shows the error with context.</td></tr>
+      <tr><td>journalctl --since "2024-01-01 10:00" --until "2024-01-01 11:00"</td><td><span class="cmd-cat" style="color:#f97316;border-color:rgba(249,115,22,0.3);">logs</span></td><td>Get logs in a specific time range. Invaluable for post-incident analysis.</td></tr>
+      <tr><td>systemctl daemon-reload</td><td><span class="cmd-cat" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">manage</span></td><td>Reload systemd unit files after editing a .service file. Must run before systemctl start/restart works on a new service.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- FINAL NOTE -->
+<div class="loop-box" style="margin-top:24px;">
+  <div class="loop-icon">⌨️</div>
+  <div>
+    <div class="loop-title">These commands are your toolbelt — not your homework.</div>
+    <div class="loop-desc">
+      Don't try to memorize them all at once. Pick one section per day. Actually run the commands in a terminal. The ones you use regularly will stick automatically. The rest are here when you need them. <strong style="color:#fb923c;">Bookmark this tab — it works offline too.</strong>
+    </div>
+  </div>
+</div>
+

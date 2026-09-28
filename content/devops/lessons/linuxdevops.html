@@ -1,0 +1,823 @@
+
+
+<!-- Floating symbols/flags cheat card — bottom-right, only visible while this tab is active
+     (it's nested inside this panel, so a hidden panel hides it automatically). -->
+<div class="symbols-widget">
+  <div class="symbols-panel" id="symbolsPanel" style="display:none;">
+    <div class="symbols-panel-header">
+      <span>🔣 Symbols &amp; Flags Cheat Card</span>
+      <button class="symbols-close" onclick="document.getElementById('symbolsPanel').style.display='none';">✕</button>
+    </div>
+
+    <div class="symbols-note">🧠 <strong>VERY important trick:</strong> Don't memorize <code>-h</code>, <code>-a</code>, <code>-f</code>, etc. as having one universal meaning — <strong>the meaning depends on the command.</strong> For example: <code>df -h</code> → <code>-h</code> = human-readable. But <code>tail -f</code> → <code>-f</code> = follow. So think: <strong>command + option = meaning</strong>, not "this flag always means X."</div>
+
+    <table class="symbols-table">
+      <thead><tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>-h</td><td>Human-readable</td><td>df -h</td></tr>
+        <tr><td>-R / -r</td><td>Recursive / related behavior depending on command</td><td>chmod -R 755 folder</td></tr>
+        <tr><td>-f</td><td>Follow / force / other meaning depending on command</td><td>tail -f file</td></tr>
+        <tr><td>-a</td><td>All</td><td>ps -a</td></tr>
+        <tr><td>-l</td><td>Long format</td><td>ls -l</td></tr>
+        <tr><td>-v</td><td>Verbose / version depending on command</td><td>somecommand -v</td></tr>
+        <tr><td>-n</td><td>Number / no / other meaning depending on command</td><td>head -n 5 file</td></tr>
+        <tr><td>-p</td><td>Port/path/parents/etc. depending on command</td><td>mkdir -p folder/a/b</td></tr>
+        <tr><td>-q</td><td>Quiet</td><td>somecommand -q</td></tr>
+        <tr><td>-i</td><td>Interactive / ignore-case depending on command</td><td>rm -i file</td></tr>
+        <tr><td>-x</td><td>Execute / exclude / other meaning depending on command</td><td>chmod +x script.sh</td></tr>
+        <tr><td>--help</td><td>Show help</td><td>ls --help</td></tr>
+        <tr><td>--version</td><td>Show version</td><td>node --version</td></tr>
+        <tr><td>&amp;</td><td>Run in background</td><td>node app.js &amp;</td></tr>
+        <tr><td>|</td><td>Send output to next command</td><td>ps aux | grep node</td></tr>
+        <tr><td>&gt;</td><td>Redirect output, overwrite file</td><td>echo hi &gt; file.txt</td></tr>
+        <tr><td>&gt;&gt;</td><td>Redirect output, append</td><td>echo hi &gt;&gt; file.txt</td></tr>
+        <tr><td>&lt;</td><td>Take input from a file</td><td>command &lt; file.txt</td></tr>
+        <tr><td>&amp;&amp;</td><td>Run next command only if previous succeeds</td><td>mkdir app &amp;&amp; cd app</td></tr>
+        <tr><td>;</td><td>Run commands one after another</td><td>pwd; ls</td></tr>
+        <tr><td>*</td><td>Wildcard — anything</td><td>rm *.log</td></tr>
+        <tr><td>.</td><td>Current directory</td><td>./script.sh</td></tr>
+        <tr><td>..</td><td>Parent directory</td><td>cd ..</td></tr>
+      </tbody>
+    </table>
+
+    <div class="symbols-note" style="margin-bottom:0;">
+      🧠 <strong>Remember the main symbols</strong> — think of these as special operators:<br>
+      <div class="symbols-ops" style="margin-top:6px;">
+        <code>&amp;</code>→ background<span class="arrow">|</span><code>|</code>→ pipe/send<span class="arrow">|</span><code>&gt;</code>→ overwrite<span class="arrow">|</span><code>&gt;&gt;</code>→ append<br>
+        <code>&amp;&amp;</code>→ if successful, continue<span class="arrow">|</span><code>;</code>→ just continue<span class="arrow">|</span><code>*</code>→ anything<span class="arrow">|</span><code>.</code>→ here
+      </div>
+    </div>
+  </div>
+
+  <button class="symbols-toggle" onclick="const p=document.getElementById('symbolsPanel'); p.style.display = p.style.display==='none' ? 'flex' : 'none';" title="Symbols &amp; Flags Cheat Card">🔣</button>
+</div>
+
+
+
+<div class="analogy">
+  <div><div class="analogy-label">🐧 Why Linux, specifically</div></div>
+  <div class="analogy-item"><span class="analogy-icon">🖥️</span><div class="analogy-text"><strong>Every server runs Linux</strong><br>Every Docker image, every K8s node</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">⌨️</span><div class="analogy-text"><strong>No GUI out there</strong><br>The shell is the only interface</div></div>
+  <span class="analogy-divider">→</span>
+  <div class="analogy-item"><span class="analogy-icon">🧱</span><div class="analogy-text"><strong>This is the floor everything stands on</strong><br>Learn it once, use it everywhere</div></div>
+</div>
+
+<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:16px;margin-bottom:24px;font-size:12px;color:#94a3b8;line-height:1.85;">
+  The <strong style="color:#e2e8f0;">🐧 Linux</strong> tab next to this one covers everyday navigation and file basics. This tab is different — it's the <strong style="color:#38bdf8;">complete, DevOps-specific Linux foundation</strong>: every category of command you'll actually reach for on a real server, a Docker container, or a Kubernetes node, organized so nothing feels random. Click any command below — it runs in the little terminal, and underneath it you'll always see <strong style="color:#e2e8f0;">what it does</strong> and <strong style="color:#e2e8f0;">exactly where it connects</strong> to everything else in this cheat sheet. Work through all of them once, and there genuinely isn't much Linux left to learn for a DevOps role — just muscle memory from here.
+</div>
+
+<div class="section-title">🖥️ Try It — Click Any Command Below to "Run" It</div>
+
+<div style="font-size:11px;color:#475569;margin:-2px 0 12px;">Every command below runs <strong style="color:#94a3b8;">3 separate times</strong>, in 3 different real situations — each in its own box, so you see the different outputs side by side instead of guessing what changes.</div>
+<div id="ldRunsArea">
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">devops@server: ~</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> click any command below</div>
+      <div class="pu-output"><span class="dim">↳ output shows up here the moment you click something</span></div>
+    </div>
+  </div>
+</div>
+<div class="ld-info" id="ldInfo">
+  <div><strong>🧩 Syntax (the general shape):</strong> <code id="ldSyntax">click a command below</code></div>
+  <div style="margin-top:6px;"><strong>▶️ Example use:</strong> <span id="ldDoes">Pick a command below to get started — every category of real DevOps Linux usage is here.</span></div>
+  <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="ldWhere">—</span></div>
+</div>
+
+<div class="sl-breakdown" id="ldBreakdownBox" style="margin-top:10px;">
+  <div class="sl-breakdown-label">🔍 SYNTAX BREAKDOWN — PIECE BY PIECE</div>
+  <div class="sl-breakdown-list" id="ldBreakdownList"><span class="dim">Click a command above — every piece of its syntax gets broken down here, one at a time.</span></div>
+</div>
+
+<div style="background:rgba(255,255,255,0.02);border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-top:10px;margin-bottom:20px;">
+  <div class="sl-breakdown-label" style="color:#22c55e;">💡 WHY IS THIS ACTUALLY USEFUL?</div>
+  <div id="ldWhyUseful"><span class="dim">Click a command above to see a real problem it solves, with a real example.</span></div>
+</div>
+
+<div class="ld-cat">📁 Navigation &amp; Files</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('pwd',this)">pwd</button>
+  <button class="ld-pill" onclick="runLinuxCmd('lsla',this)">ls -la</button>
+  <button class="ld-pill" onclick="runLinuxCmd('find',this)">find</button>
+  <button class="ld-pill" onclick="runLinuxCmd('tailf',this)">tail -f</button>
+</div>
+
+<div class="ld-cat">🔐 Permissions &amp; Ownership</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('chmod',this)">chmod +x</button>
+  <button class="ld-pill" onclick="runLinuxCmd('chown',this)">chown -R</button>
+  <button class="ld-pill" onclick="runLinuxCmd('sudo',this)">sudo</button>
+</div>
+
+<div class="ld-cat">⚙️ Processes</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('psaux',this)">ps aux</button>
+  <button class="ld-pill" onclick="runLinuxCmd('top',this)">top</button>
+  <button class="ld-pill" onclick="runLinuxCmd('killnine',this)">kill -9</button>
+  <button class="ld-pill" onclick="runLinuxCmd('nohup',this)">nohup ... &amp;</button>
+</div>
+
+<div class="ld-cat">💾 Disk &amp; Memory</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('dfh',this)">df -h</button>
+  <button class="ld-pill" onclick="runLinuxCmd('dush',this)">du -sh</button>
+  <button class="ld-pill" onclick="runLinuxCmd('freeh',this)">free -h</button>
+</div>
+
+<div class="ld-cat">🌐 Networking</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('curl',this)">curl -I</button>
+  <button class="ld-pill" onclick="runLinuxCmd('ping',this)">ping</button>
+  <button class="ld-pill" onclick="runLinuxCmd('sstulpn',this)">ss -tulpn</button>
+  <button class="ld-pill" onclick="runLinuxCmd('wget',this)">wget</button>
+</div>
+
+<div class="ld-cat">📝 Text Power Tools</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('grep',this)">grep</button>
+  <button class="ld-pill" onclick="runLinuxCmd('awk',this)">awk</button>
+  <button class="ld-pill" onclick="runLinuxCmd('sed',this)">sed</button>
+  <button class="ld-pill" onclick="runLinuxCmd('pipewc',this)">pipe | + wc</button>
+  <button class="ld-pill" onclick="runLinuxCmd('redirect',this)">&gt; and 2&gt;&amp;1</button>
+</div>
+
+<div class="ld-cat">🌱 Environment &amp; Shell</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('env',this)">env</button>
+  <button class="ld-pill" onclick="runLinuxCmd('export',this)">export</button>
+  <button class="ld-pill" onclick="runLinuxCmd('alias',this)">alias</button>
+  <button class="ld-pill" onclick="runLinuxCmd('path',this)">echo $PATH</button>
+</div>
+
+<div class="ld-cat">🛠️ Services / systemd</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('systemctlstatus',this)">systemctl status</button>
+  <button class="ld-pill" onclick="runLinuxCmd('systemctlrestart',this)">systemctl restart</button>
+  <button class="ld-pill" onclick="runLinuxCmd('journalctlu',this)">journalctl -u</button>
+</div>
+
+<div class="ld-cat">👤 Users &amp; Packages</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('useradd',this)">useradd</button>
+  <button class="ld-pill" onclick="runLinuxCmd('useraddExpire',this)">useradd -e</button>
+  <button class="ld-pill" onclick="runLinuxCmd('chageList',this)">chage -l</button>
+  <button class="ld-pill" onclick="runLinuxCmd('usermodgroup',this)">usermod -aG</button>
+  <button class="ld-pill" onclick="runLinuxCmd('aptinstall',this)">apt install</button>
+</div>
+
+<div class="ld-cat">📦 Archives &amp; Remote Access</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('tarczvf',this)">tar -czvf</button>
+  <button class="ld-pill" onclick="runLinuxCmd('scp',this)">scp</button>
+  <button class="ld-pill" onclick="runLinuxCmd('ssh',this)">ssh</button>
+  <button class="ld-pill" onclick="runLinuxCmd('sshkeygen',this)">ssh-keygen</button>
+</div>
+
+<div class="ld-cat">📜 Logs &amp; Scheduling</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('dmesg',this)">dmesg</button>
+  <button class="ld-pill" onclick="runLinuxCmd('crontabe',this)">crontab -e</button>
+</div>
+
+<div class="ld-cat">🔀 Redirection &amp; Streams (the &gt; / &gt;&gt; / 2&gt; question)</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('redirectOverwrite',this)">&gt;</button>
+  <button class="ld-pill" onclick="runLinuxCmd('redirectAppend',this)">&gt;&gt;</button>
+  <button class="ld-pill" onclick="runLinuxCmd('redirectStderr',this)">2&gt;</button>
+  <button class="ld-pill" onclick="runLinuxCmd('redirectBoth',this)">&amp;&gt;</button>
+  <button class="ld-pill" onclick="runLinuxCmd('exitCode',this)">$?</button>
+</div>
+
+<div class="ld-cat">🔗 Links, Signals &amp; Control Flow</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('lnHard',this)">ln (hard link)</button>
+  <button class="ld-pill" onclick="runLinuxCmd('lnSoft',this)">ln -s (soft link)</button>
+  <button class="ld-pill" onclick="runLinuxCmd('lsofPort',this)">lsof -i :port</button>
+  <button class="ld-pill" onclick="runLinuxCmd('lsofDeleted',this)">lsof | grep deleted</button>
+  <button class="ld-pill" onclick="runLinuxCmd('htop',this)">htop</button>
+  <button class="ld-pill" onclick="runLinuxCmd('killPlain',this)">kill (SIGTERM)</button>
+  <button class="ld-pill" onclick="runLinuxCmd('psDefunct',this)">ps | grep defunct</button>
+  <button class="ld-pill" onclick="runLinuxCmd('bgAmp',this)">&amp;</button>
+  <button class="ld-pill" onclick="runLinuxCmd('andAnd',this)">&amp;&amp;</button>
+  <button class="ld-pill" onclick="runLinuxCmd('orOr',this)">||</button>
+</div>
+
+<div class="section-title" style="margin-top:28px;">📚 Beyond the Basics — More You'll Actually Be Asked</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 14px;">The 15-question set above was a <em>sample</em> of the level expected, not the whole syllabus. These fill in everything else that comes up.</div>
+
+<div class="ld-cat">🌐 Networking — Deeper</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('dig',this)">dig</button>
+  <button class="ld-pill" onclick="runLinuxCmd('traceroute',this)">traceroute</button>
+  <button class="ld-pill" onclick="runLinuxCmd('nc',this)">nc (netcat)</button>
+</div>
+
+<div class="ld-cat">💾 Disk, Filesystems &amp; Special Permissions</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('dfi',this)">df -i</button>
+  <button class="ld-pill" onclick="runLinuxCmd('umask',this)">umask</button>
+  <button class="ld-pill" onclick="runLinuxCmd('chmodSetgid',this)">chmod 2775 (setgid)</button>
+  <button class="ld-pill" onclick="runLinuxCmd('lsblk',this)">lsblk</button>
+</div>
+
+<div class="ld-cat">⚙️ Process &amp; Resource Limits</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('nice',this)">nice</button>
+  <button class="ld-pill" onclick="runLinuxCmd('ulimit',this)">ulimit</button>
+  <button class="ld-pill" onclick="runLinuxCmd('uptimeCmd',this)">uptime</button>
+  <button class="ld-pill" onclick="runLinuxCmd('vmstat',this)">vmstat</button>
+</div>
+
+<div class="ld-cat">📝 More Text Power Tools</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('cut',this)">cut</button>
+  <button class="ld-pill" onclick="runLinuxCmd('tr',this)">tr</button>
+  <button class="ld-pill" onclick="runLinuxCmd('wcl',this)">wc -l</button>
+  <button class="ld-pill" onclick="runLinuxCmd('diffCmd',this)">diff</button>
+  <button class="ld-pill" onclick="runLinuxCmd('xargs',this)">xargs</button>
+  <button class="ld-pill" onclick="runLinuxCmd('tee',this)">tee</button>
+  <button class="ld-pill" onclick="runLinuxCmd('sortUniq',this)">sort | uniq -c</button>
+</div>
+
+<div class="ld-cat">🌱 Environment &amp; Shell — Deeper</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('whichType',this)">which</button>
+  <button class="ld-pill" onclick="runLinuxCmd('source',this)">source</button>
+  <button class="ld-pill" onclick="runLinuxCmd('history',this)">history</button>
+  <button class="ld-pill" onclick="runLinuxCmd('bashrcProfile',this)">.bashrc vs .bash_profile</button>
+</div>
+
+<div class="ld-cat">👤 Users, Sudo &amp; Packages — Deeper</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('passwdCmd',this)">passwd</button>
+  <button class="ld-pill" onclick="runLinuxCmd('visudo',this)">visudo</button>
+  <button class="ld-pill" onclick="runLinuxCmd('suVsSudo',this)">su vs sudo</button>
+</div>
+
+<div class="ld-cat">🖥️ System Info &amp; Persistent Sessions</div>
+<div class="ld-pills">
+  <button class="ld-pill" onclick="runLinuxCmd('unameA',this)">uname -a</button>
+  <button class="ld-pill" onclick="runLinuxCmd('gzipCmd',this)">gzip / gunzip</button>
+  <button class="ld-pill" onclick="runLinuxCmd('tmuxScreen',this)">tmux</button>
+</div>
+
+<div class="section-title" style="margin-top:28px;">🗺️ Where This Connects — The Whole Point</div>
+<div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px 16px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.9;">
+  None of the above lives in isolation. <code style="color:#fbbf24;">chmod +x</code> is why a CI script fails with "Permission denied." <code style="color:#fbbf24;">df -h</code> is why a Docker build fails with "no space left on device." <code style="color:#fbbf24;">grep</code> and <code style="color:#fbbf24;">tail -f</code> are exactly what <code style="color:#fbbf24;">kubectl logs</code> does under the hood, just for a container instead of a raw process. <code style="color:#fbbf24;">systemctl</code> is what keeps a service alive the same way Kubernetes keeps a pod alive, just one layer down. <code style="color:#fbbf24;">ssh</code> + <code style="color:#fbbf24;">scp</code> are literally how GitHub Actions deploys code onto a real server in Example 3. This isn't a separate skill from the rest of this cheat sheet — it's the layer every other tab is quietly standing on.
+</div>
+
+<div class="section-title">🎯 Real Interview Q&amp;A — 15 Questions, Straight From the Interviewer's Mouth</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">These are asked, word for word, in real DevOps interviews. Click any question to reveal the full answer — quick version first, then the deep version, a real story, the follow-up trap they'll spring next, and the mistake that gives away a shallow answer.</div>
+<div class="qa-list">
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L1</span><span class="qa-q-text">Walk me through what happens when you type <code>&gt;</code>, <code>&gt;&gt;</code>, and <code>2&gt;</code> at the end of a command.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>&gt;</code> overwrites a file with stdout, <code>&gt;&gt;</code> appends to it, and <code>2&gt;</code> redirects stderr instead of stdout.<br><br>
+    <strong>Detailed answer:</strong> Every command in Linux talks through three streams — stdin (0), stdout (1), and stderr (2). When I run <code>ls &gt; files.txt</code>, the shell sends stdout into the file, replacing whatever was there. <code>&gt;&gt;</code> appends — I use this for cron logs so I don't lose history. <code>2&gt;</code> catches errors specifically. To silently ignore errors I do <code>command 2&gt; /dev/null</code>. To capture both, I use <code>&gt; file 2&gt;&amp;1</code> or <code>&amp;&gt;</code>.<br><br>
+    <strong>💬 Quick story:</strong> I once had a script writing to <code>/var/log/myapp.log</code> using <code>&gt;</code> instead of <code>&gt;&gt;</code> — every cron run was overwriting the previous log. Lost three days of debugging data before I caught it. Since then, <code>&gt;&gt;</code> is muscle memory.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> If they ask "what does <code>2&gt;&amp;1</code> mean and why is the order important?" — explain it redirects stderr to wherever stdout is currently going. Order matters: <code>&gt; file 2&gt;&amp;1</code> works, but <code>2&gt;&amp;1 &gt; file</code> doesn't.<br><br>
+    <strong>🚫 Common mistake:</strong> Saying "<code>&gt;</code> is for output and <code>2&gt;</code> is for errors." Surface-level. Mention file descriptors (0, 1, 2) — that's what separates memorization from understanding.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L2</span><span class="qa-q-text">Disk is at 95% on a production server. Your senior just pinged you on Slack. What do you actually run?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>df -h</code> to confirm the mount, <code>du -sh /*</code> to find the heavy directory, then <code>find</code> to spot huge or old files for rotation.<br><br>
+    <strong>Detailed answer:</strong> First — <code>df -h</code> to confirm which filesystem is full. Then I <code>cd</code> into the suspect path and run <code>du -sh * | sort -hr | head -10</code> to see top offenders. Nine times out of ten it's <code>/var/log</code> with unrotated logs. I run <code>find . -type f -size +500M</code> for huge files, or <code>find /var/log -type f -mtime +30</code> for old ones. For logs, I truncate with <code>&gt; /var/log/bigfile.log</code> — never <code>rm</code> an open log file. Then I set up <code>logrotate</code> so it doesn't repeat.<br><br>
+    <strong>💬 Quick story:</strong> The first time I dealt with this, I <code>rm</code>'d a 40 GB log file and watched <code>df -h</code> still show 95%. The application had the file open. I had to restart the service to release the descriptor.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "What if <code>du</code> shows everything is small but <code>df</code> says full?" — deleted-but-open files. Use <code>lsof | grep deleted</code> to find processes holding deleted file descriptors, then restart that service.<br><br>
+    <strong>🚫 Common mistake:</strong> Don't jump straight to <code>rm -rf</code>. Senior engineers want to hear that you investigate first, fix the root cause (set up rotation), and never delete anything you can't recover.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L3</span><span class="qa-q-text">What's the difference between a hard link and a soft link? And when have you actually used either one?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> A hard link is a second name for the same inode; a soft link is a separate file pointing to a path. Delete the original — hard link still works, soft link breaks.<br><br>
+    <strong>Detailed answer:</strong> Every file in Linux is an inode (the actual data) plus a name pointing to it. A hard link gives you a second name for the exact same inode — both equal, no "original." Delete one, the data stays until the last name is gone. A soft link is its own tiny file containing a path — if the target moves or gets deleted, it dangles. I use soft links daily — pointing <code>/usr/bin/python</code> to <code>python3.11</code>, symlinking config into <code>/etc/nginx/sites-enabled/</code>. Hard links I've used for backup scripts where I want multiple snapshots without duplicating disk.<br><br>
+    <strong>💬 Quick story:</strong> We had a deploy script that created a symlink <code>current → release-v23</code>. To roll back, we just repointed the symlink to <code>v22</code> — instant rollback, no file copy. Symlinks make tricks like this possible.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "Can you hard-link across filesystems?" — No. Hard links share inodes, and inodes are filesystem-specific. Soft links can cross filesystems because they just store a path.<br><br>
+    <strong>🚫 Common mistake:</strong> Don't say "a hard link is a copy." It's not — same data, two names. Saying "copy" loses the interviewer instantly.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L4</span><span class="qa-q-text">Some service is using port 8080 and you don't know who. How do you find the process?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>sudo lsof -i :8080</code> or <code>sudo ss -tulnp | grep 8080</code> — both give you the PID and process name.<br><br>
+    <strong>Detailed answer:</strong> On modern systems I prefer <code>ss</code> over <code>netstat</code> — faster, pre-installed. Flags: <code>-t</code> TCP, <code>-u</code> UDP, <code>-l</code> listening, <code>-n</code> numeric, <code>-p</code> process. So <code>sudo ss -tulnp | grep 8080</code> gives me everything. If <code>ss</code> isn't there, <code>sudo lsof -i :8080</code> works and shows the user. Once I have the PID, <code>ps -p &lt;pid&gt; -f</code> shows the full command line.<br><br>
+    <strong>💬 Quick story:</strong> I once spent 20 minutes trying to start a Docker container on port 8080 before realizing a leftover <code>python http.server</code> from a previous test was still running in a detached <code>tmux</code> session. <code>lsof -i :8080</code> solved in 2 seconds what 20 minutes of <code>docker logs</code> couldn't.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "Can you find it without sudo?" — You can't see other users' processes without sudo. The PID column will be blank. That's a Linux security feature, not a bug.<br><br>
+    <strong>🚫 Common mistake:</strong> Don't say <code>netstat -anp</code>. Deprecated on most modern distros. <code>ss</code> kept up.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L5</span><span class="qa-q-text">Tell me the difference between ps, top, and htop — and which one you reach for in production.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>ps</code> is a snapshot, <code>top</code> is a live view that ships with every Linux box, <code>htop</code> is the prettier interactive version — but not always installed.<br><br>
+    <strong>Detailed answer:</strong> <code>ps</code> gives a one-time snapshot — I use it for scripting because output is parseable: <code>ps -ef | grep nginx</code>. <code>top</code> is what I reach for first on any production box because it's always there. Updates every few seconds, shows CPU, memory, load average. <code>htop</code> I install on dev boxes — colored, tree view, click-to-kill, scrollable. Same data, friendlier UI. In an incident, I start with <code>top</code>, hit <code>M</code> to sort by memory or <code>P</code> by CPU, and find the offender in seconds. Press <code>H</code> for threads.<br><br>
+    <strong>💬 Quick story:</strong> A Java service slowly ate memory in staging. <code>top</code> showed the JVM at 8 GB and climbing. Sorted by memory with <code>M</code>, confirmed a leak, dug into GC logs. Without <code>top</code>, I'd have stared at Grafana for an hour.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "What does load average actually mean?" — the average number of processes in a runnable or uninterruptible state over 1, 5, 15 minutes. Load 4 on a 4-core box = 100% utilization. Load 8 on the same box = processes queuing.<br><br>
+    <strong>🚫 Common mistake:</strong> Don't say load average is "CPU usage." It includes processes waiting on disk I/O. Mixing them up tells the interviewer you've never debugged a real I/O bottleneck.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L6</span><span class="qa-q-text">What does <code>chmod 755 file.sh</code> actually mean? Break the numbers down for me.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> Owner gets read-write-execute (7), group gets read-execute (5), others get read-execute (5). Standard for executable scripts.<br><br>
+    <strong>Detailed answer:</strong> Three permission groups (owner, group, others) and three permissions (read=4, write=2, execute=1). Add them: <code>7</code> = 4+2+1 (full), <code>5</code> = 4+1 (read+execute), <code>4</code> (read-only). For a script anyone should run, <code>755</code> is right. For a private SSH key, <code>600</code>. For a config with secrets, <code>640</code> or <code>600</code>.<br><br>
+    <strong>💬 Quick story:</strong> I once <code>chmod 777</code>'d a directory because I was tired of fighting permissions on a shared dev box. Two days later, our security scanner flagged it and I had to write up an incident report. <code>777</code> is almost always the wrong answer.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "Difference between <code>chmod</code> and <code>chown</code>?" — <code>chmod</code> changes permissions (what), <code>chown</code> changes ownership (who). Used together: <code>chown</code> to assign the right user, then <code>chmod</code> to set permissions.<br><br>
+    <strong>🚫 Common mistake:</strong> Don't memorize "755 means executable." Understand the math. If they ask about <code>2755</code>, you should derive it on the spot — the leading <code>2</code> introduces setgid, which trips up most candidates.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L7</span><span class="qa-q-text">Walk me through scheduling a job to run every 5 minutes. And how would you debug it if it doesn't run?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>crontab -e</code>, add <code>*/5 * * * * /path/to/script.sh</code>, and if it doesn't run I check <code>journalctl -u cron</code> plus the script's output redirection.<br><br>
+    <strong>Detailed answer:</strong> Cron format: minute, hour, day-of-month, month, day-of-week. <code>*/5 * * * *</code> means every 5th minute. I always redirect both stdout and stderr: <code>*/5 * * * * /path/to/script.sh &gt;&gt; /var/log/myscript.log 2&gt;&amp;1</code> — cron has a stripped-down environment with almost no <code>PATH</code> and silent failures. If it's still not running, check <code>journalctl -u cron</code>. Nine times out of ten it's <code>PATH</code> — the script works in my shell, cron doesn't know where <code>kubectl</code> or <code>python</code> live. Fix: absolute paths, or <code>source /etc/profile</code> at the top.<br><br>
+    <strong>💬 Quick story:</strong> Wrote a backup cron, tested manually, forgot output redirection. Silently failed for two weeks because cron emailed output to <code>root@localhost</code> and there was no mail daemon. Two weeks of zero backups. <code>&gt;&gt; file 2&gt;&amp;1</code> is now mandatory in every cron line I write.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "Run every 5 minutes during business hours only?" — <code>*/5 9-17 * * 1-5 /path/to/script.sh</code>.<br><br>
+    <strong>🚫 Common mistake:</strong> Don't forget cron's environment is not your shell's. Test with <code>env -i bash -c "/path/to/script.sh"</code> to simulate cron's empty environment before trusting it.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L8</span><span class="qa-q-text"><code>kill</code>, <code>kill -9</code>, <code>kill -15</code> — what's the difference and which should you use first?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>kill</code> defaults to <code>-15</code> (SIGTERM, polite), <code>-9</code> is SIGKILL (forced, no cleanup). Always start with <code>-15</code>; only escalate to <code>-9</code> if it refuses.<br><br>
+    <strong>Detailed answer:</strong> SIGTERM is "please shut down." The process catches it, finishes current work, closes DB connections, flushes logs, exits cleanly. SIGKILL bypasses the process — the kernel kills it instantly. No cleanup means open files might corrupt, transactions left half-done, child processes orphaned. My rule: <code>-15</code> first, wait 10–15 seconds, only <code>-9</code> if genuinely stuck.<br><br>
+    <strong>💬 Quick story:</strong> A teammate <code>kill -9</code>'d a stuck PostgreSQL during an incident. The DB came back up, but one table was inconsistent — four hours of recovery. I treat <code>-9</code> as last resort, not first move.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "What if a process ignores SIGTERM?" — Some catch it and refuse to die because they're waiting on something (like a stuck NFS mount). At that point, SIGKILL is the only option because the kernel handles it directly.<br><br>
+    <strong>🚫 Common mistake:</strong> Saying "-9 is the safe option because it always works." It "works" in that it terminates — but at the cost of data integrity. Red flag in any production-minded interview.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L9</span><span class="qa-q-text">What is journalctl and how do you use it to debug a service that's failing to start?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> The systemd log query tool. For a failing service: <code>journalctl -u &lt;service&gt; -n 100 --no-pager</code> for the last 100 lines, or <code>-f</code> to tail live.<br><br>
+    <strong>Detailed answer:</strong> On any modern Linux, systemd manages services and <code>journalctl</code> reads its logs. Flags I use most: <code>-n 200</code> last 200 lines, <code>-u nginx</code> filter by service, <code>-f</code> follow live, <code>--since "10 min ago"</code>, <code>-p err</code> errors only. My flow: <code>systemctl status &lt;service&gt;</code> first — gives recent log lines and the exit code. If I need more, <code>journalctl -u &lt;service&gt; -n 500</code>. I look for the <em>first</em> error, not the last — cascading failures hide the real cause.<br><br>
+    <strong>💬 Quick story:</strong> Jenkins refused to start. <code>systemctl status</code> said "failed." <code>journalctl -u jenkins</code> showed "Java not found in PATH." Root cause: someone had uninstalled Java for a "cleanup." Two minutes saved a full rebuild.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "How do you keep journal logs from growing forever?" — Edit <code>/etc/systemd/journald.conf</code>: <code>SystemMaxUse=2G</code> or <code>MaxRetentionSec=1month</code>.<br><br>
+    <strong>🚫 Common mistake:</strong> Saying "I'd <code>tail /var/log/syslog</code>." On systemd distros, services log to journal first — syslog may have something or nothing. <code>journalctl</code> is authoritative.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L10</span><span class="qa-q-text">grep, awk, sed — explain when you'd reach for each one. Make it real.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>grep</code> finds lines, <code>awk</code> extracts and processes columns, <code>sed</code> edits text in place. I use them together in pipelines where each does what it's best at.<br><br>
+    <strong>Detailed answer:</strong> <code>grep</code>: searching — "does this line contain X?" Use <code>-i</code> case-insensitive, <code>-v</code> invert, <code>-E</code> extended regex. <code>awk</code>: column-aware, a mini language. Logs and CSVs are home turf. <code>awk '{print $1, $7}'</code> on <code>access.log</code> gives column 1 and 7. <code>awk '$9 == 500'</code> filters where column 9 equals 500. <code>sed</code>: in-place editing. <code>sed -i 's/old/new/g' file.txt</code> replaces every "old" with "new" — I use it for find-and-replace across config files during deploys. A pipeline I run all the time: <code>cat access.log | grep " 500 " | awk '{print $1}' | sort | uniq -c | sort -rn | head -10</code> — top 10 IPs hitting my server with 500 errors, in one line.<br><br>
+    <strong>💬 Quick story:</strong> During an incident, the app was returning 500s. I had load balancer logs but no fancy dashboard. That one-liner identified a single IP making 90% of bad requests in seconds. Blocked it, traffic normalized.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "Could you do all this in <code>awk</code> alone?" — Technically yes: <code>awk '/pattern/ &amp;&amp; $9==500 {print $1}'</code>. But mixing tools in a pipeline is more readable than a 200-character <code>awk</code> script. Readability matters at 3 AM.<br><br>
+    <strong>🚫 Common mistake:</strong> Saying <code>awk</code> is "for printing columns." That's 1% of what it does — it has variables, conditionals, loops, regex, a full language. Underselling it tells the interviewer you've used it once.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L11</span><span class="qa-q-text">How do you find files modified in the last 24 hours?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>find /path -type f -mtime -1</code> — modified less than 1 day ago. Or <code>-mmin -60</code> for the last 60 minutes.<br><br>
+    <strong>Detailed answer:</strong> <code>find</code> uses three time flags: <code>-mtime</code> modification time in days, <code>-atime</code> access time, <code>-ctime</code> inode-change time. Negative means "less than" — <code>-mtime -1</code> is "modified less than 24 hours ago." Positive means "more than." Add <code>-type f</code> for files only, <code>-type d</code> for directories. For sub-day precision, use <code>-mmin</code> in minutes. To run a command on each result: <code>-exec ls -lh {} \;</code>.<br><br>
+    <strong>💬 Quick story:</strong> Production was acting weird after a deployment. I ran <code>find /etc -type f -mtime -1</code> and found two config files someone had hot-patched manually. They never told the team. Diff against Git answered the rest.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "Difference between <code>mtime</code>, <code>atime</code>, <code>ctime</code>?" — <code>mtime</code> = content changed, <code>atime</code> = file was read, <code>ctime</code> = inode changed (permissions, ownership). <code>ctime</code> is the one most candidates miss.<br><br>
+    <strong>🚫 Common mistake:</strong> Confusing <code>-mtime 1</code> (exactly 1 day) with <code>-mtime -1</code> (less than 1 day). The sign matters.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L12</span><span class="qa-q-text">What is a zombie process and how do you handle it?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> A zombie is a child process that's finished but its parent hasn't called <code>wait()</code> to read its exit status. It holds a PID slot until the parent reaps it.<br><br>
+    <strong>Detailed answer:</strong> When a process exits, the kernel keeps minimal info (PID, exit code) until the parent reads it via <code>wait()</code>. If the parent doesn't, the child sits in <code>&lt;defunct&gt;</code> state — a zombie. It uses no CPU or memory, but it holds a PID. If a buggy parent never reaps and keeps spawning, you eventually exhaust the PID table and can't fork new processes. To check: <code>ps aux | grep defunct</code>. You can't kill a zombie directly — it's already dead. You kill the parent, and init (PID 1) adopts and reaps the orphans.<br><br>
+    <strong>💬 Quick story:</strong> A Python app on a customer's server stopped accepting new connections. <code>ps aux</code> showed 30,000 zombies. The parent process was spawning workers but never calling <code>wait()</code>. We killed the parent, init reaped them, and the server breathed again.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "What's the difference between a zombie and an orphan?" — Orphan: parent died, init adopts. Zombie: child died, parent didn't reap. Different problems.<br><br>
+    <strong>🚫 Common mistake:</strong> Saying "I'd <code>kill -9</code> the zombie." You can't — it's already dead. Killing the parent is the fix.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L13</span><span class="qa-q-text">Explain the Linux boot process in brief.</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> BIOS/UEFI → bootloader (GRUB) → kernel + initramfs → init system (systemd) → target/runlevel → user login.<br><br>
+    <strong>Detailed answer:</strong> Power on: BIOS or UEFI runs hardware checks (POST), finds the bootloader on disk. GRUB loads, shows the boot menu, hands control to the kernel. The kernel decompresses, mounts initramfs (a tiny RAM filesystem with just enough drivers to mount the real root). Once root is mounted, the kernel hands off to PID 1 — usually <code>systemd</code>. Systemd reads its target (like <code>multi-user.target</code> or <code>graphical.target</code>), starts services in dependency order, and finally launches <code>getty</code> for login. The whole thing takes seconds on modern hardware.<br><br>
+    <strong>💬 Quick story:</strong> A box wouldn't boot after a kernel update. Got the GRUB screen, but the kernel kicked into an emergency shell. <code>journalctl</code> from the rescue shell showed initramfs was missing the SCSI driver. Booted the previous kernel, rebuilt initramfs with <code>dracut</code>, problem solved.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "What's the difference between BIOS and UEFI?" — UEFI is the modern replacement: faster boot, supports drives &gt;2TB, secure boot, GUI-friendly. BIOS is legacy 16-bit firmware.<br><br>
+    <strong>🚫 Common mistake:</strong> Skipping initramfs entirely. It's the bridge between the kernel and the real root filesystem — interviewers love asking why it exists.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L14</span><span class="qa-q-text">How do you write an idempotent shell script?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> Make every operation safe to run multiple times — check before acting. Use <code>if [ ! -f file ]; then create file; fi</code> instead of blind creation.<br><br>
+    <strong>Detailed answer:</strong> Idempotent means: run it 10 times, the result is the same as running it once. For file creation: <code>[ -f /etc/myconfig ] || cp template /etc/myconfig</code>. For directories: <code>mkdir -p</code> instead of <code>mkdir</code>. For users: check <code>id user &gt;/dev/null 2&gt;&amp;1 || useradd user</code>. For packages: most package managers are already idempotent — <code>apt install -y nginx</code> is safe to re-run. For lines in config files: use <code>grep -q "pattern" file || echo "pattern" &gt;&gt; file</code>. The principle: never blindly append, overwrite, or create — always check state first.<br><br>
+    <strong>💬 Quick story:</strong> Wrote a non-idempotent setup script that appended a line to <code>/etc/hosts</code>. Re-ran it three times during testing. Ended up with three duplicate entries breaking DNS resolution. Now every config-modifying script I write starts with a state check.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "How is this different from Ansible?" — Ansible's modules are idempotent by design. Same logic, just wrapped in a higher-level abstraction. Ansible is essentially industrial-strength idempotent shell.<br><br>
+    <strong>🚫 Common mistake:</strong> Saying "I use <code>set -e</code> for idempotency." <code>set -e</code> makes scripts exit on error — that's safety, not idempotency. Different concepts.
+  </div></div></div>
+
+  <div class="qa-item"><div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge">L15</span><span class="qa-q-text">What's the difference between <code>&amp;</code>, <code>&amp;&amp;</code>, <code>|</code>, and <code>||</code>?</span><span class="qa-chevron">▼</span></div><div class="qa-a"><div class="qa-a-badge">ANSWER</div><div class="qa-a-text">
+    <strong>Quick answer:</strong> <code>&amp;</code> runs in background, <code>&amp;&amp;</code> runs the next command only if the previous succeeded, <code>|</code> pipes output between commands, <code>||</code> runs the next command only if the previous failed.<br><br>
+    <strong>Detailed answer:</strong> <code>&amp;</code>: <code>long-script.sh &amp;</code> backgrounds it, frees the shell. <code>&amp;&amp;</code>: <code>make &amp;&amp; make install</code> — install only runs if make succeeded. <code>|</code>: <code>cat file | grep error</code> — stdout of the left becomes stdin of the right. <code>||</code>: <code>cmd || echo "failed"</code> — fallback if cmd fails. You can chain: <code>backup.sh &amp;&amp; echo "ok" || echo "failed"</code>. Common pattern: <code>command || exit 1</code> in scripts to bail early on failure.<br><br>
+    <strong>💬 Quick story:</strong> A teammate's deploy script had <code>build &amp; deploy</code> instead of <code>build &amp;&amp; deploy</code>. Build was running in the background while deploy started immediately on stale artifacts. Looked random in CI. One character, one production rollback.<br><br>
+    <strong>⚠️ Follow-up trap:</strong> "What does <code>$?</code> hold?" — The exit code of the last command. <code>0</code> = success, anything else = failure. <code>&amp;&amp;</code> and <code>||</code> both check this.<br><br>
+    <strong>🚫 Common mistake:</strong> Confusing <code>|</code> and <code>||</code>. A single pipe is data flow, a double pipe is a logical OR. Completely different worlds.
+  </div></div></div>
+
+</div>
+
+<div class="loop-box">
+  <div class="loop-icon">🧱</div>
+  <div>
+    <div class="loop-title">This is the actual foundation — everything else is built on top of it</div>
+    <div class="loop-desc">Files &amp; permissions <span class="loop-arrow">→</span> processes &amp; services <span class="loop-arrow">→</span> networking <span class="loop-arrow">→</span> text tools <span class="loop-arrow">→</span> remote access. <span class="loop-arrow">|</span> Docker, Kubernetes, and CI/CD don't replace any of this — they're automation built on top of exactly these commands.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- REAL SCENARIOS — "problem first, command second" compiler.
+     Different purpose from the command simulator above: that one is a
+     reference (pick a command, see what it does). This one teaches WHEN
+     and WHY you'd ever reach for a command — you read a real situation
+     first, THEN see which command solves it, click Run, see the output. -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section-title">🎭 Real Scenarios — Learn Commands by Solving the Problem First</div>
+<div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Every card below starts with a real situation, not a command name. Read it, think about what you'd actually type, then click ▶ Run to reveal the command and its real output.</div>
+
+<div style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-left:3px solid #38bdf8;border-radius:4px;padding:14px 16px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.8;">
+  This is the opposite direction from the simulator above. Up there, you already know the command's name and want to see what it does. Down here, you only know the <em>problem</em> — the way it actually happens on the job — and have to work out which command solves it. That's the real skill interviews (and real incidents) actually test.
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> You SSH into a server you've never touched before. Before you install anything or change a single setting, you want to know exactly what you're working with.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">uname -a</div>
+    <div class="pu-output">Linux web01 5.15.0-91-generic #101-Ubuntu SMP x86_64 GNU/Linux</div>
+    <div class="scenario-why"><strong>Why this command:</strong> One line tells you the OS, kernel version, and CPU architecture — all three matter before you install anything architecture-specific or run a script written for a different distro.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> A teammate messages you: "the server feels slow." That's the entire report — no error, no logs, nothing else. Where do you actually start?</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">top</div>
+    <div class="pu-output">PID   USER   %CPU  %MEM  COMMAND
+4821  devops  94.2  12.0  node
+112   root     1.1   0.4  systemd
+980   root     0.8   1.2  dockerd
+<span class="warn">↳ node is at 94% CPU — that's your suspect</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> A live, constantly-refreshing view of every process's CPU and memory — the fastest way to turn a vague "it's slow" into a specific PID to investigate.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> <code>df -h</code> shows the disk is at 97% full. You need to know exactly what's eating all that space before you can do anything about it.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">du -sh /var/log/* | sort -rh | head -5</div>
+    <div class="pu-output">2.1G  /var/log/app.log
+340M  /var/log/nginx
+88M   /var/log/apt
+<span class="warn">↳ app.log is the culprit — probably needs log rotation</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> <code>df -h</code> only tells you the disk is full — <code>du -sh</code> is how you find out WHAT is filling it. Sorted largest-first, the answer is usually the very first line.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> You just deployed your app on port 3000, but nobody can reach it. Before blaming the network or a firewall, you need to confirm the app is even listening at all.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">ss -tulpn | grep 3000</div>
+    <div class="pu-output"><span class="err">(no output — nothing is listening on port 3000)</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Empty output here is itself the answer — the app never actually started, or it's listening on a different port than you think. Confirm this BEFORE spending an hour debugging firewalls for a problem that isn't there.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> Your CI pipeline fails with <code>Permission denied</code> trying to run <code>./deploy.sh</code> — the exact same script that works fine when you run it locally.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">chmod +x deploy.sh
+git add deploy.sh
+git commit -m "fix: make deploy.sh executable"</div>
+    <div class="pu-output">before: <span class="err">-rw-r--r--</span> deploy.sh
+after:  <span class="ok">-rwxr-xr-x</span> deploy.sh</div>
+    <div class="scenario-why"><strong>Why this command:</strong> Git tracks the execute bit. If the file was ever committed without it, every fresh checkout — including your CI runner — loses execute permission, even though your own local copy still has it set.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> You're migrating to a new API domain. Before you change anything, you need to find every single config file that still mentions the old one.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">grep -rl "old-api.example.com" /etc/</div>
+    <div class="pu-output">/etc/nginx/sites-enabled/app.conf
+/etc/myapp/config.yml
+<span class="dim">2 files found</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> <code>-r</code> searches every subfolder, <code>-l</code> prints just the filenames (not every matching line) — exactly the checklist you need before a domain migration, in one command.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> A stuck process refuses to shut down. You already tried asking it nicely — it ignored you.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code"><span class="dim">first, the polite request (already tried, ignored):</span>
+kill 4821
+<span class="dim">it's still running 15 seconds later — now force it:</span>
+kill -9 4821</div>
+    <div class="pu-output"><span class="ok">process 4821 terminated</span></div>
+    <div class="scenario-why"><strong>Why this order matters:</strong> plain <code>kill</code> sends SIGTERM — a clean shutdown request the process can catch and finish up gracefully. <code>-9</code> is SIGKILL, enforced instantly by the kernel with zero cleanup. Always try the polite version first.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> You just edited nginx's config file to fix a routing bug. You reload the site — nothing changed. The bug is still there.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">sudo systemctl restart nginx</div>
+    <div class="pu-output"><span class="ok">nginx.service restarted</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Editing a config file only changes the file on disk — the running process keeps using whatever it loaded into memory at startup. Nothing takes effect until the service actually restarts and re-reads it.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">9</span><div><strong>The situation:</strong> <code>systemctl status myapp</code> just shows "failed" — no explanation. You need the actual error, not just the word "failed."</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">journalctl -u myapp -n 50 --no-pager</div>
+    <div class="pu-output">10:14:02 myapp <span class="ok">Started myapp.service</span>
+10:14:03 myapp <span class="err">Error: connect ECONNREFUSED 127.0.0.1:5432</span>
+10:14:03 myapp <span class="err">Process exited with code 1</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> "failed" is systemd's one-word summary — <code>journalctl -u</code> shows the actual log lines that service printed right before it died. The real cause is almost always in the last few lines before the exit.</div>
+  </div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-situation"><span class="scenario-num">10</span><div><strong>The situation:</strong> Your backup script runs perfectly every time you test it by hand. Every night at 2am via cron, it silently does nothing.</div></div>
+  <div class="scenario-cmd-label">What would you run?</div>
+  <div class="scenario-run-row">
+    <button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button>
+  </div>
+  <div class="scenario-body" style="display:none;">
+    <div class="pu-code">crontab -l
+<span class="dim"># then simulate cron's actual (near-empty) environment:</span>
+env -i bash -c "/home/deploy/backup.sh"</div>
+    <div class="pu-output">*/5 2 * * *  /home/deploy/backup.sh
+<span class="dim">...</span>
+<span class="err">backup.sh: line 4: kubectl: command not found</span></div>
+    <div class="scenario-why"><strong>Why this command:</strong> Cron runs with almost no <code>$PATH</code> and none of your shell's usual setup — a script that "just works" in your terminal can silently fail under cron because it can't find a tool by name. Testing with <code>env -i</code> reproduces that stripped-down environment on demand.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- QUIZ GAME — REUSABLE ENGINE, this is the first tab using it.
+     See the big comment block above the JS engine (search "REUSABLE QUIZ
+     GAME ENGINE") for exactly how to copy this into another tab. -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<div class="section-title">🎮 Test Yourself — Linux for DevOps Quiz</div>
+<div class="quiz-game" id="quiz-linuxdevops">
+  <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+  <div class="quiz-screen quiz-start-screen" style="display:flex;">
+    <div class="quiz-icon">🐧</div>
+    <div class="quiz-start-title">Linux for DevOps Quiz</div>
+    <div class="quiz-start-desc">50 questions pulled straight from this tab, shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+    <button class="quiz-play-btn" onclick="quizStart('quiz-linuxdevops', LINUXDEVOPS_QUIZ_JOKES, LINUXDEVOPS_QUIZ_QUESTIONS)">▶ Play</button>
+  </div>
+
+  <div class="quiz-screen quiz-joke-screen">
+    <div class="quiz-joke-icon">😄</div>
+    <div class="quiz-joke-label">while the quiz loads...</div>
+    <div class="quiz-joke-text"></div>
+  </div>
+
+  <div class="quiz-screen quiz-question-screen">
+    <div class="quiz-top-bar">
+      <span class="quiz-progress">Question 1 of 50</span>
+      <span class="quiz-score">Score: 0</span>
+    </div>
+    <div class="quiz-q-text"></div>
+    <div class="quiz-options"></div>
+    <div class="quiz-feedback" style="display:none;"></div>
+    <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+  </div>
+
+  <div class="quiz-screen quiz-end-screen">
+    <div class="quiz-end-icon">🏁</div>
+    <div class="quiz-end-title">Quiz Finished</div>
+    <div class="quiz-end-score">0 / 0</div>
+    <div class="quiz-end-pct">0%</div>
+    <button class="quiz-play-btn" onclick="quizReset('quiz-linuxdevops')">↻ Play Again</button>
+  </div>
+</div>
+
+  <details class="found-details" style="margin-top:24px;">
+    <summary>📁 Linux Filesystem Cheatsheet — Where Everything Actually Lives</summary>
+    <div class="found-body">
+
+      <div class="found-p">Every folder off the root <span class="found-code">/</span> has one specific job. Once you know what lives where, you stop guessing and start going straight to the answer.</div>
+
+      <div class="found-sub" style="margin-top:4px;">/etc</div>
+      <div class="found-pre">/etc
+ ↓
+System configuration files</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/etc/passwd  → users
+/etc/group   → groups
+/etc/hosts   → hostname-to-IP mapping
+/etc/fstab   → filesystem mount configuration
+/etc/crontab → scheduled tasks
+/etc/ssh     → SSH configuration</div>
+      <div class="found-p">Commands you'll use:</div>
+      <div class="found-pre">cat /etc/passwd
+cat /etc/hosts
+grep '^john:' /etc/passwd</div>
+
+      <div class="found-sub">/home</div>
+      <div class="found-pre">/home
+ ↓
+User home directories</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/home/steve
+/home/tony
+/home/banner</div>
+      <div class="found-p">Each user's personal files are stored here.</div>
+
+      <div class="found-sub">/root</div>
+      <div class="found-pre">/root
+ ↓
+Root user's home directory</div>
+      <div class="found-pre">Normal users: /home/steve
+Root user:    /root</div>
+
+      <div class="found-sub">/var</div>
+      <div class="found-pre">/var
+ ↓
+Frequently changing data</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/var/log
+/var/cache
+/var/tmp</div>
+      <div class="found-p">Disk problems often start here.</div>
+
+      <div class="found-sub">/var/log</div>
+      <div class="found-pre">/var/log
+ ↓
+Log files</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/var/log/messages
+/var/log/secure
+/var/log/httpd
+/var/log/nginx</div>
+      <div class="found-p">Application crashing? Look here first.</div>
+      <div class="found-p">Commands you'll use:</div>
+      <div class="found-pre">cd /var/log
+ls
+find . -type f -size +500M</div>
+
+      <div class="found-sub">/tmp</div>
+      <div class="found-pre">/tmp
+ ↓
+Temporary files</div>
+      <div class="found-p">Applications store temporary data here. Files may be deleted automatically.</div>
+
+      <div class="found-sub">/opt</div>
+      <div class="found-pre">/opt
+ ↓
+Optional or third-party software</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/opt/app
+/opt/backups
+/opt/scripts</div>
+      <div class="found-p">You'll see /opt a lot in KodeKloud labs.</div>
+
+      <div class="found-sub">/usr</div>
+      <div class="found-pre">/usr
+ ↓
+Programs and application files</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/usr/bin
+/usr/sbin
+/usr/local</div>
+
+      <div class="found-sub">/usr/bin</div>
+      <div class="found-pre">/usr/bin
+ ↓
+Regular executable commands</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">python
+grep
+cat
+ssh</div>
+      <div class="found-pre">Command: which python
+Output:  /usr/bin/python</div>
+
+      <div class="found-sub">/usr/sbin</div>
+      <div class="found-pre">/usr/sbin
+ ↓
+Administrative commands</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">useradd
+nologin
+systemctl</div>
+      <div class="found-pre">Command: which nologin
+Output:  /usr/sbin/nologin</div>
+
+      <div class="found-sub">/bin</div>
+      <div class="found-pre">/bin
+ ↓
+Essential commands</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">ls
+cp
+mv
+rm</div>
+
+      <div class="found-sub">/boot</div>
+      <div class="found-pre">/boot
+ ↓
+Boot files</div>
+      <div class="found-p">Examples: Kernel, GRUB, bootloader files.</div>
+      <div class="found-p">Remember:</div>
+      <div class="found-pre">BIOS/UEFI
+ ↓
+GRUB
+ ↓
+Kernel
+ ↓
+systemd
+ ↓
+Login</div>
+
+      <div class="found-sub">/dev</div>
+      <div class="found-pre">/dev
+ ↓
+Devices</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/dev/sda
+/dev/sda1
+/dev/null</div>
+      <div class="found-p">Disks, partitions, and devices appear here.</div>
+
+      <div class="found-sub">/proc</div>
+      <div class="found-pre">/proc
+ ↓
+Process information</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">/proc/cpuinfo
+/proc/meminfo</div>
+      <div class="found-p">System information lives here.</div>
+
+      <div class="found-sub">~</div>
+      <div class="found-pre">~
+ ↓
+Your home directory</div>
+      <div class="found-p">Example:</div>
+      <div class="found-pre">User = steve
+~ → /home/steve</div>
+
+      <div class="found-sub">~/.bashrc</div>
+      <div class="found-pre">~/.bashrc
+ ↓
+Bash configuration</div>
+      <div class="found-p">Examples:</div>
+      <div class="found-pre">alias ll='ls -la'
+export APP_ENV=production</div>
+      <div class="found-p">After editing:</div>
+      <div class="found-pre">source ~/.bashrc</div>
+
+      <div class="found-h">🔥 The 10 Locations I Want You To Memorize</div>
+      <table class="found-table">
+        <thead><tr><th>Location</th><th>What's stored there?</th></tr></thead>
+        <tbody>
+          <tr><td>/etc/passwd</td><td>Users</td></tr>
+          <tr><td>/etc/group</td><td>Groups</td></tr>
+          <tr><td>/etc/hosts</td><td>Hostnames and IP addresses</td></tr>
+          <tr><td>/home</td><td>User files</td></tr>
+          <tr><td>/root</td><td>Root user's files</td></tr>
+          <tr><td>/var/log</td><td>Logs</td></tr>
+          <tr><td>/tmp</td><td>Temporary files</td></tr>
+          <tr><td>/opt</td><td>Applications</td></tr>
+          <tr><td>/usr/bin</td><td>Commands</td></tr>
+          <tr><td>~/.bashrc</td><td>Bash settings</td></tr>
+        </tbody>
+      </table>
+
+      <div class="found-h">🧠 DevOps Cheat Sheet</div>
+      <div class="found-pre">User?                  ↓  /etc/passwd
+Group?                 ↓  /etc/group
+Logs?                  ↓  /var/log
+Applications?          ↓  /opt
+Commands?              ↓  /usr/bin
+Hostname?              ↓  /etc/hosts
+Shell configuration?   ↓  ~/.bashrc
+User files?            ↓  /home
+Disk problems?         ↓  /var</div>
+
+    </div>
+  </details>
+
+

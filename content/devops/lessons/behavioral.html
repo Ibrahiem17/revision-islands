@@ -1,0 +1,90 @@
+
+
+  <div class="analogy">
+    <div><div class="analogy-label">🧠 Behavioral Questions</div></div>
+    <div class="analogy-item"><span class="analogy-icon">📖</span><div class="analogy-text"><strong>Use STAR format</strong><br>Situation → Task → Action → Result</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">💡</span><div class="analogy-text"><strong>Show ownership</strong><br>What did YOU specifically do</div></div>
+    <span class="analogy-divider">→</span>
+    <div class="analogy-item"><span class="analogy-icon">📊</span><div class="analogy-text"><strong>Quantify if possible</strong><br>Reduced build time by 80%</div></div>
+  </div>
+
+  <div class="section-title">🎯 Common DevOps Behavioral Questions + How to Approach</div>
+  <div class="qa-list">
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">B01</span><span class="qa-q-text">Tell me about a time you automated a tedious manual process.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">HOW TO ANSWER</div><div class="qa-a-text">
+        <strong>What they want to hear:</strong> You proactively identified inefficiency, built a solution, and measured the impact.<br><br>
+        <strong>Structure (STAR):</strong><br>
+        • <strong>Situation:</strong> "Deployments required 12 manual steps and took 2 hours each, with frequent human errors."<br>
+        • <strong>Task:</strong> "I needed to make this repeatable and error-free."<br>
+        • <strong>Action:</strong> "I built a GitHub Actions pipeline that automated the entire process — tests, Docker build, push to ECR, and kubectl apply — triggered on every merge to main."<br>
+        • <strong>Result:</strong> "Deployment time dropped from 2 hours to 8 minutes. Zero manual errors since. The team could ship 3x more frequently."<br><br>
+        <strong>Tip:</strong> Relate this to your actual AlphaCRM or URL Shortener projects — you built CI/CD pipelines with Docker and GitHub Actions.
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">B02</span><span class="qa-q-text">How do you handle developers pushing back on security or infrastructure constraints?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">HOW TO ANSWER</div><div class="qa-a-text">
+        <strong>What they want to hear:</strong> You can collaborate without being a blocker, you explain the "why" not just the "no", and you find solutions not just problems.<br><br>
+        <strong>Key points to hit:</strong><br>
+        • Understand their perspective first — why is the constraint painful for them?<br>
+        • Explain the risk in plain terms, not just policy compliance: "This would expose customer PII to anyone who gets the access token."<br>
+        • Offer alternatives: "We can't open port 22 to 0.0.0.0/0, but we can set up a bastion host or use AWS SSM Session Manager — same access, no exposed port."<br>
+        • DevOps is a bridge role — security and developer velocity are both your responsibility, not opposites.<br><br>
+        <strong>Avoid:</strong> "I just said no and escalated." That's not collaboration.
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">B03</span><span class="qa-q-text">Describe a time you caused an outage or made a major mistake. How did you fix it and what did you learn?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">HOW TO ANSWER</div><div class="qa-a-text">
+        <strong>What they want to hear:</strong> You take ownership (no blame-shifting), you responded effectively, and you turned it into a learning moment with systemic improvements.<br><br>
+        <strong>Structure:</strong><br>
+        • <strong>Be honest</strong> — don't say "I've never made a mistake." Everyone has. Refusing to share is a red flag.<br>
+        • <strong>Describe the mistake clearly</strong> — what happened, what the impact was.<br>
+        • <strong>What you did immediately</strong> — how did you communicate and recover?<br>
+        • <strong>What you changed afterwards</strong> — what process/safeguard did you add so it can't happen again? This is the most important part.<br><br>
+        <strong>Example angle:</strong> "I pushed a config change to production without testing it in staging first. The app went down for 20 minutes. I immediately rolled back. Afterwards, I added a staging environment requirement to the CI/CD pipeline — no changes can bypass staging anymore."<br><br>
+        <strong>Key message:</strong> You made it structurally impossible to repeat the mistake.
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">B04</span><span class="qa-q-text">A developer complains their application is running slowly on a Linux server. What do you run?</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">HOW TO ANSWER</div><div class="qa-a-text">
+        <strong>Systematic approach — don't guess, measure:</strong><br><br>
+        <strong>CPU:</strong> <code>top</code> or <code>htop</code> — is the app maxing out CPU? Any other processes stealing CPU?<br>
+        <strong>Memory:</strong> <code>free -h</code> — is RAM full? Is the system swapping to disk? (Swap = very slow)<br>
+        <strong>Disk I/O:</strong> <code>iostat -x 1</code> or <code>iotop</code> — is the disk saturated? High iowait in top indicates disk bottleneck.<br>
+        <strong>Disk space:</strong> <code>df -h</code> — full disk can cause slow writes and crashes.<br>
+        <strong>Network:</strong> <code>netstat -s</code> or <code>ss -s</code> — retransmit errors, connection states.<br>
+        <strong>Application logs:</strong> Slow DB queries? External API timeouts? <code>tail -f app.log</code><br>
+        <strong>System errors:</strong> <code>dmesg | tail</code> — kernel-level errors?<br><br>
+        <span class="qa-pill">top → free → df → iostat → logs</span><span class="qa-pill">don't guess, measure first</span>
+      </div></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggle(this)"><span class="qa-q-badge" style="color:#10b981;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.2);">B05</span><span class="qa-q-text">A deployment just failed in production. Walk me through your immediate next steps.</span><span class="qa-chevron">▼</span></div>
+      <div class="qa-a"><div class="qa-a-badge">HOW TO ANSWER</div><div class="qa-a-text">
+        <strong>Step 1 — Assess scope FAST:</strong> Is it a partial failure or complete outage? Are all users affected or some?<br><br>
+        <strong>Step 2 — Rollback FIRST, investigate later:</strong> If users are impacted, don't spend 30 minutes debugging — rollback immediately to the last known good version. In Kubernetes: <code>kubectl rollout undo deployment/myapp</code>. In ECS: redeploy the previous task definition. Restore service first.<br><br>
+        <strong>Step 3 — Communicate:</strong> Immediately notify your team and stakeholders: "Deployment X failed, rolling back, ETA 5 minutes." Update every 15 minutes.<br><br>
+        <strong>Step 4 — Investigate safely:</strong> Once users are restored, investigate in a non-prod environment. Look at pipeline logs, application logs, diff the config between old and new versions.<br><br>
+        <strong>Step 5 — Post-mortem:</strong> After fix, blameless post-mortem. What failed? How do we detect it earlier next time? What safeguard do we add?<br><br>
+        <span class="qa-pill">rollback first</span><span class="qa-pill">communicate immediately</span><span class="qa-pill">investigate safely after restoration</span><span class="qa-pill">blameless post-mortem</span>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="section-title">📝 What is a Build Artifact?</div>
+  <div style="background:rgba(255,255,255,0.02);border:1px solid #1e293b;border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    A <strong style="color:#e2e8f0;">build artifact</strong> is the deployable output generated by the build stage of a CI/CD pipeline. It's the final packaged product that moves forward through testing and deployment stages.<br><br>
+    <strong style="color:#e2e8f0;">Examples:</strong> A compiled Java <code>.jar</code> file, a Docker image, a zipped Node.js app, a compiled Go binary, a bundled React app.<br><br>
+    <strong style="color:#e2e8f0;">Why it matters:</strong> Artifacts are <em>built once</em> and promoted through environments (dev → staging → prod). You test the exact same artifact — not "build again in each environment." This ensures what you tested is exactly what you deployed.
+  </div>
+

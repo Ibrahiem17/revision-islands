@@ -1,0 +1,231 @@
+
+
+  <div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.22);border-radius:4px;padding:14px;margin-bottom:20px;font-size:11.5px;color:#94a3b8;line-height:1.75;">
+    <strong style="color:#818cf8;">☸️ Kubernetes for DevOps</strong> — the Kubernetes tab covers the concepts (pods, deployments, scheduling). This tab is the hands-on companion: click any real kubectl command to see its output, walk through real troubleshooting scenarios, then test yourself.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERACTIVE KUBECTL COMMAND SIMULATOR
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title">🖥️ Try It — Click Any kubectl Command to "Run" It</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Same simulator as Linux for DevOps, Networking, SSH, and Docker for DevOps — syntax first, then a real example, then output.</div>
+
+  <div class="ld-term">
+    <div class="ld-term-bar">
+      <span class="ld-dot" style="background:#ff5f56"></span>
+      <span class="ld-dot" style="background:#ffbd2e"></span>
+      <span class="ld-dot" style="background:#27c93f"></span>
+      <span class="ld-term-title">devops@server: ~</span>
+    </div>
+    <div class="ld-term-body">
+      <div class="ld-term-line"><span class="ld-prompt">devops@server:~$</span> <span id="k8sCmd">click any command below</span></div>
+      <div class="pu-output" id="k8sOutput"><span class="dim">↳ output shows up here the moment you click something</span></div>
+    </div>
+  </div>
+  <div class="ld-info" id="k8sInfo">
+    <div><strong>🧩 Syntax:</strong> <code id="k8sSyntax">click a command below</code></div>
+    <div style="margin-top:6px;"><strong>What it does:</strong> <span id="k8sDoes">Pick any command below to get started — cluster, pods, deployments, services, config, and RBAC are all here.</span></div>
+    <div style="margin-top:6px;"><strong>Where you'll use it:</strong> <span id="k8sWhere">—</span></div>
+  </div>
+
+  <div class="ld-cat">🌐 Cluster &amp; Context</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('clusterInfo',this)">kubectl cluster-info</button>
+    <button class="ld-pill" onclick="runK8sCmd('getContexts',this)">kubectl config get-contexts</button>
+    <button class="ld-pill" onclick="runK8sCmd('useContext',this)">kubectl config use-context</button>
+    <button class="ld-pill" onclick="runK8sCmd('getNodes',this)">kubectl get nodes</button>
+    <button class="ld-pill" onclick="runK8sCmd('version',this)">kubectl version</button>
+  </div>
+
+  <div class="ld-cat">📦 Pods</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('getPods',this)">kubectl get pods</button>
+    <button class="ld-pill" onclick="runK8sCmd('describePod',this)">kubectl describe pod</button>
+    <button class="ld-pill" onclick="runK8sCmd('runPod',this)">kubectl run</button>
+    <button class="ld-pill" onclick="runK8sCmd('deletePod',this)">kubectl delete pod</button>
+    <button class="ld-pill" onclick="runK8sCmd('execPod',this)">kubectl exec -it</button>
+  </div>
+
+  <div class="ld-cat">🚀 Deployments</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('createDeployment',this)">kubectl create deployment</button>
+    <button class="ld-pill" onclick="runK8sCmd('getDeployments',this)">kubectl get deployments</button>
+    <button class="ld-pill" onclick="runK8sCmd('scaleDeployment',this)">kubectl scale</button>
+    <button class="ld-pill" onclick="runK8sCmd('rolloutStatus',this)">kubectl rollout status</button>
+    <button class="ld-pill" onclick="runK8sCmd('rolloutUndo',this)">kubectl rollout undo</button>
+  </div>
+
+  <div class="ld-cat">🌍 Services &amp; Networking</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('expose',this)">kubectl expose</button>
+    <button class="ld-pill" onclick="runK8sCmd('getSvc',this)">kubectl get svc</button>
+    <button class="ld-pill" onclick="runK8sCmd('portForward',this)">kubectl port-forward</button>
+    <button class="ld-pill" onclick="runK8sCmd('getEndpoints',this)">kubectl get endpoints</button>
+  </div>
+
+  <div class="ld-cat">📜 Logs &amp; Debugging</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('logs',this)">kubectl logs</button>
+    <button class="ld-pill" onclick="runK8sCmd('logsF',this)">kubectl logs -f</button>
+    <button class="ld-pill" onclick="runK8sCmd('getEvents',this)">kubectl get events</button>
+    <button class="ld-pill" onclick="runK8sCmd('topPods',this)">kubectl top pods</button>
+    <button class="ld-pill" onclick="runK8sCmd('describeNode',this)">kubectl describe node</button>
+  </div>
+
+  <div class="ld-cat">⚙️ Config &amp; Secrets</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('createConfigmap',this)">kubectl create configmap</button>
+    <button class="ld-pill" onclick="runK8sCmd('createSecret',this)">kubectl create secret</button>
+    <button class="ld-pill" onclick="runK8sCmd('getConfigmaps',this)">kubectl get configmaps</button>
+    <button class="ld-pill" onclick="runK8sCmd('applyF',this)">kubectl apply -f</button>
+  </div>
+
+  <div class="ld-cat">🗂️ Namespaces &amp; RBAC</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('getNamespaces',this)">kubectl get namespaces</button>
+    <button class="ld-pill" onclick="runK8sCmd('createNamespace',this)">kubectl create namespace</button>
+    <button class="ld-pill" onclick="runK8sCmd('getRoles',this)">kubectl get roles</button>
+    <button class="ld-pill" onclick="runK8sCmd('authCanI',this)">kubectl auth can-i</button>
+  </div>
+
+  <div class="ld-cat">🔄 Rollouts &amp; Scaling</div>
+  <div class="ld-pills">
+    <button class="ld-pill" onclick="runK8sCmd('autoscale',this)">kubectl autoscale</button>
+    <button class="ld-pill" onclick="runK8sCmd('rolloutHistory',this)">kubectl rollout history</button>
+    <button class="ld-pill" onclick="runK8sCmd('setImage',this)">kubectl set image</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       REAL SCENARIOS
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎭 Real Scenarios — Learn Kubernetes by Solving the Problem First</div>
+  <div style="font-size:11px;color:#475569;margin:-10px 0 18px;">Read the situation, think about what you'd actually run, then click ▶ Run to reveal the command and its real output.</div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">1</span><div><strong>The situation:</strong> A pod keeps entering CrashLoopBackOff, restarting over and over, and you need to know why.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl logs web-7d8f9c6b5d-abcde --previous</div>
+      <div class="pu-output"><span class="err">Error: Cannot find module 'express'</span><br>    at Function.Module._resolveFilename</div>
+      <div class="scenario-why"><strong>Why this command:</strong> --previous shows the log from the container that already crashed, not the fresh restart attempt — which usually has no output yet. This is exactly the same idea as "docker logs" needing the crashed container's own output.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">2</span><div><strong>The situation:</strong> A pod has been stuck in "Pending" status for several minutes and never actually starts.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl describe pod web-7d8f9c6b5d-abcde</div>
+      <div class="pu-output">Events:<br><span class="err">Warning  FailedScheduling  0/3 nodes are available: 3 Insufficient memory.</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> describe's Events section is where the scheduler explains exactly why it couldn't place the pod — here, every node is genuinely out of free memory to fit it.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">3</span><div><strong>The situation:</strong> Another pod can't reach a service, and you suspect there might be no healthy pods actually behind it.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl get endpoints web</div>
+      <div class="pu-output">NAME   ENDPOINTS<br>web    <span class="err">&lt;none&gt;</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> An empty endpoints list confirms nothing is actually behind the service — no pod currently matches its selector, so any traffic sent to it simply has nowhere to go.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">4</span><div><strong>The situation:</strong> You need to test a service directly from your laptop, without setting up a public LoadBalancer or Ingress.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl port-forward svc/web 8080:80</div>
+      <div class="pu-output"><span class="ok">Forwarding from 127.0.0.1:8080 -> 80</span><br>Forwarding from [::1]:8080 -> 80</div>
+      <div class="scenario-why"><strong>Why this command:</strong> port-forward tunnels a local port straight to the service inside the cluster — no public exposure needed, perfect for a quick local check.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">5</span><div><strong>The situation:</strong> A deployment you just pushed is clearly broken in production, and you need to recover immediately.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl rollout undo deployment/web</div>
+      <div class="pu-output"><span class="ok">deployment.apps/web rolled back</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> This instantly reverts to the last known-good revision — no rebuild, no re-deploy script, just one command while you investigate the real fix.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">6</span><div><strong>The situation:</strong> You need to change an app's log level without rebuilding or redeploying its container image.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl create configmap app-config --from-literal=LOG_LEVEL=debug</div>
+      <div class="pu-output"><span class="ok">configmap/app-config created</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> ConfigMaps keep config outside the image entirely — changing one (then restarting the pods that read it) never requires touching the image at all.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">7</span><div><strong>The situation:</strong> You're about to run a risky delete command and want to confirm you're actually allowed to first.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl auth can-i delete pods --namespace production</div>
+      <div class="pu-output"><span class="warn">no</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> Confirming access ahead of time beats finding out only after the real command fails — and here, it just saved you from a permission error mid-incident.</div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-situation"><span class="scenario-num">8</span><div><strong>The situation:</strong> A big sale is coming up, and pods need to scale up and down automatically as traffic rises and falls.</div></div>
+    <div class="scenario-cmd-label">What would you run?</div>
+    <div class="scenario-run-row"><button class="scenario-run-btn" onclick="this.closest('.scenario-card').querySelector('.scenario-body').style.display='block'; this.style.display='none';">▶ Run</button></div>
+    <div class="scenario-body" style="display:none;">
+      <div class="pu-code">kubectl autoscale deployment web --min=2 --max=10 --cpu-percent=70</div>
+      <div class="pu-output"><span class="ok">horizontalpodautoscaler.autoscaling/web autoscaled</span></div>
+      <div class="scenario-why"><strong>Why this command:</strong> This sets up a Horizontal Pod Autoscaler that reacts to real CPU load automatically — no one has to be online during the sale to manually run kubectl scale.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       QUIZ
+       ══════════════════════════════════════════════════════════ -->
+  <div class="section-title" style="margin-top:28px;">🎮 Test Yourself — Kubernetes for DevOps Quiz</div>
+  <div class="quiz-game" id="quiz-k8sdevops">
+    <button class="quiz-close-btn" onclick="quizQuit()">✕ Finish</button>
+
+    <div class="quiz-screen quiz-start-screen" style="display:flex;">
+      <div class="quiz-icon">☸️</div>
+      <div class="quiz-start-title">Kubernetes for DevOps Quiz</div>
+      <div class="quiz-start-desc">50 questions across pods, deployments, services, scaling, config/secrets, namespaces, RBAC, and troubleshooting — shuffled every time you play. One question on screen at a time — a wrong answer always shows the right one and why. Quit whenever you want, your score still counts.</div>
+      <button class="quiz-play-btn" onclick="quizStart('quiz-k8sdevops', K8SDEVOPS_QUIZ_JOKES, K8SDEVOPS_QUIZ_QUESTIONS)">▶ Play</button>
+    </div>
+
+    <div class="quiz-screen quiz-joke-screen">
+      <div class="quiz-joke-icon">😄</div>
+      <div class="quiz-joke-label">while the quiz loads...</div>
+      <div class="quiz-joke-text"></div>
+    </div>
+
+    <div class="quiz-screen quiz-question-screen">
+      <div class="quiz-top-bar">
+        <span class="quiz-progress">Question 1 of 50</span>
+        <span class="quiz-score">Score: 0</span>
+      </div>
+      <div class="quiz-q-text"></div>
+      <div class="quiz-options"></div>
+      <div class="quiz-feedback" style="display:none;"></div>
+      <button class="quiz-next-btn" onclick="quizNext()" style="display:none;">Next Question →</button>
+    </div>
+
+    <div class="quiz-screen quiz-end-screen">
+      <div class="quiz-end-icon">🏁</div>
+      <div class="quiz-end-title">Quiz Finished</div>
+      <div class="quiz-end-score">0 / 0</div>
+      <div class="quiz-end-pct">0%</div>
+      <button class="quiz-play-btn" onclick="quizReset('quiz-k8sdevops')">↻ Play Again</button>
+    </div>
+  </div>
+
