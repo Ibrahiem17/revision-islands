@@ -34,14 +34,14 @@ function messyVsOrganized() {
     <text class="od-cap" x="14" y="150">data + functions scattered, tangled</text>
     ${box(176, 50, 108, 40, "od-k od-greenfill", 10)}<text class="od-s od-onink" x="230" y="74" text-anchor="middle">Object: data</text>
     ${box(176, 98, 108, 40, "od-k od-greenfill", 10)}<text class="od-s od-onink" x="230" y="122" text-anchor="middle">+ methods</text>
-    <text class="od-cap" x="176" y="150">bundled together, self-contained</text>`;
+    <text class="od-cap" x="176" y="150">bundled together,</text><text class="od-cap" x="176" y="163">self-contained</text>`;
   const css = keyframes("odMessWiggle", 3.6, [[0, "transform:rotate(0deg)"], [50, "transform:rotate(2deg)"], [100, "transform:rotate(0deg)"]]) + bind(".od-mess", "odMessWiggle", 3.6, "ease-in-out");
   return fig("proceduralMess", 300, 182, "Procedural mess versus OOP order", "Left: a tangled squiggly line connecting scattered dots, representing procedural code where data and functions live far apart. Right: two clean stacked green boxes, one for data and one for methods, bundled together as one object.", inner) + `<style>${css}</style>`;
 }
 
 // ---------- intro-3: the four pillars, as icon badges ----------
 function fourPillars() {
-  const cols = [40, 120, 200, 280];
+  const cols = [42, 114, 186, 254];
   const labels = ["Encapsulation", "Abstraction", "Inheritance", "Polymorphism"];
   const icon = (i, cx) => {
     if (i === 0) return padlock(cx, 70, 1.15, "od-yfill");
@@ -67,8 +67,9 @@ function carAnalogy() {
     <path class="od-k od-t od-dash" d="M60,50C80,58 96,66 108,76" fill="none"/>
     <text class="od-s" x="254" y="46" text-anchor="end">② hood = encapsulation</text>
     <path class="od-k od-t od-dash" d="M240,50C220,58 204,66 192,76" fill="none"/>
-    <text class="od-s" x="10" y="150">③ Truck / Sports Car both "are" Vehicles = inheritance</text>
-    <text class="od-s" x="10" y="166">④ pressing the pedal does something different per car = polymorphism</text>`;
+    <text class="od-s" x="10" y="146">③ Truck / Sports Car both "are" Vehicles = inheritance</text>
+    <text class="od-s" x="10" y="162">④ pressing the pedal does something different</text>
+    <text class="od-s" x="10" y="176">per car = polymorphism</text>`;
   const css = keyframes("odCarBob", 3.4, [[0, "transform:translateY(0)"], [50, "transform:translateY(-3px)"], [100, "transform:translateY(0)"]]) + bind(".od-panel svg > g", "odCarBob", 3.4);
   return fig("carAnalogy", 300, 182, "The four pillars mapped onto a real car", "A car illustration with two callouts: the wheel pointing to abstraction, the hood pointing to encapsulation, plus two caption lines explaining inheritance (Truck and Sports Car are both Vehicles) and polymorphism (the pedal behaves differently per vehicle).", inner) + `<style>${css}</style>`;
 }
@@ -112,7 +113,7 @@ function pillarsHoldObject() {
     <text class="od-b od-onink" x="150" y="65" text-anchor="middle">OBJECT: data + behavior</text>
     ${cols.map((cx, i) => `<rect class="od-k od-t od-yfill od-col od-col-${i}" x="${cx - 12}" y="80" width="24" height="70" rx="6"/><text class="od-b" x="${cx}" y="122" text-anchor="middle">${labels[i]}</text>`).join("")}
     <rect class="od-k" x="20" y="150" width="260" height="10" rx="4"/>
-    <text class="od-cap" x="10" y="176">encapsulation · abstraction · inheritance · polymorphism hold it up</text>`;
+    <text class="od-cap" x="150" y="176" text-anchor="middle">encapsulation · abstraction · inheritance · polymorphism</text>`;
   const one = (i, d) => keyframes(`odCol${i}`, 4, [[0, "transform:translateY(0)"], [d, "transform:translateY(0)"], [d + 8, "transform:translateY(-3px)"], [d + 16, "transform:translateY(0)"], [100, "transform:translateY(0)"]]) + bind(`.od-col-${i}`, `odCol${i}`, 4);
   const css = labels.map((_, i) => one(i, i * 12)).join("");
   return fig("pillarsHoldObject", 300, 190, "The four pillars holding an object up", "A green box labeled OBJECT: data + behavior rests on four mustard columns labeled E, A, I and P, all standing on a common ground line — the four pillars supporting everything else in OOP.", inner) + `<style>${css}</style>`;

@@ -159,7 +159,7 @@ function overloadOverride() {
     ${box(166, 52, 66, 40, "od-k od-p", 6)}<text class="od-s" x="199" y="76" text-anchor="middle">Animal</text>
     ${arrowDown(199, 100)}
     ${box(166, 100, 132, 40, "od-k od-greenfill", 6)}<text class="od-s od-onink" x="232" y="124" text-anchor="middle">Dog.makeSound()</text>
-    <text class="od-cap" x="166" y="150">parent -&gt; child, same signature</text><text class="od-cap" x="166" y="163">replaced — runtime</text>`;
+    <text class="od-cap" x="166" y="150">parent -&gt; child,</text><text class="od-cap" x="166" y="163">same signature —</text><text class="od-cap" x="166" y="176">replaced at runtime</text>`;
   const css = keyframes("odOoPulse", 3, [[0, "opacity:1"], [50, "opacity:.55"], [100, "opacity:1"]]) + bind(".od-k.od-dash", "odOoPulse", 3);
   return fig("overloadOverride", 300, 182, "Overloading versus overriding, side by side", "Left half: two add() methods with different parameter lists in the same class, labeled overload, decided at compile time. Right half: an Animal box with an arrow down to a green Dog box whose makeSound() replaces the parent's version, labeled override, decided at runtime.", inner) + `<style>${css}</style>`;
 }
@@ -181,7 +181,7 @@ function abstractVsInterface() {
     <path class="od-k" d="M238,82V118"/>${arrowDown(238, 122)}
     <path class="od-k" d="M261,82C271,96 276,108 274,118"/>${arrowDown(274, 122)}
     <text class="od-s" x="238" y="140" text-anchor="middle">Employee, Invoice…</text>
-    <text class="od-cap" x="182" y="166">implement MANY — pure contract</text>`;
+    <text class="od-cap" x="182" y="156">implement MANY —</text><text class="od-cap" x="182" y="169">pure contract</text>`;
   const css = keyframes("odAiFan", 3.4, [[0, "transform:translateY(0)"], [50, "transform:translateY(3px)"], [100, "transform:translateY(0)"]]);
   return fig("abstractVsInterface", 300, 182, "Abstract class versus interface", "Left: a dashed abstract Shape box with one arrow down to a green Circle box — single inheritance, shares real code. Right: a rounded Payable interface with three arrows fanning down to Employee, Invoice and more — many classes can implement it as a pure contract.", inner) + `<style>${css}</style>`;
 }
@@ -277,7 +277,7 @@ function compositionVsInheritance() {
 // ---------- 15. SOLID — five badges ----------
 function solid() {
   const letters = ["S", "O", "L", "I", "D"];
-  const words = ["Single Resp.", "Open/Closed", "Liskov Sub.", "Interface Seg.", "Dep. Inversion"];
+  const words = ["Single Resp.", "Open/Closed", "Liskov Sub.", "Interface Seg.", "Dep. Inv."];
   const cols = [30, 90, 150, 210, 270];
   const inner = `
     <text class="od-t" x="10" y="22">Five principles for</text>

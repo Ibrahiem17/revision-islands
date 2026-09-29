@@ -105,6 +105,8 @@ export default {
         {
           type: "concept",
           id: "obj-1",
+          diagram: "houseBlueprint",
+          diagramCaption: "Same blueprint, three independent, real houses.",
           title: "A class is a blueprint, an object is the real thing",
           body: [
             "A class is a blueprint or template — it describes what something will have (its data) and what it will be able to do (its behavior), but it isn't a real thing by itself.",
@@ -115,6 +117,8 @@ export default {
         {
           type: "code",
           id: "obj-2",
+          diagram: "carClassUml",
+          diagramCaption: "One class box: name, fields, and methods.",
           title: "Your first class, in Java",
           code: "public class Car {\n    // fields (the data every Car has)\n    String color;\n    int speed;\n\n    // method (something every Car can do)\n    void drive() {\n        System.out.println(\"The \" + color + \" car is driving at \" + speed + \" km/h\");\n    }\n}",
           note: "This is just the blueprint. No actual car exists yet — Car is just a description of what a car looks like in our program."
@@ -122,6 +126,8 @@ export default {
         {
           type: "code",
           id: "obj-3",
+          diagram: "twoInstances",
+          diagramCaption: "Two new Car() calls make two separate, independent objects.",
           title: "Creating (instantiating) objects from the class",
           code: "public class Main {\n    public static void main(String[] args) {\n        Car myCar = new Car();\n        myCar.color = \"red\";\n        myCar.speed = 100;\n        myCar.drive(); // The red car is driving at 100 km/h\n\n        Car anotherCar = new Car();\n        anotherCar.color = \"blue\";\n        anotherCar.speed = 60;\n        anotherCar.drive(); // The blue car is driving at 60 km/h\n    }\n}",
           note: "**new Car() is the moment an actual object is created from the blueprint** — this is called instantiation, and myCar/anotherCar are two completely separate objects (instances) built from the same class. Changing myCar.color never affects anotherCar.color."
@@ -130,6 +136,8 @@ export default {
           type: "concept",
           id: "obj-4",
           important: true,
+          diagram: "fieldsMethodsSplit",
+          diagramCaption: "Every class splits into a fields compartment and a methods compartment.",
           title: "Fields and methods — the two things every class has",
           body: [
             "Fields (also called member variables or attributes) are the data a class holds — like color and speed above. Each object gets its own copy of these fields.",
@@ -139,12 +147,16 @@ export default {
         {
           type: "concept",
           id: "obj-5",
+          diagram: "messyVarsVsClass",
+          diagramCaption: "Scattered variables versus one clean class making car1, car2, car3.",
           title: "Why bother with classes at all?",
           body: "Without classes, you'd need separate variables for every car — car1Color, car1Speed, car2Color, car2Speed — and separate copies of every function. A class lets you define the shape of \"a car\" once, and then create as many cars as you want from it, each keeping its own data automatically."
         },
         {
           type: "table",
           id: "obj-6",
+          diagram: "classVsObjectIcons",
+          diagramCaption: "Dashed = a class; solid = a real object.",
           title: "Vocabulary check — class vs object",
           headers: ["Term", "What it means"],
           rows: [
@@ -163,6 +175,8 @@ export default {
         {
           type: "qa",
           id: "obj-8",
+          diagram: "newCarSequence",
+          diagramCaption: "The four steps Java runs behind new Car().",
           question: "What happens when you write `new Car()`?",
           answer: "Java allocates memory for a new Car object, sets its fields to default values (0, null, false, etc. depending on type), runs the constructor, and returns a reference to that new object — which you can store in a variable like `Car myCar = new Car();`."
         },
@@ -171,6 +185,8 @@ export default {
           id: "obj-9",
           important: true,
           takeaway: true,
+          diagram: "houseBlueprintTakeaway",
+          diagramCaption: "Every object stands on the same blueprint, with its own data.",
           title: "Key takeaway",
           body: "A class is a blueprint that defines fields (data) and methods (behavior); an object is a real instance of that class created with `new`. Every object built from the same class has the same structure but its own independent data."
         }
@@ -183,6 +199,8 @@ export default {
         {
           type: "concept",
           id: "ctor-1",
+          diagram: "objectBorn",
+          diagramCaption: "The constructor runs once, at the exact moment of birth.",
           title: "What is a constructor?",
           body: [
             "A constructor is a special method that runs automatically the moment an object is created with `new` — its job is to set up the object's initial state.",
@@ -192,6 +210,8 @@ export default {
         {
           type: "code",
           id: "ctor-2",
+          diagram: "ctorSetsFields",
+          diagramCaption: "Two arguments flow straight into two fields, immediately.",
           title: "A class with a constructor",
           code: "public class Car {\n    String color;\n    int speed;\n\n    // constructor\n    public Car(String c, int s) {\n        color = c;\n        speed = s;\n    }\n\n    void drive() {\n        System.out.println(\"The \" + color + \" car is driving at \" + speed + \" km/h\");\n    }\n}",
           note: "Now creating a car forces you to supply a color and speed immediately: Car myCar = new Car(\"red\", 100); — no more forgetting to set a field after creating the object."
@@ -200,6 +220,8 @@ export default {
           type: "concept",
           id: "ctor-3",
           important: true,
+          diagram: "defaultCtorTwoPanel",
+          diagramCaption: "Write no constructor and get a free one; write any constructor and it disappears.",
           title: "The default constructor",
           body: [
             "If you don't write any constructor yourself, **Java silently gives your class an empty, no-argument constructor for free** — that's why `new Car()` worked back in Topic 2 even though we hadn't written a constructor yet.",
@@ -209,6 +231,8 @@ export default {
         {
           type: "code",
           id: "ctor-4",
+          diagram: "ctorOverloadDoors",
+          diagramCaption: "Two constructor doors, two differently-configured Car objects.",
           title: "Constructor overloading — multiple ways to build the same object",
           code: "public class Car {\n    String color;\n    int speed;\n\n    public Car() {\n        color = \"white\";\n        speed = 0;\n    }\n\n    public Car(String c, int s) {\n        color = c;\n        speed = s;\n    }\n}\n\n// both of these work:\nCar basic = new Car();               // white, 0\nCar custom = new Car(\"red\", 100);    // red, 100",
           note: "This is called **constructor overloading** — the same class has multiple constructors with different parameter lists, and Java picks the right one based on what arguments you pass. Same idea as method overloading, covered in Topic 8."
@@ -216,12 +240,16 @@ export default {
         {
           type: "concept",
           id: "ctor-5",
+          diagram: "thisDisambiguation",
+          diagramCaption: "this.color is the field; color alone is just the parameter.",
           title: "The `this` keyword inside a constructor",
           body: "When your constructor's parameter names match your field names, `this.fieldName` means \"the field that belongs to this specific object,\" while the plain name refers to the parameter: public Car(String color, int speed) { this.color = color; this.speed = speed; } — without `this`, `color = color;` would just assign the parameter to itself and leave the field untouched."
         },
         {
           type: "qa",
           id: "ctor-6",
+          diagram: "ctorVsMethod",
+          diagramCaption: "A constructor and a regular method follow very different rules.",
           question: "What is a constructor, and how is it different from a regular method?",
           answer: "A constructor is a special block of code that runs automatically when an object is created, used to set up its initial state. Unlike a regular method, it has the exact same name as the class, has no return type at all (not even void), and can only run once per object, at creation time."
         },
@@ -236,6 +264,8 @@ export default {
           id: "ctor-8",
           important: true,
           takeaway: true,
+          diagram: "ctorTakeaway",
+          diagramCaption: "new Car(...) runs the constructor once, producing a ready-to-use object.",
           title: "Key takeaway",
           body: "A constructor is a special same-named, no-return-type method that runs once when an object is created, used to set up its starting values. Java gives you a free empty one only if you write none yourself."
         }
@@ -249,6 +279,8 @@ export default {
           type: "concept",
           id: "enc-1",
           important: true,
+          diagram: "capsuleBundle",
+          diagramCaption: "Data and its methods bundled into one capsule, data hidden inside.",
           title: "What is encapsulation?",
           body: [
             "Encapsulation means **bundling data (fields) and the methods that use that data together inside one class, and hiding the internal details from outside code.**",
@@ -258,6 +290,8 @@ export default {
         {
           type: "code",
           id: "enc-2",
+          diagram: "noGatekeeper",
+          diagramCaption: "A public field lets an invalid value in with nothing to stop it.",
           title: "Without encapsulation — a real problem",
           code: "public class BankAccount {\n    public double balance; // public — anyone can touch this directly\n}\n\n// somewhere else in the program:\nBankAccount acc = new BankAccount();\nacc.balance = -5000; // legal! nothing stops this",
           note: "Because balance is public, any code anywhere in the program can set it directly, including to a nonsensical negative value. There's no way to enforce a rule like \"balance can never go below zero\" — nothing is checking."
@@ -265,6 +299,8 @@ export default {
         {
           type: "code",
           id: "enc-3",
+          diagram: "gatekeeperMethods",
+          diagramCaption: "deposit() and withdraw() guard private balance on both sides.",
           title: "With encapsulation — the field is protected",
           code: "public class BankAccount {\n    private double balance; // hidden from outside\n\n    public void deposit(double amount) {\n        if (amount > 0) {\n            balance = balance + amount;\n        }\n    }\n\n    public void withdraw(double amount) {\n        if (amount > 0 && amount <= balance) {\n            balance = balance - amount;\n        }\n    }\n\n    public double getBalance() {\n        return balance;\n    }\n}",
           note: "Now balance can only change through deposit() and withdraw(), and both methods can enforce rules (no negative deposits, no overdrawing). **The class controls its own data — outside code can no longer put it into an invalid state.**"
@@ -272,6 +308,8 @@ export default {
         {
           type: "concept",
           id: "enc-4",
+          diagram: "getterSetterFlow",
+          diagramCaption: "Getters read the field; setters check first, then write.",
           title: "Getters and setters",
           body: "The public methods used to read and change private fields have a standard naming pattern: getters (like getBalance()) return a field's value, and setters (like setColor(String c)) change a field's value, usually after checking that the new value makes sense. This pair is the most common way encapsulation is implemented in real Java code."
         },
@@ -279,6 +317,8 @@ export default {
           type: "concept",
           id: "enc-5",
           important: true,
+          diagram: "twoBenefits",
+          diagramCaption: "Encapsulation keeps data valid and lets internals change safely.",
           title: "Why encapsulation matters — the actual benefit",
           body: [
             "**It protects your data from being put into an invalid state by code you don't control.** A bank account can enforce \"never below zero\" only if outside code is forced to go through deposit()/withdraw() instead of touching balance directly.",
@@ -288,6 +328,8 @@ export default {
         {
           type: "table",
           id: "enc-6",
+          diagram: "encVocabIcons",
+          diagramCaption: "One private field, two public doors: getter and setter.",
           title: "Encapsulation vocabulary",
           headers: ["Term", "Meaning"],
           rows: [
@@ -314,6 +356,8 @@ export default {
           id: "enc-9",
           important: true,
           takeaway: true,
+          diagram: "encapsulationTakeaway",
+          diagramCaption: "Getters and setters are the only two doors to private data.",
           title: "Key takeaway",
           body: "Encapsulation means making fields private and only exposing controlled access through public methods (getters/setters), so a class can protect and enforce the rules around its own data instead of trusting outside code to do it correctly."
         }
