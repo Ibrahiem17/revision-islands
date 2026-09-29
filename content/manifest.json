@@ -469,7 +469,7 @@
   "dir": "system-design",
   "title": "System Design",
   "icon": "🏗️",
-  "total": 12,
+  "total": 23,
   "ids": [
    "sd-1",
    "sd-2",
@@ -482,7 +482,18 @@
    "sd-9",
    "sd-10",
    "sd-11",
-   "sd-12"
+   "sd-12",
+   "sd-13",
+   "sd-14",
+   "sd-15",
+   "sd-16",
+   "sd-17",
+   "sd-18",
+   "sd-19",
+   "sd-20",
+   "sd-21",
+   "sd-22",
+   "sd-23"
   ]
  }
 ]
