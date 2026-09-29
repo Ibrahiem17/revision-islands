@@ -924,6 +924,8 @@ export default {
           type: "concept",
           id: "stat-1",
           important: true,
+          diagram: "staticSharedCounterOwnData",
+          diagramCaption: "Every Car keeps its own color, but they all share ONE static counter.",
           title: "What does static mean?",
           body: [
             "A static field or method **belongs to the class itself, not to any individual object.** There's only ever one copy, shared by every object of that class — not a separate copy per object like normal (instance) fields.",
@@ -933,6 +935,8 @@ export default {
         {
           type: "code",
           id: "stat-2",
+          diagram: "staticFieldIncrementSequence",
+          diagramCaption: "Three new Car() calls, one shared Car.totalCars counter.",
           title: "A static field — shared across every object",
           code: "public class Car {\n    String color;             // instance field — each Car has its own\n    static int totalCars = 0; // static field — shared by ALL Car objects\n\n    public Car(String c) {\n        color = c;\n        totalCars++; // every new car increases the SAME shared counter\n    }\n}\n\nnew Car(\"red\");\nnew Car(\"blue\");\nnew Car(\"green\");\nSystem.out.println(Car.totalCars); // 3",
           note: "Notice Car.totalCars is accessed through the CLASS name, not through an object — that's the giveaway that something is static. All three Car objects share the exact same totalCars variable; incrementing it in one constructor call affects the value everyone sees."
@@ -940,6 +944,8 @@ export default {
         {
           type: "code",
           id: "stat-3",
+          diagram: "staticMethodDirectClassCall",
+          diagramCaption: "MathHelper.square(5) — called on the class, no object needed.",
           title: "A static method",
           code: "public class MathHelper {\n    static int square(int n) {\n        return n * n;\n    }\n}\n\nint result = MathHelper.square(5); // 25 — no object created at all!",
           note: "You never wrote new MathHelper() — static methods can be called directly on the class, because they don't need any object's data to run. Math.random() and Math.max() in Java's standard library are real examples you've probably already used."
@@ -948,12 +954,16 @@ export default {
           type: "concept",
           id: "stat-4",
           important: true,
+          diagram: "staticCannotReachInstance",
+          diagramCaption: "No specific object exists yet — static code can't ask \"whose field?\"",
           title: "The rule that trips people up: static code can't use instance data",
           body: "**A static method cannot directly access instance (non-static) fields or call instance (non-static) methods** — because static code runs at the class level, before any specific object necessarily exists, so there's no particular object's data for it to use. If MathHelper.square() tried to read a non-static field, it would be a compile error — Java would ask \"which object's field do you mean?\" and there's no answer."
         },
         {
           type: "table",
           id: "stat-5",
+          diagram: "staticInstanceCompactCompare",
+          diagramCaption: "Instance vs static, condensed to a two-column summary.",
           title: "static vs instance — the core comparison",
           headers: ["Instance (normal)", "static"],
           rows: [
@@ -980,6 +990,8 @@ export default {
           id: "stat-8",
           important: true,
           takeaway: true,
+          diagram: "statTakeaway",
+          diagramCaption: "static belongs to the class, not any one object.",
           title: "Key takeaway",
           body: "static means \"belongs to the class, not to any one object\" — there's a single shared copy, accessed via the class name. Instance members belong to individual objects instead, with a separate copy per object. Static code can't directly touch instance members, since no specific object is guaranteed to exist."
         }
@@ -993,12 +1005,16 @@ export default {
           type: "concept",
           id: "thsup-1",
           important: true,
+          diagram: "thisDisambiguateFieldParam",
+          diagramCaption: "this.color (the field) vs color (the parameter).",
           title: "The `this` keyword — referring to the current object",
           body: "`this` refers to the specific object whose method or constructor is currently running. You already saw its most common use in Topic 3: when a constructor parameter has the same name as a field, this.fieldName distinguishes \"the object's field\" from \"the parameter.\""
         },
         {
           type: "code",
           id: "thsup-2",
+          diagram: "thisCallsOtherConstructor",
+          diagramCaption: "this(color, 0) jumps into the other constructor of the SAME class.",
           title: "`this` to disambiguate, and `this()` to call another constructor",
           code: "public class Car {\n    String color;\n    int speed;\n\n    public Car(String color, int speed) {\n        this.color = color; // this.color = the field, color = the parameter\n        this.speed = speed;\n    }\n\n    public Car(String color) {\n        this(color, 0); // calls the other constructor above, with speed=0\n    }\n}",
           note: "this(color, 0) is one constructor calling another constructor of the SAME class — a handy way to avoid repeating setup logic across multiple overloaded constructors. It must be the very first line if used."
@@ -1007,12 +1023,16 @@ export default {
           type: "concept",
           id: "thsup-3",
           important: true,
+          diagram: "superPointsToParent",
+          diagramCaption: "super reaches UP into the parent class, two main uses.",
           title: "The `super` keyword — referring to the parent class",
           body: "`super` refers to the parent class, from inside a child class. It's used two main ways: super.methodName() to call the parent's version of a method you've overridden, and super(...) to call the parent's constructor."
         },
         {
           type: "code",
           id: "thsup-4",
+          diagram: "superConstructorSequence",
+          diagramCaption: "super(name) runs Animal's constructor first, then Dog's own.",
           title: "super() calling the parent's constructor",
           code: "class Animal {\n    String name;\n    Animal(String name) {\n        this.name = name;\n        System.out.println(\"Animal constructor ran\");\n    }\n}\n\nclass Dog extends Animal {\n    Dog(String name) {\n        super(name); // calls Animal's constructor first\n        System.out.println(\"Dog constructor ran\");\n    }\n}\n\nnew Dog(\"Rex\");\n// prints:\n// Animal constructor ran\n// Dog constructor ran",
           note: "**Every constructor's very first action is always to run some version of the parent's constructor** — if you don't write super(...) yourself, Java secretly inserts a call to the parent's no-argument constructor for you. This guarantees the parent part of the object is always fully set up before the child's own setup runs."
@@ -1020,6 +1040,8 @@ export default {
         {
           type: "code",
           id: "thsup-5",
+          diagram: "superMethodStacking",
+          diagramCaption: "super.makeSound() stacks the parent's output, doesn't replace it.",
           title: "super.method() calling the parent's version of an overridden method",
           code: "class Animal {\n    void makeSound() {\n        System.out.println(\"Some generic sound\");\n    }\n}\nclass Dog extends Animal {\n    @Override\n    void makeSound() {\n        super.makeSound(); // still runs Animal's version first\n        System.out.println(\"...and also Woof!\");\n    }\n}\n\nnew Dog().makeSound();\n// Some generic sound\n// ...and also Woof!",
           note: "Without super.makeSound(), overriding would completely replace the parent's behavior. With it, Dog can build on top of what Animal already does instead of throwing it away entirely."
@@ -1027,6 +1049,8 @@ export default {
         {
           type: "table",
           id: "thsup-6",
+          diagram: "thisVsSuperCompactCompare",
+          diagramCaption: "this vs super, condensed to a two-column summary.",
           title: "this vs super, side by side",
           headers: ["this", "super"],
           rows: [
@@ -1050,6 +1074,8 @@ export default {
         {
           type: "qa",
           id: "thsup-9",
+          diagram: "implicitSuperInsertion",
+          diagramCaption: "Java secretly inserts the parent's no-arg constructor call.",
           question: "If you don't write super(...) in a constructor, what happens?",
           answer: "Java automatically inserts a call to the parent's no-argument constructor as the very first line, before anything else in your constructor runs. If the parent class doesn't have a no-argument constructor available, this becomes a compile error, and you must call super(...) explicitly with the right arguments."
         },
@@ -1058,6 +1084,8 @@ export default {
           id: "thsup-10",
           important: true,
           takeaway: true,
+          diagram: "thisSuperTakeaway",
+          diagramCaption: "this reaches inward, super reaches upward.",
           title: "Key takeaway",
           body: "`this` refers to the current object (often used to tell a field apart from a same-named parameter). `super` refers to the parent class (used to call the parent's constructor or its overridden method version). Every constructor implicitly or explicitly calls a parent constructor first."
         }
@@ -1071,12 +1099,16 @@ export default {
           type: "concept",
           id: "objcls-1",
           important: true,
+          diagram: "objectImplicitRootCar",
+          diagramCaption: "No \"extends\" written — still implicitly extends Object.",
           title: "Every class in Java secretly extends Object",
           body: "Even if you never write extends anywhere, every single class in Java automatically inherits from a built-in class called Object — it's the root of the entire class hierarchy. That means every object you ever create already has a few methods available for free, including toString(), equals(), and hashCode()."
         },
         {
           type: "code",
           id: "objcls-2",
+          diagram: "toStringDefaultUgly",
+          diagramCaption: "The default toString() — a class name plus a meaningless hash.",
           title: "toString() — what gets printed",
           code: "public class Car {\n    String color;\n    Car(String c) { color = c; }\n}\n\nCar myCar = new Car(\"red\");\nSystem.out.println(myCar); // Car@1b6d3586  (ugly, meaningless memory address)",
           note: "That default output comes from Object's default toString() — it just prints the class name plus a memory-related hash code, which is rarely useful."
@@ -1084,6 +1116,8 @@ export default {
         {
           type: "code",
           id: "objcls-3",
+          diagram: "toStringOverrideBeforeAfter",
+          diagramCaption: "Same println call, before vs after overriding toString().",
           title: "Overriding toString() to make it meaningful",
           code: "public class Car {\n    String color;\n    Car(String c) { color = c; }\n\n    @Override\n    public String toString() {\n        return \"Car(color=\" + color + \")\";\n    }\n}\n\nSystem.out.println(myCar); // Car(color=red)",
           note: "**Overriding toString() is one of the most common, practical overrides you'll write** — anytime you print an object or convert it to text (like in debugging or logging), your version runs instead of the default."
@@ -1092,6 +1126,8 @@ export default {
           type: "concept",
           id: "objcls-4",
           important: true,
+          diagram: "equalsIdentityFalse",
+          diagramCaption: "Same color, different objects — equals() checks identity, not content.",
           title: "equals() — what \"equal\" even means for objects",
           body: [
             "By default, == and the inherited equals() both check if two variables point to the exact same object in memory — not whether they \"look\" the same.",
@@ -1101,6 +1137,8 @@ export default {
         {
           type: "code",
           id: "objcls-5",
+          diagram: "equalsContentTrue",
+          diagramCaption: "Same two red Cars — now equals() compares color, and returns true.",
           title: "Overriding equals() to compare content instead of identity",
           code: "public class Car {\n    String color;\n    Car(String c) { color = c; }\n\n    @Override\n    public boolean equals(Object other) {\n        if (this == other) return true;\n        if (!(other instanceof Car)) return false;\n        Car otherCar = (Car) other;\n        return this.color.equals(otherCar.color);\n    }\n}\n\nCar a = new Car(\"red\");\nCar b = new Car(\"red\");\nSystem.out.println(a.equals(b)); // true — now it compares color, not identity",
           note: "Now equals() answers \"do these two cars have the same color\" instead of \"are these the literal same object in memory.\" This is exactly what you want when comparing things like two Strings, or two objects representing the same real-world entity."
@@ -1109,6 +1147,8 @@ export default {
           type: "concept",
           id: "objcls-6",
           important: true,
+          diagram: "hashCodeBucketContract",
+          diagramCaption: "Equal objects must land in the same bucket, or collections break.",
           title: "hashCode() — why it comes paired with equals()",
           body: "**The rule Java expects you to follow: if two objects are equal() to each other, they MUST return the same hashCode().** This matters because collections like HashMap and HashSet use hashCode() to quickly find which \"bucket\" an object belongs in, then use equals() to confirm an exact match within that bucket. If you override equals() without also overriding hashCode() to match, two \"equal\" objects could end up looking different to a HashSet — breaking it in confusing ways. Most IDEs can generate a correct equals()/hashCode() pair for you automatically."
         },
@@ -1135,6 +1175,8 @@ export default {
           id: "objcls-10",
           important: true,
           takeaway: true,
+          diagram: "objClsTakeaway",
+          diagramCaption: "Everyone inherits them — override to make them useful.",
           title: "Key takeaway",
           body: "Every class inherits toString(), equals(), and hashCode() from Java's built-in Object class, but their default behavior is rarely useful (raw memory info, identity-only comparison). Override toString() for meaningful output, and always override equals() and hashCode() together for content-based comparison."
         }
