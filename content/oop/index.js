@@ -1189,12 +1189,16 @@ export default {
         {
           type: "concept",
           id: "comp-1",
+          diagram: "compRelationshipIntro",
+          diagramCaption: "Extends is IS-A; contains is HAS-A.",
           title: "Two ways to build relationships between classes",
           body: "So far, Topic 6 covered inheritance (\"is-a\") as one way to reuse code across classes. There's a second, equally important way: composition — building a class out of other objects it contains, rather than extending them."
         },
         {
           type: "code",
           id: "comp-2",
+          diagram: "compHasAEngineDelegate",
+          diagramCaption: "Car holds an Engine, and delegates to it.",
           title: "Composition — a \"has-a\" relationship",
           code: "class Engine {\n    void start() {\n        System.out.println(\"Engine starting...\");\n    }\n}\n\nclass Car {\n    private Engine engine; // Car HAS AN Engine — composition\n\n    Car() {\n        engine = new Engine();\n    }\n\n    void start() {\n        engine.start(); // Car delegates to its Engine\n        System.out.println(\"Car is ready to drive\");\n    }\n}",
           note: "Car does NOT extend Engine — a car isn't a type of engine, that relationship would make no sense (\"is-a\" fails the test from Topic 6). Instead, Car simply holds/contains an Engine object as one of its fields, and uses it. This is composition."
@@ -1203,6 +1207,8 @@ export default {
           type: "table",
           id: "comp-3",
           important: true,
+          diagram: "compIsAHasATest",
+          diagramCaption: "Three questions that decide which tool to use.",
           title: "is-a vs has-a — the test that decides which to use",
           headers: ["Question", "Relationship", "Tool"],
           rows: [
@@ -1215,6 +1221,8 @@ export default {
           type: "concept",
           id: "comp-4",
           important: true,
+          diagram: "compTightVsFlexible",
+          diagramCaption: "Rigid coupling versus flexible, swappable parts.",
           title: "\"Favor composition over inheritance\" — a famous piece of advice",
           body: [
             "This is a well-known OOP design principle, and it comes up a lot in interviews: **when you're unsure, lean toward composition rather than inheritance.**",
@@ -1224,6 +1232,8 @@ export default {
         {
           type: "code",
           id: "comp-5",
+          diagram: "compSwapEngineConstructor",
+          diagramCaption: "Same Car(), different Engine plugged in.",
           title: "Why composition is more flexible — swapping parts",
           code: "class ElectricEngine extends Engine {\n    @Override\n    void start() {\n        System.out.println(\"Silent electric start...\");\n    }\n}\n\nclass Car {\n    private Engine engine;\n    Car(Engine e) { engine = e; } // any kind of Engine can be plugged in\n\n    void start() { engine.start(); }\n}\n\nCar gasCar = new Car(new Engine());\nCar electricCar = new Car(new ElectricEngine());",
           note: "Car's own code never changes, no matter what kind of Engine gets plugged into it — this flexibility (being able to swap the Engine implementation freely) is exactly what \"favor composition\" is pointing at, and it also happens to be an example of polymorphism at work."
@@ -1245,6 +1255,8 @@ export default {
           id: "comp-8",
           important: true,
           takeaway: true,
+          diagram: "compTakeaway",
+          diagramCaption: "Favor composition when unsure.",
           title: "Key takeaway",
           body: "Inheritance models \"is-a\" relationships by extending a class; composition models \"has-a\" relationships by containing another object as a field. When both seem possible, composition is usually the safer, more flexible choice — reserve inheritance for genuine is-a relationships."
         }
@@ -1257,6 +1269,8 @@ export default {
         {
           type: "concept",
           id: "solid-1",
+          diagram: "solidAcronymUnpack",
+          diagramCaption: "One acronym, five separate ideas.",
           title: "What is SOLID?",
           body: "SOLID is a set of five design principles that help you write OOP code that's easier to maintain, extend, and understand. It's an acronym — each letter stands for one principle. You don't need to be an expert in all five, but interviewers love asking \"what does the S in SOLID stand for\" type questions, so knowing the names and the basic idea behind each one goes a long way."
         },
@@ -1264,6 +1278,8 @@ export default {
           type: "concept",
           id: "solid-2",
           important: true,
+          diagram: "solidSRP",
+          diagramCaption: "One tangled class splits into three, each with one job.",
           title: "S — Single Responsibility Principle",
           body: [
             "**A class should have only one reason to change** — meaning it should do just one job.",
@@ -1274,6 +1290,8 @@ export default {
           type: "concept",
           id: "solid-3",
           important: true,
+          diagram: "solidOCP",
+          diagramCaption: "Add a class instead of editing a giant if/else.",
           title: "O — Open/Closed Principle",
           body: [
             "**Classes should be open for extension, but closed for modification** — you should be able to add new behavior without changing existing, already-working code.",
@@ -1284,6 +1302,8 @@ export default {
           type: "concept",
           id: "solid-4",
           important: true,
+          diagram: "solidLSP",
+          diagramCaption: "Square extends Rectangle, but setWidth breaks the contract.",
           title: "L — Liskov Substitution Principle",
           body: [
             "**A subclass should be usable anywhere its parent class is expected, without breaking anything.** If code works correctly with an Animal, it should keep working correctly if you hand it a Dog instead.",
@@ -1294,6 +1314,8 @@ export default {
           type: "concept",
           id: "solid-5",
           important: true,
+          diagram: "solidISP",
+          diagramCaption: "Split one bloated interface into small, focused ones.",
           title: "I — Interface Segregation Principle",
           body: [
             "**Don't force a class to implement methods it doesn't actually need** — many small, specific interfaces are better than one giant, general-purpose interface.",
@@ -1304,6 +1326,8 @@ export default {
           type: "concept",
           id: "solid-6",
           important: true,
+          diagram: "solidDIP",
+          diagramCaption: "Depend on the Engine interface, not one concrete class.",
           title: "D — Dependency Inversion Principle",
           body: [
             "**Depend on abstractions (interfaces), not on concrete, specific classes** — high-level code shouldn't be tightly locked to one specific low-level implementation.",
@@ -1313,6 +1337,8 @@ export default {
         {
           type: "table",
           id: "solid-7",
+          diagram: "solidGlanceLadder",
+          diagramCaption: "Five rows, condensed to letter + name + one-line idea.",
           title: "SOLID at a glance",
           headers: ["Letter", "Stands for", "One-line idea"],
           rows: [
@@ -1338,6 +1364,8 @@ export default {
         {
           type: "qa",
           id: "solid-10",
+          diagram: "solidLSPContractBreak",
+          diagramCaption: "Compiles fine — but breaks silently.",
           question: "What does the Liskov Substitution Principle actually protect against?",
           answer: "It protects against subclasses that technically compile but secretly break the behavior their parent class promised — meaning code written to work with the parent type can silently misbehave if handed a subclass instance instead. A subclass should always be safely substitutable for its parent."
         },
@@ -1346,6 +1374,8 @@ export default {
           id: "solid-11",
           important: true,
           takeaway: true,
+          diagram: "solidTakeaway",
+          diagramCaption: "The same idea as composition — depend on abstractions.",
           title: "Key takeaway",
           body: "SOLID is five principles for maintainable OOP design: Single Responsibility (one job per class), Open/Closed (extend without modifying), Liskov Substitution (subclasses must behave safely as their parent), Interface Segregation (small focused interfaces), and Dependency Inversion (depend on abstractions, not concrete classes)."
         }
