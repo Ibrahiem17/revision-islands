@@ -4,32 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OOP — Interview Islands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/cards.css">
 <link rel="stylesheet" href="../css/mascot.css">
 <link rel="stylesheet" href="oop.css">
+<!-- GSAP + ScrollTrigger: pinned versions with SRI. If they fail to load, the page runs without GSAP animation (see src/topics/oop-fx.js). -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-<body>
+<body class="oop" id="top">
 
-<div class="page">
-  <a class="back-link" href="../index.html">← Back to the map</a>
+<a class="skip-link" href="#notes">Skip to the notes</a>
 
-  <header class="page-header">
-    <span class="icon">🧩</span>
-    <h1>OOP</h1>
-    <p>The Blueprint Workshop — classes, objects and the design principles that hold a system together.</p>
+<div class="oop-page">
 
-    <div class="progress-row">
-      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <span id="progress-text">0%</span> mastered
+  <nav class="oop-nav" id="oopNav" aria-label="Page navigation">
+    <a class="oop-logo" href="../index.html" aria-label="Interview Islands — back to the map">{ }</a>
+    <div class="oop-pills" id="oopPills"></div>
+    <button type="button" class="oop-cta-pill" id="oopStartBtn">START</button>
+  </nav>
+
+  <header class="oop-hero" id="heroTop">
+    <div class="oop-hero-in">
+      <h1 class="oop-headline" id="oopHeadline">LEARN OOP<br>LIKE YOU BUILT IT</h1>
+      <span class="oop-sparkle-hero" id="oopHeroSparkle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 1 L14.2 9.8 L23 12 L14.2 14.2 L12 23 L9.8 14.2 L1 12 L9.8 9.8 Z" fill="var(--oop-mustard)" stroke="var(--oop-ink)" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </span>
+
+      <a class="oop-cta-hero" href="#notes" id="heroCta">See the notes <span aria-hidden="true">↓</span></a>
+
+      <div class="oop-stats" id="oopStats" role="group" aria-label="OOP island stats">
+        <div class="oop-stat">
+          <span class="oop-stat-label">Pillars</span>
+          <span class="oop-stat-value" id="statPillars" data-target="0">0</span>
+        </div>
+        <div class="oop-stat">
+          <span class="oop-stat-label">Concepts</span>
+          <span class="oop-stat-value" id="statConcepts" data-target="0">0</span>
+        </div>
+        <div class="oop-stat oop-stat-mastered">
+          <span class="oop-stat-label">Mastered</span>
+          <span class="oop-stat-value"><span id="progress-text">0%</span></span>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+      </div>
     </div>
+
+    <div class="oop-badge-wrap" id="oopBadge" role="group" aria-label="Keep reviewing">
+      <div class="oop-badge-ring" id="oopBadgeRing"></div>
+      <button type="button" class="oop-badge-btn" id="oopBadgeBtn" aria-label="Jump to your next unmastered note">
+        <svg viewBox="0 0 24 24"><path d="M5 12H19M19 12L13 6M19 12L13 18" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <svg class="oop-wave" id="oopWave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,40 C120,80 240,0 360,32 C480,64 600,8 720,32 C840,56 960,4 1080,30 C1200,56 1320,10 1440,36 L1440,80 L0,80 Z"/>
+    </svg>
   </header>
 
-  <div class="search-box">
-    <input type="search" id="search" placeholder="Search this island…" aria-label="Search OOP content">
-  </div>
+  <main class="oop-main" id="notes">
+    <div class="oop-toolbar">
+      <div class="oop-search-box">
+        <input type="search" id="search" placeholder="Search this island…" aria-label="Search OOP content" autocomplete="off">
+      </div>
+    </div>
 
-  <div id="content"></div>
+    <div id="content"></div>
+  </main>
+
+  <footer class="oop-footer">
+    <a href="../index.html" class="oop-footer-link">← Back to the map</a>
+    <p>Interview Islands · OOP revision notes</p>
+  </footer>
 </div>
 
 <script type="module" src="/src/topics/oop.js"></script>

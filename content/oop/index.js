@@ -5,21 +5,21 @@ export default {
     {
       title: "⚡ Quick Revision — every concept in two lines",
       items: [
-        { type: "concept", id: "qr-1", title: "1 — What is OOP", body: ["OOP models real-world things as objects that bundle data and behavior together, built on four pillars: encapsulation, abstraction, inheritance, polymorphism.", "Example: a Car object holds its own color/speed and knows how to drive() itself, instead of separate loose variables and functions."] },
-        { type: "concept", id: "qr-2", title: "2 — Classes & Objects", body: ["A class is a blueprint; an object is a real instance created from it with `new`, with its own independent data.", "Example: Car myCar = new Car(); creates one real Car object from the Car blueprint."] },
-        { type: "concept", id: "qr-3", title: "3 — Constructors", body: ["A constructor is a special same-named method that runs once when an object is created, to set up its starting values.", "Example: public Car(String color) { this.color = color; } runs automatically inside new Car(\"red\")."] },
-        { type: "concept", id: "qr-4", title: "4 — Encapsulation", body: ["Make fields private and only expose controlled access through public getter/setter methods, so the class can enforce its own rules.", "Example: deposit()/withdraw() control balance instead of letting outside code set it directly."] },
-        { type: "concept", id: "qr-5", title: "5 — Abstraction", body: ["Show only what's necessary through a simple interface, and hide the complicated implementation behind it.", "Example: myCar.start() hides fuel-checking and ignition logic behind one simple method call."] },
-        { type: "concept", id: "qr-6", title: "6 — Inheritance", body: ["A child class reuses and extends a parent class's fields and methods with `extends`, for genuine \"is-a\" relationships.", "Example: class Dog extends Animal gives Dog everything Animal has, for free."] },
-        { type: "concept", id: "qr-7", title: "7 — Polymorphism", body: ["The same method call behaves differently depending on the actual object it runs on, mainly through method overriding.", "Example: Animal myPet = new Dog(); myPet.makeSound(); runs Dog's version, not Animal's."] },
-        { type: "concept", id: "qr-8", title: "8 — Overloading vs Overriding", body: ["Overloading = same name, different parameters, same class, decided at compile time. Overriding = same name, same parameters, parent/child classes, decided at runtime.", "Example: add(int,int) and add(double,double) overload each other; Dog's makeSound() overrides Animal's."] },
-        { type: "concept", id: "qr-9", title: "9 — Abstract Classes vs Interfaces", body: ["Abstract classes are partial base classes for closely related subclasses (single inheritance, can share real code); interfaces are pure contracts a class can implement many of.", "Example: abstract class Shape vs interface Payable — a class can extend only one Shape but implement many interfaces."] },
-        { type: "concept", id: "qr-10", title: "10 — Access Modifiers", body: ["private/default/protected/public control who can see a field or method, from most to least restrictive.", "Example: private double balance; can only be touched from inside its own class."] },
-        { type: "concept", id: "qr-11", title: "11 — static", body: ["static means a field or method belongs to the class itself, shared by every object, not a separate copy per object.", "Example: static int totalCars; is the exact same shared counter for every Car object."] },
-        { type: "concept", id: "qr-12", title: "12 — this & super", body: ["`this` refers to the current object; `super` refers to the parent class, used to call its constructor or its overridden method.", "Example: super(name); runs Animal's constructor before Dog's own constructor body continues."] },
-        { type: "concept", id: "qr-13", title: "13 — Object class methods", body: ["Every class inherits toString(), equals(), and hashCode() from Object, but they usually need overriding for meaningful, content-based behavior.", "Example: overriding equals() lets two Car objects with the same color be considered equal, not just identical in memory."] },
-        { type: "concept", id: "qr-14", title: "14 — Composition vs Inheritance", body: ["Inheritance models \"is-a\" by extending a class; composition models \"has-a\" by containing another object as a field — favor composition when unsure.", "Example: class Car { private Engine engine; } — a Car has an Engine, it isn't one."] },
-        { type: "concept", id: "qr-15", title: "15 — SOLID", body: ["Five principles for maintainable OOP: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.", "Example: splitting one Employee class into Employee, PayCalculator, and EmployeeRepository follows Single Responsibility."] }
+        { type: "concept", id: "qr-1", diagram: "bundle", diagramCaption: "The object bundles its own data and behavior.", title: "1 — What is OOP", body: ["OOP models real-world things as objects that bundle data and behavior together, built on four pillars: encapsulation, abstraction, inheritance, polymorphism.", "Example: a Car object holds its own color/speed and knows how to drive() itself, instead of separate loose variables and functions."] },
+        { type: "concept", id: "qr-2", diagram: "blueprint", diagramCaption: "One blueprint, many independent objects.", title: "2 — Classes & Objects", body: ["A class is a blueprint; an object is a real instance created from it with `new`, with its own independent data.", "Example: Car myCar = new Car(); creates one real Car object from the Car blueprint."] },
+        { type: "concept", id: "qr-3", diagram: "construct", diagramCaption: "The constructor sets starting values the instant an object is born.", title: "3 — Constructors", body: ["A constructor is a special same-named method that runs once when an object is created, to set up its starting values.", "Example: public Car(String color) { this.color = color; } runs automatically inside new Car(\"red\")."] },
+        { type: "concept", id: "qr-4", diagram: "encapsulate", diagramCaption: "Private data behind a lock, public doors in and out.", title: "4 — Encapsulation", body: ["Make fields private and only expose controlled access through public getter/setter methods, so the class can enforce its own rules.", "Example: deposit()/withdraw() control balance instead of letting outside code set it directly."] },
+        { type: "concept", id: "qr-5", diagram: "abstract", diagramCaption: "One simple button — the machinery stays hidden.", title: "5 — Abstraction", body: ["Show only what's necessary through a simple interface, and hide the complicated implementation behind it.", "Example: myCar.start() hides fuel-checking and ignition logic behind one simple method call."] },
+        { type: "concept", id: "qr-6", diagram: "inherit", diagramCaption: "A child class inherits the parent's fields and methods.", title: "6 — Inheritance", body: ["A child class reuses and extends a parent class's fields and methods with `extends`, for genuine \"is-a\" relationships.", "Example: class Dog extends Animal gives Dog everything Animal has, for free."] },
+        { type: "concept", id: "qr-7", diagram: "polymorph", diagramCaption: "Same call, different behavior per object.", title: "7 — Polymorphism", body: ["The same method call behaves differently depending on the actual object it runs on, mainly through method overriding.", "Example: Animal myPet = new Dog(); myPet.makeSound(); runs Dog's version, not Animal's."] },
+        { type: "concept", id: "qr-8", diagram: "overloadOverride", diagramCaption: "Overload: same class, different params. Override: parent to child, same signature.", title: "8 — Overloading vs Overriding", body: ["Overloading = same name, different parameters, same class, decided at compile time. Overriding = same name, same parameters, parent/child classes, decided at runtime.", "Example: add(int,int) and add(double,double) overload each other; Dog's makeSound() overrides Animal's."] },
+        { type: "concept", id: "qr-9", diagram: "abstractVsInterface", diagramCaption: "Abstract class: single inheritance, shared code. Interface: many, pure contract.", title: "9 — Abstract Classes vs Interfaces", body: ["Abstract classes are partial base classes for closely related subclasses (single inheritance, can share real code); interfaces are pure contracts a class can implement many of.", "Example: abstract class Shape vs interface Payable — a class can extend only one Shape but implement many interfaces."] },
+        { type: "concept", id: "qr-10", diagram: "accessRings", diagramCaption: "private is the innermost ring, public the outermost.", title: "10 — Access Modifiers", body: ["private/default/protected/public control who can see a field or method, from most to least restrictive.", "Example: private double balance; can only be touched from inside its own class."] },
+        { type: "concept", id: "qr-11", diagram: "staticShared", diagramCaption: "static shares one copy across every object.", title: "11 — static", body: ["static means a field or method belongs to the class itself, shared by every object, not a separate copy per object.", "Example: static int totalCars; is the exact same shared counter for every Car object."] },
+        { type: "concept", id: "qr-12", diagram: "thisSuper", diagramCaption: "this points to me; super points to my parent.", title: "12 — this & super", body: ["`this` refers to the current object; `super` refers to the parent class, used to call its constructor or its overridden method.", "Example: super(name); runs Animal's constructor before Dog's own constructor body continues."] },
+        { type: "concept", id: "qr-13", diagram: "objectRoot", diagramCaption: "Every class quietly extends Object.", title: "13 — Object class methods", body: ["Every class inherits toString(), equals(), and hashCode() from Object, but they usually need overriding for meaningful, content-based behavior.", "Example: overriding equals() lets two Car objects with the same color be considered equal, not just identical in memory."] },
+        { type: "concept", id: "qr-14", diagram: "compositionVsInheritance", diagramCaption: "is-a extends a class; has-a contains one.", title: "14 — Composition vs Inheritance", body: ["Inheritance models \"is-a\" by extending a class; composition models \"has-a\" by containing another object as a field — favor composition when unsure.", "Example: class Car { private Engine engine; } — a Car has an Engine, it isn't one."] },
+        { type: "concept", id: "qr-15", diagram: "solid", diagramCaption: "Five habits for maintainable classes.", title: "15 — SOLID", body: ["Five principles for maintainable OOP: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.", "Example: splitting one Employee class into Employee, PayCalculator, and EmployeeRepository follows Single Responsibility."] }
       ]
     },
 
@@ -29,6 +29,8 @@ export default {
         {
           type: "concept",
           id: "intro-1",
+          diagram: "objectBundleCar",
+          diagramCaption: "One Car object, holding both its data and its behavior.",
           title: "What does OOP actually mean?",
           body: [
             "OOP stands for **Object-Oriented Programming** — a way of writing code where you model real-world things as \"objects\" that bundle together data (what the thing has) and behavior (what the thing can do), instead of writing one long list of instructions.",
@@ -39,6 +41,8 @@ export default {
           type: "concept",
           id: "intro-2",
           important: true,
+          diagram: "proceduralMess",
+          diagramCaption: "Procedural code scatters data and logic; OOP bundles them.",
           title: "Why does OOP exist? — the problem it solves",
           body: [
             "Before OOP, most code was written top-to-bottom as a list of steps (called procedural programming) — this works fine for small programs, but gets messy fast as programs grow: data and the functions that use it live far apart, and it's easy to break something by changing shared data from many places.",
@@ -48,6 +52,8 @@ export default {
         {
           type: "list",
           id: "intro-3",
+          diagram: "fourPillars",
+          diagramCaption: "Every OOP idea traces back to one of these four pillars.",
           title: "The four pillars of OOP — the words every interview circles around",
           points: [
             "Encapsulation — bundling data and the methods that work on it together, and hiding the internal details from the outside world.",
@@ -59,18 +65,24 @@ export default {
         {
           type: "concept",
           id: "intro-4",
+          diagram: "carAnalogy",
+          diagramCaption: "The same four pillars, spotted in an everyday car.",
           title: "Real-world analogy — a car",
           body: "Think of a real car. You don't need to know how the engine ignites fuel to drive it — you just use the steering wheel and pedals (abstraction). The engine's inner wiring is hidden under the hood (encapsulation). A \"Sports Car\" and a \"Truck\" are both types of \"Vehicle\" and share basic vehicle features (inheritance). Pressing the accelerator does something different in each vehicle type, even though it's the same action (polymorphism). Every one of the four pillars already makes sense to you from everyday life — OOP just applies the same ideas to code."
         },
         {
           type: "qa",
           id: "intro-5",
+          diagram: "puzzleMerge",
+          diagramCaption: "Four pillars, one sentence: OOP.",
           question: "What is OOP, in one sentence you could say out loud in an interview?",
           answer: "OOP is a programming style that models real-world things as objects — bundles of data and behavior — built around four core ideas: encapsulation, abstraction, inheritance, and polymorphism."
         },
         {
           type: "qa",
           id: "intro-6",
+          diagram: "proceduralVsOop",
+          diagramCaption: "A step-list of functions versus one self-managing object.",
           question: "What's the difference between procedural and object-oriented programming?",
           answer: "Procedural programming is a sequence of functions/steps that operate on shared data. OOP groups data and the functions that operate on it into objects, so each object manages its own data — making programs easier to organize, reuse, and maintain as they grow."
         },
@@ -79,6 +91,8 @@ export default {
           id: "intro-7",
           important: true,
           takeaway: true,
+          diagram: "pillarsHoldObject",
+          diagramCaption: "The four pillars hold the object up.",
           title: "Key takeaway",
           body: "OOP means organizing code around objects — things that hold their own data and know how to act on it — built on four pillars: encapsulation, abstraction, inheritance, and polymorphism. Everything else in OOP is really just a deeper look at these four ideas."
         }

@@ -1,57 +1,494 @@
-/* ================= OOP — "Blueprint Workshop" ================= */
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+/* =====================================================================
+   OOP — "Object Studio": chunky rounded-sans, thick black ink outlines,
+   green hero / salmon section / mustard accent / white pill-shaped chapter
+   cards. A full, distinct redesign — NOT a re-skin of System Design's
+   retro-newspaper look. Palette sampled from the Dribbble reference video
+   (see scratchpad/oop_redesign_brief.md), reproduced with OOP's own content
+   and iconography.
+   Sections: tokens · base · nav · hero · stats/progress · badge · wave ·
+             toolbar · sections-as-cards · note blocks · diagrams (od-*) ·
+             footer · reduced motion · responsive
+   ===================================================================== */
 
 :root {
-  --accent: #34d399;
-  --accent-light: #a7f3d0;
-  --text: #dff9ef;
-  --text-strong: #ffffff;
-  --page-bg: #0b1f1a;
-  --card-bg: rgba(6, 78, 59, 0.28);
-  --card-border: rgba(52, 211, 153, 0.35);
+  --oop-green: #5BC24E;
+  --oop-green-dark: #2E8A2A;
+  --oop-green-light: #BFE9B6;
+  --oop-salmon: #F3A98C;
+  --oop-salmon-dark: #E8896A;
+  --oop-mustard: #F5C430;
+  --oop-mustard-dark: #D9A400;
+  --oop-ink: #16140F;
+  --oop-cream: #FCF3E2;
+  --oop-white: #FFFFFF;
+  --oop-display: "Fredoka", "Baloo 2", "Segoe UI", sans-serif;
+  --oop-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+
+  /* shared sheets (css/base.css, css/cards.css, css/mascot.css) read these */
+  --accent: var(--oop-mustard);
+  --accent-light: var(--oop-ink);
+  --text: var(--oop-ink);
+  --text-strong: var(--oop-ink);
+  --page-bg: var(--oop-cream);
+  --card-bg: var(--oop-white);
+  --card-border: var(--oop-ink);
 }
 
-body {
-  background-color: #0b1f1a;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
-  background-size: 26px 26px;
-  background-attachment: fixed;
-}
+html { scroll-behavior: auto; }
 
-.page-header .icon { filter: drop-shadow(0 0 12px rgba(52,211,153,0.5)); }
-
-/* a technical drafting-table monospace for the blueprint vibe —
-   kept to headings/titles only, body text stays readable */
-.page-header h1 {
-  font-family: 'Share Tech Mono', "Cascadia Code", monospace;
-  letter-spacing: 1px;
+body.oop {
+  font-family: var(--oop-body);
+  background: var(--oop-cream);
+  color: var(--oop-ink);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
+body.oop * { box-sizing: border-box; }
+body.oop h1, body.oop h2, body.oop h3, body.oop p { margin: 0; }
+body.oop button { font-family: inherit; }
+body.oop :focus-visible { outline: 3px solid var(--oop-ink); outline-offset: 2px; }
+body.oop .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip-link { position: fixed; left: 8px; top: -60px; z-index: 5000; background: var(--oop-mustard); color: var(--oop-ink); border: 3px solid var(--oop-ink); border-radius: 999px; padding: 8px 16px; font: 700 .85rem var(--oop-display); text-decoration: none; }
+.skip-link:focus { top: 8px; }
 
-.section-title {
-  font-family: 'Share Tech Mono', "Cascadia Code", Consolas, monospace;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-size: 0.95rem;
-}
-.section-title .chevron { font-family: inherit; }
+.oop-page { position: relative; overflow: clip; }
 
-/* notes as UML-style class boxes with corner brackets */
-.note-block {
-  border: 1px dashed var(--card-border);
-  border-radius: 4px;
+/* ---------- sticky nav ---------- */
+.oop-nav {
+  position: sticky; top: 0; z-index: 500;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px clamp(14px, 4vw, 34px);
+  background: rgba(252, 243, 226, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 3px solid var(--oop-ink);
 }
-.note-block::before, .note-block::after {
-  content: "";
+.oop-logo {
+  flex-shrink: 0;
+  width: 42px; height: 42px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--oop-ink);
+  color: var(--oop-mustard);
+  font-family: var(--oop-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  border: 3px solid var(--oop-ink);
+}
+.oop-pills {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0;
+}
+.oop-pills::-webkit-scrollbar { display: none; }
+.oop-pill {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2.5px solid var(--oop-ink);
+  background: var(--oop-white);
+  color: var(--oop-ink);
+  font-family: var(--oop-display);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.oop-pill:hover { transform: translateY(-2px); }
+.oop-pill.is-active { background: var(--oop-ink); color: var(--oop-white); border-color: var(--oop-ink); }
+.oop-cta-pill {
+  flex-shrink: 0;
+  border: 2.5px solid var(--oop-ink);
+  background: var(--oop-mustard);
+  color: var(--oop-ink);
+  font-family: var(--oop-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  padding: 9px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--oop-ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.oop-cta-pill:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--oop-ink); }
+.oop-cta-pill:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--oop-ink); }
+
+/* ---------- hero ---------- */
+.oop-hero {
+  position: relative;
+  background: var(--oop-green);
+  padding: clamp(34px, 6vw, 64px) clamp(16px, 5vw, 48px) 90px;
+  overflow: hidden;
+}
+.oop-hero-in {
+  position: relative;
+  max-width: 1180px;
+  margin: 0 auto;
+  z-index: 2;
+}
+.oop-headline {
+  font-family: var(--oop-display);
+  font-weight: 700;
+  color: var(--oop-ink);
+  font-size: clamp(2.1rem, 7vw, 4.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0 0 22px;
+  max-width: 16ch;
+}
+.oop-headline .ln { display: block; overflow: hidden; }
+.oop-headline .ch { display: inline-block; }
+.oop-sparkle-hero {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--accent);
-  opacity: 0.8;
+  top: clamp(8px, 3vw, 20px);
+  left: clamp(200px, 34vw, 420px);
+  width: 34px; height: 34px;
   pointer-events: none;
+  animation: oopSparkleWiggle 3.2s ease-in-out infinite;
+  transform-origin: center;
 }
-.note-block::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.note-block::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.oop-sparkle-hero svg { width: 100%; height: 100%; overflow: visible; }
+@keyframes oopSparkleWiggle {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50%      { transform: rotate(12deg) scale(1.18); }
+}
+@media (prefers-reduced-motion: reduce) { .oop-sparkle-hero { animation: none; } }
 
-.note-block h4 { font-family: 'Share Tech Mono', "Cascadia Code", monospace; }
+.oop-cta-hero {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--oop-mustard);
+  color: var(--oop-ink);
+  font-family: var(--oop-display);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 26px;
+  border-radius: 999px;
+  border: 3px solid var(--oop-ink);
+  text-decoration: none;
+  box-shadow: 4px 4px 0 var(--oop-ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 40px;
+}
+.oop-cta-hero:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--oop-ink); }
+.oop-cta-hero:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--oop-ink); }
+
+/* ---------- stats row (3rd stat IS the shared progress-fill/progress-text pair) ---------- */
+.oop-stats {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(14px, 3vw, 36px);
+  flex-wrap: wrap;
+}
+.oop-stat {
+  display: flex; flex-direction: column; gap: 4px;
+  padding-right: clamp(14px, 3vw, 36px);
+  border-right: 3px solid rgba(22,20,15,0.3);
+}
+.oop-stat:last-child { border-right: none; padding-right: 0; }
+.oop-stat-label {
+  font-family: var(--oop-display);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(22,20,15,0.75);
+}
+.oop-stat-value {
+  font-family: var(--oop-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  color: var(--oop-ink);
+  line-height: 1;
+}
+.oop-stat-mastered .progress-track {
+  margin-top: 6px;
+  width: 100%;
+  max-width: 140px;
+  height: 8px;
+  background: rgba(22,20,15,0.18);
+}
+.oop-stat-mastered .progress-fill { background: var(--oop-ink); }
+
+/* ---------- circular badge ---------- */
+.oop-badge-wrap {
+  position: absolute;
+  right: clamp(10px, 5vw, 64px);
+  top: clamp(120px, 20vw, 190px);
+  width: clamp(96px, 13vw, 148px);
+  height: clamp(96px, 13vw, 148px);
+  z-index: 2;
+}
+.oop-badge-ring { position: absolute; inset: 0; transform-origin: 50% 50%; animation: oopRingSpin 20s linear infinite; }
+@keyframes oopRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .oop-badge-ring { animation: none; } }
+.oop-badge-ring svg { width: 100%; height: 100%; overflow: visible; }
+.oop-badge-ring text { font-family: var(--oop-display); font-weight: 700; font-size: 8.6px; letter-spacing: 0.06em; fill: var(--oop-ink); }
+.oop-badge-btn {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 46%; height: 46%;
+  border-radius: 50%;
+  background: var(--oop-ink);
+  border: 3px solid var(--oop-ink);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.oop-badge-btn svg { width: 42%; height: 42%; }
+.oop-badge-btn:hover { transform: translate(-50%, -50%) scale(1.1); }
+.oop-badge-btn path { stroke: var(--oop-white); }
+
+/* ---------- wavy divider ---------- */
+.oop-wave {
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  width: 100%; height: clamp(38px, 7vw, 76px);
+  display: block;
+  transform-origin: 50% 100%;
+}
+.oop-wave path { fill: var(--oop-cream); }
+@keyframes oopWaveDraw { from { transform: scaleY(0.25); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+.oop-wave.oop-wave-play { animation: oopWaveDraw 0.9s cubic-bezier(.2,.8,.2,1) forwards; }
+
+/* ---------- main / toolbar ---------- */
+.oop-main {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 28px) 90px;
+  overflow: visible;
+}
+.oop-toolbar {
+  display: flex;
+  margin-bottom: 28px;
+}
+.oop-search-box input {
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 3px solid var(--oop-ink);
+  background: var(--oop-white);
+  color: var(--oop-ink);
+  font-family: var(--oop-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+}
+.oop-search-box input::placeholder { color: rgba(22,20,15,0.45); font-weight: 600; }
+.oop-search-box input:focus { box-shadow: 3px 3px 0 var(--oop-ink); }
+
+/* ---------- sections as stacked "chapter" cards ---------- */
+body.oop .section {
+  background: var(--oop-white);
+  border: 3px solid var(--oop-ink);
+  border-radius: 24px;
+  box-shadow: 6px 6px 0 rgba(22,20,15,0.14);
+  padding: 6px clamp(14px, 3vw, 26px) 20px;
+  margin-bottom: 30px;
+}
+body.oop .section-title {
+  font-family: var(--oop-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  border-bottom: none;
+  color: var(--oop-ink);
+  padding: 16px 2px 12px;
+}
+body.oop .section-title .chevron {
+  display: grid; place-items: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--oop-mustard);
+  border: 2px solid var(--oop-ink);
+  font-size: 0.7em;
+}
+body.oop .notes-flow { gap: 20px; max-width: none; }
+
+body.oop .note-block {
+  border-left: none;
+  padding: 14px 16px 16px;
+  background: var(--oop-cream);
+  border: 2.5px solid var(--oop-ink);
+  border-radius: 16px;
+}
+body.oop .note-block h4 { color: var(--oop-ink); font-family: var(--oop-display); font-weight: 600; font-size: 0.98rem; }
+body.oop .note-block .type-icon { opacity: 0.9; }
+body.oop .note-block.learned { opacity: 0.62; background: rgba(255,255,255,0.6); }
+body.oop .note-block p, body.oop .note-block li { color: var(--oop-ink); opacity: 0.88; }
+
+body.oop .glow-word {
+  color: var(--oop-ink);
+  background: linear-gradient(180deg, transparent 60%, var(--oop-mustard) 60%);
+  text-shadow: none;
+  padding: 0 1px;
+}
+
+body.oop .note-block pre { background: var(--oop-ink); border-radius: 12px; border: 2px solid var(--oop-ink); }
+body.oop .note-block code { color: var(--oop-mustard); font-family: "Cascadia Code", Consolas, monospace; }
+
+body.oop .note-block table { font-size: 0.86rem; }
+body.oop .note-block th { background: var(--oop-ink); color: var(--oop-mustard); border-radius: 4px; }
+body.oop .note-block th, body.oop .note-block td { border-bottom: 1.5px dashed rgba(22,20,15,0.25); }
+
+body.oop .note-block.qa-block {
+  background: var(--oop-salmon);
+  border-radius: 16px;
+  border-left: none;
+  border: 2.5px solid var(--oop-ink);
+}
+body.oop .qa-toggle { color: var(--oop-ink); font-family: var(--oop-display); font-weight: 600; }
+body.oop .qa-answer { border-top: 2px dashed var(--oop-ink); }
+body.oop .qa-answer strong { color: var(--oop-ink); }
+
+body.oop .note-block.note-important {
+  border-color: var(--oop-mustard-dark);
+  animation: oopImportantGlow 3.4s ease-in-out infinite;
+}
+body.oop .note-block.note-important h4::after { color: var(--oop-mustard-dark); }
+@keyframes oopImportantGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,196,48,0.55); }
+  50%      { box-shadow: 0 0 0 7px rgba(245,196,48,0.18); }
+}
+
+/* collapsible notes (opts.collapsibleNotes): folded pill until clicked */
+body.oop .note-block.note-collapsible .note-head { cursor: pointer; }
+body.oop .note-block.note-collapsible.note-collapsed { padding-bottom: 14px; }
+body.oop .note-block.note-collapsible .note-head::after {
+  content: "▾ open"; margin-left: auto; font-size: 0.68rem; font-weight: 700; opacity: 0.55;
+  font-family: var(--oop-display);
+}
+body.oop .note-block.note-collapsible.note-collapsed .note-head::after { content: "▸ open"; }
+body.oop .note-block.note-collapsible:not(.note-collapsed) .note-head::after { content: "▾ close"; }
+body.oop .note-block.note-collapsible.note-collapsed > *:not(.note-head) { display: none; }
+
+/* card/section reveal (fx-wired via IntersectionObserver; default = fully visible so a JS-less
+   page, or a page where fx setup runs late, never leaves a section permanently hidden) */
+body.oop .section {
+  opacity: 1; transform: none;
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.8,.2,1);
+}
+body.oop .section.oop-reveal-pre { opacity: 0; transform: translateY(42px) rotate(-1deg); transition: none; }
+
+/* ---------- diagrams (see src/topics/diagrams/oop-diagram-kit.js) ---------- */
+body.oop .note-diagram {
+  position: relative;
+  margin: 16px 0 4px;
+  background: var(--oop-white);
+  border: 2.5px solid var(--oop-ink);
+  border-radius: 16px;
+  padding: 6px 6px 0;
+  overflow: hidden;
+}
+body.oop .od-panel svg { display: block; width: 100%; height: auto; max-width: 380px; margin: 0 auto; overflow: visible; }
+body.oop .note-diagram figcaption {
+  padding: 8px 14px 10px;
+  font-family: var(--oop-display);
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  color: var(--oop-ink);
+  opacity: 0.75;
+  text-align: center;
+}
+.note-diagram .od-k { fill: none; stroke: var(--oop-ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.note-diagram .od-k.od-t { stroke-width: 1.8; }
+.note-diagram .od-k.od-dash { stroke-dasharray: 4 4; }
+.note-diagram .od-p { fill: var(--oop-cream); }
+.note-diagram .od-yfill { fill: var(--oop-mustard); }
+.note-diagram .od-greenfill { fill: var(--oop-green); }
+.note-diagram .od-salmonfill { fill: var(--oop-salmon); }
+.note-diagram .od-inkfill { fill: var(--oop-ink); }
+.note-diagram .od-ink { fill: var(--oop-ink); }
+.note-diagram text { fill: var(--oop-ink); font-family: var(--oop-body); font-weight: 700; font-size: 12.5px; }
+.note-diagram .od-t.od-t-text, .note-diagram text.od-t { font-family: var(--oop-display); }
+.note-diagram text.od-t { font-size: 15px; font-weight: 700; }
+.note-diagram text.od-b { font-size: 13px; font-weight: 700; }
+.note-diagram text.od-s { font-size: 11.5px; font-weight: 700; }
+.note-diagram text.od-cap { font-size: 10.5px; font-weight: 600; opacity: 0.72; }
+.note-diagram text.od-onink { fill: var(--oop-white); }
+:root { --od-mustard: #F5C430; }
+@media (prefers-reduced-motion: reduce) {
+  .note-diagram * { animation: none !important; }
+}
+body.rm .note-diagram * { animation: none !important; }
+
+/* ---------- sparkle decorations scattered near section edges ---------- */
+.oop-deco-sparkle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+  animation: oopTwinkle 2.8s ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+  animation-duration: var(--twinkle-dur, 2.8s);
+  will-change: transform;
+}
+.oop-deco-sparkle svg { width: 100%; height: 100%; overflow: visible; }
+@keyframes oopTwinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8) rotate(0deg); }
+  50%      { opacity: 1; transform: scale(1.15) rotate(8deg); }
+}
+@media (prefers-reduced-motion: reduce) { .oop-deco-sparkle { animation: none; opacity: 0.7; } }
+
+/* ---------- load-in entrance (nav pills / headline letters / hero CTA) ----------
+   Base state is fully visible; oop-fx.js only ever ADDS a temporary "-pre" class right
+   before animating it away with GSAP, and only when GSAP actually loaded — so a page
+   where scripts fail to run, or fx wiring happens late, never gets stuck hidden. */
+.oop-pill, .oop-cta-hero, .oop-headline .ch { opacity: 1; transform: none; }
+.oop-pill.oop-enter-pre { opacity: 0; transform: translateY(-14px); }
+.oop-cta-hero.oop-enter-pre { opacity: 0; transform: scale(0.6); }
+.oop-headline .ch.oop-enter-pre { opacity: 0; transform: translateY(36px) rotate(6deg); }
+
+/* ---------- footer ---------- */
+.oop-footer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px clamp(16px, 4vw, 28px) 60px;
+  text-align: center;
+}
+.oop-footer-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none;
+  font-family: var(--oop-display);
+  font-weight: 700;
+  color: var(--oop-ink);
+  background: var(--oop-white);
+  border: 2.5px solid var(--oop-ink);
+  border-radius: 999px;
+  padding: 10px 20px;
+  margin-bottom: 14px;
+}
+.oop-footer p { font-size: 0.8rem; opacity: 0.6; }
+
+/* ---------- reduced motion: everything already visible/static ---------- */
+body.rm .section, body.rm .section.oop-reveal-pre { opacity: 1 !important; transform: none !important; transition: none !important; }
+body.rm .oop-wave { transform: none !important; opacity: 1 !important; animation: none !important; }
+body.rm .oop-badge-ring { animation: none !important; }
+body.rm .oop-sparkle-hero, body.rm .oop-deco-sparkle { animation: none !important; }
+body.rm .oop-headline .ch, body.rm .oop-pill, body.rm .oop-cta-hero { opacity: 1 !important; transform: none !important; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .oop-badge-wrap { top: clamp(280px, 60vw, 340px); right: 16px; }
+}
+@media (max-width: 640px) {
+  .oop-hero { padding-bottom: 130px; }
+  .oop-headline { max-width: 100%; }
+  .oop-badge-wrap { position: relative; top: auto; right: auto; margin: 24px auto 0; }
+  .oop-stats { gap: 18px; }
+  .oop-stat { border-right: none; padding-right: 0; flex: 1 1 30%; }
+}
+@media (max-width: 420px) {
+  .oop-headline { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+  .oop-cta-pill { padding: 8px 14px; font-size: 0.74rem; }
+}

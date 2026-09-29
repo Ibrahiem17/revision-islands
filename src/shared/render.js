@@ -53,12 +53,12 @@ function renderItem(item, learnedSet, opts) {
   switch (item.type) {
     case "qa":
       return `
-        <div class="note-block qa-block${stateClasses}" data-searchable="${attr((item.question + " " + item.answer).toLowerCase())}">
+        <div class="note-block qa-block${stateClasses}" data-searchable="${attr((item.question + " " + item.answer).toLowerCase() + dg.search)}">
           <div class="note-head">
             ${checkbox}
             <button type="button" class="qa-toggle">❓ ${richText(item.question)}</button>
           </div>
-          <div class="qa-answer"><strong>Answer:</strong> ${richText(item.answer)}</div>
+          <div class="qa-answer"><strong>Answer:</strong> ${richText(item.answer)}${dg.html}</div>
         </div>`;
 
     case "concept":
