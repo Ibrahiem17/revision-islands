@@ -99,7 +99,7 @@ function proceduralVsOopChain() {
     <text class="od-b od-onink" x="230" y="86" text-anchor="middle">Car</text>
     <text class="od-s od-onink" x="230" y="106" text-anchor="middle">owns its data</text>
     <text class="od-s od-onink" x="230" y="122" text-anchor="middle">+ its own methods</text>
-    <text class="od-cap" x="176" y="164">each object manages itself</text>`;
+    <text class="od-cap" x="176" y="151">each object</text><text class="od-cap" x="176" y="164">manages itself</text>`;
   const css = keyframes("odChainPulse", 3.4, [[0, "opacity:1"], [50, "opacity:.5"], [100, "opacity:1"]]) + bind(".od-k.od-dash", "odChainPulse", 3.4);
   return fig("proceduralVsOop", 300, 182, "Procedural steps versus one self-managing object", "Left: three stacked boxes startCar(), driveCar(), stopCar() connected top to bottom like a checklist, with shared data living far away. Right: one green Car box that owns both its data and its methods.", inner) + `<style>${css}</style>`;
 }

@@ -371,6 +371,8 @@ export default {
           type: "concept",
           id: "abs-1",
           important: true,
+          diagram: "simpleInterfaceHidesComplexity",
+          diagramCaption: "One simple button; the wiring behind it stays hidden.",
           title: "What is abstraction?",
           body: [
             "Abstraction means **showing only the essential, relevant details to the user, and hiding the complicated implementation behind a simple interface.**",
@@ -381,6 +383,8 @@ export default {
           type: "concept",
           id: "abs-2",
           important: true,
+          diagram: "encapsulationVsAbstractionHides",
+          diagramCaption: "Encapsulation hides data; abstraction hides complexity.",
           title: "Abstraction vs Encapsulation — the confusion everyone has",
           body: [
             "These two get mixed up constantly because they're related, but they solve different problems: **encapsulation is about hiding data (protecting the \"how it's stored\"). Abstraction is about hiding complexity (simplifying the \"how it works\").**",
@@ -390,6 +394,8 @@ export default {
         {
           type: "code",
           id: "abs-3",
+          diagram: "startHidesPrivateMethods",
+          diagramCaption: "start() is public; checkFuel() and igniteEngine() stay private.",
           title: "Abstraction in code — a simple example",
           code: "public class Car {\n    private boolean engineRunning = false;\n\n    public void start() {\n        checkFuel();\n        igniteEngine();\n        engineRunning = true;\n        System.out.println(\"Car started!\");\n    }\n\n    private void checkFuel() { /* complex fuel-check logic */ }\n    private void igniteEngine() { /* complex ignition logic */ }\n}\n\n// the user only ever needs to know this:\nCar myCar = new Car();\nmyCar.start();",
           note: "start() is the simple interface. checkFuel() and igniteEngine() are marked private — real complexity hidden inside, exposed to the outside world as one simple action. The person calling myCar.start() doesn't need to know how starting actually works."
@@ -397,6 +403,8 @@ export default {
         {
           type: "concept",
           id: "abs-4",
+          diagram: "twoRoadsToAbstraction",
+          diagramCaption: "Abstract classes and interfaces — two roads to the same goal.",
           title: "Two ways Java lets you achieve abstraction",
           body: "Java gives you two dedicated tools for abstraction: abstract classes and interfaces — both let you define \"what should exist\" without necessarily saying \"how it works,\" forcing other classes to fill in the details. These are covered in full in Topic 9, since they're substantial enough to deserve their own deep dive — but know for now that abstraction isn't just about private methods, it has these two dedicated language features too."
         },
@@ -428,6 +436,8 @@ export default {
           id: "abs-8",
           important: true,
           takeaway: true,
+          diagram: "abstractionTakeaway",
+          diagramCaption: "One call in, the complexity stays hidden.",
           title: "Key takeaway",
           body: "Abstraction means showing only what's necessary and hiding complicated implementation details behind a simple interface — like a car's steering wheel hiding the engine's complexity. It's different from encapsulation, which hides data specifically, not logic."
         }
@@ -441,6 +451,8 @@ export default {
           type: "concept",
           id: "inh-1",
           important: true,
+          diagram: "parentChildExtends",
+          diagramCaption: "A child class extends a parent, free fields and methods included.",
           title: "What is inheritance?",
           body: [
             "Inheritance lets one class **reuse the fields and methods of another class**, and add or change things on top of it — instead of rewriting the same code again.",
@@ -450,6 +462,8 @@ export default {
         {
           type: "code",
           id: "inh-2",
+          diagram: "animalDogExtends",
+          diagramCaption: "Dog gets Animal's name and eat() for free, plus its own bark().",
           title: "Inheritance in Java — the `extends` keyword",
           code: "public class Animal {\n    String name;\n\n    void eat() {\n        System.out.println(name + \" is eating.\");\n    }\n}\n\npublic class Dog extends Animal {\n    void bark() {\n        System.out.println(name + \" is barking.\");\n    }\n}",
           note: "Dog extends Animal means Dog automatically gets everything Animal has (the name field and the eat() method) for free, plus its own extra behavior (bark()). Dog didn't have to redeclare name or rewrite eat()."
@@ -457,6 +471,8 @@ export default {
         {
           type: "code",
           id: "inh-3",
+          diagram: "dogCallsBothMethods",
+          diagramCaption: "One Dog object, calling an inherited method and its own.",
           title: "Using the inherited class",
           code: "Dog myDog = new Dog();\nmyDog.name = \"Rex\";\nmyDog.eat();   // Rex is eating.   (inherited from Animal)\nmyDog.bark();  // Rex is barking.  (Dog's own method)",
           note: "A Dog object has access to both its own methods AND everything from Animal — that's the whole point of inheritance."
@@ -465,6 +481,8 @@ export default {
           type: "concept",
           id: "inh-4",
           important: true,
+          diagram: "isARelationshipTest",
+          diagramCaption: "Dog is an Animal passes the test; Engine is a Car fails it.",
           title: "The \"is-a\" relationship — how to know when to use inheritance",
           body: [
             "Inheritance should only be used when there's a genuine \"is-a\" relationship: a Dog IS AN Animal. A Car IS A Vehicle. A Manager IS AN Employee.",
@@ -474,12 +492,16 @@ export default {
         {
           type: "concept",
           id: "inh-5",
+          diagram: "singleInheritanceOnly",
+          diagramCaption: "One parent is allowed; two parents at once is not.",
           title: "Java only allows single inheritance for classes",
           body: "A Java class can extend only ONE parent class — class Dog extends Animal is fine, but a class cannot extend two classes at once. This is different from some other languages. Java avoids this on purpose, because allowing a class to inherit from two parents creates confusing situations (like if both parents had a method with the same name — which one wins?). Java lets you achieve something similar to multiple inheritance using interfaces instead (Topic 9)."
         },
         {
           type: "code",
           id: "inh-6",
+          diagram: "overrideMakeSound",
+          diagramCaption: "Dog's makeSound() replaces Animal's, producing \"Woof!\".",
           title: "Overriding a method — changing inherited behavior",
           code: "public class Animal {\n    void makeSound() {\n        System.out.println(\"Some generic animal sound\");\n    }\n}\n\npublic class Dog extends Animal {\n    @Override\n    void makeSound() {\n        System.out.println(\"Woof!\");\n    }\n}\n\nDog d = new Dog();\nd.makeSound(); // Woof!  — Dog's own version replaces Animal's",
           note: "**@Override tells Java (and anyone reading the code) that this method is intentionally replacing the parent's version, not creating a new, separate one.** This is the foundation of polymorphism, covered next in Topic 7."
@@ -487,6 +509,8 @@ export default {
         {
           type: "table",
           id: "inh-7",
+          diagram: "inheritanceVocabIcons",
+          diagramCaption: "Superclass, extends, Subclass — the vocabulary in one picture.",
           title: "Inheritance vocabulary",
           headers: ["Term", "Meaning"],
           rows: [
@@ -519,6 +543,8 @@ export default {
           id: "inh-11",
           important: true,
           takeaway: true,
+          diagram: "inheritanceTakeaway",
+          diagramCaption: "The child stands on its parent's foundation, for free.",
           title: "Key takeaway",
           body: "Inheritance lets a child class reuse and extend a parent class's fields and methods using `extends`, avoiding duplicate code — but only use it for genuine \"is-a\" relationships, and remember Java classes can only extend one parent at a time."
         }
@@ -532,6 +558,8 @@ export default {
           type: "concept",
           id: "poly-1",
           important: true,
+          diagram: "oneCallDifferentResult",
+          diagramCaption: "The same call, pointed at a Dog or a Cat, sounds different.",
           title: "What is polymorphism?",
           body: [
             "Polymorphism literally means \"many forms.\" In OOP, it means **the same method call can behave differently depending on which object it's actually called on.**",
@@ -541,6 +569,8 @@ export default {
         {
           type: "code",
           id: "poly-2",
+          diagram: "samePetLineDifferentOutput",
+          diagramCaption: "myPet reassigned from Dog to Cat — same line, new result.",
           title: "The classic polymorphism example",
           code: "public class Animal {\n    void makeSound() { System.out.println(\"Some sound\"); }\n}\npublic class Dog extends Animal {\n    @Override\n    void makeSound() { System.out.println(\"Woof!\"); }\n}\npublic class Cat extends Animal {\n    @Override\n    void makeSound() { System.out.println(\"Meow!\"); }\n}\n\n// the powerful part:\nAnimal myPet = new Dog();\nmyPet.makeSound(); // Woof!\n\nmyPet = new Cat();\nmyPet.makeSound(); // Meow!",
           note: "**The variable's declared type is Animal, but the actual object it points to decides which makeSound() runs.** The exact same line of code (myPet.makeSound()) produces different results depending on what's actually stored in myPet at that moment — that's polymorphism."
@@ -549,12 +579,16 @@ export default {
           type: "concept",
           id: "poly-3",
           important: true,
+          diagram: "oneLoopHandlesEveryType",
+          diagramCaption: "One loop, zero type-checks — every animal handles itself.",
           title: "Why is this actually useful?",
           body: "Imagine a list of Animals — some Dogs, some Cats, some Birds. Without polymorphism, you'd need to check each one's exact type and call the right method manually. With polymorphism, you can write one loop — for (Animal a : animals) { a.makeSound(); } — and each animal correctly makes its own sound automatically, with zero type-checking. This is the real payoff: **write code once, against the general type, and let each specific object handle itself correctly.**"
         },
         {
           type: "concept",
           id: "poly-4",
+          diagram: "twoKindsOfPolymorphism",
+          diagramCaption: "Runtime (overriding) vs compile-time (overloading).",
           title: "The two kinds of polymorphism",
           body: [
             "Runtime polymorphism (method overriding): decided while the program is running, based on the actual object type. This is the Dog/Cat/makeSound() example above — also called dynamic polymorphism.",
@@ -564,6 +598,8 @@ export default {
         {
           type: "code",
           id: "poly-5",
+          diagram: "shapeArrayEachOwnArea",
+          diagramCaption: "A Circle and a Rectangle, each computing its own area().",
           title: "Polymorphism with an abstract type (a quick preview)",
           code: "abstract class Shape {\n    abstract double area();\n}\nclass Circle extends Shape {\n    double radius;\n    Circle(double r) { radius = r; }\n    double area() { return 3.14159 * radius * radius; }\n}\nclass Rectangle extends Shape {\n    double width, height;\n    Rectangle(double w, double h) { width = w; height = h; }\n    double area() { return width * height; }\n}\n\nShape[] shapes = { new Circle(3), new Rectangle(4, 5) };\nfor (Shape s : shapes) {\n    System.out.println(s.area()); // correct formula for each shape, automatically\n}",
           note: "Neither Circle nor Rectangle needs special handling — the loop just calls .area() on each Shape, and polymorphism makes sure the right formula runs. Abstract classes are covered fully in Topic 9."
@@ -591,6 +627,8 @@ export default {
           id: "poly-9",
           important: true,
           takeaway: true,
+          diagram: "polymorphismTakeaway",
+          diagramCaption: "One call, correct behavior per object, automatically.",
           title: "Key takeaway",
           body: "Polymorphism means the same method call produces different behavior depending on the actual object it runs on — mainly achieved through method overriding. It lets you write one piece of code against a general type and have every specific subtype behave correctly, automatically."
         }
