@@ -1914,7 +1914,7 @@ export function startDevopsGame(){
   var CITY_BUILDING_W = 128, CITY_BUILDING_H = 136; // card footprint, for spacing/overlap/z-order math
   var CITY_SUDO_POS = { x: 170, y: 190 }; // a fixed idle "guide post" near the Armory — simpler and just as alive as full follow-AI
   var cityHero = { x: 450, y: 280, facing: 'down', moving: false };
-  var cityKeys = { up: false, down: false, left: false, right: false };
+  var cityKeys = { up: false, down: false, left: false, right: false, run: false };
   var cityRafHandle = null;
   var cityNearBuildingId = null;
 
@@ -2717,7 +2717,7 @@ export function startDevopsGame(){
     if (!modalOpen) {
       npcWanderTick();
       animalTick();
-      var speed = 3.2;
+      var speed = cityKeys.run ? 6.4 : 3.2;
       var dx = 0, dy = 0;
       if (cityKeys.up) dy -= 1;
       if (cityKeys.down) dy += 1;
@@ -2755,7 +2755,7 @@ export function startDevopsGame(){
   }
   function stopCityLoop() {
     if (cityRafHandle) { clearInterval(cityRafHandle); cityRafHandle = null; }
-    cityKeys = { up: false, down: false, left: false, right: false };
+    cityKeys = { up: false, down: false, left: false, right: false, run: false };
   }
   function enterCityBuilding(id) {
     if (typeof id === 'string' && id.indexOf('house:') === 0) { enterHouse(parseInt(id.slice(6), 10)); return; }
@@ -3204,7 +3204,7 @@ export function startDevopsGame(){
 
   function stopHouseLoop() {
     if (houseLoopHandle) { clearInterval(houseLoopHandle); houseLoopHandle = null; }
-    cityKeys = { up: false, down: false, left: false, right: false };
+    cityKeys = { up: false, down: false, left: false, right: false, run: false };
   }
 
   function leaveHouse() {
@@ -6185,6 +6185,7 @@ export function startDevopsGame(){
     else if (k === 'arrowdown' || k === 's') { cityKeys.down = true; e.preventDefault(); }
     else if (k === 'arrowleft' || k === 'a') { cityKeys.left = true; e.preventDefault(); }
     else if (k === 'arrowright' || k === 'd') { cityKeys.right = true; e.preventDefault(); }
+    else if (e.key === 'Shift') { cityKeys.run = true; }
     else if (k === 'enter' || k === ' ') {
       // Swallow the event so the dialogue-close handler registered later on
       // `document` cannot see this same keydown and close the box it opens.
@@ -6203,6 +6204,7 @@ export function startDevopsGame(){
     else if (k === 'arrowdown' || k === 's') cityKeys.down = false;
     else if (k === 'arrowleft' || k === 'a') cityKeys.left = false;
     else if (k === 'arrowright' || k === 'd') cityKeys.right = false;
+    else if (e.key === 'Shift') cityKeys.run = false;
   });
   // On-screen d-pad (shown on coarse/touch pointers via CSS) drives the
   // exact same cityKeys state the keyboard path uses — one movement
