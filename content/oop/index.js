@@ -642,12 +642,16 @@ export default {
           type: "concept",
           id: "ovld-1",
           important: true,
+          diagram: "sameNameForkOverloadOverride",
+          diagramCaption: "Same method name, two very different stories.",
           title: "The one-line distinction to memorize",
           body: "**Overloading = same method name, different parameters, same class, decided at compile time. Overriding = same method name, same parameters, parent/child classes, decided at runtime.** Almost every confusion about these two comes back to forgetting this line."
         },
         {
           type: "code",
           id: "ovld-2",
+          diagram: "calculatorThreeDoors",
+          diagramCaption: "Three add() doors, matched before the program runs.",
           title: "Method overloading — multiple versions in the same class",
           code: "public class Calculator {\n    int add(int a, int b) {\n        return a + b;\n    }\n    double add(double a, double b) {\n        return a + b;\n    }\n    int add(int a, int b, int c) {\n        return a + b + c;\n    }\n}\n\nCalculator calc = new Calculator();\ncalc.add(2, 3);        // calls the (int, int) version -> 5\ncalc.add(2.5, 3.5);    // calls the (double, double) version -> 6.0\ncalc.add(1, 2, 3);     // calls the (int, int, int) version -> 6",
           note: "Three methods, all named add, all living in the same class. Java figures out which one to run based on the number and types of arguments you pass — this decision happens **at compile time**, before the program even runs."
@@ -655,6 +659,8 @@ export default {
         {
           type: "code",
           id: "ovld-3",
+          diagram: "runtimeDispatchDogSound",
+          diagramCaption: "The real object decides which makeSound() runs, at runtime.",
           title: "Method overriding — a child class replacing a parent's version",
           code: "class Animal {\n    void makeSound() {\n        System.out.println(\"Some sound\");\n    }\n}\nclass Dog extends Animal {\n    @Override\n    void makeSound() {\n        System.out.println(\"Woof!\");\n    }\n}",
           note: "Only ONE method here, not multiple — Dog's makeSound() has the exact same name AND the exact same parameters as Animal's, and it lives in a subclass, not the same class. It replaces the parent's version for Dog objects specifically. Which version runs is decided **at runtime**, based on the real object type."
@@ -663,6 +669,8 @@ export default {
           type: "table",
           id: "ovld-4",
           important: true,
+          diagram: "overloadOverrideCompactCompare",
+          diagramCaption: "Six rows, compressed into one shape.",
           title: "Overloading vs Overriding — the full comparison",
           headers: ["", "Overloading", "Overriding"],
           rows: [
@@ -678,6 +686,8 @@ export default {
           type: "concept",
           id: "ovld-5",
           important: true,
+          diagram: "overrideAccessWidening",
+          diagramCaption: "Access can widen on override, never narrow.",
           title: "Rules for overriding — what you can't change",
           body: [
             "When a child class overrides a parent method, the method name and parameter list must match exactly — that's what makes it an override instead of an accidental new, unrelated method.",
@@ -700,12 +710,16 @@ export default {
         {
           type: "qa",
           id: "ovld-8",
+          diagram: "overloadReturnTypeAlone",
+          diagramCaption: "Same params, different return type — not a valid overload.",
           question: "Can you change the return type when overloading a method?",
           answer: "Yes — as long as the parameter list is different, the return type can be anything. Return type alone is not enough to overload a method though — if two methods have identical parameter lists but different return types, that's a compile error, not valid overloading."
         },
         {
           type: "qa",
           id: "ovld-9",
+          diagram: "covariantReturnOverride",
+          diagramCaption: "An override's return type can narrow to a subtype, never go unrelated.",
           question: "Can you change the return type when overriding a method?",
           answer: "It must stay the same, or be a subtype of the original return type (called a covariant return type). You cannot override a method and return a completely unrelated type."
         },
@@ -714,6 +728,8 @@ export default {
           id: "ovld-10",
           important: true,
           takeaway: true,
+          diagram: "ovldTakeaway",
+          diagramCaption: "One shared name, two completely different mechanisms.",
           title: "Key takeaway",
           body: "Overloading is same name, different parameters, same class, decided at compile time. Overriding is same name, same parameters, parent-to-child relationship, decided at runtime. If you remember only that one distinction, you can answer almost any interview question about the two."
         }
@@ -727,6 +743,8 @@ export default {
           type: "concept",
           id: "absint-1",
           important: true,
+          diagram: "abstractClassCannotInstantiate",
+          diagramCaption: "An abstract Shape can't be built directly — only extended.",
           title: "What is an abstract class?",
           body: [
             "An abstract class is a class that can't be instantiated directly (you can never write new Shape() if Shape is abstract) — it exists purely to be extended by other classes.",
@@ -736,6 +754,8 @@ export default {
         {
           type: "code",
           id: "absint-2",
+          diagram: "shapeCircleForcedImplement",
+          diagramCaption: "Circle must implement area(); describe() comes for free.",
           title: "An abstract class in Java",
           code: "abstract class Shape {\n    abstract double area(); // no body — subclasses MUST implement this\n\n    void describe() {       // regular method — shared by all subclasses\n        System.out.println(\"This shape's area is \" + area());\n    }\n}\n\nclass Circle extends Shape {\n    double radius;\n    Circle(double r) { radius = r; }\n\n    @Override\n    double area() {\n        return 3.14159 * radius * radius;\n    }\n}\n\n// Shape s = new Shape();     // compile error — can't instantiate an abstract class\nCircle c = new Circle(3);\nc.describe(); // works — inherited from Shape, and it calls Circle's own area()",
           note: "Circle is forced to implement area() because it's abstract in Shape — if Circle didn't, the code wouldn't compile. describe() didn't need to be rewritten at all, since it already had a full body in Shape."
@@ -744,6 +764,8 @@ export default {
           type: "concept",
           id: "absint-3",
           important: true,
+          diagram: "interfaceChecklistContract",
+          diagramCaption: "An interface: signatures only, no bodies.",
           title: "What is an interface?",
           body: [
             "An interface is a pure contract — it defines a set of method signatures that any implementing class must provide, but (traditionally) has no implementation at all.",
@@ -753,6 +775,8 @@ export default {
         {
           type: "code",
           id: "absint-4",
+          diagram: "payableEmployeeImplements",
+          diagramCaption: "Employee implements Payable and delivers calculatePay().",
           title: "An interface in Java",
           code: "interface Payable {\n    double calculatePay(); // no body\n}\n\nclass Employee implements Payable {\n    double hoursWorked, hourlyRate;\n\n    Employee(double h, double r) { hoursWorked = h; hourlyRate = r; }\n\n    @Override\n    public double calculatePay() {\n        return hoursWorked * hourlyRate;\n    }\n}",
           note: "Employee implements Payable, meaning it PROMISES to provide a calculatePay() method — and it does. Any class implementing Payable can be trusted to have a working calculatePay(), no matter how differently each one calculates it internally."
@@ -761,6 +785,8 @@ export default {
           type: "concept",
           id: "absint-5",
           important: true,
+          diagram: "duckMultipleInterfacesFanIn",
+          diagramCaption: "One Duck, many interfaces fanning in.",
           title: "A class can implement MANY interfaces — this is how Java fakes multiple inheritance",
           body: "Remember from Topic 6 that a Java class can only extend one parent class. But a class can implement as many interfaces as it wants: class Duck implements Flyable, Swimmable { ... } — this is exactly how Java gives you most of the benefits of multiple inheritance without the confusing conflicts a real multiple-class-inheritance system would cause."
         },
@@ -768,6 +794,8 @@ export default {
           type: "table",
           id: "absint-6",
           important: true,
+          diagram: "abstractInterfaceCompactCompare",
+          diagramCaption: "Five rows, compressed into one shape.",
           title: "Abstract class vs Interface — the real comparison",
           headers: ["", "Abstract Class", "Interface"],
           rows: [
@@ -781,6 +809,8 @@ export default {
         {
           type: "concept",
           id: "absint-7",
+          diagram: "decisionFlowChooseTool",
+          diagramCaption: "Share real code? Abstract class. Guarantee a capability? Interface.",
           title: "How to choose between them — the practical interview answer",
           body: "Ask: do these classes share actual code and state, and are they naturally the same kind of thing? Use an abstract class (Circle and Rectangle are both fundamentally Shapes, sharing describe()). Do these classes just need to guarantee they can perform an action, even though they're otherwise unrelated? Use an interface (a Bird and an Airplane are nothing alike, but both can implement Flyable)."
         },
@@ -799,6 +829,8 @@ export default {
         {
           type: "qa",
           id: "absint-10",
+          diagram: "whyManyInterfacesOneClassConflict",
+          diagramCaption: "Two classes conflict; two interfaces never do.",
           question: "Why does Java let a class implement multiple interfaces but extend only one class?",
           answer: "Extending multiple classes could create ambiguous conflicts if two parent classes had their own different implementations of the same method — Java has no rule for which one should win. Interfaces (traditionally) don't have implementations to conflict with, only method signatures, so implementing several at once is safe and unambiguous."
         },
@@ -807,6 +839,8 @@ export default {
           id: "absint-11",
           important: true,
           takeaway: true,
+          diagram: "absIntTakeaway",
+          diagramCaption: "Two tools, one shared goal: abstraction.",
           title: "Key takeaway",
           body: "An abstract class is a partially-built base class for closely related subclasses to extend (single inheritance, can share real code). An interface is a pure contract of method signatures that unrelated classes can all promise to fulfill (a class can implement many). Both are tools for achieving abstraction."
         }
@@ -819,6 +853,8 @@ export default {
         {
           type: "concept",
           id: "acc-1",
+          diagram: "gatekeeperIntro",
+          diagramCaption: "Access modifiers decide who's allowed in.",
           title: "What are access modifiers?",
           body: "Access modifiers control which other classes are allowed to see or use a field, method, or class. They're one of the main tools Java gives you to actually enforce encapsulation — without them, private fields wouldn't be possible at all."
         },
@@ -826,6 +862,8 @@ export default {
           type: "table",
           id: "acc-2",
           important: true,
+          diagram: "fourLevelsNestedBoxes",
+          diagramCaption: "Private is innermost, public wraps around everything.",
           title: "The four access levels in Java",
           headers: ["Modifier", "Who can access it"],
           rows: [
@@ -839,6 +877,8 @@ export default {
         {
           type: "code",
           id: "acc-3",
+          diagram: "bankAccountThreeOpenness",
+          diagramCaption: "One class, three different doors on its fields.",
           title: "Access modifiers in action",
           code: "public class BankAccount {\n    private double balance;       // only BankAccount itself can touch this\n    protected String accountType; // this class + subclasses can touch this\n    public String ownerName;      // anyone can touch this\n\n    public double getBalance() {  // public method exposing controlled access\n        return balance;\n    }\n}",
           note: "This is encapsulation (Topic 4) actually being enforced by the language — private isn't just a convention, Java's compiler will refuse to compile code outside BankAccount that tries to write acc.balance directly."
@@ -847,6 +887,8 @@ export default {
           type: "concept",
           id: "acc-4",
           important: true,
+          diagram: "leastPrivilegeDefaultLocked",
+          diagramCaption: "Default to private, widen only the field that needs it.",
           title: "Why not just make everything public?",
           body: "Because that removes every safety guarantee encapsulation gives you — any code anywhere could set balance to an invalid value, and you'd have no way to stop it. **The general rule: make fields as restrictive as possible (usually private), and only open them up (via public methods) when something outside genuinely needs access.** This is sometimes called the principle of least privilege."
         },
@@ -867,6 +909,8 @@ export default {
           id: "acc-7",
           important: true,
           takeaway: true,
+          diagram: "accessTakeaway",
+          diagramCaption: "Default to private, widen only when needed.",
           title: "Key takeaway",
           body: "Access modifiers (private, default, protected, public) control who can see or use a class's fields and methods. They're the actual language mechanism that makes encapsulation enforceable — default to private, and only widen access when something genuinely needs it."
         }
