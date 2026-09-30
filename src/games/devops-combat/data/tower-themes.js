@@ -42,7 +42,8 @@ export var TOWER_THEMES = [
               tf('stool', 462, 326, { flip: true, label: 'stool', say: 'A second taster. Quality assurance.' }),
               tf('teatable', 56, 250, { label: 'staff table', say: 'Staff table. A rota, a biscuit tin and a lot of crumbs.' }),
               tf('stool', 126, 274, { label: 'stool', say: 'Sticky. Do not ask.' }),
-              tf('plant', 26, 376, { label: 'plant', say: 'Basil, or something like it. Cooks swear by it.' })
+              tf('plant', 26, 376, { label: 'plant', say: 'Basil, or something like it. Cooks swear by it.' }),
+              tf('consoleDesk', 210, 210, { label: 'break terminal', course: 'net-foundations', say: 'Wedged between the spice rack and a cookbook. Someone bookmarked networking notes instead of a recipe.', glow: [tg(222, 218, 34, 22, 'mon'), tg(262, 218, 34, 22, 'mon', 0.9)] })
             ] },
           { name: 'DINING HALL', subtitle: 'Long tables, a chalk menu and plenty of elbow room.', theme: { wall: '#f6ecd4', wall2: '#ecdfc0', wainscot: '#6a8a5a', wainscotBorder: '#3f5a35', sidewall: '#3f5a35', floor: 'floorWood' },
             fx: [{ kind: 'steam', x: 168, y: 240, n: 3, z: 990 }, { kind: 'steam', x: 476, y: 240, n: 3, z: 990 }],
@@ -59,21 +60,18 @@ export var TOWER_THEMES = [
               tf('chair', 40, 234, { solid: [46, 272, 36, 34] }), tf('chair', 240, 234, { flip: true, solid: [246, 272, 36, 34] }),
               tf('chair', 352, 234, { solid: [358, 272, 36, 34] }), tf('chair', 552, 234, { flip: true, solid: [558, 272, 36, 34] }),
               tf('chair', 40, 322, { solid: [46, 360, 36, 34] }), tf('chair', 240, 322, { flip: true, solid: [246, 360, 36, 34], label: 'chair', say: 'Its legs squeak in B flat.' }),
-              tf('chair', 352, 322, { solid: [358, 360, 36, 34] }), tf('chair', 552, 322, { flip: true, solid: [558, 360, 36, 34] })
+              tf('chair', 352, 322, { solid: [358, 360, 36, 34] }), tf('chair', 552, 322, { flip: true, solid: [558, 360, 36, 34] }),
+              tf('consoleDesk', 420, 150, { label: 'dining terminal', course: 'net-addressing', say: 'A kiosk by the window. The Wi-Fi password is taped underneath: "subnetting123".', glow: [tg(432, 158, 34, 22, 'mon', 0.4), tg(472, 158, 34, 22, 'mon', 1.3)] })
             ] },
-          { name: 'BREAK ROOM', subtitle: 'Vending machines, a sofa, a foosball table and a lot of procrastination.', theme: { wall: '#efe0c8', wall2: '#e4d3b6', wainscot: '#3f7f86', wainscotBorder: '#27575c', sidewall: '#27575c', floor: 'floorCarpet' },
+          { name: 'NETWORK LAB', subtitle: 'Racks, cable trays and a wall of monitors nobody quite trusts. Ping it and see.', theme: { wall: '#dfe6ea', wall2: '#cfd9df', wainscot: '#2c4a5e', wainscotBorder: '#1c313f', sidewall: '#1c313f', floor: 'floorCarpetBlue' },
             furniture: [
-              tf('vendingMachine', 30, 50, { label: 'vending machine', say: 'Everything is priced in story points.', glow: [tg(38, 74, 40, 56, 'soft')] }),
-              tf('vendingMachine', 108, 50, { label: 'vending machine', say: 'B4 is stuck. B4 has always been stuck.', glow: [tg(116, 74, 40, 56, 'soft', 1.3)] }),
-              tf('posterVinyl', 202, 44, { wall: true, label: 'poster', say: 'Vinyl night, every second Friday. Attendance: two.' }),
-              tf('posterInvader', 262, 44, { wall: true, label: 'poster', say: 'High score: 4 040 404. Nobody knows who.' }),
-              tf('tv', 410, 70, { solid: [414, 150, 128, 40], label: 'TV', say: 'Muted. Playing a documentary about pipelines.', glow: [tg(434, 78, 88, 48, 'mon')] }),
-              tf('sofa', 378, 222, { solid: [382, 296, 192, 16], label: 'sofa', say: 'It remembers everyone who ever napped on it.' }),
-              tf('coffeetable', 424, 328, { solid: [428, 372, 104, 14], label: 'coffee table', say: 'Three mugs, one remote and a half-finished sudoku.' }),
-              tf('foosball', 150, 226, { label: 'foosball table', say: 'The score is 9 - 9. It has been for a year.' }),
-              tf('beanbag', 30, 286, { label: 'bean bag', say: 'You sink in slowly. Like technical debt.' }),
-              tf('beanbagG', 116, 348, { label: 'bean bag', say: 'Green bean bag. Refactored for comfort.' }),
-              tf('plantFern', 26, 196, { label: 'plant', say: 'Deeply unbothered.' })
+              tf('cableTray', 12, 4, { wall: true }), tf('cableTray', 200, 4, { wall: true }),
+              tf('serverRack', 30, 50, { label: 'server rack', say: 'Every port is exactly where the diagram says it is. Suspicious.', glow: rackGlows(30, 50, 0) }),
+              tf('serverRack', 90, 50, { label: 'server rack', say: 'Packets in, packets out. Nobody actually watches this happen.', glow: rackGlows(90, 50, 0.6) }),
+              tf('monitorWall', 200, 44, { wall: true, label: 'network lab terminal', course: 'net-protocols', say: 'A wall of monitors. Looks like it wants your attention.', glow: [tg(208, 52, 52, 28, 'mon'), tg(264, 52, 28, 28, 'alarm', 0.8), tg(208, 84, 52, 28, 'mon', 1.1), tg(264, 84, 28, 28, 'mon', 0.4)] }),
+              tf('foosball', 150, 226, { label: 'foosball table', say: 'Left over from the Break Room. Nobody had the heart to move it.' }),
+              tf('beanbagG', 30, 286, { label: 'bean bag', say: 'For thinking through subnet masks, apparently.' }),
+              tf('plantFern', 480, 196, { label: 'plant', say: 'Thrives on ambient router heat.' })
             ] }
         ] },
       { name: 'ENGINEERING',

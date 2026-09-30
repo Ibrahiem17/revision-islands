@@ -105,6 +105,7 @@ import { RAPID_RECON_POOL, FINAL_BOSS_STAR_QUESTION } from './data/rapid-recon.j
 import { tf, tg } from './data/tower-helpers.js';
 import { TOWER_ROOFS } from './data/tower-roofs.js';
 import { TOWER_THEMES } from './data/tower-themes.js';
+import { NET_FOUNDATIONS, NET_ADDRESSING, NET_PROTOCOLS } from './data/networking-course.js';
 import { NPC_DIALOGUE_DATA } from './dialogue/npc-lines.js';
 import { FOLIAGE_SPRITES, GROUND_TILES } from './sprites/foliage.js';
 import { FOREST_ANIMAL_SPRITES, FOREST_PROP_SPRITES } from './sprites/forest.js';
@@ -254,7 +255,11 @@ export function startDevopsGame(){
         // conversation counts and 'visited' place flags. Backfilled empty for old saves.
         dialogueBag: (s.dialogueBag && typeof s.dialogueBag === 'object' && !Array.isArray(s.dialogueBag)) ? s.dialogueBag : {},
         talked: (s.talked && typeof s.talked === 'object' && !Array.isArray(s.talked)) ? s.talked : {},
-        visited: (s.visited && typeof s.visited === 'object' && !Array.isArray(s.visited)) ? s.visited : {}
+        visited: (s.visited && typeof s.visited === 'object' && !Array.isArray(s.visited)) ? s.visited : {},
+        // Network Lab course terminal (Tower A, Floor 1): per-course completed-topic
+        // ids, e.g. { networking: { completed: ['ip-addressing', ...] } }. Backfilled
+        // empty for old saves, same non-destructive-migration pattern as above.
+        courseProgress: (s.courseProgress && typeof s.courseProgress === 'object' && !Array.isArray(s.courseProgress)) ? s.courseProgress : {}
       };
     } catch (e) {
       return {
@@ -269,7 +274,7 @@ export function startDevopsGame(){
         npcLastLineIndex: {}, practiceMode: false,
         lastPlayedDate: null, currentDailyStreak: 0, longestDailyStreak: 0,
         performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0, bossLevelProgress: {},
-        dialogueBag: {}, talked: {}, visited: {}
+        dialogueBag: {}, talked: {}, visited: {}, courseProgress: {}
       };
     }
   }
@@ -1730,7 +1735,7 @@ export function startDevopsGame(){
   function openModal(modalId) {
     $('dgcModalBackdrop').hidden = false;
     ['dgcHowToPlayModal', 'dgcSettingsModal', 'dgcTrophyModal', 'dgcDebriefModal', 'dgcLevelSelectModal', 'dgcConfirmModal',
-     'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal', 'dgcGeneralStoreModal'].forEach(function (id) {
+     'dgcArmoryModal', 'dgcTailorModal', 'dgcBankModal', 'dgcLibraryModal', 'dgcGeneralStoreModal', 'dgcNetworkingCourseModal'].forEach(function (id) {
       $(id).hidden = id !== modalId;
     });
   }
@@ -3253,7 +3258,10 @@ export function startDevopsGame(){
     if (ex && ex.reuse) { ex.go(); return; }
     var n = houseNearFurn();
     if (!n) return;
-    if (n.kind === 'furn') { houseShowBubble(n.say, null); }
+    if (n.kind === 'furn') {
+      if (n.ent.course) { try { playSfx('click'); } catch (er) { /* sfx optional */ } openCourseModal(n.ent.course); return; }
+      houseShowBubble(n.say, null);
+    }
     else {
       var e = n.ent, ls = e.lines || ['...'];
       var k = houseLineIdx[e.id] || 0;
@@ -4319,6 +4327,56 @@ export function startDevopsGame(){
     renderLibrary();
   }
 
+  /* ---- 2.5 NETWORK LAB COURSE TERMINAL (Tower A, Floor 1) ----
+     Reading-screen course triggered by the 'course' furniture marker
+     (see houseInteract). Progress is per-course-id, backfilled onto
+     save.courseProgress in loadSave() / resetAllProgress(). */
+  var COURSE_DATA = { 'net-foundations': NET_FOUNDATIONS, 'net-addressing': NET_ADDRESSING, 'net-protocols': NET_PROTOCOLS };
+  var COURSE_TITLES = { 'net-foundations': '🧱 NETWORKING: FOUNDATIONS', 'net-addressing': '🛣️ NETWORKING: ADDRESSING & ROUTING', 'net-protocols': '🖧 NETWORK LAB' };
+  var courseModalCurrentId = null;
+  var courseModalCurrentTopic = null;
+  function openCourseModal(courseId) {
+    courseModalCurrentId = courseId;
+    courseModalCurrentTopic = null;
+    if (!save.courseProgress[courseId]) save.courseProgress[courseId] = { completed: [] };
+    var titleEl = document.querySelector('#dgcNetworkingCourseModal .dgc-modal-header span:first-child');
+    if (titleEl) titleEl.textContent = COURSE_TITLES[courseId] || '🖧 NETWORK LAB';
+    renderCourseTopicList();
+    $('dgcCourseContent').innerHTML = '<div class="dgc-course-placeholder">Pick a topic on the left to start reading.</div>';
+    openModal('dgcNetworkingCourseModal');
+  }
+  function renderCourseTopicList() {
+    var courseId = courseModalCurrentId;
+    var topics = COURSE_DATA[courseId] || [];
+    var progress = save.courseProgress[courseId] || { completed: [] };
+    var list = $('dgcCourseTopicList');
+    list.innerHTML = topics.map(function (t) {
+      var done = progress.completed.indexOf(t.id) !== -1;
+      var active = courseModalCurrentTopic === t.id;
+      return '<div class="dgc-course-topic' + (done ? ' dgc-course-topic-done' : '') + (active ? ' dgc-course-topic-active' : '') + '" data-course-topic-id="' + t.id + '">' +
+        '<span class="dgc-course-topic-icon">' + t.icon + '</span>' +
+        '<span class="dgc-course-topic-title">' + t.title + '</span>' +
+        (done ? '<span class="dgc-course-topic-check">✓</span>' : '') +
+        '</div>';
+    }).join('');
+    var counter = $('dgcCourseProgress');
+    if (counter) counter.textContent = progress.completed.length + ' of ' + topics.length + ' complete';
+  }
+  function renderCourseTopic(topicId) {
+    var courseId = courseModalCurrentId;
+    var topics = COURSE_DATA[courseId] || [];
+    var topic = topics.filter(function (t) { return t.id === topicId; })[0];
+    if (!topic) return;
+    courseModalCurrentTopic = topicId;
+    $('dgcCourseContent').innerHTML = '<div class="dgc-course-topic-header">' + topic.icon + ' ' + topic.title + '</div>' + topic.body;
+    var progress = save.courseProgress[courseId] || (save.courseProgress[courseId] = { completed: [] });
+    if (progress.completed.indexOf(topicId) === -1) {
+      progress.completed.push(topicId);
+      persist();
+    }
+    renderCourseTopicList();
+  }
+
   /* ============================================================
      SECTION 1B SUB-STEP 2 — GENERAL STORE + TOWN DECORATIONS. A modest
      starter catalog (per the doc's own scope-management note), coin-
@@ -4497,7 +4555,7 @@ export function startDevopsGame(){
       equippedAccessory: 'none', ownedAccessories: ['none'], selectedCharacterId: null,
       npcLastLineIndex: {},
       performanceHistory: normalizePerformanceHistory(null), bestFinalBossScore: 0, bossLevelProgress: {},
-      dialogueBag: {}, talked: {}, visited: {},
+      dialogueBag: {}, talked: {}, visited: {}, courseProgress: {},
       practiceMode: keepPracticeMode,
       lastPlayedDate: keepStreak.lastPlayedDate, currentDailyStreak: keepStreak.currentDailyStreak, longestDailyStreak: keepStreak.longestDailyStreak
     };
@@ -6246,6 +6304,11 @@ export function startDevopsGame(){
     var btn = e.target.closest ? e.target.closest('[data-library-action]') : null;
     if (!btn) return;
     buyLibraryPack(btn.getAttribute('data-library-boss-id'));
+  });
+  $('dgcCourseTopicList').addEventListener('click', function (e) {
+    var row = e.target.closest ? e.target.closest('[data-course-topic-id]') : null;
+    if (!row) return;
+    renderCourseTopic(row.getAttribute('data-course-topic-id'));
   });
   $('dgcBankInvestBtn').addEventListener('click', investInBank);
   $('dgcBankCollectBtn').addEventListener('click', function () { collectBankTrickle(false); });

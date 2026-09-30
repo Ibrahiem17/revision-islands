@@ -68,7 +68,7 @@ export function tf(spr, x, y, a, b, c) {
   if (typeof a === 'number') { w = a; h = b; o = c || {}; } else { o = a || {}; w = o.w || s[0]; h = o.h || s[1]; }
   var e = { spr: spr, x: x, y: y, w: w, h: h };
   if (o.z !== undefined) e.z = o.z; else if (o.wall) e.z = 2;
-  ['flip', 'css', 'cls', 'front', 'zf', 'glow', 'label', 'say', 'solids'].forEach(function (k) { if (o[k] !== undefined) e[k] = o[k]; });
+  ['flip', 'css', 'cls', 'front', 'zf', 'glow', 'label', 'say', 'solids', 'course'].forEach(function (k) { if (o[k] !== undefined) e[k] = o[k]; });
   if (o.wall) { if (o.say) e.hit = o.hit || [x, 152, w, 10]; return e; }
   if (o.solid instanceof Array) e.solid = o.solid;
   else if (o.solid === true || (o.solid === undefined && o.say)) { var ft = o.foot || TOWER_FOOT[spr] || 14; e.solid = [x + 4, y + h - ft, w - 8, ft]; }
