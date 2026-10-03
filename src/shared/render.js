@@ -10,6 +10,7 @@
  */
 import { escapeHtml, richText } from "./text.js";
 import { getLearnedSet, saveLearnedSet, progressFor } from "./progress.js";
+import { setupFigures } from "./replay.js";
 
 // escapeHtml for a double-quoted attribute value: a literal " in the note text would otherwise cut the
 // attribute (and its searchable text) short
@@ -206,19 +207,8 @@ export function renderPage(topicKey, topicData, opts) {
 
   // optional (opts.diagrams): animated figures only play while on screen, the tab is visible and
   // motion is allowed (.is-playing); otherwise they stay a complete static picture.
-  const figs = opts.contentEl.querySelectorAll(".note-diagram");
-  if (figs.length && typeof IntersectionObserver === "function") {
-    const seen = new Set();
-    const canPlay = () => !document.hidden && !document.body.classList.contains("rm") &&
-      !(typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
-    const sync = () => figs.forEach(f => f.classList.toggle("is-playing", seen.has(f) && canPlay()));
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)));
-      sync();
-    }, { rootMargin: "60px" });
-    figs.forEach(f => io.observe(f));
-    document.addEventListener("visibilitychange", sync);
-  }
+  // Each figure plays ONCE (slightly slower) when first seen, then only via its Replay button.
+  setupFigures(opts.contentEl.querySelectorAll(".note-diagram"));
 
   // interview-question reveal (click question, answer folds open below)
   opts.contentEl.querySelectorAll(".qa-toggle").forEach(btn => {

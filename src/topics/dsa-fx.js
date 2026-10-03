@@ -16,6 +16,7 @@
  */
 import { heroArtMarkup } from "./dsa-art.js";
 import { vignetteFor, vignetteKeyForTitle } from "./dsa-vignettes.js";
+import { runOnce, addReplayButton } from "../shared/replay.js";
 
 const mq = (q) => typeof matchMedia === "function" && matchMedia(q).matches;
 const REDUCED = () => mq("(prefers-reduced-motion: reduce)") || document.body.classList.contains("rm");
@@ -168,15 +169,17 @@ export function startVignettes() {
   const gs = window.gsap;
   const small = mq("(max-width: 760px)");
 
-  // ---- idle loops: live only while on screen + tab visible
-  const onScreen = new Set();
-  const syncLive = () => slots.forEach((s) => s.classList.toggle("vg-live", onScreen.has(s) && !document.hidden));
-  const ioLive = new IntersectionObserver((es) => {
-    es.forEach((e) => (e.isIntersecting ? onScreen.add(e.target) : onScreen.delete(e.target)));
-    syncLive();
-  }, { rootMargin: "60px" });
-  slots.forEach((s) => ioLive.observe(s));
-  document.addEventListener("visibilitychange", syncLive);
+  // ---- idle loops: play ONCE (slower) after the reveal, then only via the Replay button
+  const playIdle = (slot) => {
+    // finished CSS animations drop out of getAnimations(), so cancel + recreate them for a clean replay
+    slot.classList.remove("vg-live");
+    slot.classList.add("vg-restart");
+    void slot.getBoundingClientRect();
+    slot.classList.remove("vg-restart");
+    slot.classList.add("vg-live");
+    return runOnce(slot);
+  };
+  slots.forEach((s) => addReplayButton(s, () => playIdle(s)));
 
   // ---- reveal on first view
   const prepared = new Map();
@@ -196,6 +199,7 @@ export function startVignettes() {
     if (!pending.delete(slot)) return;
     const p = prepared.get(slot);
     try { p && p(); } catch (err) { console.error("[dsa] banner reveal failed", err); }
+    setTimeout(() => playIdle(slot), 900); // after the draw-on starts, run the idle motion once
   };
   const check = () => {
     const lim = innerHeight * 0.95;

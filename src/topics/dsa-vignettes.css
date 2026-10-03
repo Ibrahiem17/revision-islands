@@ -103,3 +103,6 @@ body.rm .vg .vl { transform: none !important; }
 body.rm .vg .draw { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
 body.rm .vg .fo, body.rm .vg .ht, body.rm .vg .dt, body.rm .vg .ch { opacity: 1 !important; transform: none !important; }
 body.rm .section.fx-pre { opacity: 1 !important; transform: none !important; }
+
+/* replay: briefly cancel every idle animation so they restart from the beginning */
+body.dsa .vg-slot.vg-restart *, body.dsa .vg-slot.vg-restart { animation: none !important; }
