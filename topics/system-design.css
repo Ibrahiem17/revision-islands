@@ -241,7 +241,13 @@ body.sd .note-block h4::before { content: ""; display: inline-block; width: 9px;
 body.sd .note-block p, body.sd .note-block li { font: 400 .93rem/1.7 var(--body); opacity: 1; margin: 0 0 10px; color: var(--ink); }
 body.sd .note-block ul { padding-left: 22px; }
 body.sd .note-block li::marker { color: var(--ink); }
-body.sd .glow-word { color: var(--ink); font-weight: 700; text-shadow: none; background: linear-gradient(transparent 52%, var(--yellow) 52%); padding: 0 2px; }
+body.sd .glow-word { color: var(--ink); font-weight: 700; text-shadow: 0 0 .5em rgba(255, 226, 130, .9); background: linear-gradient(transparent 40%, var(--yellow) 40%, var(--yellow) 94%, transparent 94%); padding: 0 .22em; border-radius: 2px; box-shadow: 0 0 .7em .1em rgba(242, 176, 30, .55), 0 0 1.6em .15em rgba(242, 176, 30, .28); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+/* glow lights up once when a note opens, then stays lit (no looping) */
+@keyframes sdGlowUp { from { box-shadow: 0 0 0 0 rgba(242,176,30,0); text-shadow: 0 0 0 rgba(255,226,130,0); }
+  to { box-shadow: 0 0 .7em .1em rgba(242,176,30,.55), 0 0 1.6em .15em rgba(242,176,30,.28); text-shadow: 0 0 .5em rgba(255,226,130,.9); } }
+body.sd .note-block:not(.note-collapsed) .glow-word, body.sd .qa-block.open .glow-word { animation: sdGlowUp 1.4s ease-out .25s backwards; }
+body.sd.rm .glow-word { animation: none; }
+@media (prefers-reduced-motion: reduce) { body.sd .glow-word { animation: none !important; } }
 body.sd .note-block.qa-block { border: 0; border-top: var(--rule); border-left: 9px solid var(--ink); background: var(--paper2); border-radius: 0; padding: 16px 28px 18px 19px; }
 body.sd .qa-toggle { all: unset; cursor: pointer; font: 700 1.02rem/1.45 var(--body); color: var(--ink); }
 body.sd .qa-toggle:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }

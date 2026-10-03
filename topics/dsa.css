@@ -477,13 +477,22 @@ body.dsa .note-block li::marker { color: var(--terra); font-weight: 800; }
 body.dsa .glow-word {
   color: var(--ink);
   font-weight: 700;
-  text-shadow: none;
-  padding: 0 .12em;
+  text-shadow: 0 0 .5em rgba(255, 224, 140, .85);
+  padding: .02em .22em;
   margin: 0 -.05em;
-  background: linear-gradient(transparent 52%, rgba(233, 169, 58, .8) 52%, rgba(233, 169, 58, .8) 92%, transparent 92%);
+  border-radius: .35em;
+  background: linear-gradient(transparent 38%, rgba(240, 184, 70, .85) 38%, rgba(240, 184, 70, .85) 94%, transparent 94%);
+  box-shadow: 0 0 .7em .1em rgba(233, 169, 58, .55), 0 0 1.6em .15em rgba(233, 169, 58, .28);
   -webkit-box-decoration-break: clone;
           box-decoration-break: clone;
 }
+/* glow lights up once when a note opens, then stays lit (no looping) */
+@keyframes dsaGlowUp { from { box-shadow: 0 0 0 0 rgba(233,169,58,0); text-shadow: 0 0 0 rgba(255,224,140,0); }
+  to { box-shadow: 0 0 .7em .1em rgba(233,169,58,.55), 0 0 1.6em .15em rgba(233,169,58,.28); text-shadow: 0 0 .5em rgba(255,224,140,.85); } }
+body.dsa .note-block:not(.note-collapsed) .glow-word,
+body.dsa .qa-block.open .glow-word { animation: dsaGlowUp 1.4s ease-out .25s backwards; }
+body.dsa.rm .glow-word { animation: none; }
+@media (prefers-reduced-motion: reduce) { body.dsa .glow-word { animation: none !important; } }
 
 /* folded notes: whole head is the button; chevron chip on the right */
 body.dsa .note-collapsible .note-head { cursor: pointer; margin-bottom: 0; }

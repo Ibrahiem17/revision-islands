@@ -130,7 +130,7 @@ body.oop .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidde
 }
 .oop-hero-in {
   position: relative;
-  max-width: 1180px;
+  max-width: none;
   margin: 0 auto;
   z-index: 2;
 }
@@ -261,9 +261,10 @@ body.oop .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidde
 /* ---------- main / toolbar ---------- */
 .oop-main {
   position: relative;
-  max-width: 900px;
+  max-width: none;
+  width: 100%;
   margin: 0 auto;
-  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 28px) 90px;
+  padding: clamp(28px, 5vw, 56px) clamp(16px, 3.5vw, 64px) 90px;
   overflow: visible;
 }
 .oop-toolbar {
@@ -313,6 +314,11 @@ body.oop .section-title .chevron {
   font-size: 0.7em;
 }
 body.oop .notes-flow { gap: 20px; max-width: none; }
+@media (min-width: 1100px) {
+  body.oop .notes-flow { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+  body.oop .notes-flow > * { grid-column: 1 / -1; }
+  body.oop .notes-flow > .note-block.note-collapsed { grid-column: auto; }
+}
 
 body.oop .note-block {
   border-left: none;
@@ -328,10 +334,20 @@ body.oop .note-block p, body.oop .note-block li { color: var(--oop-ink); opacity
 
 body.oop .glow-word {
   color: var(--oop-ink);
-  background: linear-gradient(180deg, transparent 60%, var(--oop-mustard) 60%);
-  text-shadow: none;
-  padding: 0 1px;
+  background: linear-gradient(180deg, transparent 40%, var(--oop-mustard) 40%, var(--oop-mustard) 94%, transparent 94%);
+  text-shadow: 0 0 .5em rgba(255, 230, 140, .9);
+  padding: 0 .22em;
+  border-radius: .3em;
+  box-shadow: 0 0 .7em .1em rgba(245, 196, 48, .6), 0 0 1.6em .15em rgba(245, 196, 48, .3);
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
 }
+/* glow lights up once when a note opens, then stays lit (no looping) */
+@keyframes oopGlowUp { from { box-shadow: 0 0 0 0 rgba(245,196,48,0); text-shadow: 0 0 0 rgba(255,230,140,0); }
+  to { box-shadow: 0 0 .7em .1em rgba(245,196,48,.6), 0 0 1.6em .15em rgba(245,196,48,.3); text-shadow: 0 0 .5em rgba(255,230,140,.9); } }
+body.oop .note-block:not(.note-collapsed) .glow-word, body.oop .qa-block.open .glow-word { animation: oopGlowUp 1.4s ease-out .25s backwards; }
+body.oop.rm .glow-word { animation: none; }
+@media (prefers-reduced-motion: reduce) { body.oop .glow-word { animation: none !important; } }
 
 body.oop .note-block pre { background: var(--oop-ink); border-radius: 12px; border: 2px solid var(--oop-ink); }
 body.oop .note-block code { color: var(--oop-mustard); font-family: "Cascadia Code", Consolas, monospace; }
@@ -389,7 +405,7 @@ body.oop .note-diagram {
   padding: 6px 6px 0;
   overflow: hidden;
 }
-body.oop .od-panel svg { display: block; width: 100%; height: auto; max-width: 380px; margin: 0 auto; overflow: visible; }
+body.oop .od-panel svg { display: block; width: 100%; height: auto; max-width: min(100%, 620px); margin: 0 auto; overflow: visible; }
 body.oop .note-diagram figcaption {
   padding: 8px 14px 10px;
   font-family: var(--oop-display);
