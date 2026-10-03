@@ -1,0 +1,35 @@
+/* DSA note diagrams (src/topics/dsa-diagrams.js + diagrams/dsa-*.js). Palette tokens come from topics/dsa.css :root.
+   Static picture first: nothing here hides anything; keyframes are emitted per figure and only bound under .is-playing. */
+body.dsa .note-diagram svg.dg { display: block; width: 100%; max-width: 600px; height: auto; margin: 0 auto; }
+body.dsa .note-diagram { background: var(--paper) radial-gradient(circle at 50% 50%, rgba(23, 18, 15, .16) 1.2px, transparent 1.7px) 0 0 / 9px 9px; }
+body.dsa .note-diagram svg.dg { background: var(--paper); border-left: 3px solid var(--ink); border-right: 3px solid var(--ink); }
+@media (max-width: 640px) { body.dsa .note-diagram svg.dg { border-left: 0; border-right: 0; } }
+.dg { overflow: hidden; }
+.dg text { font: 700 14px var(--sans, system-ui, sans-serif); fill: var(--ink); }
+.dg text.s { font-size: 12px; font-weight: 600; }
+.dg text.b { font-size: 18px; font-family: var(--serif, Georgia, serif); font-weight: 800; }
+.dg text.w { fill: var(--cream); }
+
+.dg .k { stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.dg .ln { fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.dg .ln.ln-w { stroke-width: 6; }
+.dg .hd { fill: var(--ink); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+.dg .sh { fill: var(--ink); }
+.dg .dash { stroke-dasharray: 6 5; }
+.dg .wf { fill: rgba(233, 169, 58, .22); stroke: var(--terra); stroke-width: 4; }
+.dg .fl { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+.dg .fc { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.dg .cs-m { stroke: var(--mustard); } .dg .cs-t { stroke: var(--terra); } .dg .cs-pk { stroke: var(--pink); }
+.dg .cs-sg { stroke: var(--sage); } .dg .cs-bl { stroke: var(--blue); } .dg .cs-pe { stroke: var(--peach); }
+.dg .tc { stroke: var(--terra); } .dg .ts { stroke: var(--green-d); }
+
+.dg .m { fill: var(--mustard); } .dg .t { fill: var(--terra); } .dg .pk { fill: var(--pink); }
+.dg .pe { fill: var(--peach); } .dg .sg { fill: var(--sage); } .dg .bl { fill: var(--blue); }
+.dg .cr { fill: var(--cream); } .dg .pp { fill: var(--paper); } .dg .ik { fill: var(--ink); }
+.dg .hpi { fill: var(--ink); opacity: .55; } .dg .hpt { fill: var(--terra); }
+
+/* phones: the 360-unit figure renders ~0.82x, so lift the type a little to keep it readable */
+@media (max-width: 640px) { .dg text { font-size: 15.5px; } .dg text.s { font-size: 13.5px; } .dg text.b { font-size: 19px; } }
+
+@media (prefers-reduced-motion: reduce) { .note-diagram, .note-diagram * { animation: none !important; } }
+body.rm .note-diagram, body.rm .note-diagram * { animation: none !important; }

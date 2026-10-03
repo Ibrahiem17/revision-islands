@@ -48,6 +48,11 @@ vercel.json                    cache headers
 4. Animate with CSS keyframes scoped to `.note-diagram.is-playing` (render.js adds it only while the figure is on screen, the tab is visible and motion is allowed). With the class absent the SVG must already be a complete static picture.
 5. Frame, `FIG. n` tab and caption strip are styled in `topics/system-design.css` (`.note-diagram`); SVG part classes (`nd-*`) live there too.
 
+## DSA page theme (riso / screen-print)
+- `topics/dsa.html` + `topics/dsa.css` (palette tokens at the top; notes-engine restyle: floors = `.section`, `.note-block`, qa, code, tables, `.note-diagram`, mascot) + `src/topics/dsa.js` (`mountTopic(..., { collapsibleNotes: true })`).
+- `src/topics/dsa-art.js`: the hero cutaway as four stacked inline SVG layers (back / shell / rooms / front). Colours come from CSS classes (`.m .t .pk ...`), one ink weight (`.k`), halftone `<pattern>`s (`.h-i .h-f .h-t .h-w .h-l`). Every character/object is a `<g id>`; `.asm` groups are slid in on load, idle motion lives on inner `.i-*` groups.
+- `src/topics/dsa-fx.js`: injects the hero, GSAP assembly (CSS fallback `asm-css` without GSAP), idle loops gated by `.is-live` (IntersectionObserver + tab visibility), fine-pointer parallax, CTA scroll. `body.rm` / `prefers-reduced-motion` => static picture.
+
 ## Adding a DevOps lesson
 1. In `topics/devops.html` add the tab button (`<div class="tab" onclick="showTab('NAME',this)">`) and an empty panel wrapper `<div class="panel" id="tab-NAME"><div class="lesson-status" role="status">Loading…</div></div>`.
 2. Create `content/devops/lessons/NAME.html` with the panel's inner HTML. Inline `onclick` handlers and `<script>` tags work. CSS is page-wide, so put `<style>` in `topics/devops.html`, not in the fragment.
