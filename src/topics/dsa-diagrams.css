@@ -39,3 +39,24 @@ body.dsa .note-diagram[data-diagram="myValidAnagramImg"] { background: var(--pap
 body.dsa .note-diagram[data-diagram="myValidAnagramImg"] .diagram-replay { display: none; }
 body.dsa .my-note-img { display: block; width: 100%; max-width: none; margin: 0 auto; cursor: zoom-in; }
 body.dsa .my-note-img img { display: block; width: 100%; height: auto; background: #fff; border: 3px solid var(--ink); border-radius: 10px; box-shadow: 5px 5px 0 var(--mustard); }
+
+/* interactive step-through (src/topics/dsa-interactive.js) */
+body.dsa .note-diagram:has(.dgx-int) .diagram-replay { display: none; }
+body.dsa .dgx-int svg.dg [data-ptr] { transition: transform .55s cubic-bezier(.3,.8,.3,1), opacity .3s; }
+body.dsa .dgx-int svg.dg [data-slotfill], body.dsa .dgx-int svg.dg [data-res] { transition: opacity .45s; }
+body.dsa .dgx-int svg.dg [data-cell] rect.k { transition: fill .4s; }
+body.dsa .dgx-msg { margin: 0; padding: 10px 16px; min-height: 2.9em; text-align: center; font: 700 .95rem/1.4 var(--sans, system-ui); color: var(--ink); background: var(--paper); border-top: 3px solid var(--ink); }
+body.dsa .dgx-ctl { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 10px 12px 12px; background: var(--paper); border-top: 2px dashed rgba(23,18,15,.35); }
+body.dsa .dgx-ctl button, body.dsa .dgx-ctl select { font: 700 .82rem/1.2 var(--sans, system-ui); color: var(--ink); background: var(--cream); border: 2.5px solid var(--ink); border-radius: 999px; padding: 6px 12px; box-shadow: 2px 2px 0 var(--ink); cursor: pointer; }
+body.dsa .dgx-ctl button:hover:not(:disabled) { background: var(--mustard); transform: translate(-1px,-1px); }
+body.dsa .dgx-ctl button:active:not(:disabled) { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
+body.dsa .dgx-ctl button:disabled { opacity: .4; cursor: default; box-shadow: none; }
+body.dsa .dgx-ctl [data-act="play"] { background: var(--mustard); min-width: 7.5em; }
+body.dsa .dgx-ctl :focus-visible { outline: 3px solid var(--terra); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { body.dsa .dgx-int svg.dg * { transition: none !important; } }
+
+/* Group Anagrams notes are a very tall picture: keep it readable instead of stretching it across the page */
+body.dsa .note-diagram[data-diagram="myGroupAnagramsImg"] .my-note-img { max-width: 900px; }
+body.dsa .note-diagram[data-diagram="myTwoSumImg"], body.dsa .note-diagram[data-diagram="myGroupAnagramsImg"] { background: var(--paper); padding: 8px; }
+body.dsa .note-diagram[data-diagram="myTwoSumImg"] .diagram-replay, body.dsa .note-diagram[data-diagram="myGroupAnagramsImg"] .diagram-replay { display: none; }
+body.dsa .dgx-int svg.dg [data-row], body.dsa .dgx-int svg.dg [data-chip], body.dsa .dgx-int svg.dg [data-word], body.dsa .dgx-int svg.dg [data-key] { transition: opacity .45s; }
