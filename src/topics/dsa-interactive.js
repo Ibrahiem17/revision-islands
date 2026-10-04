@@ -10,7 +10,8 @@
  */
 import { motionAllowed } from "../shared/replay.js";
 
-const STEP_MS = 1500;
+// slow on purpose: time to read each step = a base pause plus a little per character of the message
+const stepDelay = (root) => { const m = root.querySelector("[data-msg]"); const n = m ? m.textContent.length : 80; return Math.max(5000, 3200 + n * 55); };
 const states = new WeakMap();
 const X = (i) => 39 + i * 58 + 25; // centre of cell i (dup / two)
 const rnd = (n) => Math.floor(Math.random() * n);
@@ -254,16 +255,18 @@ function draw(root, st) {
   const play = root.querySelector('[data-act="play"]');
   if (play) play.textContent = st.timer ? "❚❚ Pause" : "▶ Play";
 }
-function stop(root, st) { if (st.timer) { clearInterval(st.timer); st.timer = 0; } draw(root, st); }
+function stop(root, st) { if (st.timer) { clearTimeout(st.timer); st.timer = 0; } draw(root, st); }
 function play(root, st) {
   if (st.timer) { stop(root, st); return; }
   if (st.i >= st.steps.length - 1) st.i = 0;
-  st.timer = setInterval(() => {
+  const tick = () => {
     if (st.i >= st.steps.length - 1) { stop(root, st); return; }
     st.i++;
     draw(root, st);
-    if (st.i >= st.steps.length - 1) stop(root, st);
-  }, STEP_MS);
+    if (st.i >= st.steps.length - 1) { stop(root, st); return; }
+    st.timer = setTimeout(tick, stepDelay(root));
+  };
+  st.timer = setTimeout(tick, stepDelay(root));
   draw(root, st);
 }
 function setData(root, st, data) {
