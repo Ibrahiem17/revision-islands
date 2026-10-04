@@ -35,7 +35,7 @@ body.dsa .note-diagram svg.dg { background: var(--paper); border-left: 3px solid
 body.rm .note-diagram, body.rm .note-diagram * { animation: none !important; }
 
 /* my own notes shown as the original picture (unaltered image, click to open full size) */
-body.dsa .note-diagram[data-diagram="myValidAnagramImg"] { background: var(--paper); padding: 10px; }
+body.dsa .note-diagram[data-diagram="myValidAnagramImg"] { background: var(--paper); padding: 8px; }
 body.dsa .note-diagram[data-diagram="myValidAnagramImg"] .diagram-replay { display: none; }
-body.dsa .my-note-img { display: block; width: 100%; max-width: 960px; margin: 0 auto; cursor: zoom-in; }
+body.dsa .my-note-img { display: block; width: 100%; max-width: none; margin: 0 auto; cursor: zoom-in; }
 body.dsa .my-note-img img { display: block; width: 100%; height: auto; background: #fff; border: 3px solid var(--ink); border-radius: 10px; box-shadow: 5px 5px 0 var(--mustard); }
