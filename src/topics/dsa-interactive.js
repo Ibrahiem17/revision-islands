@@ -38,11 +38,11 @@ const KINDS = {
       slots(root, d.arr.length, (s.seen || []).map(String));
       const v = s.i !== undefined ? d.arr[s.i] : null;
       let text, res = null;
-      if (s.k === "start") text = "Start with an empty Hash Set called seen. Press Next, or Play.";
-      else if (s.k === "look") text = `Look at ${v}. Is it already in seen? ${s.has ? "Yes!" : "No."}`;
-      else if (s.k === "add") text = `${v} is new, so add it to seen and move on.`;
-      else if (s.k === "found") { text = `${v} is already in seen → return true (duplicate!)`; res = ["return true", "pk"]; }
-      else { text = "Reached the end and nothing repeated → return false."; res = ["return false", "sg"]; }
+      if (s.k === "start") text = "Question: does any number appear twice?\nThe seen box starts empty. Press Next (or Play) and watch one number at a time.";
+      else if (s.k === "look") text = `Look at ${v}.\nIs ${v} already in the seen box? ${s.has ? "YES, we have met it before." : "No, never met it."}`;
+      else if (s.k === "add") text = `${v} is new, so drop it into the seen box.\nThen move on to the next number.`;
+      else if (s.k === "found") { text = `${v} is already in the seen box!\nSo a number repeats. Answer: true.`; res = ["return true", "pk"]; }
+      else { text = "We checked every number and none repeated.\nAnswer: false."; res = ["return false", "sg"]; }
       badge(root, res); say(root, text);
     },
   },
@@ -73,12 +73,71 @@ const KINDS = {
       const tg = root.querySelector("[data-target]"); if (tg) tg.textContent = `target = ${d.target}`;
       const x = s.i !== undefined ? d.arr[s.i] : null;
       let text, need = "", res = null;
-      if (s.k === "start") text = `Find two numbers that add up to ${d.target}. Start with an empty map. Press Next, or Play.`;
-      else if (s.k === "look") { need = `x = ${x}  →  need ${d.target} − ${x} = ${s.need}`; text = s.hit ? `Is ${s.need} in the map? Yes, at index ${s.hit.i}!` : `Is ${s.need} in the map? Not yet.`; }
-      else if (s.k === "add") { need = `x = ${x}  →  need ${d.target} − ${x} = ${s.need}`; text = `Check first, store after: save ${x}:${s.i} (value : index) and move on.`; }
-      else if (s.k === "found") { need = `x = ${x}  →  need ${s.need}, found at index ${s.hit.i}`; text = `${s.need} + ${x} = ${d.target} → return [${s.hit.i}, ${s.i}]`; res = [`return [${s.hit.i}, ${s.i}]`, "pk"]; }
-      else { text = "No pair adds up to the target → return []."; res = ["return []", "sg"]; }
+      if (s.k === "start") text = `Question: which two numbers add up to ${d.target}?\nThe map starts empty. Press Next (or Play).`;
+      else if (s.k === "look") { need = `x = ${x}  →  need ${d.target} − ${x} = ${s.need}`; text = `Look at ${x}. To reach ${d.target} we need a partner: ${d.target} − ${x} = ${s.need}.\nIs ${s.need} already in the map? ${s.hit ? "YES, at index " + s.hit.i + "." : "No, not yet."}`; }
+      else if (s.k === "add") { need = `x = ${x}  →  need ${d.target} − ${x} = ${s.need}`; text = `No partner yet, so remember ${x} (it sits at index ${s.i}).\nCheck first, store after.`; }
+      else if (s.k === "found") { need = `x = ${x}  →  need ${s.need}, found at index ${s.hit.i}`; text = `Found it! ${s.need} (index ${s.hit.i}) + ${x} (index ${s.i}) = ${d.target}.\nAnswer: [${s.hit.i}, ${s.i}]`; res = [`return [${s.hit.i}, ${s.i}]`, "pk"]; }
+      else { text = "We tried every number and no pair works.\nAnswer: [] (empty)."; res = ["return []", "sg"]; }
       const n = root.querySelector("[data-need]"); if (n) n.textContent = need;
+      badge(root, res); say(root, text);
+    },
+  },
+
+  ana: {
+    parse(s) { const [a, b] = s.split("|"); return { a, b }; },
+    random() {
+      const pool = "abcdef", pick = () => pool[rnd(6)], shuf = (w) => w.split("").sort(() => Math.random() - 0.5).join("");
+      const a = Array.from({ length: 3 + rnd(2) }, pick).join("");
+      let b = shuf(a);
+      if (Math.random() < 0.5) { const k = rnd(b.length); let c = pick(); while (c === b[k]) c = pick(); b = shuf(b.slice(0, k) + c + b.slice(k + 1)); }
+      return { a, b };
+    },
+    steps(d) {
+      const st = [{ k: "start" }];
+      if (d.a.length !== d.b.length) { st.push({ k: "len" }); return st; }
+      const counts = {};
+      for (let i = 0; i < d.a.length; i++) { counts[d.a[i]] = (counts[d.a[i]] || 0) + 1; st.push({ k: "plus", i, counts: { ...counts } }); }
+      for (let j = 0; j < d.b.length; j++) { counts[d.b[j]] = (counts[d.b[j]] || 0) - 1; st.push({ k: "minus", j, counts: { ...counts } }); }
+      st.push({ k: "check", counts: { ...counts }, ok: Object.values(counts).every((n) => n === 0) });
+      return st;
+    },
+    render(root, d, s) {
+      const aPhase = s.k === "plus", bPhase = s.k === "minus", after = s.k === "check";
+      const colour = (j, idx, active, finished) => (finished ? "sg" : j < idx ? "sg" : j === idx && active ? "m" : "pe");
+      for (let j = 0; j < 4; j++) {
+        const rows = [
+          [root.querySelector(`[data-a="${j}"]`), d.a, colour(j, aPhase ? s.i : -1, aPhase, bPhase || after)],
+          [root.querySelector(`[data-b="${j}"]`), d.b, colour(j, bPhase ? s.j : -1, bPhase, after)],
+        ];
+        rows.forEach(([g, w, c]) => {
+          if (!g) return;
+          const on = j < w.length;
+          g.style.opacity = on ? "1" : "0";
+          const r = g.querySelector("rect.k"), t = g.querySelector("text");
+          if (r && on) r.setAttribute("class", "k " + c);
+          if (t) t.textContent = on ? w[j] : " ";
+        });
+        const pl = root.querySelector(`[data-plus="${j}"]`), mi = root.querySelector(`[data-minus="${j}"]`);
+        if (pl) pl.style.opacity = j < d.a.length && (aPhase ? j <= s.i : bPhase || after) ? "1" : "0";
+        if (mi) mi.style.opacity = j < d.b.length && (bPhase ? j <= s.j : after) ? "1" : "0";
+      }
+      const letters = [...new Set((d.a + d.b).split(""))];
+      const counts = s.counts || {};
+      for (let k = 0; k < 6; k++) {
+        const g = root.querySelector(`[data-cnt="${k}"]`); if (!g) continue;
+        const L = letters[k], on = !!L && s.k !== "start" && s.k !== "len";
+        g.style.opacity = on ? "1" : L ? "0.35" : "0";
+        const n = counts[L] || 0, r = g.querySelector("rect.k"), t = g.querySelector("text");
+        if (t) t.textContent = L ? `${L} : ${n}` : " ";
+        if (r) r.setAttribute("class", "k " + (after && s.ok ? "sg" : n > 0 ? "m" : n < 0 ? "pk" : "cr"));
+      }
+      let text, res = null;
+      if (s.k === "start") text = `Are "${d.a}" and "${d.b}" anagrams? Same letters, same counts.\nWe keep one count per letter: +1 for the first word, −1 for the second. Press Next (or Play).`;
+      else if (s.k === "len") { text = `The words have different lengths (${d.a.length} and ${d.b.length}).\nSo they cannot be anagrams. Answer: false, straight away.`; res = ["return false", "pk"]; }
+      else if (s.k === "plus") { const ch = d.a[s.i]; text = `First word, letter "${ch}": add 1 to its count → ${ch} : ${s.counts[ch]}.`; }
+      else if (s.k === "minus") { const ch = d.b[s.j]; text = `Second word, letter "${ch}": take 1 away → ${ch} : ${s.counts[ch]}.`; }
+      else if (s.ok) { text = "Every count is back to 0, the letters cancelled out perfectly.\nAnswer: true."; res = ["return true", "sg"]; }
+      else { const bad = Object.entries(s.counts).filter(([, n]) => n !== 0).map(([c, n]) => `${c}:${n}`).join(", "); text = `Some counts are not 0 (${bad}).\nSo the letters do not match. Answer: false.`; res = ["return false", "pk"]; }
       badge(root, res); say(root, text);
     },
   },
@@ -135,10 +194,10 @@ const KINDS = {
       }
       let text, res = null;
       const w = s.i !== undefined ? d.words[s.i] : null;
-      if (s.k === "start") text = "Put words that are anagrams of each other in the same group. Press Next, or Play.";
-      else if (s.k === "key") text = `Sort the letters of "${w}" → the label (key) is "${s.key}".`;
-      else if (s.k === "place") text = s.isNew ? `"${s.key}" is a new key, so start a new group with ${w}.` : `"${s.key}" already exists, so add ${w} to that group.`;
-      else { const out = keys.map((k) => `[${groups[k].join(", ")}]`).join(", "); text = `All words placed. Return only the groups: [${out}]`; res = ["return the groups", "sg"]; }
+      if (s.k === "start") text = "Goal: put words that are anagrams of each other in the same group.\nPress Next (or Play). Each word gets a label by sorting its letters.";
+      else if (s.k === "key") text = `Take the word "${w}" and sort its letters → "${s.key}".\nAnagrams always end up with the same sorted label.`;
+      else if (s.k === "place") text = s.isNew ? `No group is labelled "${s.key}" yet.\nSo open a new group and put ${w} in it.` : `A group labelled "${s.key}" already exists.\nSo ${w} joins that group.`;
+      else { const out = keys.map((k) => `[${groups[k].join(", ")}]`).join(", "); text = `Every word is placed.\nThe answer is just the groups: ${out}`; res = ["return the groups", "sg"]; }
       badge(root, res); say(root, text);
     },
   },
@@ -177,12 +236,18 @@ function badge(root, res) {
   if (t) t.textContent = res[0];
   if (r) r.setAttribute("class", "k " + res[1]);
 }
-const say = (root, text) => { const m = root.querySelector("[data-msg]"); if (m) m.textContent = text; };
+const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const say = (root, text) => {
+  const m = root.querySelector("[data-msg]"); if (!m) return;
+  m.innerHTML = `<span class="dgx-step"></span>` + esc(text).replace(/\n/g, "<br>");
+};
 
 // ------------------------------------------------------------------ engine
 function draw(root, st) {
   const K = KINDS[st.kind];
   K.render(root, st.data, st.steps[st.i]);
+  const stepEl = root.querySelector(".dgx-step");
+  if (stepEl) stepEl.textContent = `Step ${st.i + 1} of ${st.steps.length}`;
   const back = root.querySelector('[data-act="back"]'), next = root.querySelector('[data-act="next"]');
   if (back) back.disabled = st.i === 0;
   if (next) next.disabled = st.i >= st.steps.length - 1;
@@ -219,7 +284,19 @@ function stateFor(root) {
 export function startInteractive() {
   const roots = [...document.querySelectorAll(".dgx-int[data-kind]")];
   if (!roots.length) return;
-  roots.forEach((r) => draw(r, stateFor(r))); // every demo starts at step 0; it plays once by itself when first seen
+  const LEGEND = {
+    dup: [["pe", "waiting"], ["m", "looking at it now"], ["sg", "checked, new"], ["pk", "repeat found"]],
+    two: [["pe", "waiting"], ["m", "looking at it now"], ["sg", "checked, stored"], ["pk", "pair found"]],
+    ana: [["pe", "not counted yet"], ["m", "counting it now"], ["sg", "counted"], ["pk", "below zero"]],
+    grp: [["pe", "waiting"], ["m", "sorting it now"], ["sg", "placed in a group"]],
+  };
+  roots.forEach((r) => {
+    const lg = LEGEND[r.dataset.kind], ctl = r.querySelector(".dgx-ctl");
+    if (lg && ctl && !r.querySelector(".dgx-legend")) {
+      ctl.insertAdjacentHTML("beforebegin", `<div class="dgx-legend" aria-label="Colour key">${lg.map(([c, t]) => `<span><i class="lg-${c}"></i>${t}</span>`).join("")}</div>`);
+    }
+    draw(r, stateFor(r)); // every demo starts at step 0; it plays once by itself when first seen
+  });
 
   const handle = (e) => {
     const el = e.target.closest("[data-act]");

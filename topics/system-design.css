@@ -533,3 +533,6 @@ body.sd .note-diagram figcaption { border-top: 3px solid var(--ink); padding: 8p
 .note-diagram .nd-fbl { transform-origin: left center; }
 body.sd .nd-panels.nd-one { grid-template-columns: 1fr; }
 body.rm .note-diagram * { animation: none !important; }
+
+/* no done-tick, no pin icon and no mastered meter on this page */
+body.sd .note-check, body.sd .note-head .type-icon, body.sd .tool-progress { display: none !important; }

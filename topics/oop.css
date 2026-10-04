@@ -508,3 +508,6 @@ body.rm .oop-headline .ch, body.rm .oop-pill, body.rm .oop-cta-hero { opacity: 1
   .oop-headline { font-size: clamp(1.8rem, 9vw, 2.4rem); }
   .oop-cta-pill { padding: 8px 14px; font-size: 0.74rem; }
 }
+
+/* no done-tick, no pin icon and no mastered meter on this page */
+body.oop .note-check, body.oop .note-head .type-icon, body.oop .oop-stat-mastered { display: none !important; }

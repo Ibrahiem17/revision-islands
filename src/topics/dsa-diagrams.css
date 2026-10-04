@@ -60,3 +60,13 @@ body.dsa .note-diagram[data-diagram="myGroupAnagramsImg"] .my-note-img { max-wid
 body.dsa .note-diagram[data-diagram="myTwoSumImg"], body.dsa .note-diagram[data-diagram="myGroupAnagramsImg"] { background: var(--paper); padding: 8px; }
 body.dsa .note-diagram[data-diagram="myTwoSumImg"] .diagram-replay, body.dsa .note-diagram[data-diagram="myGroupAnagramsImg"] .diagram-replay { display: none; }
 body.dsa .dgx-int svg.dg [data-row], body.dsa .dgx-int svg.dg [data-chip], body.dsa .dgx-int svg.dg [data-word], body.dsa .dgx-int svg.dg [data-key] { transition: opacity .45s; }
+
+/* step-through clarity: plain message, step counter, colour key */
+body.dsa .dgx-msg { white-space: normal; min-height: 4.6em; text-align: left; padding: 12px 18px; font-size: 1rem; line-height: 1.5; }
+body.dsa .dgx-step { display: block; margin: 0 0 4px; font: 800 .72rem/1 var(--sans, system-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--terra); }
+body.dsa .dgx-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; padding: 8px 12px 0; background: var(--paper); border-top: 2px dashed rgba(23,18,15,.35); font: 600 .78rem/1.2 var(--sans, system-ui); color: var(--ink); }
+body.dsa .dgx-legend span { display: inline-flex; align-items: center; gap: 6px; }
+body.dsa .dgx-legend i { width: 14px; height: 14px; border: 2.5px solid var(--ink); border-radius: 4px; display: inline-block; }
+body.dsa .dgx-legend .lg-pe { background: var(--peach); } body.dsa .dgx-legend .lg-m { background: var(--mustard); }
+body.dsa .dgx-legend .lg-sg { background: var(--sage); } body.dsa .dgx-legend .lg-pk { background: var(--pink); }
+body.dsa .dgx-legend + .dgx-ctl { border-top: 0; }

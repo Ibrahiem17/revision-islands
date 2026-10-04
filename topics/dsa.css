@@ -677,3 +677,6 @@ body.rm .art-depth { transform: none !important; will-change: auto; }
   body.dsa .mascot-bubble { max-width: calc(100vw - 28px); }
   body.dsa .mascot-bubble-body { width: min(260px, calc(100vw - 90px)); max-height: 40vh; }
 }
+
+/* no done-tick, no pin icon and no mastered meter on this page */
+body.dsa .note-check, body.dsa .note-head .type-icon, body.dsa .progress-row { display: none !important; }

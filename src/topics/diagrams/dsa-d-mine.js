@@ -38,7 +38,7 @@ def(dupTmp, "dupSvg", 360, 250, "Contains Duplicate with a Hash Set", "Five numb
   const X = (i) => 39 + i * 58;
   const cls = ["sg", "sg", "sg", "pk", "pe"];
   DUP_DEFAULT.forEach((v, i) => { s += `<g data-cell="${i}">${bx(X(i), 60, 50, 44, cls[i], String(v), { r: 6, t: "b" })}</g>`; });
-  s += `<g data-ptr style="transform:translate(${X(3) + 25}px,0px)"><path class="k t" d="M-9 38 L9 38 L0 54 Z"/><text x="0" y="34" text-anchor="middle">i</text></g>`;
+  s += `<g data-ptr style="transform:translate(${X(3) + 25}px,0px)"><path class="k t" d="M-9 38 L9 38 L0 54 Z"/><text x="0" y="34" text-anchor="middle">now</text></g>`;
   s += tx(14, 134, "seen (Hash Set)", "s", "start");
   s += `<rect class="k dash" x="24" y="142" width="312" height="62" rx="10" fill="none"/>`;
   DUP_DEFAULT.forEach((v, i) => {
@@ -73,7 +73,7 @@ const ctl = (opts) =>
   `<select data-act="preset" aria-label="Pick an example">${opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>` +
   `<button type="button" data-act="random">🎲 Random</button></div>`;
 const cellX = (i) => 39 + i * 58;
-const pointer = (i) => `<g data-ptr style="transform:translate(${cellX(i) + 25}px,0px)"><path class="k t" d="M-9 38 L9 38 L0 54 Z"/><text x="0" y="34" text-anchor="middle">i</text></g>`;
+const pointer = (i) => `<g data-ptr style="transform:translate(${cellX(i) + 25}px,0px)"><path class="k t" d="M-9 38 L9 38 L0 54 Z"/><text x="0" y="34" text-anchor="middle">now</text></g>`;
 
 // ---- Two Sum: interactive step-through (my-two-1). Markup = final state of nums [2,7,11,15,3], target 9.
 const TWO_DEFAULT = "2,7,11,15,3|9";
@@ -130,5 +130,28 @@ reg.myGroupAnagramsImg = () =>
   `<a class="my-note-img" href="/dsa-notes/group-anagrams.svg" target="_blank" rel="noopener" title="Open full size">` +
   `<img src="/dsa-notes/group-anagrams.svg" loading="lazy" decoding="async" ` +
   `alt="Problem 4, Group Anagrams, long hand-drawn notes. Group words that are anagrams of each other. Use a Hash Map where the key is the word with its letters sorted and the value is the list of original words. Includes the problem, brute force, the fix, the recipe, pseudocode explained line by line, a full walkthrough with eat tea bat, the C++ code explained line by line, complexity O(n k log k), common mistakes, a key takeaway, and a list of parts that were hard with their fixes."></a>`;
+
+// ---- Valid Anagram: interactive step-through (my-anagram-1). Markup = final state for cat | tac.
+const ANA_DEFAULT = "cat|tac";
+const anaTmp = {};
+def(anaTmp, "anaSvg", 360, 250, "Valid Anagram with a Hash Map of letter counts", "Two words, A and B. Every letter of A adds one to that letter's count and every letter of B takes one away. If all the counts end at zero, the words are anagrams.", () => {
+  const A = ["c", "a", "t"], B = ["t", "a", "c"], L = ["c", "a", "t"];
+  const X = (j) => 40 + j * 54;
+  let s = tx(180, 15, "Valid Anagram: count up for A, down for B", "s") + tx(20, 70, "A", "b") + tx(20, 126, "B", "b");
+  for (let j = 0; j < 4; j++) {
+    s += `<g data-a="${j}" style="opacity:${A[j] ? 1 : 0}">${bx(X(j), 46, 46, 36, "sg", A[j] || " ", { r: 6, t: "b" })}</g>` +
+      `<text data-plus="${j}" x="${X(j) + 23}" y="98" text-anchor="middle" class="s" style="opacity:${A[j] ? 1 : 0}">+1</text>`;
+    s += `<g data-b="${j}" style="opacity:${B[j] ? 1 : 0}">${bx(X(j), 102, 46, 36, "sg", B[j] || " ", { r: 6, t: "b" })}</g>` +
+      `<text data-minus="${j}" x="${X(j) + 23}" y="154" text-anchor="middle" class="s" style="opacity:${B[j] ? 1 : 0}">−1</text>`;
+  }
+  s += tx(14, 176, "counts (one per letter)", "s", "start");
+  for (let k = 0; k < 6; k++) s += `<g data-cnt="${k}" style="opacity:${L[k] ? 1 : 0}">${bx(14 + k * 54, 182, 48, 28, L[k] ? "sg" : "cr", L[k] ? `${L[k]} : 0` : " ", { r: 6, t: "s" })}</g>`;
+  s += `<g data-res>${bx(110, 216, 140, 24, "sg", "return true", { r: 6, s: 1 })}</g>`;
+  return s;
+});
+reg.anaDemo = () =>
+  `<div class="dgx-int" data-kind="ana" data-default="${ANA_DEFAULT}">${anaTmp.anaSvg()}` +
+  `<p class="dgx-msg" data-msg aria-live="polite"><span class="dgx-step"></span>Every count is back to 0, the letters cancelled out perfectly.<br>Answer: true.</p>` +
+  ctl([["cat|tac", "cat and tac (anagrams)"], ["rat|car", "rat and car (not anagrams)"], ["tea|eat", "tea and eat (anagrams)"], ["ab|abc", "ab and abc (different lengths)"]]) + `</div>`;
 
 export default reg;
