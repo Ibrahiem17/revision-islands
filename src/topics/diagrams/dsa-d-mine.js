@@ -22,8 +22,8 @@ def(reg, "anagramCount", 360, 236, "Valid anagram with a hash map", "Word A is c
 
 // ---- the user's own Excalidraw page, shown exactly as drawn (unaltered image file, click to open full size)
 reg.myValidAnagramImg = () =>
-  `<a class="my-note-img" href="/dsa-notes/valid-anagram.webp" target="_blank" rel="noopener" title="Open full size">` +
-  `<img src="/dsa-notes/valid-anagram.webp" loading="lazy" decoding="async" ` +
+  `<a class="my-note-img" href="/dsa-notes/valid-anagram.svg" target="_blank" rel="noopener" title="Open full size">` +
+  `<img src="/dsa-notes/valid-anagram.svg" loading="lazy" decoding="async" ` +
   `alt="Valid Anagram full reference, hand-drawn notes. Same letters and same counts means true. Use a hash map to count: plus one for each letter in A, minus one for each letter in B, and if every count is zero they are anagrams. Includes the brute force approach, a six step recipe, pseudocode, an annotated C++ version, a trace of cat versus tac, and time and space O(n)."></a>`;
 
 export default reg;
