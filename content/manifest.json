@@ -297,7 +297,7 @@
   "dir": "dsa",
   "title": "DSA",
   "icon": "🌳",
-  "total": 92,
+  "total": 94,
   "ids": [
    "qr-1",
    "qr-2",
@@ -390,7 +390,9 @@
    "rd-7",
    "rd-8",
    "rd-9",
-   "rd-10"
+   "rd-10",
+   "my-anagram-1",
+   "my-anagram-2"
   ]
  },
  {

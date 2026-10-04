@@ -7,5 +7,6 @@ import basics from "./diagrams/dsa-d-basics.js";
 import lists from "./diagrams/dsa-d-lists.js";
 import graphs from "./diagrams/dsa-d-graphs.js";
 import algos from "./diagrams/dsa-d-algos.js";
+import mine from "./diagrams/dsa-d-mine.js";
 
-export default { ...basics, ...lists, ...graphs, ...algos };
+export default { ...basics, ...lists, ...graphs, ...algos, ...mine };
