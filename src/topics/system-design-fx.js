@@ -19,7 +19,7 @@ export const content = {
   lede:
     "System design is the art of scaling one floor at a time: start with a single server, notice where it hurts, and add exactly the piece that fixes it. A load balancer spreads the traffic, a cache remembers the hot answers, a queue smooths the bursts, and the database learns to replicate and shard.",
   lede2:
-    "Open a floor below, tick a note once you can explain it out loud, and watch the mastered bar fill up. Interviewers care less about the perfect diagram than about the trade-offs you can name.",
+    "Open a topic below and read the picture first, then try the interview questions out loud. Interviewers care less about the perfect diagram than about the trade-offs you can name.",
   searchLabel: "SEARCH THE ISLAND",
   progressLabel: "MASTERED",
   footNote: "MORE EDITIONS COMING SOON",
@@ -27,21 +27,18 @@ export const content = {
     { label: "MAP", action: "map", href: "../index.html" },
     { label: "NOTES", action: "scroll", target: "#notes" },
     { label: "SEARCH", action: "search" },
-    { label: "PROGRESS", action: "scroll", target: "#progress" },
     { label: "TOP", action: "scroll", target: "#top" },
   ],
   /* right column: `term` = what the yellow arrow types into the search box; the number = notes matching it, computed live */
   cards: [
-    { title: "LOAD BALANCER", sub: "SPREADS THE TRAFFIC", term: "load balanc", art: "balancer" },
-    { title: "CACHE", sub: "REMEMBERS HOT ANSWERS", term: "cache", art: "cache" },
     { title: "DATABASE", sub: "SOURCE OF TRUTH", term: "database", art: "database" },
-    { title: "MESSAGE QUEUE", sub: "SMOOTHS THE BURSTS", term: "queue", art: "queue" },
-    { title: "CDN", sub: "CLOSER TO THE USER", term: "cdn", art: "cdn" },
+    { title: "CACHE", sub: "REMEMBERS HOT ANSWERS", term: "cache", art: "cache" },
+    { title: "REPLICAS", sub: "COPIES FOR READS", term: "replica", art: "database" },
   ],
   cardUnit: "NOTES",
   /* scaling ladder */
   tiers: [
-    { title: "ONE SERVER", sub: "Everything on one box. Simple, cheap, one big point of failure.", value: "1 NODE", term: "vertical", art: "tier1" },
+    { title: "ONE SERVER", sub: "Everything on one box. Simple, cheap, one big point of failure.", value: "1 NODE", term: "cpu", art: "tier1" },
     { title: "REPLICATED", sub: "Copies for reads and failover. More nines, more consistency questions.", value: "N + 1", term: "replic", art: "tier2" },
     { title: "SHARDED", sub: "Data split across nodes. Scales writes, complicates every query.", value: "N × M", term: "shard", art: "tier3" },
   ],

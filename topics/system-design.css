@@ -536,3 +536,9 @@ body.rm .note-diagram * { animation: none !important; }
 
 /* no done-tick, no pin icon and no mastered meter on this page */
 body.sd .note-check, body.sd .note-head .type-icon, body.sd .tool-progress { display: none !important; }
+
+/* my own diagrams, shown exactly as drawn (unaltered image files, click to open full size) */
+body.sd .note-diagram[data-diagram^="myImg"] { padding: 10px; background: #fff; }
+body.sd .note-diagram[data-diagram^="myImg"] .diagram-replay { display: none; }
+body.sd .my-note-img { display: block; width: 100%; max-width: 980px; margin: 0 auto; cursor: zoom-in; }
+body.sd .my-note-img img { display: block; width: 100%; height: auto; background: #fff; }
