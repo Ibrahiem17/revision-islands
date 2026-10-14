@@ -553,3 +553,10 @@ body.sd .my-note-img { max-width: 975px; }
 .navcells { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
 .tools { grid-template-columns: 1fr; }
 body.sd .tool-search input { max-width: 560px; }
+
+/* structure inside one long note: sub-headings, bullet lists, quoted answers */
+body.sd .note-block .note-sub { margin: 26px 0 8px; padding: 6px 0 6px 14px; border-left: 9px solid var(--yellow); border-bottom: 2px solid var(--ink); font: 700 1.08rem/1.25 var(--display, var(--label)); letter-spacing: .06em; text-transform: uppercase; background: linear-gradient(90deg, rgba(242,176,30,.18), transparent 70%); }
+body.sd .note-block .note-sub:first-of-type { margin-top: 10px; }
+body.sd .note-block ul.note-list { margin: 4px 0 14px; padding-left: 26px; }
+body.sd .note-block ul.note-list li { margin: 0 0 8px; }
+body.sd .note-block blockquote.note-quote { margin: 10px 0; padding: 10px 16px; border-left: 6px solid var(--ink); background: rgba(255,255,255,.55); font: 400 .93rem/1.7 var(--body); box-shadow: 4px 4px 0 rgba(20,18,16,.12); }

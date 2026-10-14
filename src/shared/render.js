@@ -21,12 +21,29 @@ const attr = (str) => escapeHtml(str).replace(/"/g, "&quot;");
 // "body" / "note" fields may be a single string or an array of
 // paragraphs — keeps longer explanations readable instead of one
 // wall of text. Each paragraph also gets **glow** support.
-function bodyToHtml(body) {
-  const paras = Array.isArray(body) ? body : [body];
-  return paras.map(p => `<p>${richText(p)}</p>`).join("");
+// Optional light structure inside a body array (lines starting with these prefixes; plain paragraphs are unchanged):
+//   "## Heading"  sub-heading     "- item"  bullet (consecutive lines form one list)
+//   "> text"      quote/callout   "@@diagram"  put the item diagram here instead of at the end
+function bodyToHtml(body, diagramHtml = "") {
+  const lines = Array.isArray(body) ? body : [body];
+  let out = "", list = [];
+  const flush = () => {
+    if (list.length) out += `<ul class="note-list">${list.map(li => `<li>${richText(li)}</li>`).join("")}</ul>`;
+    list = [];
+  };
+  for (const l of lines) {
+    if (l.startsWith("- ")) { list.push(l.slice(2)); continue; }
+    flush();
+    if (l.startsWith("## ")) out += `<h5 class="note-sub">${richText(l.slice(3))}</h5>`;
+    else if (l.startsWith("> ")) out += `<blockquote class="note-quote">${richText(l.slice(2))}</blockquote>`;
+    else if (l === "@@diagram") out += diagramHtml;
+    else out += `<p>${richText(l)}</p>`;
+  }
+  flush();
+  return out;
 }
 function bodyToSearchText(body) {
-  return (Array.isArray(body) ? body.join(" ") : body).toLowerCase();
+  return (Array.isArray(body) ? body.filter(l => l !== "@@diagram").join(" ") : body).toLowerCase();
 }
 
 // optional `diagram` (key) + `diagramCaption` on an item: rendered only when opts.diagrams[key]
@@ -66,7 +83,7 @@ function renderItem(item, learnedSet, opts) {
       return `
         <div class="note-block${stateClasses}" data-searchable="${attr(item.title.toLowerCase() + " " + bodyToSearchText(item.body) + dg.search)}">
           <div class="note-head">${checkbox}<h4><span class="type-icon">📌</span>${escapeHtml(item.title)}</h4></div>
-          ${bodyToHtml(item.body)}${dg.html}
+          ${bodyToHtml(item.body, dg.html)}${Array.isArray(item.body) && item.body.includes("@@diagram") ? "" : dg.html}
         </div>`;
 
     case "list":
