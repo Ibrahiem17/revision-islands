@@ -5,6 +5,7 @@ import dataDiagrams from "./system-design-diagrams-data.js";
 import topic4Diagrams from "./diagrams/system-design-diagrams-topic4.js";
 import imageDiagrams from "./system-design-images.js";
 import inlineDiagrams from "./system-design-inline.js";
+import { startMinis } from "./system-design-mini.js";
 
 const diagrams = { ...baseDiagrams, ...dataDiagrams, ...topic4Diagrams, ...imageDiagrams, ...inlineDiagrams };
 
@@ -16,5 +17,6 @@ mountTopic("systemDesign", () => import("../../content/system-design/index.js"),
   .catch((e) => console.error(e))
   .finally(() => {
     // 3) motion + live counts (must never block the notes)
+    try { startMinis(document.getElementById("content")); } catch (e) { console.error("[system-design] minis failed", e); }
     try { startFx(); } catch (e) { console.error("[system-design] fx failed", e); document.documentElement.classList.remove("intro-on"); }
   });
