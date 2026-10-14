@@ -542,3 +542,14 @@ body.sd .note-diagram[data-diagram^="myImg"] { padding: 10px; background: #fff; 
 body.sd .note-diagram[data-diagram^="myImg"] .diagram-replay { display: none; }
 body.sd .my-note-img { display: block; width: 100%; max-width: 980px; margin: 0 auto; cursor: zoom-in; }
 body.sd .my-note-img img { display: block; width: 100%; height: auto; background: #fff; }
+
+/* ---------- wide layout: the page fills the screen, no topic-shortcuts column ---------- */
+.stage { padding-left: clamp(14px, 2.4vw, 44px); padding-right: clamp(14px, 2.4vw, 44px); }
+.stage-in { max-width: min(100%, 1800px); }
+#cards, .col-cards { display: none !important; }
+.board, .board:has(#cards:not(.cards-open)), .board:has(#cards) { grid-template-columns: minmax(0, 1fr) !important; }
+.col-main { border-right: 0; }
+body.sd .my-note-img { max-width: 975px; }
+.navcells { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+.tools { grid-template-columns: 1fr; }
+body.sd .tool-search input { max-width: 560px; }
