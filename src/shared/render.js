@@ -24,7 +24,7 @@ const attr = (str) => escapeHtml(str).replace(/"/g, "&quot;");
 // Optional light structure inside a body array (lines starting with these prefixes; plain paragraphs are unchanged):
 //   "## Heading"  sub-heading     "- item"  bullet (consecutive lines form one list)
 //   "> text"      quote/callout   "@@diagram" / "@@diagram2"  put item.diagram / item.diagram2 here instead of at the end
-function bodyToHtml(body, diagramHtml = "", diagram2Html = "") {
+function bodyToHtml(body, diagramHtml = "", diagram2Html = "", inlineFor = () => "") {
   const lines = Array.isArray(body) ? body : [body];
   let out = "", list = [];
   const flush = () => {
@@ -38,13 +38,14 @@ function bodyToHtml(body, diagramHtml = "", diagram2Html = "") {
     else if (l.startsWith("> ")) out += `<blockquote class="note-quote">${richText(l.slice(2))}</blockquote>`;
     else if (l === "@@diagram") out += diagramHtml;
     else if (l === "@@diagram2") out += diagram2Html;
+    else if (l.startsWith("@@inline:")) out += inlineFor(l.slice(9));
     else out += `<p>${richText(l)}</p>`;
   }
   flush();
   return out;
 }
 function bodyToSearchText(body) {
-  return (Array.isArray(body) ? body.filter(l => l !== "@@diagram" && l !== "@@diagram2").join(" ") : body).toLowerCase();
+  return (Array.isArray(body) ? body.filter(l => l !== "@@diagram" && l !== "@@diagram2" && !l.startsWith("@@inline:")).join(" ") : body).toLowerCase();
 }
 
 // optional `diagram` (key) + `diagramCaption` on an item: rendered only when opts.diagrams[key]
@@ -86,7 +87,7 @@ function renderItem(item, learnedSet, opts) {
       return `
         <div class="note-block${stateClasses}" data-searchable="${attr(item.title.toLowerCase() + " " + bodyToSearchText(item.body) + dg.search)}">
           <div class="note-head">${checkbox}<h4><span class="type-icon">📌</span>${escapeHtml(item.title)}</h4></div>
-          ${bodyToHtml(item.body, dg.html, dg2.html)}${Array.isArray(item.body) && item.body.includes("@@diagram") ? "" : dg.html}${Array.isArray(item.body) && item.body.includes("@@diagram2") ? "" : dg2.html}
+          ${bodyToHtml(item.body, dg.html, dg2.html, (k) => { const f = opts && opts.diagrams && opts.diagrams[k]; return f ? (typeof f === "function" ? f() : f) : ""; })}${Array.isArray(item.body) && item.body.includes("@@diagram") ? "" : dg.html}${Array.isArray(item.body) && item.body.includes("@@diagram2") ? "" : dg2.html}
         </div>`;
 
     case "list":

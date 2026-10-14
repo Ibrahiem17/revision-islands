@@ -4,8 +4,9 @@ import baseDiagrams from "./system-design-diagrams.js";
 import dataDiagrams from "./system-design-diagrams-data.js";
 import topic4Diagrams from "./diagrams/system-design-diagrams-topic4.js";
 import imageDiagrams from "./system-design-images.js";
+import inlineDiagrams from "./system-design-inline.js";
 
-const diagrams = { ...baseDiagrams, ...dataDiagrams, ...topic4Diagrams, ...imageDiagrams };
+const diagrams = { ...baseDiagrams, ...dataDiagrams, ...topic4Diagrams, ...imageDiagrams, ...inlineDiagrams };
 
 // 1) skeleton -> full markup (text/art come from the `content` object in system-design-fx.js)
 buildPage();

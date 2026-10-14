@@ -19,4 +19,8 @@ export default {
     "Replication: several machines holding the same data. App servers send writes only to the leader, the leader copies to read-only followers, and all reads go to the followers. A glossary explains write, read, leader, follower, replication lag and failover."),
   myImgSharding: img("sharding.png",
     "Sharding: each machine holds a different slice of the data. Shard 1 has user ids 1 to 1000, shard 2 has 1001 to 2000, shard 3 has 2001 to 3000, and the app server looks up user 1500 on shard 2. The danger is a hot shard when the split is uneven. A glossary explains shard, shard key and cost."),
+  myImgQueue: img("message-queue.svg",
+    "Without a queue, the user waits for every job: Ali clicks Sign Up and the app server resizes the photo, sends the welcome email, updates the search index and makes the invoice, so he stares at a spinner for 10 seconds, and if the email service is down the whole signup fails. With a queue, the app only saves the account and writes the jobs on a to-do list, the reply comes back in 0.2 seconds, and separate workers do the jobs in the background. If the email service is down only that one job waits."),
+  myImgQueueTrap: img("queue-trap.svg",
+    "The trap: the same job can run twice. Worker A takes the send welcome email job and sends the email, then crashes before telling the queue it finished. The queue thinks it failed and Worker B sends it again, so Ali gets two welcome emails. The fix is to make every job idempotent: give each job an id, check whether it was already done, skip it if so, and otherwise do it and record that it is finished. A glossary explains retry, dead letter queue, at-least-once and idempotent."),
 };
